@@ -94,7 +94,7 @@ export function StorefrontHome({
 }
 
 function Hero({ product }: { product: StoreProduct | null }) {
-  const { t } = useLocale();
+  const { t, localize } = useLocale();
 
   if (!product?.images[0]?.url) {
     return (
@@ -138,15 +138,15 @@ function Hero({ product }: { product: StoreProduct | null }) {
           transition={{ duration: 0.8 }}
           className="max-w-[560px] px-6 text-center"
         >
-          <div className="text-[10px] tracking-[0.34em] text-white/72">{product.brand}</div>
+          <div className="text-[10px] tracking-[0.34em] text-white/72">{localize(product.brand, product.brandAr)}</div>
           <h1
             className="mt-6 font-display text-[3.6rem] uppercase leading-[0.86] tracking-[-0.04em] text-[#d5c3a4] md:text-[5.6rem]"
             style={{ textShadow: '0 10px 30px rgba(0,0,0,0.45)' }}
           >
-            {t(product.name)}
+            {localize(product.name, product.nameAr)}
           </h1>
           {product.shortDescription ? (
-            <p className="mt-5 text-sm leading-7 text-white/78">{t(product.shortDescription)}</p>
+            <p className="mt-5 text-sm leading-7 text-white/78">{localize(product.shortDescription, product.shortDescriptionAr)}</p>
           ) : null}
           <div className="mt-6 flex items-center justify-center gap-3">
             <Link
@@ -200,6 +200,8 @@ function PromoPanel({ kicker, headline }: { kicker: string; headline: string }) 
 }
 
 function CollectionTriptych({ categories }: { categories: StoreCategory[] }) {
+  const { localize } = useLocale();
+
   return (
     <section className="grid gap-px bg-[var(--border)] md:grid-cols-3">
       {categories.map((category) => (
@@ -207,7 +209,7 @@ function CollectionTriptych({ categories }: { categories: StoreCategory[] }) {
           {category.image ? (
             <img
               src={category.image}
-              alt={category.name}
+              alt={localize(category.name, category.nameAr)}
               className="h-[440px] w-full object-cover transition duration-500 group-hover:scale-[1.03] md:h-[520px]"
             />
           ) : (
@@ -215,9 +217,9 @@ function CollectionTriptych({ categories }: { categories: StoreCategory[] }) {
           )}
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.18),rgba(0,0,0,0.22)_30%,rgba(0,0,0,0.7)_100%)]" />
           <div className="absolute inset-x-0 bottom-0 p-5 text-center">
-            <div className="text-[11px] tracking-[0.3em] text-white/60">{category.accent}</div>
+            <div className="text-[11px] tracking-[0.3em] text-white/60">{localize(category.accent, category.accentAr)}</div>
             <div className="mt-2 text-xl font-medium uppercase tracking-[0.18em] text-white md:text-2xl">
-              {category.name}
+              {localize(category.name, category.nameAr)}
             </div>
           </div>
         </Link>
@@ -227,7 +229,7 @@ function CollectionTriptych({ categories }: { categories: StoreCategory[] }) {
 }
 
 function FeaturedStory({ product }: { product: StoreProduct }) {
-  const { t, dir } = useLocale();
+  const { t, dir, localize } = useLocale();
 
   if (!product.images[1]?.url) {
     return null;
@@ -239,11 +241,11 @@ function FeaturedStory({ product }: { product: StoreProduct }) {
         <img src={product.images[1].url} alt={product.images[1].alt} className="h-full min-h-[360px] w-full object-cover md:min-h-[520px]" />
         <div className="flex items-end bg-[var(--card)] p-8 md:p-12">
           <div className="max-w-xl">
-            <div className="text-xs tracking-[0.3em] text-[var(--muted)]">{product.brand}</div>
-            <div className="mt-4 text-4xl font-semibold uppercase tracking-[0.18em] leading-none md:text-6xl">{t(product.name)}</div>
+            <div className="text-xs tracking-[0.3em] text-[var(--muted)]">{localize(product.brand, product.brandAr)}</div>
+            <div className="mt-4 text-4xl font-semibold uppercase tracking-[0.18em] leading-none md:text-6xl">{localize(product.name, product.nameAr)}</div>
             {product.description ? (
               <p className="mt-4 max-w-lg text-sm leading-7 text-[var(--text-secondary)]">
-                {t(product.description)}
+                {localize(product.description, product.descriptionAr)}
               </p>
             ) : null}
             <Link href={`/product/${product.slug}`} className="mt-6 inline-flex items-center gap-2 text-sm tracking-[0.2em]">

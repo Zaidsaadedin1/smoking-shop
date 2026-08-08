@@ -44,7 +44,7 @@ export function ShopPageView({
   initialCategory?: string;
   flashSale?: FlashSale | null;
 }) {
-  const { t } = useLocale();
+  const { t, localize } = useLocale();
   const [category, setCategory] = useState(initialCategory ?? 'all');
   const [sort, setSort] = useState<'newest' | 'price-asc' | 'price-desc' | 'featured'>('newest');
 
@@ -82,7 +82,7 @@ export function ShopPageView({
                   category === item.slug ? 'border-[var(--text)] bg-[var(--background)]' : 'border-[var(--border)]'
                 }`}
               >
-                <span>{t(item.name)}</span>
+                <span>{localize(item.name, item.nameAr)}</span>
                 <span className="text-[var(--muted)]">+</span>
               </button>
             ))}
@@ -138,7 +138,7 @@ export function ProductPageView({
     authorName: string;
   }>;
 }) {
-  const { t } = useLocale();
+  const { t, localize } = useLocale();
   const router = useRouter();
   const addItem = useCartStore((state) => state.addItem);
   const toggleFavorite = useCartStore((state) => state.toggleFavorite);
@@ -156,7 +156,7 @@ export function ProductPageView({
         },
       ];
   const [selectedColor, setSelectedColor] = useState(colors.find((color) => color.name !== 'Default')?.name ?? colors[0]?.name ?? '');
-  const [selectedSize, setSelectedSize] = useState(sizes[0] ?? '');
+  const [selectedSize, setSelectedSize] = useState(sizes[0]?.name ?? '');
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
@@ -215,7 +215,7 @@ export function ProductPageView({
     toggleFavorite(product.id);
     pushToast({
       title: nextFavorite ? t('SAVE TO YOUR WISHLIST') : t('REMOVED FROM WISHLIST'),
-      description: t(product.name),
+      description: localize(product.name, product.nameAr),
     });
   }
 
@@ -333,7 +333,7 @@ export function ProductPageView({
                 />
                 <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between p-4">
                   <div className="rounded-full border border-white/10 bg-black/45 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white backdrop-blur-md">
-                    {product.brand}
+                    {localize(product.brand, product.brandAr)}
                   </div>
                   <div className="rounded-full border border-white/10 bg-black/45 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white backdrop-blur-md">
                     {selectedImageIndex + 1} / {galleryImages.length}
@@ -344,7 +344,7 @@ export function ProductPageView({
           </div>
           <div className="lg:sticky lg:top-28 lg:h-fit">
             <div className="flex items-start justify-between gap-4">
-              <div className="text-xs tracking-[0.26em] text-[var(--muted)]">{product.brand}</div>
+              <div className="text-xs tracking-[0.26em] text-[var(--muted)]">{localize(product.brand, product.brandAr)}</div>
               <button
                 type="button"
                 onClick={handleFavoriteToggle}
@@ -356,7 +356,7 @@ export function ProductPageView({
                 <Heart className={`h-4 w-4 ${isFavorite ? 'fill-current' : ''}`} />
               </button>
             </div>
-            <h1 className="mt-3 font-display text-4xl uppercase md:text-6xl">{t(product.name)}</h1>
+            <h1 className="mt-3 font-display text-4xl uppercase md:text-6xl">{localize(product.name, product.nameAr)}</h1>
             <div className="mt-4 flex items-center gap-4">
               <div className="text-2xl">{formatCurrency(selectedVariant.price)}</div>
               {selectedVariant.compareAtPrice ? <div className="text-lg text-[var(--muted)] line-through">{formatCurrency(selectedVariant.compareAtPrice)}</div> : null}
@@ -365,7 +365,7 @@ export function ProductPageView({
             <div className="mt-4">
               <Rating rating={product.rating} reviewCount={product.reviewCount} />
             </div>
-            <p className="mt-5 text-sm leading-7 text-[var(--text-secondary)]">{t(product.shortDescription)}</p>
+            <p className="mt-5 text-sm leading-7 text-[var(--text-secondary)]">{localize(product.shortDescription, product.shortDescriptionAr)}</p>
 
             <div className="mt-8 rounded-[28px] border border-white/8 bg-white/3 p-5">
               <div className="flex flex-wrap items-center gap-2">
@@ -375,8 +375,8 @@ export function ProductPageView({
               </div>
               <div className="mt-4 grid gap-3 sm:grid-cols-3">
                 <VariantMetric label="SKU" value={selectedVariant.sku} />
-                <VariantMetric label="COLOR" value={selectedVariant.color} />
-                <VariantMetric label="SIZE" value={selectedVariant.size} />
+                <VariantMetric label="COLOR" value={localize(selectedVariant.color, selectedVariant.colorAr)} />
+                <VariantMetric label="SIZE" value={localize(selectedVariant.size, selectedVariant.sizeAr)} />
               </div>
             </div>
 
@@ -393,7 +393,7 @@ export function ProductPageView({
                     }`}
                   >
                     <span className="h-3 w-3 rounded-full border border-black/10" style={{ background: color.hex }} />
-                    {color.name}
+                    {localize(color.name, color.nameAr)}
                   </button>
                 ))}
               </div>
@@ -405,22 +405,22 @@ export function ProductPageView({
                 {sizes.map((sizeOption) => {
                   const available = product.variants.some(
                     (variant) =>
-                      variant.size === sizeOption &&
+                      variant.size === sizeOption.name &&
                       variantMatchesColor(variant, selectedColor) &&
                       (variant.stockQuantity > 0 || variant.allowBackorder)
                   );
 
                   return (
                     <button
-                      key={sizeOption}
+                      key={sizeOption.name}
                       type="button"
-                      onClick={() => setSelectedSize(sizeOption)}
+                      onClick={() => setSelectedSize(sizeOption.name)}
                       disabled={!available}
                       className={`rounded-full border px-4 py-2 text-sm ${
-                        selectedSize === sizeOption ? 'border-white bg-white text-black' : 'border-white/10'
+                        selectedSize === sizeOption.name ? 'border-white bg-white text-black' : 'border-white/10'
                       } disabled:cursor-not-allowed disabled:opacity-40`}
                     >
-                      {sizeOption}
+                      {localize(sizeOption.name, sizeOption.nameAr)}
                     </button>
                   );
                 })}
@@ -460,7 +460,7 @@ export function ProductPageView({
                   openCart();
                   pushToast({
                     title: t('Added to your bag'),
-                    description: `${t(product.name)} • ${selectedVariant.color} / ${selectedVariant.size}`,
+                    description: `${localize(product.name, product.nameAr)} • ${localize(selectedVariant.color, selectedVariant.colorAr)} / ${localize(selectedVariant.size, selectedVariant.sizeAr)}`,
                   });
                 }}
                 className="rounded-full bg-[var(--text)] px-6 py-4 text-sm tracking-[0.2em] text-black disabled:cursor-not-allowed disabled:opacity-40"
@@ -474,7 +474,7 @@ export function ProductPageView({
 
             <div className="mt-8 space-y-4 rounded-[28px] border border-white/8 bg-white/3 p-5">
               <Accordion title="PRODUCT DETAILS" defaultOpen>
-                {t(product.description)}
+                {localize(product.description, product.descriptionAr)}
               </Accordion>
               <Accordion title="SHIPPING">
                 {t('Delivery across Jordan. Orders in Amman usually arrive within 1-3 business days.')}
@@ -609,7 +609,7 @@ function VariantMetric({ label, value }: { label: string; value: string }) {
 }
 
 export function CartPageView({ products }: { products: StoreProduct[] }) {
-  const { t } = useLocale();
+  const { t, localize } = useLocale();
   const items = useCartStore((state) => state.items);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
@@ -637,10 +637,10 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
           <div className="space-y-4">
             {lines.map((line) => (
               <div key={line.variant.id} className="flex flex-col gap-4 rounded-[28px] border border-white/8 bg-white/3 p-4 md:flex-row">
-                <img src={line.product.images[0]?.url} alt={line.product.name} className="h-40 w-full rounded-[22px] object-cover md:w-32" />
+                <img src={line.product.images[0]?.url} alt={localize(line.product.name, line.product.nameAr)} className="h-40 w-full rounded-[22px] object-cover md:w-32" />
                 <div className="flex-1">
-                  <div className="text-lg">{t(line.product.name)}</div>
-                  <div className="mt-2 text-sm text-[var(--text-secondary)]">{line.variant.color} / {line.variant.size}</div>
+                  <div className="text-lg">{localize(line.product.name, line.product.nameAr)}</div>
+                  <div className="mt-2 text-sm text-[var(--text-secondary)]">{localize(line.variant.color, line.variant.colorAr)} / {localize(line.variant.size, line.variant.sizeAr)}</div>
                   <div className="mt-3 flex items-center justify-between">
                     <div>{formatCurrency(line.variant.price)}</div>
                     <div className="flex items-center gap-2 rounded-full border border-white/10 px-3 py-2">
@@ -795,7 +795,7 @@ export function CheckoutPageView({
   session: CheckoutSessionView;
   addresses: CheckoutAddressView[];
 }) {
-  const { t } = useLocale();
+  const { t, localize } = useLocale();
   const router = useRouter();
   const items = useCartStore((state) => state.items);
   const clearCart = useCartStore((state) => state.clearCart);
@@ -889,10 +889,10 @@ export function CheckoutPageView({
           items: lines.map((line) => ({
             productId: line.product.id,
             variantId: line.variant.id,
-            productName: line.product.name,
+            productName: localize(line.product.name, line.product.nameAr),
             sku: line.variant.sku,
-            sizeName: line.variant.size,
-            colorName: line.variant.color,
+            sizeName: localize(line.variant.size, line.variant.sizeAr),
+            colorName: localize(line.variant.color, line.variant.colorAr),
             imageUrl: line.product.images[0]?.url ?? null,
             unitPrice: line.variant.price,
             quantity: line.quantity,
@@ -1010,13 +1010,13 @@ export function CheckoutPageView({
               <div key={line.variant.id} className="flex items-center gap-3 rounded-[22px] border border-white/8 bg-black/10 p-3">
                 <img
                   src={line.product.images[0]?.url ?? '/products/product-placeholder.svg'}
-                  alt={line.product.name}
+                  alt={localize(line.product.name, line.product.nameAr)}
                   className="h-16 w-14 rounded-[14px] object-cover"
                 />
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm">{t(line.product.name)}</div>
+                  <div className="truncate text-sm">{localize(line.product.name, line.product.nameAr)}</div>
                   <div className="mt-1 text-xs text-[var(--text-secondary)]">
-                    {line.variant.color} / {line.variant.size} x {line.quantity}
+                    {localize(line.variant.color, line.variant.colorAr)} / {localize(line.variant.size, line.variant.sizeAr)} x {line.quantity}
                   </div>
                 </div>
                 <div className="text-sm">{formatCurrency(line.variant.price * line.quantity)}</div>

@@ -45,7 +45,7 @@ export function StorefrontShell({
   flashSale: FlashSale | null;
 }) {
   const pathname = usePathname();
-  const { t } = useLocale();
+  const { t, localize } = useLocale();
   useThemeMode();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -134,7 +134,7 @@ function Header({
   onMenu: () => void;
   onCart: () => void;
 }) {
-  const { t } = useLocale();
+  const { t, localize } = useLocale();
   const { isDark } = useThemeMode();
   return (
     <header
@@ -214,7 +214,7 @@ function MobileMenu({
   onClose: () => void;
   brandName: string;
 }) {
-  const { t } = useLocale();
+  const { t, localize } = useLocale();
   const { isDark } = useThemeMode();
   return (
     <AnimatePresence>
@@ -267,7 +267,7 @@ function MobileMenu({
 
 function MobileBottomNav() {
   const pathname = usePathname();
-  const { t } = useLocale();
+  const { t, localize } = useLocale();
 
   return (
     <div
@@ -372,7 +372,7 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
   const lines = useMemo(() => getCartProducts(items), [items]);
-  const { t } = useLocale();
+  const { t, localize } = useLocale();
   const { isDark } = useThemeMode();
   const subtotal = lines.reduce((sum, line) => sum + line.variant.price * line.quantity, 0);
 
@@ -409,12 +409,12 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
               {lines.length ? (
                 lines.map((line) => (
                   <div key={line.variant.id} className="flex gap-4 rounded-[24px] border border-white/8 bg-white/3 p-3">
-                    <img src={line.product.images[0]?.url} alt={line.product.name} className="h-28 w-24 rounded-[18px] object-cover" />
+                    <img src={line.product.images[0]?.url} alt={localize(line.product.name, line.product.nameAr)} className="h-28 w-24 rounded-[18px] object-cover" />
                     <div className="flex-1">
                       <div className="text-sm uppercase tracking-[0.2em] text-[var(--muted)]">{line.product.categorySlug}</div>
-                      <div className="mt-1 text-base">{t(line.product.name)}</div>
+                      <div className="mt-1 text-base">{localize(line.product.name, line.product.nameAr)}</div>
                       <div className="mt-2 text-sm text-[var(--text-secondary)]">
-                        {line.variant.color} / {line.variant.size}
+                        {localize(line.variant.color, line.variant.colorAr)} / {localize(line.variant.size, line.variant.sizeAr)}
                       </div>
                       <div className="mt-3 flex items-center justify-between">
                         <div className="text-sm">{formatCurrency(line.variant.price)}</div>

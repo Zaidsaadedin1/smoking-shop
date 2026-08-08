@@ -1,9 +1,13 @@
 export type StoreCategory = {
   id: string;
   slug: string;
+  slugAr?: string;
   name: string;
+  nameAr?: string;
   description: string;
+  descriptionAr?: string;
   accent: string;
+  accentAr?: string;
   image: string;
 };
 
@@ -18,8 +22,10 @@ export type ProductVariant = {
   id: string;
   sku: string;
   color: string;
+  colorAr?: string;
   colorHex: string;
   size: string;
+  sizeAr?: string;
   price: number;
   compareAtPrice?: number | null;
   stockQuantity: number;
@@ -29,11 +35,16 @@ export type ProductVariant = {
 export type StoreProduct = {
   id: string;
   slug: string;
+  slugAr?: string;
   name: string;
+  nameAr?: string;
   shortDescription: string;
+  shortDescriptionAr?: string;
   description: string;
+  descriptionAr?: string;
   categorySlug: string;
   brand: string;
+  brandAr?: string;
   tags: string[];
   images: ProductImage[];
   variants: ProductVariant[];

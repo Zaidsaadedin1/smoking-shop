@@ -8,6 +8,7 @@ type LocaleContextValue = {
   dir: 'ltr' | 'rtl';
   setLocale: (locale: Locale) => void;
   t: (text: string) => string;
+  localize: (english?: string | null, arabic?: string | null) => string;
 };
 
 const LocaleContext = createContext<LocaleContextValue | null>(null);
@@ -34,6 +35,13 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
       dir: locale === 'ar' ? 'rtl' : 'ltr',
       setLocale: setLocaleState,
       t: (text) => translateText(text, locale),
+      localize: (english, arabic) => {
+        if (locale === 'ar') {
+          return arabic?.trim() || english?.trim() || '';
+        }
+
+        return english?.trim() || arabic?.trim() || '';
+      },
     }),
     [locale]
   );

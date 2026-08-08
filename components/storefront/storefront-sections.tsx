@@ -48,16 +48,16 @@ export function SectionHeading({
 }
 
 export function CategoryMoodCard({ category }: { category: StoreCategory }) {
-  const { t, dir } = useLocale();
+  const { t, dir, localize } = useLocale();
 
   return (
     <Link href={`/shop?category=${category.slug}`} className="group relative min-h-[360px] overflow-hidden border border-[var(--border)] bg-[var(--card)]">
-      <img src={category.image} alt={category.name} className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" />
+      <img src={category.image} alt={localize(category.name, category.nameAr)} className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
       <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between p-5">
         <div>
-          <div className="text-[11px] tracking-[0.3em] text-[var(--text-secondary)]">{category.accent}</div>
-          <div className="mt-2 text-2xl font-semibold uppercase tracking-[0.18em]">{t(category.name)}</div>
+          <div className="text-[11px] tracking-[0.3em] text-[var(--text-secondary)]">{localize(category.accent, category.accentAr)}</div>
+          <div className="mt-2 text-2xl font-semibold uppercase tracking-[0.18em]">{localize(category.name, category.nameAr)}</div>
         </div>
         <ArrowRight className={`h-5 w-5 transition duration-500 ${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} />
       </div>
@@ -69,7 +69,7 @@ export function ProductCard({ product }: { product: StoreProduct }) {
   const toggleFavorite = useCartStore((state) => state.toggleFavorite);
   const favorites = useCartStore((state) => state.favorites);
   const { pushToast } = useUiStore();
-  const { t } = useLocale();
+  const { t, localize } = useLocale();
   const router = useRouter();
   const favorite = favorites.includes(product.id);
   const price = getPrimaryPrice(product);
@@ -81,11 +81,11 @@ export function ProductCard({ product }: { product: StoreProduct }) {
     <div className="group border-r border-b border-[var(--border)]">
       <Link href={`/product/${product.slug}`} className="block">
         <div className="relative overflow-hidden bg-[#f7f7f7] dark:bg-white">
-          <img src={product.images[0]?.url} alt={product.name} className="aspect-[4/5] w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
+          <img src={product.images[0]?.url} alt={localize(product.name, product.nameAr)} className="aspect-[4/5] w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
           {product.images[1] ? (
             <img
               src={product.images[1].url}
-              alt={product.name}
+              alt={localize(product.name, product.nameAr)}
               className="absolute inset-0 aspect-[4/5] w-full object-cover opacity-0 transition duration-500 group-hover:opacity-100"
             />
           ) : null}
@@ -142,7 +142,7 @@ export function ProductCard({ product }: { product: StoreProduct }) {
                 toggleFavorite(product.id);
                 pushToast({
                   title: favorite ? t('REMOVED FROM WISHLIST') : t('SAVE TO YOUR WISHLIST'),
-                  description: t(product.name),
+                  description: localize(product.name, product.nameAr),
                 });
               }}
               className="text-[#9a9a9a] transition hover:text-black"
@@ -154,9 +154,9 @@ export function ProductCard({ product }: { product: StoreProduct }) {
         </div>
       </Link>
       <div className="border-t border-[var(--border)] bg-[var(--background)] px-3 py-2.5">
-        <div className="text-[9px] uppercase tracking-[0.22em] text-[var(--muted)]">{product.brand}</div>
+        <div className="text-[9px] uppercase tracking-[0.22em] text-[var(--muted)]">{localize(product.brand, product.brandAr)}</div>
         <Link href={`/product/${product.slug}`} className="mt-1 block text-[11px] uppercase tracking-[0.08em] text-[var(--text)]">
-          {t(product.name)}
+          {localize(product.name, product.nameAr)}
         </Link>
         <div className="mt-1 flex items-center justify-between gap-3 text-[11px]">
           <div className="flex items-center gap-2">
@@ -168,7 +168,7 @@ export function ProductCard({ product }: { product: StoreProduct }) {
         <div className="mt-2 flex items-center justify-between gap-3">
           <div className="flex items-center gap-1.5">
             {getProductColors(product).map((color) => (
-              <span key={color.name} className="h-2.5 w-2.5 rounded-full border border-black/10" style={{ background: color.hex }} />
+              <span key={color.name} title={localize(color.name, color.nameAr)} className="h-2.5 w-2.5 rounded-full border border-black/10" style={{ background: color.hex }} />
             ))}
           </div>
           <div className="text-[9px] uppercase tracking-[0.22em] text-[var(--muted)]">

@@ -35,13 +35,30 @@ export function getProductInventory(product: StoreProduct) {
 export function getProductColors(product: StoreProduct) {
   return Array.from(
     new Map(
-      product.variants.map((variant) => [variant.color, { name: variant.color, hex: variant.colorHex }])
+      product.variants.map((variant) => [
+        variant.color,
+        {
+          name: variant.color,
+          nameAr: variant.colorAr,
+          hex: variant.colorHex,
+        },
+      ])
     ).values()
   );
 }
 
 export function getProductSizes(product: StoreProduct) {
-  return Array.from(new Set(product.variants.map((variant) => variant.size)));
+  return Array.from(
+    new Map(
+      product.variants.map((variant) => [
+        variant.size,
+        {
+          name: variant.size,
+          nameAr: variant.sizeAr,
+        },
+      ])
+    ).values()
+  );
 }
 
 export function filterProducts(products: StoreProduct[], filters: CatalogFilters) {
@@ -49,7 +66,21 @@ export function filterProducts(products: StoreProduct[], filters: CatalogFilters
     const price = getPrimaryPrice(product);
     const compareAtPrice = getCompareAtPrice(product);
     const inventory = getProductInventory(product);
-    const text = `${product.name} ${product.shortDescription} ${product.description} ${product.tags.join(' ')}`.toLowerCase();
+    const text = [
+      product.name,
+      product.nameAr,
+      product.shortDescription,
+      product.shortDescriptionAr,
+      product.description,
+      product.descriptionAr,
+      product.brand,
+      product.brandAr,
+      ...product.tags,
+      ...product.variants.flatMap((variant) => [variant.color, variant.colorAr, variant.size, variant.sizeAr]),
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
 
     if (filters.search && !text.includes(filters.search.toLowerCase())) {
       return false;
@@ -59,15 +90,33 @@ export function filterProducts(products: StoreProduct[], filters: CatalogFilters
       return false;
     }
 
-    if (filters.color && !product.variants.some((variant) => variant.color.toLowerCase() === filters.color?.toLowerCase())) {
+    if (
+      filters.color &&
+      !product.variants.some(
+        (variant) =>
+          variant.color.toLowerCase() === filters.color?.toLowerCase() ||
+          variant.colorAr?.toLowerCase() === filters.color?.toLowerCase()
+      )
+    ) {
       return false;
     }
 
-    if (filters.size && !product.variants.some((variant) => variant.size.toLowerCase() === filters.size?.toLowerCase())) {
+    if (
+      filters.size &&
+      !product.variants.some(
+        (variant) =>
+          variant.size.toLowerCase() === filters.size?.toLowerCase() ||
+          variant.sizeAr?.toLowerCase() === filters.size?.toLowerCase()
+      )
+    ) {
       return false;
     }
 
-    if (filters.brand && product.brand.toLowerCase() !== filters.brand.toLowerCase()) {
+    if (
+      filters.brand &&
+      product.brand.toLowerCase() !== filters.brand.toLowerCase() &&
+      product.brandAr?.toLowerCase() !== filters.brand.toLowerCase()
+    ) {
       return false;
     }
 

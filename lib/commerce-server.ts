@@ -6,17 +6,24 @@ import { fetchSupabaseRest } from '@/lib/supabase/rest';
 type SupabaseCategory = {
   id: string;
   slug: string;
+  slug_ar?: string | null;
   name: string;
+  name_ar?: string | null;
   description: string | null;
+  description_ar?: string | null;
   image_url?: string | null;
 };
 
 type SupabaseProduct = {
   id: string;
   slug: string;
+  slug_ar?: string | null;
   name: string;
+  name_ar?: string | null;
   short_description: string | null;
+  short_description_ar?: string | null;
   description: string | null;
+  description_ar?: string | null;
   base_price: string | number | null;
   compare_at_price?: string | number | null;
   category_id: string | null;
@@ -28,6 +35,7 @@ type SupabaseProduct = {
 type SupabaseBrand = {
   id: string;
   name: string;
+  name_ar?: string | null;
 };
 
 type SupabaseVariant = {
@@ -45,11 +53,13 @@ type SupabaseVariant = {
 type SupabaseSize = {
   id: string;
   name: string;
+  name_ar?: string | null;
 };
 
 type SupabaseColor = {
   id: string;
   name: string;
+  name_ar?: string | null;
   hex_code?: string | null;
 };
 
@@ -90,7 +100,7 @@ export async function getStoreSettings(): Promise<StoreSettings> {
 export async function getCategories(): Promise<StoreCategory[]> {
   const categories = await fetchSupabaseRest<SupabaseCategory[]>('categories', {
     query: {
-      select: 'id,slug,name,description,image_url',
+      select: 'id,slug,slug_ar,name,name_ar,description,description_ar,image_url',
       is_active: 'eq.true',
       order: 'sort_order.asc',
     },
@@ -104,9 +114,13 @@ export async function getCategories(): Promise<StoreCategory[]> {
   return categories.map((category) => ({
     id: category.id,
     slug: category.slug,
+    slugAr: category.slug_ar ?? '',
     name: category.name,
+    nameAr: category.name_ar ?? '',
     description: category.description ?? '',
+    descriptionAr: category.description_ar ?? '',
     accent: category.name,
+    accentAr: category.name_ar ?? '',
     image: category.image_url ?? '',
   }));
 }
@@ -115,7 +129,8 @@ export async function getProducts(): Promise<StoreProduct[]> {
   const [products, categories, brands, sizes, colors, variants, images] = await Promise.all([
     fetchSupabaseRest<SupabaseProduct[]>('products', {
       query: {
-        select: 'id,slug,name,short_description,description,base_price,compare_at_price,category_id,brand_id,status,is_featured',
+        select:
+          'id,slug,slug_ar,name,name_ar,short_description,short_description_ar,description,description_ar,base_price,compare_at_price,category_id,brand_id,status,is_featured',
         status: 'eq.active',
         order: 'created_at.desc',
       },
@@ -123,27 +138,27 @@ export async function getProducts(): Promise<StoreProduct[]> {
     }),
     fetchSupabaseRest<SupabaseCategory[]>('categories', {
       query: {
-        select: 'id,slug,name,description,image_url',
+        select: 'id,slug,slug_ar,name,name_ar,description,description_ar,image_url',
       },
       revalidate: 60,
     }),
     fetchSupabaseRest<SupabaseBrand[]>('brands', {
       query: {
-        select: 'id,name',
+        select: 'id,name,name_ar',
         is_active: 'eq.true',
       },
       revalidate: 60,
     }),
     fetchSupabaseRest<SupabaseSize[]>('sizes', {
       query: {
-        select: 'id,name',
+        select: 'id,name,name_ar',
         is_active: 'eq.true',
       },
       revalidate: 60,
     }),
     fetchSupabaseRest<SupabaseColor[]>('colors', {
       query: {
-        select: 'id,name,hex_code',
+        select: 'id,name,name_ar,hex_code',
         is_active: 'eq.true',
       },
       revalidate: 60,
@@ -191,11 +206,16 @@ export async function getProducts(): Promise<StoreProduct[]> {
       acc.push({
         id: product.id,
         slug: product.slug,
+        slugAr: product.slug_ar ?? '',
         name: product.name,
+        nameAr: product.name_ar ?? '',
         shortDescription: product.short_description ?? '',
+        shortDescriptionAr: product.short_description_ar ?? '',
         description: product.description ?? product.short_description ?? '',
+        descriptionAr: product.description_ar ?? product.short_description_ar ?? '',
         categorySlug: category?.slug ?? 'uncategorized',
         brand: (product.brand_id ? brandsById.get(product.brand_id)?.name : null) ?? 'Tourmaline Coven',
+        brandAr: (product.brand_id ? brandsById.get(product.brand_id)?.name_ar : null) ?? '',
         tags: [category?.name ?? 'fashion', 'dark feminine', 'gothic'],
         images: productImages,
         variants: productVariants.length
@@ -203,8 +223,10 @@ export async function getProducts(): Promise<StoreProduct[]> {
               id: variant.id,
               sku: variant.sku ?? `${product.slug}-${variant.id}`,
               color: (variant.color_id ? colorsById.get(variant.color_id)?.name : null) ?? 'Default',
+              colorAr: (variant.color_id ? colorsById.get(variant.color_id)?.name_ar : null) ?? '',
               colorHex: (variant.color_id ? colorsById.get(variant.color_id)?.hex_code : null) ?? '#111111',
               size: (variant.size_id ? sizesById.get(variant.size_id)?.name : null) ?? 'ONE SIZE',
+              sizeAr: (variant.size_id ? sizesById.get(variant.size_id)?.name_ar : null) ?? '',
               price: Number(variant.price ?? 0),
               compareAtPrice: variant.compare_at_price ? Number(variant.compare_at_price) : null,
               stockQuantity: Number(variant.stock_quantity ?? 0),
@@ -215,8 +237,10 @@ export async function getProducts(): Promise<StoreProduct[]> {
                 id: `${product.id}-base`,
                 sku: `${product.slug}-base`,
                 color: 'Default',
+                colorAr: 'افتراضي',
                 colorHex: '#111111',
                 size: 'ONE SIZE',
+                sizeAr: 'مقاس واحد',
                 price: Number(product.base_price ?? 0),
                 compareAtPrice: product.compare_at_price ? Number(product.compare_at_price) : null,
                 stockQuantity: 1,
