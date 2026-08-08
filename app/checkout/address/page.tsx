@@ -1,8 +1,5 @@
-import { CheckoutAddressScreen } from '@/components/customer/screens/CheckoutScreens';
-import { getAddresses } from '@/lib/storefront-server';
+import { redirect } from 'next/navigation';
 
-export default async function CheckoutAddressPage() {
-  const addresses = await getAddresses();
-
-  return <CheckoutAddressScreen addresses={addresses} />;
+export default function CheckoutAddressPage() {
+  redirect('/checkout');
 }

@@ -48,7 +48,7 @@ export function SectionHeading({
 }
 
 export function CategoryMoodCard({ category }: { category: StoreCategory }) {
-  const { t } = useLocale();
+  const { t, dir } = useLocale();
 
   return (
     <Link href={`/shop?category=${category.slug}`} className="group relative min-h-[360px] overflow-hidden border border-[var(--border)] bg-[var(--card)]">
@@ -59,7 +59,7 @@ export function CategoryMoodCard({ category }: { category: StoreCategory }) {
           <div className="text-[11px] tracking-[0.3em] text-[var(--text-secondary)]">{category.accent}</div>
           <div className="mt-2 text-2xl font-semibold uppercase tracking-[0.18em]">{t(category.name)}</div>
         </div>
-        <ArrowRight className="h-5 w-5 transition duration-500 group-hover:translate-x-1" />
+        <ArrowRight className={`h-5 w-5 transition duration-500 ${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} />
       </div>
     </Link>
   );
@@ -191,7 +191,7 @@ export function ProductGrid({ products }: { products: StoreProduct[] }) {
 }
 
 export function EditorialBanner() {
-  const { t } = useLocale();
+  const { t, dir } = useLocale();
 
   return (
     <section className="relative overflow-hidden border border-[var(--border)]">
@@ -209,7 +209,7 @@ export function EditorialBanner() {
             {t('Dark femininity isn\'t about disappearing into the room. It\'s choosing exactly how you want to be seen.')}
           </p>
           <Link href="/shop" className="mt-6 inline-flex items-center gap-2 text-sm tracking-[0.2em] text-white">
-            {t('DISCOVER THE COLLECTION')} <ArrowRight className="h-4 w-4" />
+            {t('DISCOVER THE COLLECTION')} <ArrowRight className={`h-4 w-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
           </Link>
         </div>
       </div>

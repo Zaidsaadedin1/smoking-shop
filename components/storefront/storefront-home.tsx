@@ -149,7 +149,11 @@ function Hero({ product }: { product: StoreProduct | null }) {
             <p className="mt-5 text-sm leading-7 text-white/78">{t(product.shortDescription)}</p>
           ) : null}
           <div className="mt-6 flex items-center justify-center gap-3">
-            <Link href={`/product/${product.slug}`} className="border border-white/30 bg-black/35 px-5 py-2 text-[11px] tracking-[0.28em] text-white backdrop-blur-sm">
+            <Link
+              href={`/product/${product.slug}`}
+              className="border border-white/30 bg-black/35 px-5 py-2 text-[11px] tracking-[0.28em] backdrop-blur-sm"
+              style={{ color: '#f7efe3' }}
+            >
               {t('SHOP THIS PIECE')}
             </Link>
           </div>
@@ -160,6 +164,8 @@ function Hero({ product }: { product: StoreProduct | null }) {
 }
 
 function PromoRibbon({ flashSale }: { flashSale: FlashSale }) {
+  const { dir } = useLocale();
+
   return (
     <section className="border-y border-[var(--border)] bg-[radial-gradient(circle_at_center,rgba(91,23,36,0.55),rgba(22,10,14,0.95)_58%,#0a0a0a_100%)] px-4 py-5 md:px-8">
       <div className="mx-auto grid max-w-[1440px] items-center gap-4 md:grid-cols-[1fr_auto_1fr]">
@@ -175,7 +181,7 @@ function PromoRibbon({ flashSale }: { flashSale: FlashSale }) {
             <div className="text-[11px] tracking-[0.24em] text-white/68">{flashSale.ctaText || 'SHOP SALE'}</div>
             <div className="mt-2 inline-flex items-center gap-2 font-display text-4xl text-[#d5c3c3] md:text-5xl">
               {flashSale.discountLabel}
-              <ArrowRight className="h-5 w-5" />
+              <ArrowRight className={`h-5 w-5 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
             </div>
           </Link>
         </div>
@@ -221,7 +227,7 @@ function CollectionTriptych({ categories }: { categories: StoreCategory[] }) {
 }
 
 function FeaturedStory({ product }: { product: StoreProduct }) {
-  const { t } = useLocale();
+  const { t, dir } = useLocale();
 
   if (!product.images[1]?.url) {
     return null;
@@ -241,7 +247,7 @@ function FeaturedStory({ product }: { product: StoreProduct }) {
               </p>
             ) : null}
             <Link href={`/product/${product.slug}`} className="mt-6 inline-flex items-center gap-2 text-sm tracking-[0.2em]">
-              {t('DISCOVER THIS PRODUCT')} <ArrowRight className="h-4 w-4" />
+              {t('DISCOVER THIS PRODUCT')} <ArrowRight className={`h-4 w-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
             </Link>
           </div>
         </div>

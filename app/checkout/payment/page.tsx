@@ -1,5 +1,5 @@
-import { CheckoutPaymentScreen } from '@/components/customer/screens/CheckoutScreens';
+import { redirect } from 'next/navigation';
 
 export default function CheckoutPaymentPage() {
-  return <CheckoutPaymentScreen />;
+  redirect('/checkout');
 }
