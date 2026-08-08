@@ -1,1 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500"><g fill="none" fill-rule="evenodd"><rect width="500" height="500" fill="#339AF0" rx="250"/><g fill="#FFF"><path fill-rule="nonzero" d="M202.055 135.706c-6.26 8.373-4.494 20.208 3.944 26.42 29.122 21.45 45.824 54.253 45.824 90.005 0 35.752-16.702 68.559-45.824 90.005-8.436 6.215-10.206 18.043-3.944 26.42 6.26 8.378 18.173 10.13 26.611 3.916a153.835 153.835 0 0024.509-22.54h53.93c10.506 0 19.023-8.455 19.023-18.885 0-10.43-8.517-18.886-19.023-18.886h-29.79c8.196-18.594 12.553-38.923 12.553-60.03s-4.357-41.436-12.552-60.03h29.79c10.505 0 19.022-8.455 19.022-18.885 0-10.43-8.517-18.886-19.023-18.886h-53.93a153.835 153.835 0 00-24.509-22.54c-8.438-6.215-20.351-4.46-26.61 3.916z"/><path d="M171.992 246.492c0-15.572 12.624-28.195 28.196-28.195 15.572 0 28.195 12.623 28.195 28.195 0 15.572-12.623 28.196-28.195 28.196-15.572 0-28.196-12.624-28.196-28.196z"/></g></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Tourmaline Coven">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#181214" />
+      <stop offset="55%" stop-color="#090909" />
+      <stop offset="100%" stop-color="#2b1820" />
+    </linearGradient>
+    <linearGradient id="stroke" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f4e6d1" />
+      <stop offset="100%" stop-color="#c5a27a" />
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="url(#bg)" />
+  <path d="M64 18 74 40l24 4-18 17 4 25-20-12-20 12 4-25-18-17 24-4z" fill="none" stroke="url(#stroke)" stroke-width="4.5" stroke-linejoin="round" />
+  <path d="M39 99V36h50" fill="none" stroke="#f4e6d1" stroke-width="8" stroke-linecap="square" />
+  <path d="M62 51h20" fill="none" stroke="#f4e6d1" stroke-width="8" stroke-linecap="square" />
+</svg>
