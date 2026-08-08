@@ -1,16 +1,20 @@
+'use client';
+
 import { Badge, Button, Group, Loader, Select, SimpleGrid, Stack, Text } from '@mantine/core';
 import Link from 'next/link';
+import { useLocale } from '@/components/storefront/locale-provider';
 import { Category, Product } from '@/lib/storefront-types';
 import { SearchInput, SectionEyebrow, SurfaceCard } from '../shared/SharedComponents';
 
 export function ProductsHeader({ title, total }: { title: string; total: number }) {
+  const { t } = useLocale();
   return (
     <Group justify="space-between">
       <div>
         <Text fw={700} size="2rem">
-          {title}
+          {t(title)}
         </Text>
-        <Text c="rgba(255,255,255,0.58)">{total} pieces</Text>
+        <Text c="rgba(255,255,255,0.58)">{total} {t('pieces')}</Text>
       </div>
       <SearchInput />
     </Group>
@@ -18,11 +22,12 @@ export function ProductsHeader({ title, total }: { title: string; total: number 
 }
 
 export function CategoryTabs({ categories }: { categories: Category[] }) {
+  const { t } = useLocale();
   return (
     <Group gap="sm" wrap="wrap">
       {categories.map((category) => (
         <Badge key={category.id} variant="outline" color="grape" radius="xl">
-          {category.name}
+          {t(category.name)}
         </Badge>
       ))}
     </Group>
@@ -30,29 +35,32 @@ export function CategoryTabs({ categories }: { categories: Category[] }) {
 }
 
 export function FilterButton() {
+  const { t } = useLocale();
   return (
     <Button radius="xl" variant="light" color="grape">
-      FilterButton
+      {t('FilterButton')}
     </Button>
   );
 }
 
 export function SortButton() {
+  const { t } = useLocale();
   return (
     <Button radius="xl" variant="outline" color="gray">
-      SortButton
+      {t('SortButton')}
     </Button>
   );
 }
 
 export function ProductCard({ product }: { product: Product }) {
+  const { t } = useLocale();
   return (
     <SurfaceCard>
       <Stack gap="lg">
         <Group justify="space-between" align="flex-start">
           <Stack gap={4}>
             <Text fw={700} size="lg">
-              {product.name}
+              {t(product.name)}
             </Text>
             <Text size="sm" c="rgba(255,255,255,0.58)">
               {product.color} • {product.sizeRange}
@@ -63,7 +71,7 @@ export function ProductCard({ product }: { product: Product }) {
           </Badge>
         </Group>
         <Text c="rgba(255,255,255,0.68)" style={{ lineHeight: 1.75 }}>
-          {product.description}
+          {t(product.description)}
         </Text>
         <Group justify="space-between">
           <Text fw={700} size="1.4rem" c="#dfcfff">
@@ -72,6 +80,7 @@ export function ProductCard({ product }: { product: Product }) {
           <Link href={`/product/${product.id}`} style={{ textDecoration: 'none' }}>
             <Button component="span" radius="xl" variant="gradient" gradient={{ from: '#2f1a46', to: '#8a58ff', deg: 135 }}>
               View
+              {t('View')}
             </Button>
           </Link>
         </Group>
@@ -81,21 +90,23 @@ export function ProductCard({ product }: { product: Product }) {
 }
 
 export function ProductSkeleton() {
+  const { t } = useLocale();
   return (
     <SurfaceCard>
       <Stack gap="md">
         <Loader color="grape" size="sm" />
-        <Text c="rgba(255,255,255,0.58)">Loading product...</Text>
+        <Text c="rgba(255,255,255,0.58)">{t('Loading product...')}</Text>
       </Stack>
     </SurfaceCard>
   );
 }
 
 export function EmptyProducts() {
+  const { t } = useLocale();
   return (
     <SurfaceCard>
-      <Text fw={600}>EmptyProducts</Text>
-      <Text c="rgba(255,255,255,0.58)">No products matched the current filters.</Text>
+      <Text fw={600}>{t('EmptyProducts')}</Text>
+      <Text c="rgba(255,255,255,0.58)">{t('No products matched the current filters.')}</Text>
     </SurfaceCard>
   );
 }
@@ -115,44 +126,52 @@ export function ProductGrid({ products }: { products: Product[] }) {
 }
 
 export function PaginationControls() {
+  const { t } = useLocale();
   return (
     <Group justify="center">
       <Button radius="xl" variant="default" color="dark">
-        Pagination / InfiniteScroll
+        {t('Pagination / InfiniteScroll')}
       </Button>
     </Group>
   );
 }
 
 export function PriceRangeFilter() {
-  return <Select label="PriceRangeFilter" placeholder="Any" data={['Any', '$0-$50', '$50-$100', '$100+']} radius="md" />;
+  const { t } = useLocale();
+  return <Select label={t('PriceRangeFilter')} placeholder={t('Any')} data={[t('Any'), '$0-$50', '$50-$100', '$100+']} radius="md" />;
 }
 
 export function SizeFilter() {
-  return <Select label="SizeFilter" placeholder="Any" data={['Any', 'XS', 'S', 'M', 'L', 'XL']} radius="md" />;
+  const { t } = useLocale();
+  return <Select label={t('SizeFilter')} placeholder={t('Any')} data={[t('Any'), 'XS', 'S', 'M', 'L', 'XL']} radius="md" />;
 }
 
 export function ColorFilter() {
-  return <Select label="ColorFilter" placeholder="Any" data={['Any', 'Black', 'Silver', 'Plum']} radius="md" />;
+  const { t } = useLocale();
+  return <Select label={t('ColorFilter')} placeholder={t('Any')} data={[t('Any'), 'Black', 'Silver', 'Plum']} radius="md" />;
 }
 
 export function CategoryFilter({ categories }: { categories: Category[] }) {
-  return <Select label="CategoryFilter" placeholder="All categories" data={categories.map((category) => category.name)} radius="md" />;
+  const { t } = useLocale();
+  return <Select label={t('CategoryFilter')} placeholder={t('All categories')} data={categories.map((category) => t(category.name))} radius="md" />;
 }
 
 export function BrandFilter() {
-  return <Select label="BrandFilter" placeholder="All brands" data={['Tourmaline Coven', 'In-house', 'Guest label']} radius="md" />;
+  const { t } = useLocale();
+  return <Select label={t('BrandFilter')} placeholder={t('All brands')} data={[t('Tourmaline Coven'), 'In-house', 'Guest label']} radius="md" />;
 }
 
 export function AvailabilityFilter() {
-  return <Select label="AvailabilityFilter" placeholder="All" data={['All', 'In stock', 'Limited']} radius="md" />;
+  const { t } = useLocale();
+  return <Select label={t('AvailabilityFilter')} placeholder={t('All')} data={[t('All'), t('In stock'), t('Limited')]} radius="md" />;
 }
 
 export function FilterSheet({ categories }: { categories: Category[] }) {
+  const { t } = useLocale();
   return (
     <SurfaceCard>
       <Stack gap="md">
-        <SectionEyebrow>FilterSheet</SectionEyebrow>
+        <SectionEyebrow>{t('FilterSheet')}</SectionEyebrow>
         <PriceRangeFilter />
         <SizeFilter />
         <ColorFilter />

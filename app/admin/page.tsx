@@ -1,8 +1,10 @@
 import { AdminDashboardScreen } from '@/components/customer/screens/AdminScreens';
-import { getStorefrontSnapshot } from '@/lib/storefront-server';
+import { requireAdminSession } from '@/lib/admin/auth';
+import { getAdminDashboardData } from '@/lib/admin/data';
 
 export default async function AdminPage() {
-  const { categories, products, orders } = await getStorefrontSnapshot();
+  const session = await requireAdminSession();
+  const { categories, products, orders, customers, brands, enumLabels } = await getAdminDashboardData();
 
-  return <AdminDashboardScreen categories={categories} products={products} orders={orders} />;
+  return <AdminDashboardScreen session={session} categories={categories} products={products} orders={orders} customers={customers} brands={brands} enumLabels={enumLabels} />;
 }

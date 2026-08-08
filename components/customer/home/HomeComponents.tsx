@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge, Button, Grid, Group, Modal, SimpleGrid, Stack, Text } from '@mantine/core';
+import { Badge, Box, Button, Grid, Group, Modal, SimpleGrid, Stack, Text } from '@mantine/core';
 import Link from 'next/link';
 import { useState } from 'react';
 import { promoBanners } from '@/lib/customer-app-data';
@@ -10,12 +10,12 @@ import { SearchBar, SectionEyebrow, SurfaceCard } from '../shared/SharedComponen
 
 export function HomeHeader() {
   return (
-    <Group justify="space-between" align="flex-start" mb="lg">
+    <Group justify="space-between" align="center" mb="lg">
       <Stack gap={4}>
-        <Text fw={700} size="2rem">
-          Tourmaline Coven
+        <Text fw={700} size="1.9rem">
+          New season edit
         </Text>
-        <Text c="rgba(255,255,255,0.65)">Shop dark luxury apparel, jewelry, and ritual objects.</Text>
+        <Text c="rgba(255,255,255,0.65)">Curated gothic pieces, jewelry, and limited ritual accents.</Text>
       </Stack>
       <Group gap="sm">
         <StatusBadge />
@@ -37,22 +37,80 @@ function StatusBadge() {
 
 export function HeroBanner({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <SurfaceCard>
-      <Stack gap="xl">
+    <Box
+      style={{
+        position: 'relative',
+        overflow: 'hidden',
+        borderRadius: 28,
+        minHeight: 640,
+        background:
+          'linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.58)), radial-gradient(circle at 20% 20%, rgba(104, 33, 61, 0.3), transparent 24%), linear-gradient(135deg, #111111 0%, #1a1118 42%, #0b0b0d 100%)',
+        border: '1px solid rgba(255,255,255,0.08)',
+      }}
+    >
+      <Box
+        style={{
+          position: 'absolute',
+          inset: 0,
+          opacity: 0.05,
+          backgroundImage:
+            'radial-gradient(rgba(255,255,255,0.9) 0.6px, transparent 0.6px)',
+          backgroundSize: '12px 12px',
+        }}
+      />
+      <Box
+        style={{
+          position: 'absolute',
+          right: '-10%',
+          top: '-4%',
+          width: '58%',
+          height: '108%',
+          borderRadius: '44% 44% 0 0',
+          background:
+            'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.16), transparent 18%), linear-gradient(180deg, rgba(66, 24, 41, 0.58), rgba(7,7,8,0.4))',
+          filter: 'blur(2px)',
+          transform: 'scale(1)',
+        }}
+      />
+      <Stack
+        gap="xl"
+        justify="flex-end"
+        style={{
+          position: 'relative',
+          minHeight: 640,
+          padding: '40px',
+        }}
+      >
         <Group gap="sm" wrap="wrap">
-          <Badge size="lg" radius="xl" variant="gradient" gradient={{ from: '#2f1a46', to: '#8a58ff', deg: 135 }}>
+          <Badge size="lg" radius="xl" variant="gradient" gradient={{ from: '#2e1621', to: '#6b2b49', deg: 135 }}>
             Limited drop
           </Badge>
-          <Badge size="lg" radius="xl" variant="dot" color="grape">
-            Ready to ship
+          <Badge size="lg" radius="xl" variant="dot" color="pink">
+            Not for everyone
           </Badge>
         </Group>
         <Stack gap="sm">
-          <Text fw={700} style={{ fontSize: 'clamp(2.4rem, 5vw, 4.4rem)', lineHeight: 0.95 }}>
-            Gothic fashion, ritual objects, and statement jewelry in one storefront.
+          <Text
+            fw={700}
+            style={{
+              fontSize: 'clamp(3rem, 7vw, 5.6rem)',
+              lineHeight: 0.88,
+              maxWidth: 560,
+            }}
+          >
+            NOT FOR
+            <br />
+            EVERYONE.
           </Text>
-          <Text size="lg" c="rgba(255,255,255,0.72)" style={{ lineHeight: 1.8, maxWidth: 620 }}>
-            {subtitle}
+          <Text
+            size="lg"
+            c="rgba(255,255,255,0.74)"
+            style={{
+              lineHeight: 1.8,
+              maxWidth: 420,
+            }}
+          >
+            Dark feminine pieces for girls who don&apos;t dress to disappear.
           </Text>
         </Stack>
         <Group gap="md">
@@ -62,8 +120,14 @@ export function HeroBanner({ title, subtitle }: { title: string; subtitle: strin
         </Group>
         <Group gap="md" wrap="wrap">
           <Link href="/products" style={{ textDecoration: 'none' }}>
-            <Button component="span" size="lg" radius="xl" variant="gradient" gradient={{ from: '#2f1a46', to: '#8a58ff', deg: 135 }}>
-              Shop all products
+            <Button
+              component="span"
+              size="lg"
+              radius="xl"
+              variant="gradient"
+              gradient={{ from: '#3d1629', to: '#6b2b49', deg: 135 }}
+            >
+              Shop the drop
             </Button>
           </Link>
           <Link href="/categories" style={{ textDecoration: 'none' }}>
@@ -72,7 +136,7 @@ export function HeroBanner({ title, subtitle }: { title: string; subtitle: strin
             </Button>
           </Link>
         </Group>
-        <Grid gutter="md">
+        <Grid gap="md">
           <Grid.Col span={4}>
             <HeroMetric value="48+" label="curated pieces" />
           </Grid.Col>
@@ -84,7 +148,7 @@ export function HeroBanner({ title, subtitle }: { title: string; subtitle: strin
           </Grid.Col>
         </Grid>
       </Stack>
-    </SurfaceCard>
+    </Box>
   );
 }
 
@@ -127,13 +191,13 @@ export function FlashSaleBanner({ title, subtitle, discount }: { title: string; 
   return (
     <SurfaceCard>
       <Stack gap="lg">
-        <SectionEyebrow>Flash sale</SectionEyebrow>
+        <SectionEyebrow>Midnight sale</SectionEyebrow>
         <Group justify="space-between" align="flex-start">
           <div>
             <Text fw={700} size="1.6rem">
-              {title}
+              MIDNIGHT SALE
             </Text>
-            <Text c="rgba(255,255,255,0.68)">{subtitle}</Text>
+            <Text c="rgba(255,255,255,0.68)">20% off selected pieces before the clock runs out.</Text>
           </div>
           <Badge color="grape" variant="light" radius="xl">
             {discount}
@@ -141,7 +205,7 @@ export function FlashSaleBanner({ title, subtitle, discount }: { title: string; 
         </Group>
         <FlashSaleCountdown />
         <Link href="/products" style={{ textDecoration: 'none' }}>
-          <Button component="span" fullWidth radius="xl" variant="gradient" gradient={{ from: '#2f1a46', to: '#8a58ff', deg: 135 }}>
+          <Button component="span" fullWidth radius="xl" variant="gradient" gradient={{ from: '#3d1629', to: '#6b2b49', deg: 135 }}>
             Shop sale now
           </Button>
         </Link>
@@ -239,6 +303,9 @@ export function PromoBanner() {
       {promoBanners.map((banner) => (
         <SurfaceCard key={banner}>
           <Text fw={600}>{banner}</Text>
+          <Text size="sm" c="rgba(255,255,255,0.58)" mt={6}>
+            Editorial, limited, and styled to feel like a premium drop instead of a discount rack.
+          </Text>
         </SurfaceCard>
       ))}
     </SimpleGrid>
@@ -267,7 +334,7 @@ export function FlashSaleModal({ title, subtitle, discount }: { title: string; s
     >
       <Stack gap="md">
         <Text fw={700} size="1.4rem">
-          {title}
+          Midnight sale
         </Text>
         <Text c="rgba(255,255,255,0.72)">{subtitle}</Text>
         <Badge color="grape" variant="light" radius="xl" w="fit-content">
@@ -293,16 +360,16 @@ export function CommerceBenefits() {
     <SimpleGrid cols={{ base: 1, md: 3 }} spacing="lg">
       {[
         {
-          title: 'Fast browse path',
-          text: 'Move from home to categories, products, and checkout with fewer jumps.',
+          title: 'Luxury presentation',
+          text: 'Spacing, pacing, and merchandising are handled like a fashion storefront, not a template.',
         },
         {
-          title: 'Clear merchandising',
-          text: 'Featured, new arrivals, best sellers, and promo banners are separated cleanly.',
+          title: 'Stronger discovery',
+          text: 'Customers can move from hero to category, then into featured and new-drop products naturally.',
         },
         {
-          title: 'Store confidence',
-          text: 'Shipping, security, and offer visibility are surfaced early like a real shop.',
+          title: 'Premium trust cues',
+          text: 'Delivery, checkout, and limited-drop urgency are visible without making the page feel noisy.',
         },
       ].map((item) => (
         <SurfaceCard key={item.title}>

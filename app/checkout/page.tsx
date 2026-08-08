@@ -1,8 +1,5 @@
-import { CheckoutIndexScreen } from '@/components/customer/screens/CheckoutScreens';
-import { getAddresses } from '@/lib/storefront-server';
+import { CheckoutPageView } from '@/components/storefront/storefront-pages';
 
-export default async function CheckoutPage() {
-  const addresses = await getAddresses();
-
-  return <CheckoutIndexScreen addresses={addresses} />;
+export default function CheckoutPage() {
+  return <CheckoutPageView />;
 }

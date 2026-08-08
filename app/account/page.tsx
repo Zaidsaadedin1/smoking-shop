@@ -1,5 +1,5 @@
-import { ProfileScreen } from '@/components/customer/screens/OrderAndProfileScreens';
+import { AccountPageView } from '@/components/storefront/storefront-pages';
 
 export default function AccountPage() {
-  return <ProfileScreen />;
+  return <AccountPageView />;
 }

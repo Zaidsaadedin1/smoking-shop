@@ -114,17 +114,18 @@ export async function requestSupabaseRest<T>(
   }
 }
 
-export async function fetchSupabaseRest<T>(path: string, options: RestOptions = {}): Promise<T | null> {
+export async function fetchSupabaseRest<T>(path: string, options: RestRequestOptions = {}): Promise<T | null> {
   const result = await requestSupabaseRest<T>(path, options);
   return result.data;
 }
 
-export async function insertSupabaseRow<T>(path: string, body: unknown, single = false) {
+export async function insertSupabaseRow<T>(path: string, body: unknown, single = false, extra?: { headers?: Record<string, string> }) {
   return requestSupabaseRest<T>(path, {
     method: 'POST',
     body,
     prefer: ['return=representation'],
     single,
+    headers: extra?.headers,
   });
 }
 
@@ -132,7 +133,8 @@ export async function updateSupabaseRow<T>(
   path: string,
   body: unknown,
   query: RestOptions['query'],
-  single = false
+  single = false,
+  extra?: { headers?: Record<string, string> }
 ) {
   return requestSupabaseRest<T>(path, {
     method: 'PATCH',
@@ -140,19 +142,22 @@ export async function updateSupabaseRow<T>(
     query,
     prefer: ['return=representation'],
     single,
+    headers: extra?.headers,
   });
 }
 
 export async function deleteSupabaseRow<T>(
   path: string,
   query: RestOptions['query'],
-  single = false
+  single = false,
+  extra?: { headers?: Record<string, string> }
 ) {
   return requestSupabaseRest<T>(path, {
     method: 'DELETE',
     query,
     prefer: ['return=representation'],
     single,
+    headers: extra?.headers,
   });
 }
 
@@ -164,10 +169,11 @@ export async function upsertSupabaseRow<T>(path: string, body: unknown, resoluti
   });
 }
 
-export async function fetchSupabaseSingle<T>(path: string, query: RestOptions['query']) {
+export async function fetchSupabaseSingle<T>(path: string, query: RestOptions['query'], extra?: { headers?: Record<string, string> }) {
   return requestSupabaseRest<T>(path, {
     query,
     single: true,
+    headers: extra?.headers,
   });
 }
 

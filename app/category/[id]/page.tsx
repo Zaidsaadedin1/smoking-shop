@@ -1,5 +1,6 @@
-import { CategoryDetailScreen } from '@/components/customer/screens/CatalogScreens';
-import { getStorefrontSnapshot } from '@/lib/storefront-server';
+import { notFound } from 'next/navigation';
+import { ShopPageView } from '@/components/storefront/storefront-pages';
+import { getStorefrontData } from '@/lib/commerce-server';
 
 export default async function CategoryPage({
   params,
@@ -7,7 +8,21 @@ export default async function CategoryPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { categories, products } = await getStorefrontSnapshot();
+  const { categories, products, flashSale } = await getStorefrontData({ category: id });
+  const category = categories.find((item) => item.slug === id);
 
-  return <CategoryDetailScreen id={id} categories={categories} products={products} />;
+  if (!category) {
+    notFound();
+  }
+
+  return (
+    <ShopPageView
+      products={products}
+      categories={categories}
+      title={category.name}
+      description={category.description}
+      initialCategory={category.slug}
+      flashSale={flashSale}
+    />
+  );
 }

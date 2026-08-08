@@ -1,7 +1,10 @@
+'use client';
+
 import { Badge, Button, Group, Paper, Progress, Stack, Switch, Text, TextInput } from '@mantine/core';
 import Link from 'next/link';
 import { ReactNode } from 'react';
 import { mainTabs } from '@/lib/customer-app-data';
+import { useLocale } from '@/components/storefront/locale-provider';
 
 export function SurfaceCard({ children }: { children: ReactNode }) {
   return (
@@ -9,9 +12,10 @@ export function SurfaceCard({ children }: { children: ReactNode }) {
       radius="xl"
       p="xl"
       style={{
-        background: 'rgba(255,255,255,0.04)',
-        border: '1px solid rgba(255,255,255,0.08)',
+        background: 'var(--surface)',
+        border: '1px solid var(--surface-border)',
         boxShadow: '0 20px 60px rgba(0,0,0,0.18)',
+        color: 'var(--text)',
       }}
     >
       {children}
@@ -21,14 +25,15 @@ export function SurfaceCard({ children }: { children: ReactNode }) {
 
 export function SectionEyebrow({ children }: { children: ReactNode }) {
   return (
-    <Text size="xs" tt="uppercase" c="rgba(255,255,255,0.5)" style={{ letterSpacing: 2 }}>
+    <Text size="xs" tt="uppercase" c="var(--muted)" style={{ letterSpacing: 2 }}>
       {children}
     </Text>
   );
 }
 
 export function SearchBar({ placeholder = 'Search products, collections, brands' }: { placeholder?: string }) {
-  return <TextInput placeholder={placeholder} radius="xl" />;
+  const { t } = useLocale();
+  return <TextInput placeholder={t(placeholder)} radius="xl" />;
 }
 
 export function SearchInput() {
@@ -36,6 +41,8 @@ export function SearchInput() {
 }
 
 export function BottomTabBar({ activeTab }: { activeTab?: string }) {
+  const { t } = useLocale();
+
   return (
     <Paper
       radius="xl"
@@ -44,8 +51,8 @@ export function BottomTabBar({ activeTab }: { activeTab?: string }) {
       style={{
         position: 'sticky',
         bottom: 16,
-        background: 'rgba(8,5,14,0.88)',
-        border: '1px solid rgba(255,255,255,0.08)',
+        background: 'var(--surface-strong)',
+        border: '1px solid var(--surface-border)',
         backdropFilter: 'blur(18px)',
       }}
     >
@@ -61,7 +68,7 @@ export function BottomTabBar({ activeTab }: { activeTab?: string }) {
               gradient={{ from: '#2f1a46', to: '#8a58ff', deg: 135 }}
               color="gray"
             >
-              {tab.label}
+              {t(tab.label)}
             </Button>
           </Link>
         ))}
@@ -71,33 +78,39 @@ export function BottomTabBar({ activeTab }: { activeTab?: string }) {
 }
 
 export function AuthHeader({ title, subtitle }: { title: string; subtitle: string }) {
+  const { t } = useLocale();
+
   return (
     <Stack gap={4} mb="lg">
       <Text fw={700} size="2rem">
-        {title}
+        {t(title)}
       </Text>
-      <Text c="rgba(255,255,255,0.68)">{subtitle}</Text>
+      <Text c="var(--text-secondary)">{t(subtitle)}</Text>
     </Stack>
   );
 }
 
 export function EmailInput() {
-  return <TextInput label="Email" placeholder="name@example.com" radius="md" />;
+  const { t } = useLocale();
+  return <TextInput label={t('Email')} placeholder={t('name@example.com')} radius="md" />;
 }
 
 export function PhoneInput() {
-  return <TextInput label="Phone" placeholder="+962..." radius="md" />;
+  const { t } = useLocale();
+  return <TextInput label={t('Phone')} placeholder={t('+962...')} radius="md" />;
 }
 
 export function PasswordField() {
-  return <TextInput label="Password" placeholder="Enter your password" radius="md" type="password" />;
+  const { t } = useLocale();
+  return <TextInput label={t('Password')} placeholder={t('Enter your password')} radius="md" type="password" />;
 }
 
 export function PasswordStrength({ value = 72 }: { value?: number }) {
+  const { t } = useLocale();
   return (
     <Stack gap={6}>
-      <Text size="sm" c="rgba(255,255,255,0.58)">
-        Password strength
+      <Text size="sm" c="var(--text-secondary)">
+        {t('Password strength')}
       </Text>
       <Progress value={value} color="grape" radius="xl" />
     </Stack>
@@ -105,26 +118,29 @@ export function PasswordStrength({ value = 72 }: { value?: number }) {
 }
 
 export function SocialLoginButton({ label, asSpan = false }: { label: string; asSpan?: boolean }) {
+  const { t } = useLocale();
   return (
     <Button component={asSpan ? 'span' : 'button'} radius="xl" variant="default" color="dark">
-      {label}
+      {t(label)}
     </Button>
   );
 }
 
 export function AuthSubmitButton({ label }: { label: string }) {
+  const { t } = useLocale();
   return (
     <Button radius="xl" variant="gradient" gradient={{ from: '#2f1a46', to: '#8a58ff', deg: 135 }}>
-      {label}
+      {t(label)}
     </Button>
   );
 }
 
 export function SettingToggle({ label, checked = true }: { label: string; checked?: boolean }) {
+  const { t } = useLocale();
   return (
     <SurfaceCard>
       <Group justify="space-between">
-        <Text>{label}</Text>
+        <Text>{t(label)}</Text>
         <Switch defaultChecked={checked} />
       </Group>
     </SurfaceCard>
@@ -132,9 +148,10 @@ export function SettingToggle({ label, checked = true }: { label: string; checke
 }
 
 export function StatusPill({ label }: { label: string }) {
+  const { t } = useLocale();
   return (
     <Badge color="grape" variant="light" radius="xl">
-      {label}
+      {t(label)}
     </Badge>
   );
 }

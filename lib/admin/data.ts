@@ -1,0 +1,288 @@
+import {
+  listAdminLookups,
+  listBrands,
+  listCategories,
+  listColors,
+  listOrders,
+  listProducts,
+  listProfiles,
+  listSizes,
+} from '@/lib/api/store-api';
+import { AdminEnumLabels, readAdminEnumLabels } from '@/lib/admin/enum-labels';
+import { getAdminAccessToken } from '@/lib/admin/auth';
+
+export type AdminCategoryRecord = {
+  id: string;
+  name: string;
+  name_ar: string;
+  slug: string;
+  slug_ar: string;
+  description: string;
+  description_ar: string;
+  image_url: string;
+  sort_order: number;
+  is_active: boolean;
+};
+
+export type AdminBrandRecord = {
+  id: string;
+  name: string;
+  name_ar: string;
+  slug: string;
+  slug_ar: string;
+  description: string;
+  description_ar: string;
+  logo_url: string;
+  is_active: boolean;
+};
+
+export type AdminSizeRecord = {
+  id: string;
+  code: string;
+  name: string;
+  name_ar: string;
+  sort_order: number;
+  is_active: boolean;
+};
+
+export type AdminColorRecord = {
+  id: string;
+  code: string;
+  name: string;
+  name_ar: string;
+  hex_code: string;
+  sort_order: number;
+  is_active: boolean;
+};
+
+export type AdminProductRecord = {
+  id: string;
+  name: string;
+  name_ar: string;
+  slug: string;
+  slug_ar: string;
+  short_description: string;
+  short_description_ar: string;
+  description: string;
+  description_ar: string;
+  base_price: number;
+  compare_at_price: number | null;
+  currency: string;
+  status: string;
+  is_featured: boolean;
+  category_id: string;
+  brand_id: string;
+  primary_image_url: string;
+  sub_image_urls: string[];
+  created_at: string;
+};
+
+export type AdminOrderRecord = {
+  id: string;
+  order_number: string;
+  status: string;
+  payment_status: string;
+  payment_method: string;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string;
+  subtotal: number;
+  discount_amount: number;
+  shipping_amount: number;
+  tax_amount: number;
+  total_amount: number;
+  currency: string;
+  tracking_number: string;
+  shipping_carrier: string;
+  notes: string;
+  created_at: string;
+};
+
+export type AdminCustomerRecord = {
+  id: string;
+  full_name: string;
+  phone: string;
+  avatar_url: string;
+  role: string;
+  is_blocked: boolean;
+  created_at: string;
+};
+
+function toNumber(value: string | number | null | undefined) {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+
+  return Number(value);
+}
+
+async function getAdminSupabaseAuth() {
+  const accessToken = await getAdminAccessToken();
+
+  if (!accessToken) {
+    return undefined;
+  }
+
+  return {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  };
+}
+
+export async function getAdminProducts(): Promise<AdminProductRecord[]> {
+  const auth = await getAdminSupabaseAuth();
+  const rows = await listProducts({}, auth);
+  return (rows ?? []).map((row) => ({
+    id: row.id,
+    name: row.name,
+    name_ar: row.name_ar ?? '',
+    slug: row.slug,
+    slug_ar: row.slug_ar ?? '',
+    short_description: row.short_description ?? '',
+    short_description_ar: row.short_description_ar ?? '',
+    description: row.description ?? '',
+    description_ar: row.description_ar ?? '',
+    base_price: Number(row.base_price),
+    compare_at_price: toNumber(row.compare_at_price),
+    currency: row.currency,
+    status: row.status,
+    is_featured: Boolean(row.is_featured),
+    category_id: row.category_id ?? '',
+    brand_id: row.brand_id ?? '',
+    primary_image_url: row.images?.[0]?.image_url ?? '',
+    sub_image_urls: row.images?.slice(1).map((image) => image.image_url) ?? [],
+    created_at: row.created_at,
+  }));
+}
+
+export async function getAdminOrders(): Promise<AdminOrderRecord[]> {
+  const auth = await getAdminSupabaseAuth();
+  const rows = await listOrders(undefined, auth);
+  return (rows ?? []).map((row) => ({
+    id: row.id,
+    order_number: row.order_number,
+    status: row.status,
+    payment_status: row.payment_status,
+    payment_method: row.payment_method,
+    customer_name: row.customer_name ?? '',
+    customer_email: row.customer_email ?? '',
+    customer_phone: row.customer_phone ?? '',
+    subtotal: Number(row.subtotal),
+    discount_amount: Number(row.discount_amount),
+    shipping_amount: Number(row.shipping_amount),
+    tax_amount: Number(row.tax_amount),
+    total_amount: Number(row.total_amount),
+    currency: row.currency,
+    tracking_number: row.tracking_number ?? '',
+    shipping_carrier: row.shipping_carrier ?? '',
+    notes: row.notes ?? '',
+    created_at: row.created_at,
+  }));
+}
+
+export async function getAdminCustomers(): Promise<AdminCustomerRecord[]> {
+  const auth = await getAdminSupabaseAuth();
+  const rows = await listProfiles(auth);
+  return (rows ?? []).map((row) => ({
+    id: row.id,
+    full_name: row.full_name ?? '',
+    phone: row.phone ?? '',
+    avatar_url: row.avatar_url ?? '',
+    role: row.role,
+    is_blocked: row.is_blocked,
+    created_at: row.created_at,
+  }));
+}
+
+export async function getAdminCategories(): Promise<AdminCategoryRecord[]> {
+  const auth = await getAdminSupabaseAuth();
+  const rows = await listCategories(auth);
+  return (rows ?? []).map((row) => ({
+    id: row.id,
+    name: row.name,
+    name_ar: row.name_ar ?? '',
+    slug: row.slug,
+    slug_ar: row.slug_ar ?? '',
+    description: row.description ?? '',
+    description_ar: row.description_ar ?? '',
+    image_url: row.image_url ?? '',
+    sort_order: row.sort_order ?? 0,
+    is_active: row.is_active ?? true,
+  }));
+}
+
+export async function getAdminBrands(): Promise<AdminBrandRecord[]> {
+  const auth = await getAdminSupabaseAuth();
+  const rows = await listBrands(auth);
+  return (rows ?? []).map((row) => ({
+    id: row.id,
+    name: row.name,
+    name_ar: row.name_ar ?? '',
+    slug: row.slug,
+    slug_ar: row.slug_ar ?? '',
+    description: row.description ?? '',
+    description_ar: row.description_ar ?? '',
+    logo_url: row.logo_url ?? '',
+    is_active: row.is_active ?? true,
+  }));
+}
+
+export async function getAdminSizes(): Promise<AdminSizeRecord[]> {
+  const auth = await getAdminSupabaseAuth();
+  const rows = await listSizes(auth);
+  return (rows ?? []).map((row) => ({
+    id: row.id,
+    code: row.code,
+    name: row.name,
+    name_ar: row.name_ar ?? '',
+    sort_order: row.sort_order,
+    is_active: row.is_active,
+  }));
+}
+
+export async function getAdminColors(): Promise<AdminColorRecord[]> {
+  const auth = await getAdminSupabaseAuth();
+  const rows = await listColors(auth);
+  return (rows ?? []).map((row) => ({
+    id: row.id,
+    code: row.code,
+    name: row.name,
+    name_ar: row.name_ar ?? '',
+    hex_code: row.hex_code ?? '',
+    sort_order: row.sort_order,
+    is_active: row.is_active,
+  }));
+}
+
+export async function getAdminDashboardData() {
+  const auth = await getAdminSupabaseAuth();
+
+  const [products, orders, customers, categories, brands, sizes, colors, lookups, enumLabels] = await Promise.all([
+    getAdminProducts(),
+    getAdminOrders(),
+    getAdminCustomers(),
+    getAdminCategories(),
+    getAdminBrands(),
+    getAdminSizes(),
+    getAdminColors(),
+    listAdminLookups(auth),
+    readAdminEnumLabels(),
+  ]);
+
+  return {
+    products,
+    orders,
+    customers,
+    categories,
+    brands,
+    sizes,
+    colors,
+    lookups,
+    enumLabels,
+  };
+}
+
+export async function getAdminEnumLabels(): Promise<AdminEnumLabels> {
+  return readAdminEnumLabels();
+}

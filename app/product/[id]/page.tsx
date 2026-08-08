@@ -1,5 +1,6 @@
-import { ProductDetailScreen } from '@/components/customer/screens/CatalogScreens';
-import { getProducts } from '@/lib/storefront-server';
+import { notFound } from 'next/navigation';
+import { ProductPageView } from '@/components/storefront/storefront-pages';
+import { getProductBySlug, getProducts } from '@/lib/commerce-server';
 
 export default async function ProductPage({
   params,
@@ -8,6 +9,11 @@ export default async function ProductPage({
 }) {
   const { id } = await params;
   const products = await getProducts();
+  const product = await getProductBySlug(id);
 
-  return <ProductDetailScreen id={id} products={products} />;
+  if (!product) {
+    notFound();
+  }
+
+  return <ProductPageView product={product} relatedProducts={products.filter((item) => item.id !== product.id).slice(0, 4)} />;
 }

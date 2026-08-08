@@ -1,0 +1,131 @@
+@import 'tailwindcss';
+
+[data-theme='dark'] {
+  --background: #080808;
+  --background-secondary: #101010;
+  --card: #111111;
+  --elevated: #161616;
+  --border: rgba(255, 255, 255, 0.08);
+  --text: #f4f4f4;
+  --text-secondary: #a3a3a3;
+  --muted: #737373;
+  --accent: #f4f4f4;
+  --accent-hover: #ffffff;
+  --accent-deep: #1e1e1e;
+  --blush: #d4d4d4;
+  --shell-background:
+    linear-gradient(180deg, #050505 0%, #090909 45%, #0d0d0d 100%);
+  --shell-background-legacy:
+    radial-gradient(circle at top, rgba(87, 31, 52, 0.26), transparent 26%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.06), transparent 18%),
+    linear-gradient(180deg, #090909 0%, #120d12 44%, #060607 100%);
+  --shell-overlay:
+    radial-gradient(circle at 12% 18%, rgba(155, 100, 255, 0.12), transparent 20%),
+    radial-gradient(circle at 88% 10%, rgba(255,255,255,0.05), transparent 13%),
+    radial-gradient(circle at 50% 100%, rgba(64, 31, 102, 0.26), transparent 28%);
+  --admin-background:
+    radial-gradient(circle at top, rgba(123, 63, 228, 0.22), transparent 28%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.08), transparent 18%),
+    linear-gradient(180deg, #09060d 0%, #110917 46%, #050308 100%);
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-strong: rgba(255, 255, 255, 0.07);
+  --surface-border: rgba(255, 255, 255, 0.08);
+  --font-inter: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-cormorant: 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Garamond, Georgia, serif;
+}
+
+[data-theme='light'] {
+  --background: #f6f4f1;
+  --background-secondary: #efebe7;
+  --card: #fffdfb;
+  --elevated: #ffffff;
+  --border: rgba(18, 18, 18, 0.12);
+  --text: #171717;
+  --text-secondary: #555555;
+  --muted: #7a7a7a;
+  --accent: #171717;
+  --accent-hover: #000000;
+  --accent-deep: #ece9e5;
+  --blush: #4a4a4a;
+  --shell-background:
+    linear-gradient(180deg, #fbfaf8 0%, #f4f1ed 48%, #ece7e2 100%);
+  --shell-background-legacy:
+    radial-gradient(circle at top, rgba(126, 34, 64, 0.11), transparent 26%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.55), transparent 18%),
+    linear-gradient(180deg, #fbf7f5 0%, #f2e9e6 44%, #efe4e1 100%);
+  --shell-overlay:
+    radial-gradient(circle at 12% 18%, rgba(126, 34, 64, 0.08), transparent 20%),
+    radial-gradient(circle at 88% 10%, rgba(255,255,255,0.42), transparent 13%),
+    radial-gradient(circle at 50% 100%, rgba(214, 164, 179, 0.26), transparent 28%);
+  --admin-background:
+    radial-gradient(circle at top, rgba(126, 34, 64, 0.14), transparent 28%),
+    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.4), transparent 18%),
+    linear-gradient(180deg, #faf7f5 0%, #f0e7e3 46%, #ebddda 100%);
+  --surface: rgba(255, 255, 255, 0.62);
+  --surface-strong: rgba(255, 255, 255, 0.82);
+  --surface-border: rgba(49, 10, 24, 0.12);
+  --font-inter: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-cormorant: 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Garamond, Georgia, serif;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--shell-background);
+  color: var(--text);
+  font-family: var(--font-inter), sans-serif;
+  text-rendering: optimizeLegibility;
+  transition:
+    background 180ms ease,
+    color 180ms ease;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+.font-display {
+  font-family: var(--font-cormorant), serif;
+}
+
+.noise-overlay {
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.08) 0, transparent 22%),
+    radial-gradient(circle at 80% 10%, rgba(255, 255, 255, 0.05) 0, transparent 18%),
+    radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.04) 0, transparent 20%);
+  opacity: 0.15;
+  mix-blend-mode: soft-light;
+}
+
+.scrollbar-hidden {
+  scrollbar-width: none;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}

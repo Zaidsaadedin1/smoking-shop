@@ -68,12 +68,12 @@ export function CategoryDetailScreen({
       <Stack gap="lg">
         <ProductsHeader title="Products / Category Page" total={items.length} />
         <CategoryTabs categories={categories} />
-        <Grid gutter="lg">
+        <Grid gap="lg">
           <Grid.Col span={{ base: 12, md: 4 }}>
             <FilterSheet categories={categories} />
           </Grid.Col>
           <Grid.Col span={{ base: 12, md: 8 }}>
-            <Grid gutter="md" mb="md">
+            <Grid gap="md" mb="md">
               <Grid.Col span={6}><FilterButton /></Grid.Col>
               <Grid.Col span={6}><SortButton /></Grid.Col>
             </Grid>
@@ -91,12 +91,12 @@ export function ProductsScreen({ products = fallbackProducts }: { products?: Pro
     <CustomerShell title="Products" subtitle="The product listing page carries the filter, sort, grid, and pagination surface." badge="Products">
       <Stack gap="lg">
         <ProductsHeader title="Products" total={products.length} />
-        <Grid gutter="lg">
+        <Grid gap="lg">
           <Grid.Col span={{ base: 12, md: 4 }}>
             <FilterSheet categories={fallbackCategories} />
           </Grid.Col>
           <Grid.Col span={{ base: 12, md: 8 }}>
-            <Grid gutter="md" mb="md">
+            <Grid gap="md" mb="md">
               <Grid.Col span={6}><FilterButton /></Grid.Col>
               <Grid.Col span={6}><SortButton /></Grid.Col>
             </Grid>

@@ -1,26 +1,31 @@
+'use client';
+
 import { ActionIcon, Badge, Button, Group, Paper, SimpleGrid, Stack, Text } from '@mantine/core';
 import Link from 'next/link';
+import { useLocale } from '@/components/storefront/locale-provider';
 import { Product } from '@/lib/storefront-types';
 import { ProductCard } from '../catalog/CatalogComponents';
 import { SectionEyebrow, SurfaceCard } from '../shared/SharedComponents';
 
 export function ProductImageSlider() {
+  const { t } = useLocale();
   return (
     <Paper radius="xl" p="md" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-      <Text c="rgba(255,255,255,0.58)">ProductImageSlider</Text>
+      <Text c="rgba(255,255,255,0.58)">{t('ProductImageSlider')}</Text>
     </Paper>
   );
 }
 
 export function ProductImageGallery() {
+  const { t } = useLocale();
   return (
     <Stack gap="md">
-      <SectionEyebrow>ProductImageGallery</SectionEyebrow>
+      <SectionEyebrow>{t('ProductImageGallery')}</SectionEyebrow>
       <ProductImageSlider />
       <SimpleGrid cols={3} spacing="sm">
         {['Primary', 'Detail', 'Texture'].map((label) => (
           <Paper key={label} radius="xl" p="lg" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <Text size="sm">{label}</Text>
+            <Text size="sm">{t(label)}</Text>
           </Paper>
         ))}
       </SimpleGrid>
@@ -29,7 +34,8 @@ export function ProductImageGallery() {
 }
 
 export function ProductTitle({ product }: { product: Product }) {
-  return <Text fw={700} size="2rem">{product.name}</Text>;
+  const { t } = useLocale();
+  return <Text fw={700} size="2rem">{t(product.name)}</Text>;
 }
 
 export function ProductPrice({ product }: { product: Product }) {
@@ -37,27 +43,33 @@ export function ProductPrice({ product }: { product: Product }) {
 }
 
 export function DiscountBadge() {
-  return <Badge color="grape" variant="light" radius="xl">DiscountBadge</Badge>;
+  const { t } = useLocale();
+  return <Badge color="grape" variant="light" radius="xl">{t('DiscountBadge')}</Badge>;
 }
 
 export function FavoriteButton() {
-  return <Button radius="xl" variant="default" color="dark">FavoriteButton</Button>;
+  const { t } = useLocale();
+  return <Button radius="xl" variant="default" color="dark">{t('FavoriteButton')}</Button>;
 }
 
 export function ProductDescription({ product }: { product: Product }) {
-  return <Text c="rgba(255,255,255,0.72)" style={{ lineHeight: 1.8 }}>{product.description}</Text>;
+  const { t } = useLocale();
+  return <Text c="rgba(255,255,255,0.72)" style={{ lineHeight: 1.8 }}>{t(product.description)}</Text>;
 }
 
 export function ColorSelector({ product }: { product: Product }) {
-  return <Badge color="gray" variant="outline" radius="xl">ColorSelector: {product.color}</Badge>;
+  const { t } = useLocale();
+  return <Badge color="gray" variant="outline" radius="xl">{t('ColorSelector:')} {product.color}</Badge>;
 }
 
 export function SizeSelector({ product }: { product: Product }) {
-  return <Badge color="gray" variant="outline" radius="xl">SizeSelector: {product.sizeRange}</Badge>;
+  const { t } = useLocale();
+  return <Badge color="gray" variant="outline" radius="xl">{t('SizeSelector:')} {product.sizeRange}</Badge>;
 }
 
 export function VariantSelector() {
-  return <Badge color="gray" variant="outline" radius="xl">VariantSelector</Badge>;
+  const { t } = useLocale();
+  return <Badge color="gray" variant="outline" radius="xl">{t('VariantSelector')}</Badge>;
 }
 
 export function QuantitySelector() {
@@ -71,17 +83,20 @@ export function QuantitySelector() {
 }
 
 export function StockStatus({ product }: { product: Product }) {
-  return <Badge color={product.status === 'limited' ? 'red' : 'grape'} variant="light" radius="xl">StockStatus: {product.status}</Badge>;
+  const { t } = useLocale();
+  return <Badge color={product.status === 'limited' ? 'red' : 'grape'} variant="light" radius="xl">{t('StockStatus')}: {t(product.status)}</Badge>;
 }
 
 export function AddToCartButton() {
-  return <Button radius="xl" variant="gradient" gradient={{ from: '#2f1a46', to: '#8a58ff', deg: 135 }}>AddToCartButton</Button>;
+  const { t } = useLocale();
+  return <Button radius="xl" variant="gradient" gradient={{ from: '#2f1a46', to: '#8a58ff', deg: 135 }}>{t('AddToCartButton')}</Button>;
 }
 
 export function BuyNowButton() {
+  const { t } = useLocale();
   return (
     <Link href="/checkout" style={{ textDecoration: 'none' }}>
-      <Button component="span" radius="xl" variant="default" color="dark">BuyNowButton</Button>
+      <Button component="span" radius="xl" variant="default" color="dark">{t('BuyNowButton')}</Button>
     </Link>
   );
 }
@@ -96,9 +111,10 @@ export function ReviewCard({ author, rating, body }: { author: string; rating: n
 }
 
 export function ProductReviews() {
+  const { t } = useLocale();
   return (
     <Stack gap="sm">
-      <SectionEyebrow>ProductReviews</SectionEyebrow>
+      <SectionEyebrow>{t('ProductReviews')}</SectionEyebrow>
       <ReviewCard author="Lina" rating={5} body="Structured beautifully and feels premium in hand." />
       <ReviewCard author="Maya" rating={4} body="Heavy, dark, and exactly on-brand." />
     </Stack>
@@ -106,9 +122,10 @@ export function ProductReviews() {
 }
 
 export function RelatedProducts({ products }: { products: Product[] }) {
+  const { t } = useLocale();
   return (
     <Stack gap="md">
-      <SectionEyebrow>RelatedProducts</SectionEyebrow>
+      <SectionEyebrow>{t('RelatedProducts')}</SectionEyebrow>
       <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
         {products.map((product) => (
           <ProductCard key={product.id} product={product} />
@@ -129,9 +146,10 @@ export function ProductDetailsScreen({
   product: Product;
   relatedProducts: Product[];
 }) {
+  const { t } = useLocale();
   return (
     <Stack gap="lg">
-      <SectionEyebrow>ProductDetailsScreen</SectionEyebrow>
+      <SectionEyebrow>{t('Product details')}</SectionEyebrow>
       <ProductImageGallery />
       <SurfaceCard>
         <Stack gap="md">

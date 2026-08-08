@@ -1,0 +1,100 @@
+'use client';
+
+import { persist } from 'zustand/middleware';
+import { create } from 'zustand';
+import { fallbackProducts } from '@/lib/commerce-data';
+import { StoreProduct } from '@/lib/commerce-types';
+import { getPrimaryVariant } from '@/lib/commerce-utils';
+
+export type CartLine = {
+  productId: string;
+  variantId: string;
+  quantity: number;
+};
+
+export type CartProductLine = {
+  product: StoreProduct;
+  variant: StoreProduct['variants'][number];
+  quantity: number;
+};
+
+type CartState = {
+  items: CartLine[];
+  favorites: string[];
+  addItem: (product: StoreProduct, variantId: string, quantity?: number) => void;
+  removeItem: (variantId: string) => void;
+  updateQuantity: (variantId: string, quantity: number) => void;
+  toggleFavorite: (productId: string) => void;
+  clearCart: () => void;
+};
+
+export const useCartStore = create<CartState>()(
+  persist(
+    (set) => ({
+      items: [],
+      favorites: [],
+      addItem: (product, variantId, quantity = 1) =>
+        set((state) => {
+          const existing = state.items.find((item) => item.variantId === variantId);
+
+          if (existing) {
+            return {
+              items: state.items.map((item) =>
+                item.variantId === variantId
+                  ? { ...item, quantity: item.quantity + quantity }
+                  : item
+              ),
+            };
+          }
+
+          const variant = product.variants.find((item) => item.id === variantId) ?? getPrimaryVariant(product);
+
+          return {
+            items: [
+              ...state.items,
+              {
+                productId: product.id,
+                variantId: variant?.id ?? variantId,
+                quantity,
+              },
+            ],
+          };
+        }),
+      removeItem: (variantId) =>
+        set((state) => ({
+          items: state.items.filter((item) => item.variantId !== variantId),
+        })),
+      updateQuantity: (variantId, quantity) =>
+        set((state) => ({
+          items: state.items.map((item) =>
+            item.variantId === variantId ? { ...item, quantity: Math.max(1, quantity) } : item
+          ),
+        })),
+      toggleFavorite: (productId) =>
+        set((state) => ({
+          favorites: state.favorites.includes(productId)
+            ? state.favorites.filter((item) => item !== productId)
+            : [...state.favorites, productId],
+        })),
+      clearCart: () => set({ items: [] }),
+    }),
+    {
+      name: 'tourmaline-coven-store',
+    }
+  )
+);
+
+export function getCartProducts(items: CartLine[]): CartProductLine[] {
+  return items
+    .map((line) => {
+      const product = fallbackProducts.find((item) => item.id === line.productId);
+      const variant = product?.variants.find((item) => item.id === line.variantId);
+
+      if (!product || !variant) {
+        return null;
+      }
+
+      return { product, variant, quantity: line.quantity };
+    })
+    .filter((line): line is CartProductLine => Boolean(line));
+}

@@ -1,35 +1,130 @@
-import { updateProduct } from '@/lib/api/store-api';
+import { ensureAdminApiAccess, handleApiError } from '@/app/api/admin/_utils';
+import { getAdminAccessToken } from '@/lib/admin/auth';
+import { deleteProduct, getProductById, replaceProductImages, updateProduct } from '@/lib/api/store-api';
+import { saveUploadedImage, saveUploadedImages } from '@/lib/admin/uploads';
 import { jsonError, jsonOk, optionalString } from '@/lib/api/http';
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const { id } = await params;
+function getAuthHeaders(accessToken: string | null) {
+  return accessToken ? { headers: { Authorization: `Bearer ${accessToken}` } } : undefined;
+}
+
+function parseOptionalNumber(value: unknown) {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+function parseBoolean(value: unknown) {
+  return value === true || value === 'true' || value === 'on' || value === '1';
+}
+
+async function parseProductRequest(request: Request) {
+  const contentType = request.headers.get('content-type') ?? '';
+
+  if (!contentType.includes('multipart/form-data')) {
     const body = (await request.json()) as Record<string, unknown>;
+    return {
+      body,
+      mainImageFile: null,
+      subImageFiles: [] as File[],
+    };
+  }
+
+  const formData = await request.formData();
+  const mainImage = formData.get('mainImage');
+  const subImages = formData.getAll('subImages');
+
+  return {
+    body: Object.fromEntries(formData.entries()),
+    mainImageFile: mainImage instanceof File && mainImage.size > 0 ? mainImage : null,
+    subImageFiles: subImages.filter((value): value is File => value instanceof File && value.size > 0),
+  };
+}
+
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const unauthorized = await ensureAdminApiAccess();
+
+  if (unauthorized) {
+    return unauthorized;
+  }
+
+  try {
+    const auth = getAuthHeaders(await getAdminAccessToken());
+    const { id } = await params;
+    const { body, mainImageFile, subImageFiles } = await parseProductRequest(request);
     const payload: Record<string, unknown> = {};
 
     if (body.name !== undefined) payload.name = optionalString(body.name);
+    if (body.nameAr !== undefined) payload.name_ar = optionalString(body.nameAr);
     if (body.slug !== undefined) payload.slug = optionalString(body.slug);
-    if (body.description !== undefined) payload.description = optionalString(body.description);
+    if (body.slugAr !== undefined) payload.slug_ar = optionalString(body.slugAr);
     if (body.shortDescription !== undefined) payload.short_description = optionalString(body.shortDescription);
-    if (body.basePrice !== undefined) payload.base_price = body.basePrice;
-    if (body.compareAtPrice !== undefined) payload.compare_at_price = body.compareAtPrice;
+    if (body.shortDescriptionAr !== undefined) payload.short_description_ar = optionalString(body.shortDescriptionAr);
+    if (body.description !== undefined) payload.description = optionalString(body.description);
+    if (body.descriptionAr !== undefined) payload.description_ar = optionalString(body.descriptionAr);
     if (body.currency !== undefined) payload.currency = optionalString(body.currency);
     if (body.status !== undefined) payload.status = optionalString(body.status);
-    if (body.isFeatured !== undefined) payload.is_featured = body.isFeatured;
     if (body.categoryId !== undefined) payload.category_id = optionalString(body.categoryId);
     if (body.brandId !== undefined) payload.brand_id = optionalString(body.brandId);
 
-    const result = await updateProduct(id, payload);
+    const basePrice = parseOptionalNumber(body.basePrice);
+    if (basePrice !== null) {
+      payload.base_price = basePrice;
+    }
+
+    if (body.compareAtPrice !== undefined) {
+      payload.compare_at_price = parseOptionalNumber(body.compareAtPrice);
+    }
+
+    if (body.isFeatured !== undefined) {
+      payload.is_featured = parseBoolean(body.isFeatured);
+    }
+
+    const result = await updateProduct(id, payload, auth);
 
     if (result.error) {
       return jsonError(result.error, result.status);
     }
 
+    if (mainImageFile || subImageFiles.length > 0) {
+      const existing = await getProductById(id, auth);
+      const uploadedMainImage = mainImageFile ? await saveUploadedImage(mainImageFile, 'products') : null;
+      const uploadedSubImages = subImageFiles.length > 0 ? await saveUploadedImages(subImageFiles, 'products') : [];
+      const existingSubImages = existing.data?.images?.filter((image) => !image.is_primary).map((image) => image.image_url) ?? [];
+      const imageUrls = [
+        uploadedMainImage ?? existing.data?.images?.find((image) => image.is_primary)?.image_url ?? '',
+        ...(subImageFiles.length > 0 ? uploadedSubImages : existingSubImages),
+      ].filter(Boolean);
+      const imagesResult = await replaceProductImages(id, imageUrls, auth);
+
+      if (imagesResult.error) {
+        return jsonError(imagesResult.error, imagesResult.status);
+      }
+    }
+
     return jsonOk(result.data);
   } catch (error) {
-    return jsonError(error instanceof Error ? error.message : 'Invalid request body');
+    return handleApiError(error);
   }
+}
+
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const unauthorized = await ensureAdminApiAccess();
+
+  if (unauthorized) {
+    return unauthorized;
+  }
+
+  const { id } = await params;
+  const auth = getAuthHeaders(await getAdminAccessToken());
+  const result = await deleteProduct(id, auth);
+
+  if (result.error) {
+    return jsonError(result.error, result.status);
+  }
+
+  return jsonOk(result.data);
 }

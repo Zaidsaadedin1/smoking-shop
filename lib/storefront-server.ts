@@ -1,6 +1,6 @@
 import { addresses as fallbackAddresses, categories as fallbackCategories, orders as fallbackOrders, products as fallbackProducts } from './storefront-data';
 import { fetchSupabaseRest } from './supabase/rest';
-import { Address, Category, Order, Product, ProductStatus } from './storefront-types';
+import { Address, Category, Order, Product } from './storefront-types';
 
 type CategoryRow = {
   id: string;
@@ -46,7 +46,7 @@ type AddressRow = {
   is_default: boolean;
 };
 
-function mapProductStatus(status: string, createdAt: string): ProductStatus {
+function mapProductStatus(status: string, createdAt: string): Product['status'] {
   if (status === 'active') {
     const createdDate = new Date(createdAt);
     const freshThreshold = new Date('2026-07-01T00:00:00.000Z');

@@ -1,8 +1,5 @@
-import { HomeScreen } from '@/components/customer/screens/HomeScreen';
-import { getStorefrontSnapshot } from '@/lib/storefront-server';
+import { redirect } from 'next/navigation';
 
-export default async function HomePage() {
-  const { categories, products } = await getStorefrontSnapshot();
-
-  return <HomeScreen categories={categories} products={products} />;
+export default function LegacyHomePage() {
+  redirect('/');
 }

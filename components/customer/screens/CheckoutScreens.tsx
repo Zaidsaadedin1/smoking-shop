@@ -28,7 +28,7 @@ function CheckoutFrame({
 }) {
   return (
     <CustomerShell title={title} subtitle={subtitle} activeTab="Cart" badge={step}>
-      <Grid gutter="lg">
+      <Grid gap="lg">
         <Grid.Col span={{ base: 12, md: 7 }}>{children}</Grid.Col>
         <Grid.Col span={{ base: 12, md: 5 }}>
           <CheckoutProgress step={Number(step.charAt(5)) || 1} />
@@ -78,7 +78,7 @@ export function CartScreen() {
 
   return (
     <CustomerShell title="Cart" subtitle="Cart stays separate from checkout and shows summary, quantity control, and coupon entry surfaces." activeTab="Cart" badge="Cart">
-      <Grid gutter="lg">
+      <Grid gap="lg">
         <Grid.Col span={{ base: 12, md: 7 }}>
           <Stack gap="sm">
             <CartHeader />

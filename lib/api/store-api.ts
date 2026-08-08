@@ -8,22 +8,78 @@ import {
   upsertSupabaseRow,
 } from '@/lib/supabase/rest';
 
+type SupabaseRequestAuth = {
+  headers?: Record<string, string>;
+};
+
 type CategoryApiRow = {
   id: string;
   name: string;
+  name_ar?: string | null;
   slug: string;
+  slug_ar?: string | null;
   description: string | null;
+  description_ar?: string | null;
   image_url?: string | null;
   is_active?: boolean;
   sort_order?: number;
 };
 
+type BrandApiRow = {
+  id: string;
+  name: string;
+  name_ar?: string | null;
+  slug: string;
+  slug_ar?: string | null;
+  description?: string | null;
+  description_ar?: string | null;
+  logo_url?: string | null;
+  is_active?: boolean;
+  created_at?: string;
+};
+
+type SizeApiRow = {
+  id: string;
+  code: string;
+  name: string;
+  name_ar?: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_at?: string;
+};
+
+type ColorApiRow = {
+  id: string;
+  code: string;
+  name: string;
+  name_ar?: string | null;
+  hex_code?: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_at?: string;
+};
+
+type ProfileApiRow = {
+  id: string;
+  full_name: string | null;
+  phone: string | null;
+  avatar_url: string | null;
+  role: string;
+  is_blocked: boolean;
+  created_at: string;
+  updated_at?: string;
+};
+
 type ProductApiRow = {
   id: string;
   name: string;
+  name_ar?: string | null;
   slug: string;
+  slug_ar?: string | null;
   description: string | null;
+  description_ar?: string | null;
   short_description: string | null;
+  short_description_ar?: string | null;
   base_price: string | number;
   compare_at_price?: string | number | null;
   status: string;
@@ -44,9 +100,12 @@ type VariantApiRow = {
 };
 
 type ProductImageApiRow = {
+  id?: string;
   product_id: string;
   image_url: string;
   is_primary: boolean;
+  sort_order?: number;
+  alt_text?: string | null;
 };
 
 type FlashSaleRow = {
@@ -163,22 +222,119 @@ function buildOrderNumber() {
   return `TC-${Date.now()}`;
 }
 
-export async function listCategories() {
+export async function listCategories(auth?: SupabaseRequestAuth) {
   return fetchSupabaseRest<CategoryApiRow[]>('categories', {
     query: {
-      select: 'id,name,slug,description,image_url,is_active,sort_order',
+      select: 'id,name,name_ar,slug,slug_ar,description,description_ar,image_url,is_active,sort_order',
       order: 'sort_order.asc',
     },
+    ...(auth?.headers ? { headers: auth.headers } : {}),
     revalidate: 0,
   });
 }
 
-export async function createCategory(payload: Record<string, unknown>) {
-  return insertSupabaseRow<CategoryApiRow>('categories', payload, true);
+export async function createCategory(payload: Record<string, unknown>, auth?: SupabaseRequestAuth) {
+  return insertSupabaseRow<CategoryApiRow>('categories', payload, true, auth);
 }
 
-export async function updateCategory(id: string, payload: Record<string, unknown>) {
-  return updateSupabaseRow<CategoryApiRow>('categories', payload, { id: `eq.${id}` }, true);
+export async function updateCategory(id: string, payload: Record<string, unknown>, auth?: SupabaseRequestAuth) {
+  return updateSupabaseRow<CategoryApiRow>('categories', payload, { id: `eq.${id}` }, true, auth);
+}
+
+export async function deleteCategory(id: string, auth?: SupabaseRequestAuth) {
+  return deleteSupabaseRow<CategoryApiRow>('categories', { id: `eq.${id}` }, true, auth);
+}
+
+export async function listBrands(auth?: SupabaseRequestAuth) {
+  return fetchSupabaseRest<BrandApiRow[]>('brands', {
+    query: {
+      select: 'id,name,name_ar,slug,slug_ar,description,description_ar,logo_url,is_active,created_at',
+      order: 'name.asc',
+    },
+    ...(auth?.headers ? { headers: auth.headers } : {}),
+    revalidate: 0,
+  });
+}
+
+export async function createBrand(payload: Record<string, unknown>, auth?: SupabaseRequestAuth) {
+  return insertSupabaseRow<BrandApiRow>('brands', payload, true, auth);
+}
+
+export async function updateBrand(id: string, payload: Record<string, unknown>, auth?: SupabaseRequestAuth) {
+  return updateSupabaseRow<BrandApiRow>('brands', payload, { id: `eq.${id}` }, true, auth);
+}
+
+export async function deleteBrand(id: string, auth?: SupabaseRequestAuth) {
+  return deleteSupabaseRow<BrandApiRow>('brands', { id: `eq.${id}` }, true, auth);
+}
+
+export async function listSizes(auth?: SupabaseRequestAuth) {
+  return fetchSupabaseRest<SizeApiRow[]>('sizes', {
+    query: {
+      select: 'id,code,name,name_ar,sort_order,is_active,created_at',
+      order: 'sort_order.asc',
+    },
+    ...(auth?.headers ? { headers: auth.headers } : {}),
+    revalidate: 0,
+  });
+}
+
+export async function createSize(payload: Record<string, unknown>, auth?: SupabaseRequestAuth) {
+  return insertSupabaseRow<SizeApiRow>('sizes', payload, true, auth);
+}
+
+export async function updateSize(id: string, payload: Record<string, unknown>, auth?: SupabaseRequestAuth) {
+  return updateSupabaseRow<SizeApiRow>('sizes', payload, { id: `eq.${id}` }, true, auth);
+}
+
+export async function deleteSize(id: string, auth?: SupabaseRequestAuth) {
+  return deleteSupabaseRow<SizeApiRow>('sizes', { id: `eq.${id}` }, true, auth);
+}
+
+export async function listColors(auth?: SupabaseRequestAuth) {
+  return fetchSupabaseRest<ColorApiRow[]>('colors', {
+    query: {
+      select: 'id,code,name,name_ar,hex_code,sort_order,is_active,created_at',
+      order: 'sort_order.asc',
+    },
+    ...(auth?.headers ? { headers: auth.headers } : {}),
+    revalidate: 0,
+  });
+}
+
+export async function createColor(payload: Record<string, unknown>, auth?: SupabaseRequestAuth) {
+  return insertSupabaseRow<ColorApiRow>('colors', payload, true, auth);
+}
+
+export async function updateColor(id: string, payload: Record<string, unknown>, auth?: SupabaseRequestAuth) {
+  return updateSupabaseRow<ColorApiRow>('colors', payload, { id: `eq.${id}` }, true, auth);
+}
+
+export async function deleteColor(id: string, auth?: SupabaseRequestAuth) {
+  return deleteSupabaseRow<ColorApiRow>('colors', { id: `eq.${id}` }, true, auth);
+}
+
+export async function listProfiles(auth?: SupabaseRequestAuth) {
+  return fetchSupabaseRest<ProfileApiRow[]>('profiles', {
+    query: {
+      select: 'id,full_name,phone,avatar_url,role,is_blocked,created_at,updated_at',
+      order: 'created_at.desc',
+    },
+    ...(auth?.headers ? { headers: auth.headers } : {}),
+    revalidate: 0,
+  });
+}
+
+export async function createProfile(payload: Record<string, unknown>, auth?: SupabaseRequestAuth) {
+  return insertSupabaseRow<ProfileApiRow>('profiles', payload, true, auth);
+}
+
+export async function updateProfile(id: string, payload: Record<string, unknown>, auth?: SupabaseRequestAuth) {
+  return updateSupabaseRow<ProfileApiRow>('profiles', payload, { id: `eq.${id}` }, true, auth);
+}
+
+export async function deleteProfile(id: string, auth?: SupabaseRequestAuth) {
+  return deleteSupabaseRow<ProfileApiRow>('profiles', { id: `eq.${id}` }, true, auth);
 }
 
 export async function listProducts(filters: {
@@ -187,10 +343,10 @@ export async function listProducts(filters: {
   search?: string | null;
   status?: string | null;
   limit?: number | null;
-}) {
+}, auth?: SupabaseRequestAuth) {
   const query: Record<string, string | number | undefined> = {
     select:
-      'id,name,slug,description,short_description,base_price,compare_at_price,status,currency,is_featured,category_id,brand_id,created_at',
+      'id,name,name_ar,slug,slug_ar,description,description_ar,short_description,short_description_ar,base_price,compare_at_price,status,currency,is_featured,category_id,brand_id,created_at',
     order: 'created_at.desc',
   };
 
@@ -215,12 +371,13 @@ export async function listProducts(filters: {
   }
 
   const [products, variants, images] = await Promise.all([
-    fetchSupabaseRest<ProductApiRow[]>('products', { query, revalidate: 0 }),
+    fetchSupabaseRest<ProductApiRow[]>('products', { query, ...(auth?.headers ? { headers: auth.headers } : {}), revalidate: 0 }),
     fetchSupabaseRest<VariantApiRow[]>('product_variants', {
       query: {
         select: 'id,product_id,sku,price,stock_quantity,is_active',
         is_active: 'eq.true',
       },
+      ...(auth?.headers ? { headers: auth.headers } : {}),
       revalidate: 0,
     }),
     fetchSupabaseRest<ProductImageApiRow[]>('product_images', {
@@ -228,6 +385,7 @@ export async function listProducts(filters: {
         select: 'product_id,image_url,is_primary',
         order: 'sort_order.asc',
       },
+      ...(auth?.headers ? { headers: auth.headers } : {}),
       revalidate: 0,
     }),
   ]);
@@ -242,12 +400,12 @@ export async function listProducts(filters: {
   }));
 }
 
-export async function getProductById(idOrSlug: string) {
+export async function getProductById(idOrSlug: string, auth?: SupabaseRequestAuth) {
   const result = await fetchSupabaseSingle<ProductApiRow>('products', {
     select:
-      'id,name,slug,description,short_description,base_price,compare_at_price,status,currency,is_featured,category_id,brand_id,created_at',
+      'id,name,name_ar,slug,slug_ar,description,description_ar,short_description,short_description_ar,base_price,compare_at_price,status,currency,is_featured,category_id,brand_id,created_at',
     or: `(id.eq.${idOrSlug},slug.eq.${idOrSlug})`,
-  });
+  }, auth);
 
   if (!result.data) {
     return { data: null, error: result.error, status: result.status };
@@ -260,6 +418,7 @@ export async function getProductById(idOrSlug: string) {
         product_id: `eq.${result.data.id}`,
         order: 'created_at.asc',
       },
+      ...(auth?.headers ? { headers: auth.headers } : {}),
       revalidate: 0,
     }),
     fetchSupabaseRest<ProductImageApiRow[]>('product_images', {
@@ -268,6 +427,7 @@ export async function getProductById(idOrSlug: string) {
         product_id: `eq.${result.data.id}`,
         order: 'sort_order.asc',
       },
+      ...(auth?.headers ? { headers: auth.headers } : {}),
       revalidate: 0,
     }),
     fetchSupabaseRest<ReviewRow[]>('reviews', {
@@ -277,6 +437,7 @@ export async function getProductById(idOrSlug: string) {
         is_approved: 'eq.true',
         order: 'created_at.desc',
       },
+      ...(auth?.headers ? { headers: auth.headers } : {}),
       revalidate: 0,
     }),
   ]);
@@ -293,12 +454,47 @@ export async function getProductById(idOrSlug: string) {
   };
 }
 
-export async function createProduct(payload: Record<string, unknown>) {
-  return insertSupabaseRow<ProductApiRow>('products', payload, true);
+export async function createProduct(payload: Record<string, unknown>, auth?: SupabaseRequestAuth) {
+  return insertSupabaseRow<ProductApiRow>('products', payload, true, auth);
 }
 
-export async function updateProduct(id: string, payload: Record<string, unknown>) {
-  return updateSupabaseRow<ProductApiRow>('products', payload, { id: `eq.${id}` }, true);
+export async function updateProduct(id: string, payload: Record<string, unknown>, auth?: SupabaseRequestAuth) {
+  return updateSupabaseRow<ProductApiRow>('products', payload, { id: `eq.${id}` }, true, auth);
+}
+
+export async function replaceProductImages(productId: string, imageUrls: string[], auth?: SupabaseRequestAuth) {
+  const cleanedUrls = imageUrls.map((value) => value.trim()).filter(Boolean);
+
+  const removeResult = await deleteSupabaseRow<ProductImageApiRow>('product_images', { product_id: `eq.${productId}` }, false, auth);
+
+  if (removeResult.error) {
+    return removeResult;
+  }
+
+  if (cleanedUrls.length === 0) {
+    return {
+      data: [],
+      error: null,
+      status: 200,
+    };
+  }
+
+  return insertSupabaseRow<ProductImageApiRow[]>(
+    'product_images',
+    cleanedUrls.map((imageUrl, index) => ({
+      product_id: productId,
+      image_url: imageUrl,
+      is_primary: index === 0,
+      sort_order: index,
+      alt_text: null,
+    })),
+    false,
+    auth
+  );
+}
+
+export async function deleteProduct(id: string, auth?: SupabaseRequestAuth) {
+  return deleteSupabaseRow<ProductApiRow>('products', { id: `eq.${id}` }, true, auth);
 }
 
 export async function listActiveFlashSales(nowIso: string) {
@@ -476,7 +672,7 @@ export async function deleteCartItem(id: string) {
   return deleteSupabaseRow<CartItemRow>('cart_items', { id: `eq.${id}` }, true);
 }
 
-export async function listOrders(userId?: string | null) {
+export async function listOrders(userId?: string | null, auth?: SupabaseRequestAuth) {
   const query: Record<string, string> = {
     select:
       'id,order_number,user_id,status,payment_status,payment_method,customer_name,customer_email,customer_phone,shipping_address,billing_address,subtotal,discount_amount,shipping_amount,tax_amount,total_amount,currency,coupon_code,notes,tracking_number,shipping_carrier,created_at',
@@ -487,7 +683,19 @@ export async function listOrders(userId?: string | null) {
     query.user_id = `eq.${userId}`;
   }
 
-  return fetchSupabaseRest<OrderRow[]>('orders', { query, revalidate: 0 });
+  return fetchSupabaseRest<OrderRow[]>('orders', { query, ...(auth?.headers ? { headers: auth.headers } : {}), revalidate: 0 });
+}
+
+export async function createAdminOrder(payload: Record<string, unknown>, auth?: SupabaseRequestAuth) {
+  return insertSupabaseRow<OrderRow>('orders', payload, true, auth);
+}
+
+export async function updateOrder(id: string, payload: Record<string, unknown>, auth?: SupabaseRequestAuth) {
+  return updateSupabaseRow<OrderRow>('orders', payload, { id: `eq.${id}` }, true, auth);
+}
+
+export async function deleteOrder(id: string, auth?: SupabaseRequestAuth) {
+  return deleteSupabaseRow<OrderRow>('orders', { id: `eq.${id}` }, true, auth);
 }
 
 export async function getOrderById(id: string) {
@@ -625,13 +833,14 @@ export async function cancelOrder(id: string) {
   );
 }
 
-export async function listAdminLookups() {
+export async function listAdminLookups(auth?: { headers?: Record<string, string> }) {
   const [brands, sizes, colors] = await Promise.all([
     fetchSupabaseRest('brands', {
       query: {
         select: 'id,name,slug,is_active',
         order: 'name.asc',
       },
+      ...(auth?.headers ? { headers: auth.headers } : {}),
       revalidate: 0,
     }),
     fetchSupabaseRest('sizes', {
@@ -639,6 +848,7 @@ export async function listAdminLookups() {
         select: 'id,code,name,is_active,sort_order',
         order: 'sort_order.asc',
       },
+      ...(auth?.headers ? { headers: auth.headers } : {}),
       revalidate: 0,
     }),
     fetchSupabaseRest('colors', {
@@ -646,6 +856,7 @@ export async function listAdminLookups() {
         select: 'id,code,name,hex_code,is_active,sort_order',
         order: 'sort_order.asc',
       },
+      ...(auth?.headers ? { headers: auth.headers } : {}),
       revalidate: 0,
     }),
   ]);

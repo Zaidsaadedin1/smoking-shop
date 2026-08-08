@@ -1,6 +1,11 @@
-import { Box, Button, Container, Group, Paper, Stack, Text } from '@mantine/core';
+'use client';
+
+import { ActionIcon, Avatar, Box, Button, Group, Paper, Stack, Text } from '@mantine/core';
+import { IconLayoutSidebarLeftCollapse, IconLogout } from '@tabler/icons-react';
 import Link from 'next/link';
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, useState } from 'react';
+import { LocaleSwitcher, useLocale } from '@/components/storefront/locale-provider';
+import { ThemeSwitcher } from '@/components/storefront/theme-provider';
 
 const adminLinks = [
   { label: 'Dashboard', href: '/admin' },
@@ -14,76 +19,136 @@ type AdminShellProps = PropsWithChildren<{
   title: string;
   subtitle: string;
   active: string;
+  session: {
+    fullName: string;
+    email: string;
+    role: 'admin' | 'super_admin';
+  };
 }>;
 
-export function AdminShell({ children, title, subtitle, active }: AdminShellProps) {
+export function AdminShell({ children, title, subtitle, active, session }: AdminShellProps) {
+  const { t } = useLocale();
+  const [collapsed, setCollapsed] = useState(false);
+
   return (
     <Box
       style={{
         minHeight: '100vh',
         background:
-          'radial-gradient(circle at top, rgba(123, 63, 228, 0.22), transparent 28%), radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.08), transparent 18%), linear-gradient(180deg, #09060d 0%, #110917 46%, #050308 100%)',
-        color: '#ffffff',
+          'radial-gradient(circle at top, rgba(120, 21, 42, 0.18), transparent 24%), linear-gradient(180deg, #090909 0%, #111111 100%)',
+        color: 'var(--text)',
       }}
     >
-      <Container size="xl" px="lg" py={28}>
-        <Paper
-          radius="xl"
-          p="md"
+      <Box p="lg">
+        <Box
           style={{
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.08)',
+            display: 'grid',
+            gridTemplateColumns: collapsed ? '92px 1fr' : '280px 1fr',
+            gap: 20,
+            alignItems: 'start',
           }}
         >
-          <Group justify="space-between">
-            <Stack gap={2}>
-              <Text tt="uppercase" fw={700} size="xs" c="night.1" style={{ letterSpacing: 3 }}>
-                Tourmaline Coven
-              </Text>
-              <Text size="sm" c="rgba(255,255,255,0.65)">
-                Admin panel
-              </Text>
-            </Stack>
-            <Group gap="xs">
+          <Paper radius={0} p="md" style={{ position: 'sticky', top: 16, background: 'rgba(12,12,12,0.92)', border: '1px solid var(--border)', backdropFilter: 'blur(24px)' }}>
+            <Group justify="space-between" mb="xl">
+              {!collapsed ? (
+                <Stack gap={2}>
+                  <Text fw={800} size="lg" tt="uppercase" style={{ letterSpacing: 2 }}>
+                    {t('Admin panel')}
+                  </Text>
+                  <Text size="xs" c="var(--muted)" tt="uppercase" style={{ letterSpacing: 3 }}>
+                    {t('Dark operations')}
+                  </Text>
+                </Stack>
+              ) : null}
+              <ActionIcon variant="subtle" color="gray" onClick={() => setCollapsed((value) => !value)}>
+                <IconLayoutSidebarLeftCollapse size={18} />
+              </ActionIcon>
+            </Group>
+
+            <Stack gap="xs">
               {adminLinks.map((link) => (
                 <Link key={link.href} href={link.href} style={{ textDecoration: 'none' }}>
                   <Button
                     component="span"
-                    radius="xl"
-                    variant={active === link.label ? 'gradient' : 'subtle'}
-                    gradient={{ from: '#2f1a46', to: '#8a58ff', deg: 135 }}
-                    color="gray"
+                    fullWidth
+                    justify={collapsed ? 'center' : 'flex-start'}
+                    radius={0}
+                    variant={active === link.label ? 'filled' : 'subtle'}
+                    styles={{
+                      root: {
+                        border: '1px solid var(--border)',
+                        background: active === link.label ? 'var(--card)' : 'transparent',
+                        color: 'var(--text)',
+                        letterSpacing: 1.5,
+                      },
+                    }}
                   >
-                    {link.label}
+                    {collapsed ? link.label.charAt(0) : t(link.label)}
                   </Button>
                 </Link>
               ))}
-            </Group>
-          </Group>
-        </Paper>
+            </Stack>
 
-        <Stack gap="sm" mt={40} mb={28}>
-          <Text
-            component="h1"
-            style={{
-              margin: 0,
-              fontFamily:
-                '"Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, "Times New Roman", serif',
-              fontSize: 'clamp(2.4rem, 5vw, 4.6rem)',
-              lineHeight: 0.95,
-              letterSpacing: '-0.04em',
-              textTransform: 'uppercase',
-            }}
-          >
-            {title}
-          </Text>
-          <Text size="lg" maw={800} c="rgba(255,255,255,0.72)" style={{ lineHeight: 1.8 }}>
-            {subtitle}
-          </Text>
-        </Stack>
+            <Paper radius={0} p="sm" mt="xl" style={{ background: 'rgba(22,22,22,0.92)', border: '1px solid var(--border)' }}>
+              <Group wrap="nowrap" align="center">
+                <Avatar radius={0} color="dark">
+                  {session.fullName.slice(0, 1).toUpperCase()}
+                </Avatar>
+                {!collapsed ? (
+                  <Stack gap={0} style={{ flex: 1 }}>
+                    <Text fw={600}>{session.fullName}</Text>
+                    <Text size="xs" c="var(--muted)">
+                      {session.email}
+                    </Text>
+                    <Text size="xs" tt="uppercase" c="var(--muted)">
+                      {session.role}
+                    </Text>
+                  </Stack>
+                ) : null}
+              </Group>
+            </Paper>
+          </Paper>
 
-        {children}
-      </Container>
+          <Stack gap="lg">
+            <Paper radius={0} p="lg" style={{ background: 'rgba(12,12,12,0.92)', border: '1px solid var(--border)', backdropFilter: 'blur(24px)' }}>
+              <Group justify="space-between" align="start">
+                <div>
+                  <Text size="xs" tt="uppercase" c="var(--muted)" style={{ letterSpacing: 2.6 }}>
+                    {t('Operations dashboard')}
+                  </Text>
+                  <Text fw={800} size="2.6rem" mt={6} tt="uppercase" style={{ lineHeight: 1, letterSpacing: 1.2 }}>
+                    {t(title)}
+                  </Text>
+                  <Text mt="sm" c="var(--text-secondary)">
+                    {t(subtitle)}
+                  </Text>
+                </div>
+
+                <Group gap="xs">
+                  <LocaleSwitcher />
+                  <ThemeSwitcher />
+                  <form
+                    action="/api/admin/logout"
+                    method="post"
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      fetch('/api/admin/logout', { method: 'POST' }).then(() => {
+                        window.location.href = '/admin/login';
+                      });
+                    }}
+                  >
+                    <Button type="submit" leftSection={<IconLogout size={16} />} variant="default" radius={0}>
+                      {t('Logout')}
+                    </Button>
+                  </form>
+                </Group>
+              </Group>
+            </Paper>
+
+            {children}
+          </Stack>
+        </Box>
+      </Box>
     </Box>
   );
 }

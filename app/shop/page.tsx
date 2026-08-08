@@ -1,8 +1,8 @@
-import { ProductsScreen } from '@/components/customer/screens/CatalogScreens';
-import { getProducts } from '@/lib/storefront-server';
+import { ShopPageView } from '@/components/storefront/storefront-pages';
+import { getStorefrontData } from '@/lib/commerce-server';
 
 export default async function ShopPage() {
-  const products = await getProducts();
+  const { products, categories, flashSale } = await getStorefrontData();
 
-  return <ProductsScreen products={products} />;
+  return <ShopPageView products={products} categories={categories} flashSale={flashSale} />;
 }

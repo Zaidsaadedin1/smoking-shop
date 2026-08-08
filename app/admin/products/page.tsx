@@ -1,8 +1,15 @@
 import { AdminProductsScreen } from '@/components/customer/screens/AdminScreens';
-import { getProducts } from '@/lib/storefront-server';
+import { requireAdminSession } from '@/lib/admin/auth';
+import { getAdminBrands, getAdminCategories, getAdminEnumLabels, getAdminProducts } from '@/lib/admin/data';
 
 export default async function AdminProductsPage() {
-  const products = await getProducts();
+  const session = await requireAdminSession();
+  const [products, categories, brands, enumLabels] = await Promise.all([
+    getAdminProducts(),
+    getAdminCategories(),
+    getAdminBrands(),
+    getAdminEnumLabels(),
+  ]);
 
-  return <AdminProductsScreen products={products} />;
+  return <AdminProductsScreen session={session} products={products} categories={categories} brands={brands} enumLabels={enumLabels} />;
 }

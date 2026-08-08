@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "analyze": "ANALYZE=true next build",
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
+    "analyze": "ANALYZE=true next build --webpack",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "lint": "npm run oxlint && npm run stylelint",
@@ -20,13 +20,23 @@
     "storybook:build": "storybook build"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
     "@mantine/core": "9.4.2",
     "@mantine/hooks": "9.4.2",
     "@next/bundle-analyzer": "^16.0.0",
+    "@supabase/supabase-js": "^2.57.4",
     "@tabler/icons-react": "^3.35.0",
+    "@tailwindcss/postcss": "^4.1.13",
+    "@tanstack/react-query": "^5.90.6",
+    "framer-motion": "^12.23.24",
+    "lucide-react": "^0.542.0",
     "next": "16.2.9",
     "react": "19.2.7",
-    "react-dom": "19.2.7"
+    "react-dom": "19.2.7",
+    "react-hook-form": "^7.65.0",
+    "tailwindcss": "^4.1.13",
+    "zod": "^4.1.5",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@babel/core": "^8.0.0",

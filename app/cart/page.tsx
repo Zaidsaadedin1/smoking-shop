@@ -1,5 +1,8 @@
-import { CartScreen } from '@/components/customer/screens/CheckoutScreens';
+import { CartPageView } from '@/components/storefront/storefront-pages';
+import { getProducts } from '@/lib/commerce-server';
 
-export default function CartPage() {
-  return <CartScreen />;
+export default async function CartPage() {
+  const products = await getProducts();
+
+  return <CartPageView products={products} />;
 }

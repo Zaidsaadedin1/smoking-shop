@@ -1,34 +1,118 @@
-import { createProduct, listProducts } from '@/lib/api/store-api';
+import { ensureAdminApiAccess, handleApiError } from '@/app/api/admin/_utils';
+import { getAdminAccessToken } from '@/lib/admin/auth';
+import { createProduct, replaceProductImages } from '@/lib/api/store-api';
 import { jsonError, jsonOk, optionalString, requireNumber, requireString } from '@/lib/api/http';
+import { listProducts } from '@/lib/api/store-api';
+import { saveUploadedImage, saveUploadedImages } from '@/lib/admin/uploads';
 
-export async function GET() {
-  const products = await listProducts({});
-  return jsonOk(products);
+function getAuthHeaders(accessToken: string | null) {
+  return accessToken ? { headers: { Authorization: `Bearer ${accessToken}` } } : undefined;
+}
+
+function parseOptionalNumber(value: unknown) {
+  if (value === null || value === undefined || value === '') {
+    return null;
+  }
+
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+function parseBoolean(value: unknown) {
+  return value === true || value === 'true' || value === 'on' || value === '1';
+}
+
+async function parseProductRequest(request: Request) {
+  const contentType = request.headers.get('content-type') ?? '';
+
+  if (!contentType.includes('multipart/form-data')) {
+    const body = (await request.json()) as Record<string, unknown>;
+    return {
+      body,
+      mainImageFile: null,
+      subImageFiles: [] as File[],
+    };
+  }
+
+  const formData = await request.formData();
+  const mainImage = formData.get('mainImage');
+  const subImages = formData.getAll('subImages');
+
+  return {
+    body: Object.fromEntries(formData.entries()),
+    mainImageFile: mainImage instanceof File && mainImage.size > 0 ? mainImage : null,
+    subImageFiles: subImages.filter((value): value is File => value instanceof File && value.size > 0),
+  };
+}
+
+export async function GET(request: Request) {
+  const unauthorized = await ensureAdminApiAccess();
+
+  if (unauthorized) {
+    return unauthorized;
+  }
+
+  const { searchParams } = new URL(request.url);
+  const auth = getAuthHeaders(await getAdminAccessToken());
+  const products = await listProducts({
+    search: searchParams.get('search'),
+    status: searchParams.get('status'),
+    categoryId: searchParams.get('categoryId'),
+    limit: searchParams.get('limit') ? Number(searchParams.get('limit')) : null,
+  }, auth);
+
+  return jsonOk(products ?? []);
 }
 
 export async function POST(request: Request) {
+  const unauthorized = await ensureAdminApiAccess();
+
+  if (unauthorized) {
+    return unauthorized;
+  }
+
   try {
-    const body = (await request.json()) as Record<string, unknown>;
+    const auth = getAuthHeaders(await getAdminAccessToken());
+    const { body, mainImageFile, subImageFiles } = await parseProductRequest(request);
+    const basePrice = Number(body.basePrice);
+    const compareAtPrice = parseOptionalNumber(body.compareAtPrice);
     const result = await createProduct({
       name: requireString(body.name, 'name'),
+      name_ar: optionalString(body.nameAr),
       slug: requireString(body.slug, 'slug'),
-      description: optionalString(body.description),
+      slug_ar: optionalString(body.slugAr),
       short_description: optionalString(body.shortDescription),
-      base_price: requireNumber(body.basePrice, 'basePrice'),
-      compare_at_price: body.compareAtPrice ?? null,
+      short_description_ar: optionalString(body.shortDescriptionAr),
+      description: optionalString(body.description),
+      description_ar: optionalString(body.descriptionAr),
+      base_price: requireNumber(basePrice, 'basePrice'),
+      compare_at_price: compareAtPrice,
       currency: optionalString(body.currency) ?? 'JOD',
       status: optionalString(body.status) ?? 'draft',
-      is_featured: body.isFeatured ?? false,
+      is_featured: parseBoolean(body.isFeatured),
       category_id: optionalString(body.categoryId),
       brand_id: optionalString(body.brandId),
-    });
+    }, auth);
 
     if (result.error) {
       return jsonError(result.error, result.status);
     }
 
+    if (!result.data) {
+      return jsonError('Product creation failed', 500);
+    }
+
+    const uploadedMainImage = mainImageFile ? await saveUploadedImage(mainImageFile, 'products') : null;
+    const uploadedSubImages = await saveUploadedImages(subImageFiles, 'products');
+    const imageUrls = [uploadedMainImage, ...uploadedSubImages].filter((value): value is string => Boolean(value));
+    const imagesResult = await replaceProductImages(result.data.id, imageUrls, auth);
+
+    if (imagesResult.error) {
+      return jsonError(imagesResult.error, imagesResult.status);
+    }
+
     return jsonOk(result.data, { status: 201 });
   } catch (error) {
-    return jsonError(error instanceof Error ? error.message : 'Invalid request body');
+    return handleApiError(error);
   }
 }
