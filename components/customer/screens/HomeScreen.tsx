@@ -4,6 +4,7 @@ import { CustomerShell } from '@/components/customer/CustomerShell';
 import {
   BestSellers,
   CategorySlider,
+  CommerceBenefits,
   FeaturedProducts,
   FlashSaleBanner,
   FlashSaleModal,
@@ -57,6 +58,7 @@ export function HomeScreen({ categories, products }: HomeScreenProps) {
       <MotionReveal duration={850}>
         <Stack gap="xl" mt={32}>
           <CategorySlider categories={categories} />
+          <CommerceBenefits />
           <FeaturedProducts products={featuredProducts} />
           <NewArrivals products={newArrivals} />
           <BestSellers products={bestSellers} />

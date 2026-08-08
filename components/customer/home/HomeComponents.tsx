@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge, Button, Group, Modal, SimpleGrid, Stack, Text } from '@mantine/core';
+import { Badge, Button, Grid, Group, Modal, SimpleGrid, Stack, Text } from '@mantine/core';
 import Link from 'next/link';
 import { useState } from 'react';
 import { promoBanners } from '@/lib/customer-app-data';
@@ -10,14 +10,19 @@ import { SearchBar, SectionEyebrow, SurfaceCard } from '../shared/SharedComponen
 
 export function HomeHeader() {
   return (
-    <Group justify="space-between" mb="lg">
-      <Stack gap={2}>
-        <Text fw={700} size="1.8rem">
-          HomeHeader
+    <Group justify="space-between" align="flex-start" mb="lg">
+      <Stack gap={4}>
+        <Text fw={700} size="2rem">
+          Tourmaline Coven
         </Text>
-        <Text c="rgba(255,255,255,0.65)">Tourmaline Coven customer entry</Text>
+        <Text c="rgba(255,255,255,0.65)">Shop dark luxury apparel, jewelry, and ritual objects.</Text>
       </Stack>
-      <StatusBadge />
+      <Group gap="sm">
+        <StatusBadge />
+        <Badge variant="outline" color="gray" radius="xl">
+          New arrivals weekly
+        </Badge>
+      </Group>
     </Group>
   );
 }
@@ -33,35 +38,76 @@ function StatusBadge() {
 export function HeroBanner({ title, subtitle }: { title: string; subtitle: string }) {
   return (
     <SurfaceCard>
-      <Stack gap="lg">
-        <Group gap="sm">
+      <Stack gap="xl">
+        <Group gap="sm" wrap="wrap">
           <Badge size="lg" radius="xl" variant="gradient" gradient={{ from: '#2f1a46', to: '#8a58ff', deg: 135 }}>
-            HeroBanner
+            Limited drop
           </Badge>
           <Badge size="lg" radius="xl" variant="dot" color="grape">
-            Gothic commerce
+            Ready to ship
           </Badge>
         </Group>
-        <Text fw={700} size="2.3rem">
-          {title}
-        </Text>
-        <Text size="lg" c="rgba(255,255,255,0.72)" style={{ lineHeight: 1.8 }}>
-          {subtitle}
-        </Text>
+        <Stack gap="sm">
+          <Text fw={700} style={{ fontSize: 'clamp(2.4rem, 5vw, 4.4rem)', lineHeight: 0.95 }}>
+            Gothic fashion, ritual objects, and statement jewelry in one storefront.
+          </Text>
+          <Text size="lg" c="rgba(255,255,255,0.72)" style={{ lineHeight: 1.8, maxWidth: 620 }}>
+            {subtitle}
+          </Text>
+        </Stack>
         <Group gap="md">
+          <CommerceHighlight label="Free delivery over 120 JOD" />
+          <CommerceHighlight label="Secure checkout" />
+          <CommerceHighlight label="Curated coven picks" />
+        </Group>
+        <Group gap="md" wrap="wrap">
           <Link href="/products" style={{ textDecoration: 'none' }}>
-            <Button component="span" radius="xl" variant="gradient" gradient={{ from: '#2f1a46', to: '#8a58ff', deg: 135 }}>
-              Shop now
+            <Button component="span" size="lg" radius="xl" variant="gradient" gradient={{ from: '#2f1a46', to: '#8a58ff', deg: 135 }}>
+              Shop all products
             </Button>
           </Link>
-          <Link href="/search" style={{ textDecoration: 'none' }}>
-            <Button component="span" radius="xl" variant="default" color="dark">
-              Search catalog
+          <Link href="/categories" style={{ textDecoration: 'none' }}>
+            <Button component="span" size="lg" radius="xl" variant="default" color="dark">
+              Browse categories
             </Button>
           </Link>
         </Group>
+        <Grid gutter="md">
+          <Grid.Col span={4}>
+            <HeroMetric value="48+" label="curated pieces" />
+          </Grid.Col>
+          <Grid.Col span={4}>
+            <HeroMetric value="3" label="core collections" />
+          </Grid.Col>
+          <Grid.Col span={4}>
+            <HeroMetric value="24h" label="flash offers" />
+          </Grid.Col>
+        </Grid>
       </Stack>
     </SurfaceCard>
+  );
+}
+
+function HeroMetric({ value, label }: { value: string; label: string }) {
+  return (
+    <SurfaceCard>
+      <Stack gap={2}>
+        <Text fw={700} size="1.8rem" c="#dfcfff">
+          {value}
+        </Text>
+        <Text size="sm" c="rgba(255,255,255,0.58)">
+          {label}
+        </Text>
+      </Stack>
+    </SurfaceCard>
+  );
+}
+
+function CommerceHighlight({ label }: { label: string }) {
+  return (
+    <Badge variant="outline" color="gray" radius="xl" size="lg">
+      {label}
+    </Badge>
   );
 }
 
@@ -80,8 +126,8 @@ export function FlashSaleCountdown() {
 export function FlashSaleBanner({ title, subtitle, discount }: { title: string; subtitle: string; discount: string }) {
   return (
     <SurfaceCard>
-      <Stack gap="md">
-        <SectionEyebrow>FlashSaleBanner</SectionEyebrow>
+      <Stack gap="lg">
+        <SectionEyebrow>Flash sale</SectionEyebrow>
         <Group justify="space-between" align="flex-start">
           <div>
             <Text fw={700} size="1.6rem">
@@ -94,6 +140,11 @@ export function FlashSaleBanner({ title, subtitle, discount }: { title: string; 
           </Badge>
         </Group>
         <FlashSaleCountdown />
+        <Link href="/products" style={{ textDecoration: 'none' }}>
+          <Button component="span" fullWidth radius="xl" variant="gradient" gradient={{ from: '#2f1a46', to: '#8a58ff', deg: 135 }}>
+            Shop sale now
+          </Button>
+        </Link>
       </Stack>
     </SurfaceCard>
   );
@@ -102,15 +153,35 @@ export function FlashSaleBanner({ title, subtitle, discount }: { title: string; 
 export function CategorySlider({ categories }: { categories: Category[] }) {
   return (
     <Stack gap="md">
-      <SectionEyebrow>CategorySlider</SectionEyebrow>
+      <Group justify="space-between" align="center">
+        <div>
+          <SectionEyebrow>Shop by category</SectionEyebrow>
+          <Text fw={700} size="1.6rem" mt={4}>
+            Start with the collection that fits the mood
+          </Text>
+        </div>
+        <Link href="/categories" style={{ textDecoration: 'none' }}>
+          <Button component="span" radius="xl" variant="subtle" color="gray">
+            View all
+          </Button>
+        </Link>
+      </Group>
       <Group wrap="nowrap" style={{ overflowX: 'auto', paddingBottom: 4 }}>
         {categories.map((category) => (
           <SurfaceCard key={category.id}>
-            <Stack gap={6} miw={220}>
+            <Stack gap={10} miw={240}>
+              <Badge color="grape" variant="light" radius="xl" w="fit-content">
+                {category.accent}
+              </Badge>
               <Text fw={700}>{category.name}</Text>
               <Text size="sm" c="rgba(255,255,255,0.6)">
                 {category.description}
               </Text>
+              <Link href={`/category/${category.slug}`} style={{ textDecoration: 'none' }}>
+                <Button component="span" radius="xl" variant="default" color="dark">
+                  Explore
+                </Button>
+              </Link>
             </Stack>
           </SurfaceCard>
         ))}
@@ -122,7 +193,19 @@ export function CategorySlider({ categories }: { categories: Category[] }) {
 export function ProductHorizontalList({ title, products }: { title: string; products: Product[] }) {
   return (
     <Stack gap="md">
-      <SectionEyebrow>{title}</SectionEyebrow>
+      <Group justify="space-between" align="center">
+        <div>
+          <SectionEyebrow>{title}</SectionEyebrow>
+          <Text fw={700} size="1.5rem" mt={4}>
+            {mapProductSectionTitle(title)}
+          </Text>
+        </div>
+        <Link href="/products" style={{ textDecoration: 'none' }}>
+          <Button component="span" radius="xl" variant="subtle" color="gray">
+            Shop all
+          </Button>
+        </Link>
+      </Group>
       <Group wrap="nowrap" style={{ overflowX: 'auto', paddingBottom: 4 }}>
         {products.map((product) => (
           <div key={product.id} style={{ minWidth: 320 }}>
@@ -162,6 +245,14 @@ export function PromoBanner() {
   );
 }
 
+function mapProductSectionTitle(title: string) {
+  if (title === 'FeaturedProducts') return 'Most wanted right now';
+  if (title === 'NewArrivals') return 'Latest drops into the archive';
+  if (title === 'BestSellers') return 'Customer favorites that keep moving';
+  if (title === 'RecentlyViewed') return 'Pick up where you left off';
+  return title;
+}
+
 export function FlashSaleModal({ title, subtitle, discount }: { title: string; subtitle: string; discount: string }) {
   const [opened, setOpened] = useState(true);
 
@@ -191,8 +282,38 @@ export function FlashSaleModal({ title, subtitle, discount }: { title: string; s
 export function HomeSearchSection() {
   return (
     <Stack gap="md">
-      <SectionEyebrow>SearchBar</SectionEyebrow>
+      <SectionEyebrow>Search the catalog</SectionEyebrow>
       <SearchBar />
     </Stack>
+  );
+}
+
+export function CommerceBenefits() {
+  return (
+    <SimpleGrid cols={{ base: 1, md: 3 }} spacing="lg">
+      {[
+        {
+          title: 'Fast browse path',
+          text: 'Move from home to categories, products, and checkout with fewer jumps.',
+        },
+        {
+          title: 'Clear merchandising',
+          text: 'Featured, new arrivals, best sellers, and promo banners are separated cleanly.',
+        },
+        {
+          title: 'Store confidence',
+          text: 'Shipping, security, and offer visibility are surfaced early like a real shop.',
+        },
+      ].map((item) => (
+        <SurfaceCard key={item.title}>
+          <Text fw={700} mb={6}>
+            {item.title}
+          </Text>
+          <Text size="sm" c="rgba(255,255,255,0.6)">
+            {item.text}
+          </Text>
+        </SurfaceCard>
+      ))}
+    </SimpleGrid>
   );
 }
