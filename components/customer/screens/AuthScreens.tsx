@@ -1,7 +1,16 @@
-import { Button, Group, PasswordInput, Stack, Text, TextInput } from '@mantine/core';
+import { Group, Stack, TextInput } from '@mantine/core';
 import Link from 'next/link';
 import { CustomerShell } from '@/components/customer/CustomerShell';
-import { SurfaceCard } from '@/components/customer/UiPieces';
+import {
+  AuthHeader,
+  AuthSubmitButton,
+  EmailInput,
+  PasswordField,
+  PasswordStrength,
+  PhoneInput,
+  SocialLoginButton,
+  SurfaceCard,
+} from '@/components/customer/shared/SharedComponents';
 
 function AuthScreenFrame({
   title,
@@ -16,16 +25,16 @@ function AuthScreenFrame({
     <CustomerShell title={title} subtitle={subtitle} badge="Authentication">
       <SurfaceCard>
         <Stack gap="md" maw={520}>
-          <TextInput label="Email or phone" placeholder="Enter your email or phone" radius="md" />
-          <PasswordInput label="Password" placeholder="Enter your password" radius="md" />
+          <AuthHeader title={title} subtitle={subtitle} />
+          <EmailInput />
+          <PhoneInput />
+          <PasswordField />
+          {cta === 'Register' ? <PasswordStrength /> : null}
           <Group gap="md">
-            <Button radius="xl" variant="gradient" gradient={{ from: '#2f1a46', to: '#8a58ff', deg: 135 }}>
-              {cta}
-            </Button>
+            <AuthSubmitButton label={cta} />
+            <SocialLoginButton label="SocialLoginButton" />
             <Link href="/home" style={{ textDecoration: 'none' }}>
-              <Button component="span" radius="xl" variant="default" color="dark">
-                Continue as guest
-              </Button>
+              <SocialLoginButton label="Continue as guest" asSpan />
             </Link>
           </Group>
         </Stack>
@@ -35,22 +44,22 @@ function AuthScreenFrame({
 }
 
 export function LoginScreen() {
-  return <AuthScreenFrame title="Login" subtitle="Secure entry for returning customers." cta="Login" />;
+  return <AuthScreenFrame title="LoginScreen" subtitle="Secure entry for returning customers." cta="Login" />;
 }
 
 export function RegisterScreen() {
-  return <AuthScreenFrame title="Register" subtitle="Create a customer profile with address and order history." cta="Register" />;
+  return <AuthScreenFrame title="RegisterScreen" subtitle="Create a customer profile with address and order history." cta="Register" />;
 }
 
 export function ForgotPasswordScreen() {
   return (
-    <CustomerShell title="Forgot password" subtitle="Start the reset flow with email or phone." badge="Authentication">
+    <CustomerShell title="ForgotPasswordScreen" subtitle="Start the reset flow with email or phone." badge="Authentication">
       <SurfaceCard>
         <Stack gap="md" maw={520}>
-          <TextInput label="Email or phone" placeholder="Enter your email or phone" radius="md" />
-          <Button radius="xl" variant="gradient" gradient={{ from: '#2f1a46', to: '#8a58ff', deg: 135 }}>
-            Send code
-          </Button>
+          <AuthHeader title="ForgotPasswordScreen" subtitle="Request a verification code." />
+          <EmailInput />
+          <PhoneInput />
+          <AuthSubmitButton label="Send code" />
         </Stack>
       </SurfaceCard>
     </CustomerShell>
@@ -59,14 +68,14 @@ export function ForgotPasswordScreen() {
 
 export function VerifyCodeScreen() {
   return (
-    <CustomerShell title="Verify code" subtitle="Confirm the reset or account verification code." badge="Authentication">
+    <CustomerShell title="VerifyCodeScreen" subtitle="Confirm the reset or account verification code." badge="Authentication">
       <SurfaceCard>
         <Stack gap="md" maw={520}>
+          <AuthHeader title="VerifyCodeScreen" subtitle="Confirm code and set password." />
           <TextInput label="Verification code" placeholder="000000" radius="md" />
-          <PasswordInput label="New password" placeholder="Create a new password" radius="md" />
-          <Button radius="xl" variant="gradient" gradient={{ from: '#2f1a46', to: '#8a58ff', deg: 135 }}>
-            Confirm
-          </Button>
+          <PasswordField />
+          <PasswordStrength value={84} />
+          <AuthSubmitButton label="Confirm" />
         </Stack>
       </SurfaceCard>
     </CustomerShell>

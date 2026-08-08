@@ -10,6 +10,7 @@ import {
 } from '@mantine/core';
 import Link from 'next/link';
 import { PropsWithChildren } from 'react';
+import { BottomTabBar } from '@/components/customer/shared/SharedComponents';
 import { mainTabs } from '@/lib/customer-app-data';
 
 type CustomerShellProps = PropsWithChildren<{
@@ -117,6 +118,7 @@ export function CustomerShell({
         </Stack>
 
         {children}
+        <BottomTabBar activeTab={activeTab} />
       </Container>
     </Box>
   );

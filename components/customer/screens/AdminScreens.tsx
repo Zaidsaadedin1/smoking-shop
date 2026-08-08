@@ -1,6 +1,6 @@
 import { Grid, SimpleGrid, Stack, Text } from '@mantine/core';
 import { AdminShell } from '@/components/customer/AdminShell';
-import { SurfaceCard } from '@/components/customer/UiPieces';
+import { SurfaceCard } from '@/components/customer/shared/SharedComponents';
 import { adminMetrics } from '@/lib/customer-app-data';
 import { categories as fallbackCategories, orders as fallbackOrders, products as fallbackProducts } from '@/lib/storefront-data';
 import { Category, Order, Product } from '@/lib/storefront-types';

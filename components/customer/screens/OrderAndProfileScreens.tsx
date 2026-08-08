@@ -1,13 +1,38 @@
-import { Button, Group, Stack, Switch, Text, TextInput } from '@mantine/core';
+import { Stack, Text } from '@mantine/core';
 import { CustomerShell } from '@/components/customer/CustomerShell';
-import { OrderListWithData, SurfaceCard } from '@/components/customer/UiPieces';
 import { orders as fallbackOrders } from '@/lib/storefront-data';
 import { Order } from '@/lib/storefront-types';
+import { AddressForm } from '@/components/customer/addresses/AddressComponents';
+import {
+  CancelOrderButton,
+  OrderCard,
+  OrderDetailsHeader,
+  OrderNumber,
+  OrderPriceSummary,
+  OrderProductItem,
+  OrderStatusTabs,
+  OrderStatusTimeline,
+  PaymentDetails,
+  ReorderButton,
+  ShippingAddressCard,
+  TrackingInfo,
+} from '@/components/customer/orders/OrderComponents';
+import { ProfileHeader, ProfileInfo, ProfileMenuItem } from '@/components/customer/profile/ProfileComponents';
+import { SectionEyebrow, SettingToggle, SurfaceCard } from '@/components/customer/shared/SharedComponents';
 
 export function OrdersScreen({ orders = fallbackOrders }: { orders?: Order[] }) {
   return (
     <CustomerShell title="Orders" subtitle="Orders are separated into their own listing view with status tabs and order cards." badge="Orders">
-      <OrderListWithData orders={orders} />
+      <Stack gap="lg">
+        <OrderStatusTabs />
+        {orders.length === 0 ? (
+          <SurfaceCard>
+            <Text fw={600}>EmptyOrders</Text>
+          </SurfaceCard>
+        ) : (
+          orders.map((order) => <OrderCard key={order.id} order={order} />)
+        )}
+      </Stack>
     </CustomerShell>
   );
 }
@@ -24,18 +49,18 @@ export function OrderDetailScreen({
   return (
     <CustomerShell title={order.number} subtitle="Order details, timeline, shipping, and payment are grouped into a focused route." badge="Order detail">
       <Stack gap="lg">
-        <SurfaceCard>
-          <Text fw={700} size="1.7rem" mb="lg">
-            Status timeline
-          </Text>
-          <Text c="rgba(255,255,255,0.72)">Current status: {order.status.replaceAll('_', ' ')}</Text>
-        </SurfaceCard>
-        <SurfaceCard>
-          <Text fw={700} size="1.7rem" mb="lg">
-            Product items
-          </Text>
-          <Text c="rgba(255,255,255,0.72)">Order product item list goes here.</Text>
-        </SurfaceCard>
+        <OrderDetailsHeader />
+        <OrderNumber number={order.number} />
+        <OrderStatusTimeline status={order.status} />
+        <OrderProductItem />
+        <ShippingAddressCard />
+        <PaymentDetails />
+        <OrderPriceSummary order={order} />
+        <TrackingInfo />
+        <div style={{ display: 'flex', gap: 12 }}>
+          <CancelOrderButton />
+          <ReorderButton />
+        </div>
       </Stack>
     </CustomerShell>
   );
@@ -43,12 +68,12 @@ export function OrderDetailScreen({
 
 export function ProfileScreen() {
   return (
-    <CustomerShell title="Profile" subtitle="Profile becomes a dedicated customer hub with orders, favorites, addresses, and settings." activeTab="Profile" badge="Profile">
+    <CustomerShell title="ProfileScreen" subtitle="Profile becomes a dedicated customer hub with orders, favorites, addresses, and settings." activeTab="Profile" badge="Profile">
       <Stack gap="sm">
+        <ProfileHeader />
+        <ProfileInfo />
         {['My Orders', 'My Favorites', 'My Addresses', 'Notifications', 'Settings', 'Contact Us', 'Privacy Policy', 'Terms & Conditions', 'Logout'].map((item) => (
-          <SurfaceCard key={item}>
-            <Text fw={600}>{item}</Text>
-          </SurfaceCard>
+          <ProfileMenuItem key={item} label={item} />
         ))}
       </Stack>
     </CustomerShell>
@@ -57,38 +82,16 @@ export function ProfileScreen() {
 
 export function AddAddressScreen() {
   return (
-    <CustomerShell title="Add address" subtitle="Address creation is separated from address listing and checkout." badge="Address form">
-      <SurfaceCard>
-        <Stack gap="md">
-          <TextInput label="Label" placeholder="Home, Studio" radius="md" />
-          <TextInput label="City" placeholder="Amman" radius="md" />
-          <TextInput label="Area" placeholder="Abdoun" radius="md" />
-          <TextInput label="Phone" placeholder="+962..." radius="md" />
-          <Switch label="Default address" />
-          <Button radius="xl" variant="gradient" gradient={{ from: '#2f1a46', to: '#8a58ff', deg: 135 }}>
-            Save address
-          </Button>
-        </Stack>
-      </SurfaceCard>
+    <CustomerShell title="AddAddressScreen" subtitle="Address creation is separated from address listing and checkout." badge="Address form">
+      <AddressForm buttonLabel="Save address" />
     </CustomerShell>
   );
 }
 
 export function EditAddressScreen({ id }: { id: string }) {
   return (
-    <CustomerShell title={`Edit address ${id}`} subtitle="Existing addresses can be edited from their own dynamic route." badge="Address form">
-      <SurfaceCard>
-        <Stack gap="md">
-          <TextInput label="Label" placeholder="Home, Studio" radius="md" defaultValue="Coven House" />
-          <TextInput label="City" placeholder="Amman" radius="md" defaultValue="Amman" />
-          <TextInput label="Area" placeholder="Abdoun" radius="md" defaultValue="Abdoun" />
-          <TextInput label="Phone" placeholder="+962..." radius="md" defaultValue="+962 7 9000 1234" />
-          <Switch label="Default address" defaultChecked />
-          <Button radius="xl" variant="gradient" gradient={{ from: '#2f1a46', to: '#8a58ff', deg: 135 }}>
-            Update address
-          </Button>
-        </Stack>
-      </SurfaceCard>
+    <CustomerShell title={`EditAddressScreen ${id}`} subtitle="Existing addresses can be edited from their own dynamic route." badge="Address form">
+      <AddressForm buttonLabel="Update address" />
     </CustomerShell>
   );
 }
@@ -97,14 +100,7 @@ export function SettingsScreen() {
   return (
     <CustomerShell title="Settings" subtitle="Customer settings stay separate from profile overview." badge="Settings">
       <Stack gap="sm">
-        {['Push notifications', 'Marketing emails', 'Dark appearance', 'Language preference'].map((item) => (
-          <SurfaceCard key={item}>
-            <Group justify="space-between">
-              <Text>{item}</Text>
-              <Switch defaultChecked />
-            </Group>
-          </SurfaceCard>
-        ))}
+        {['Push notifications', 'Marketing emails', 'Dark appearance', 'Language preference'].map((item) => <SettingToggle key={item} label={item} />)}
       </Stack>
     </CustomerShell>
   );
@@ -127,11 +123,8 @@ export function OnboardingScreen() {
   return (
     <CustomerShell title="Onboarding" subtitle="Onboarding introduces the product language, order flow, and profile system before entry." badge="Onboarding">
       <Stack gap="sm">
-        {['Discover categories', 'Save favorites', 'Track orders', 'Manage addresses'].map((item) => (
-          <SurfaceCard key={item}>
-            <Text fw={600}>{item}</Text>
-          </SurfaceCard>
-        ))}
+        <SectionEyebrow>Onboarding steps</SectionEyebrow>
+        {['Discover categories', 'Save favorites', 'Track orders', 'Manage addresses'].map((item) => <ProfileMenuItem key={item} label={item} />)}
       </Stack>
     </CustomerShell>
   );

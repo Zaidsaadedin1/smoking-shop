@@ -1,8 +1,19 @@
-import { Badge, Button, Grid, Group, Stack, Text } from '@mantine/core';
-import Link from 'next/link';
+import { Grid, Stack } from '@mantine/core';
 import { MotionReveal } from '@/components/storefront/MotionReveal';
 import { CustomerShell } from '@/components/customer/CustomerShell';
-import { CategoryListWithData, ProductGridSection, SurfaceCard } from '@/components/customer/UiPieces';
+import {
+  BestSellers,
+  CategorySlider,
+  FeaturedProducts,
+  FlashSaleBanner,
+  FlashSaleModal,
+  HeroBanner,
+  HomeHeader,
+  HomeSearchSection,
+  NewArrivals,
+  PromoBanner,
+  RecentlyViewed,
+} from '@/components/customer/home/HomeComponents';
 import { flashSale } from '@/lib/customer-app-data';
 import { Category, Product } from '@/lib/storefront-types';
 
@@ -24,52 +35,33 @@ export function HomeScreen({ categories, products }: HomeScreenProps) {
       activeTab="Home"
       badge="Home"
     >
+      <FlashSaleModal title={flashSale.title} subtitle={flashSale.subtitle} discount={flashSale.discount} />
       <MotionReveal transition="fade-down" duration={700}>
-        <Grid gutter="lg">
+        <Stack gap="lg">
+          <HomeHeader />
+          <HomeSearchSection />
+        </Stack>
+      </MotionReveal>
+
+      <MotionReveal duration={760}>
+        <Grid gutter="lg" mt={12}>
           <Grid.Col span={{ base: 12, md: 7 }}>
-            <SurfaceCard>
-              <Stack gap="lg">
-                <Group gap="sm">
-                  <Badge size="lg" radius="xl" variant="gradient" gradient={{ from: '#2f1a46', to: '#8a58ff', deg: 135 }}>
-                    Hero banner
-                  </Badge>
-                  <Badge size="lg" radius="xl" variant="dot" color="grape">
-                    Flash sale modal
-                  </Badge>
-                </Group>
-                <Text fw={700} size="2rem">
-                  {flashSale.title}
-                </Text>
-                <Text size="lg" c="rgba(255,255,255,0.72)" style={{ lineHeight: 1.8 }}>
-                  {flashSale.subtitle}
-                </Text>
-                <Group gap="md">
-                  <Link href="/products" style={{ textDecoration: 'none' }}>
-                    <Button component="span" radius="xl" variant="gradient" gradient={{ from: '#2f1a46', to: '#8a58ff', deg: 135 }}>
-                      Shop now
-                    </Button>
-                  </Link>
-                  <Link href="/search" style={{ textDecoration: 'none' }}>
-                    <Button component="span" radius="xl" variant="default" color="dark">
-                      Search catalog
-                    </Button>
-                  </Link>
-                </Group>
-              </Stack>
-            </SurfaceCard>
+            <HeroBanner title={flashSale.title} subtitle={flashSale.subtitle} />
           </Grid.Col>
           <Grid.Col span={{ base: 12, md: 5 }}>
-            <CategoryListWithData categories={categories} products={products} />
+            <FlashSaleBanner title={flashSale.title} subtitle={flashSale.subtitle} discount={flashSale.discount} />
           </Grid.Col>
         </Grid>
       </MotionReveal>
 
       <MotionReveal duration={850}>
         <Stack gap="xl" mt={32}>
-          <ProductGridSection title="Featured products" items={featuredProducts} />
-          <ProductGridSection title="New arrivals" items={newArrivals} />
-          <ProductGridSection title="Best sellers" items={bestSellers} />
-          <ProductGridSection title="Recently viewed" items={recentProducts} />
+          <CategorySlider categories={categories} />
+          <FeaturedProducts products={featuredProducts} />
+          <NewArrivals products={newArrivals} />
+          <BestSellers products={bestSellers} />
+          <PromoBanner />
+          <RecentlyViewed products={recentProducts} />
         </Stack>
       </MotionReveal>
     </CustomerShell>
