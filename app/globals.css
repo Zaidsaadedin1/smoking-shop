@@ -1,5 +1,37 @@
 @import 'tailwindcss';
 
+@font-face {
+  font-family: 'Mirza';
+  src: url('/fonts/mirza/Mirza-Regular.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Mirza';
+  src: url('/fonts/mirza/Mirza-Medium.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Mirza';
+  src: url('/fonts/mirza/Mirza-SemiBold.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Mirza';
+  src: url('/fonts/mirza/Mirza-Bold.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
 [data-theme='dark'] {
   --background: #080808;
   --background-secondary: #101010;
@@ -30,8 +62,8 @@
   --surface: rgba(255, 255, 255, 0.04);
   --surface-strong: rgba(255, 255, 255, 0.07);
   --surface-border: rgba(255, 255, 255, 0.08);
-  --font-inter: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --font-cormorant: 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Garamond, Georgia, serif;
+  --font-inter: 'Mirza', 'Times New Roman', serif;
+  --font-cormorant: 'Mirza', 'Times New Roman', serif;
 }
 
 [data-theme='light'] {
@@ -64,8 +96,8 @@
   --surface: rgba(255, 255, 255, 0.62);
   --surface-strong: rgba(255, 255, 255, 0.82);
   --surface-border: rgba(49, 10, 24, 0.12);
-  --font-inter: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --font-cormorant: 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Garamond, Georgia, serif;
+  --font-inter: 'Mirza', 'Times New Roman', serif;
+  --font-cormorant: 'Mirza', 'Times New Roman', serif;
 }
 
 :root {

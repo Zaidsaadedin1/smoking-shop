@@ -71,8 +71,7 @@ export function CustomerShell({
               component="h1"
               style={{
                 margin: 0,
-                fontFamily:
-                  '"Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, "Times New Roman", serif',
+                fontFamily: 'var(--font-cormorant)',
                 fontSize: 'clamp(2.2rem, 6vw, 4.8rem)',
                 lineHeight: 0.95,
                 letterSpacing: '-0.04em',

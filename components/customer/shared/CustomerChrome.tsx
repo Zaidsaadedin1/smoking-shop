@@ -93,8 +93,7 @@ export function StoreHeader({
           <Text
             size="1.25rem"
             style={{
-              fontFamily:
-                '"Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, "Times New Roman", serif',
+              fontFamily: 'var(--font-cormorant)',
               letterSpacing: 2,
             }}
           >
@@ -153,8 +152,7 @@ export function StoreFooter() {
           <Stack gap={6}>
             <Text
               style={{
-                fontFamily:
-                  '"Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, "Times New Roman", serif',
+                fontFamily: 'var(--font-cormorant)',
                 fontSize: '1.9rem',
                 letterSpacing: 1,
               }}
