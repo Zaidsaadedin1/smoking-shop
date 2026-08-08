@@ -1,5 +1,7 @@
-import { ProfileScreen } from '@/components/customer/screens/OrderAndProfileScreens';
+import { ProfilePageView } from '@/components/storefront/storefront-account-pages';
+import { requireCustomerSession } from '@/lib/customer/auth';
 
-export default function ProfilePage() {
-  return <ProfileScreen />;
+export default async function ProfilePage() {
+  const session = await requireCustomerSession();
+  return <ProfilePageView session={session} />;
 }

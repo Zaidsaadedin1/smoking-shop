@@ -3,7 +3,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowRight, Check, Minus, Plus, SlidersHorizontal, Star } from 'lucide-react';
 import Link from 'next/link';
-import { ReactNode, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useLocale } from '@/components/storefront/locale-provider';
@@ -25,7 +26,7 @@ import {
   getProductInventory,
   getProductSizes,
 } from '@/lib/commerce-utils';
-import { useCartStore } from '@/stores/use-cart-store';
+import { getCartProducts, useCartStore } from '@/stores/use-cart-store';
 import { useUiStore } from '@/stores/use-ui-store';
 
 export function ShopPageView({
@@ -130,27 +131,78 @@ export function ProductPageView({
   const pushToast = useUiStore((state) => state.pushToast);
   const colors = getProductColors(product);
   const sizes = getProductSizes(product);
-  const [selectedColor, setSelectedColor] = useState(colors[0]?.name ?? '');
+  const galleryImages = product.images.length
+    ? product.images
+    : [
+        {
+          id: 'fallback-image',
+          url: '/products/product-placeholder.svg',
+          alt: product.name,
+        },
+      ];
+  const [selectedColor, setSelectedColor] = useState(colors.find((color) => color.name !== 'Default')?.name ?? colors[0]?.name ?? '');
   const [selectedSize, setSelectedSize] = useState(sizes[0] ?? '');
   const [quantity, setQuantity] = useState(1);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const variantMatchesColor = (variant: StoreProduct['variants'][number], color: string) =>
+    variant.color === color || variant.color === 'Default';
 
   const selectedVariant =
-    product.variants.find((variant) => variant.color === selectedColor && variant.size === selectedSize) ??
-    product.variants.find((variant) => variant.color === selectedColor) ??
+    product.variants.find((variant) => variantMatchesColor(variant, selectedColor) && variant.size === selectedSize) ??
+    product.variants.find((variant) => variantMatchesColor(variant, selectedColor)) ??
     product.variants[0];
 
   const discount = calculateDiscount(selectedVariant.price, selectedVariant.compareAtPrice);
-
+  const maxQuantity =
+    selectedVariant.allowBackorder
+      ? 99
+      : Math.max(1, selectedVariant.stockQuantity);
   return (
     <div className="pb-20 pt-6 md:pb-24">
       <Container>
         <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="grid gap-4 sm:grid-cols-2">
-            {product.images.map((image) => (
-              <div key={image.id} className="overflow-hidden rounded-[28px] border border-white/8 bg-[var(--card)]">
-                <img src={image.url} alt={image.alt} className="aspect-[4/5] w-full object-cover transition duration-500 hover:scale-[1.04]" />
+          <div className="grid gap-4 lg:grid-cols-[108px_minmax(0,1fr)] lg:items-start">
+            <div className="order-2 flex gap-3 overflow-x-auto pb-2 lg:order-1 lg:grid lg:max-h-[760px] lg:auto-rows-max lg:overflow-visible lg:pb-0">
+              {galleryImages.map((image, index) => {
+                const isActive = index === selectedImageIndex;
+                return (
+                  <button
+                    key={image.id}
+                    type="button"
+                    onClick={() => setSelectedImageIndex(index)}
+                    className={`group relative shrink-0 overflow-hidden rounded-[22px] border bg-[var(--card)] transition ${
+                      isActive
+                        ? 'border-[var(--text)] shadow-[0_0_0_1px_var(--text)]'
+                        : 'border-[var(--border)] hover:border-[var(--text-secondary)]'
+                    }`}
+                  >
+                    <img
+                      src={image.url}
+                      alt={image.alt}
+                      className="h-24 w-20 object-cover transition duration-500 group-hover:scale-[1.04] lg:h-28 lg:w-full lg:min-w-[108px]"
+                    />
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="order-1 overflow-hidden rounded-[32px] border border-[var(--border)] bg-[var(--card)] lg:order-2">
+              <div className="relative">
+                <img
+                  src={galleryImages[selectedImageIndex]?.url ?? galleryImages[0].url}
+                  alt={galleryImages[selectedImageIndex]?.alt ?? galleryImages[0].alt}
+                  className="aspect-[4/5] w-full object-cover"
+                />
+                <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between p-4">
+                  <div className="rounded-full border border-white/10 bg-black/45 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white backdrop-blur-md">
+                    {product.brand}
+                  </div>
+                  <div className="rounded-full border border-white/10 bg-black/45 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white backdrop-blur-md">
+                    {selectedImageIndex + 1} / {galleryImages.length}
+                  </div>
+                </div>
               </div>
-            ))}
+            </div>
           </div>
           <div className="lg:sticky lg:top-28 lg:h-fit">
             <div className="text-xs tracking-[0.26em] text-[var(--muted)]">{product.brand}</div>
@@ -164,6 +216,19 @@ export function ProductPageView({
               <Rating rating={product.rating} reviewCount={product.reviewCount} />
             </div>
             <p className="mt-5 text-sm leading-7 text-[var(--text-secondary)]">{t(product.shortDescription)}</p>
+
+            <div className="mt-8 rounded-[28px] border border-white/8 bg-white/3 p-5">
+              <div className="flex flex-wrap items-center gap-2">
+                {statusPill(selectedVariant.stockQuantity > 0 || selectedVariant.allowBackorder ? 'READY TO SHIP' : 'SOLD OUT')}
+                {discount > 0 ? statusPill(`${discount}% OFF`) : null}
+                {selectedVariant.allowBackorder ? statusPill('BACKORDER AVAILABLE') : null}
+              </div>
+              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                <VariantMetric label="SKU" value={selectedVariant.sku} />
+                <VariantMetric label="COLOR" value={selectedVariant.color} />
+                <VariantMetric label="SIZE" value={selectedVariant.size} />
+              </div>
+            </div>
 
             <div className="mt-8">
               <div className="mb-3 text-xs tracking-[0.24em] text-[var(--muted)]">{t('COLOR')}</div>
@@ -191,7 +256,7 @@ export function ProductPageView({
                   const available = product.variants.some(
                     (variant) =>
                       variant.size === sizeOption &&
-                      variant.color === selectedColor &&
+                      variantMatchesColor(variant, selectedColor) &&
                       (variant.stockQuantity > 0 || variant.allowBackorder)
                   );
 
@@ -218,7 +283,12 @@ export function ProductPageView({
                   <Minus className="h-4 w-4" />
                 </button>
                 <span>{quantity}</span>
-                <button type="button" onClick={() => setQuantity((value) => value + 1)}>
+                <button
+                  type="button"
+                  disabled={quantity >= maxQuantity}
+                  onClick={() => setQuantity((value) => Math.min(maxQuantity, value + 1))}
+                  className="disabled:cursor-not-allowed disabled:opacity-40"
+                >
                   <Plus className="h-4 w-4" />
                 </button>
               </div>
@@ -236,7 +306,7 @@ export function ProductPageView({
                 type="button"
                 disabled={selectedVariant.stockQuantity <= 0 && !selectedVariant.allowBackorder}
                 onClick={() => {
-                  addItem(product, selectedVariant.id, quantity);
+                  addItem(product, selectedVariant.id, Math.min(quantity, maxQuantity));
                   openCart();
                   pushToast({
                     title: t('Added to your bag'),
@@ -282,7 +352,7 @@ export function ProductPageView({
             type="button"
             disabled={selectedVariant.stockQuantity <= 0 && !selectedVariant.allowBackorder}
             onClick={() => {
-              addItem(product, selectedVariant.id, quantity);
+              addItem(product, selectedVariant.id, Math.min(quantity, maxQuantity));
               openCart();
             }}
             className="rounded-full bg-[var(--text)] px-6 py-4 text-sm tracking-[0.2em] text-black"
@@ -291,6 +361,23 @@ export function ProductPageView({
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function statusPill(label: string) {
+  return (
+    <div className="rounded-full border border-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-[var(--text-secondary)]">
+      {label}
+    </div>
+  );
+}
+
+function VariantMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-[20px] border border-white/8 bg-black/15 p-3">
+      <div className="text-[10px] uppercase tracking-[0.22em] text-[var(--muted)]">{label}</div>
+      <div className="mt-2 text-sm">{value}</div>
     </div>
   );
 }
@@ -352,7 +439,13 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
             <div className="mt-5 grid gap-3">
               <input placeholder={t('CouponInput')} className="h-12 rounded-full border border-white/10 bg-black/20 px-5 text-sm outline-none" />
               <button type="button" className="rounded-full border border-white/10 px-5 py-3 text-sm tracking-[0.2em]">{t('Apply')}</button>
-              <Link href="/checkout" className="rounded-full bg-[var(--text)] px-5 py-3 text-center text-sm tracking-[0.2em] text-black">{t('CHECKOUT')}</Link>
+              <Link
+                href="/checkout"
+                className="rounded-full bg-[var(--accent)] px-5 py-3 text-center text-sm tracking-[0.2em]"
+                style={{ color: 'var(--background)' }}
+              >
+                {t('CHECKOUT')}
+              </Link>
             </div>
           </div>
         </div>
@@ -360,7 +453,13 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
         <div className="rounded-[32px] border border-white/8 bg-white/3 p-10 text-center">
           <div className="font-display text-4xl uppercase">{t('YOUR BAG IS EMPTY.')}</div>
           <p className="mt-3 text-sm text-[var(--text-secondary)]">{t('But that can be fixed.')}</p>
-          <Link href="/shop" className="mt-6 inline-flex rounded-full bg-[var(--text)] px-5 py-3 text-sm tracking-[0.2em] text-black">{t('SHOP THE DROP')}</Link>
+          <Link
+            href="/shop"
+            className="mt-6 inline-flex rounded-full bg-[var(--accent)] px-5 py-3 text-sm tracking-[0.2em]"
+            style={{ color: 'var(--background)' }}
+          >
+            {t('SHOP THE DROP')}
+          </Link>
         </div>
       )}
     </Container>
@@ -435,8 +534,165 @@ export function AccountPageView() {
   );
 }
 
-export function CheckoutPageView() {
+type CheckoutAddressView = {
+  id: string;
+  label: string;
+  fullName: string;
+  phone: string;
+  city: string;
+  area: string;
+  street?: string;
+  building?: string;
+  isDefault: boolean;
+};
+
+type CheckoutSessionView = {
+  fullName: string;
+  email: string;
+  phone: string;
+};
+
+type CheckoutFormState = {
+  fullName: string;
+  phone: string;
+  city: string;
+  area: string;
+  street: string;
+  building: string;
+  paymentMethod: string;
+};
+
+export function CheckoutPageView({
+  session,
+  addresses,
+}: {
+  session: CheckoutSessionView;
+  addresses: CheckoutAddressView[];
+}) {
   const { t } = useLocale();
+  const router = useRouter();
+  const items = useCartStore((state) => state.items);
+  const clearCart = useCartStore((state) => state.clearCart);
+  const pushToast = useUiStore((state) => state.pushToast);
+  const lines = useMemo(() => getCartProducts(items), [items]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const defaultAddress = addresses.find((address) => address.isDefault) ?? addresses[0] ?? null;
+  const [selectedAddressId, setSelectedAddressId] = useState(defaultAddress?.id ?? '');
+  const [form, setForm] = useState<CheckoutFormState>({
+    fullName: defaultAddress?.fullName ?? session.fullName,
+    phone: defaultAddress?.phone ?? session.phone,
+    city: defaultAddress?.city ?? '',
+    area: defaultAddress?.area ?? '',
+    street: defaultAddress?.street ?? '',
+    building: defaultAddress?.building ?? '',
+    paymentMethod: 'cash_on_delivery',
+  });
+  const subtotal = lines.reduce((sum, line) => sum + line.variant.price * line.quantity, 0);
+  const shippingAmount = lines.length ? 3.5 : 0;
+  const total = subtotal + shippingAmount;
+  const checkoutFields: Array<{ label: string; key: keyof CheckoutFormState }> = [
+    { label: 'Full Name', key: 'fullName' },
+    { label: 'Phone', key: 'phone' },
+    { label: 'City', key: 'city' },
+    { label: 'Area', key: 'area' },
+    { label: 'Street', key: 'street' },
+    { label: 'Building', key: 'building' },
+  ];
+
+  useEffect(() => {
+    if (!selectedAddressId) {
+      return;
+    }
+
+    const selectedAddress = addresses.find((address) => address.id === selectedAddressId);
+
+    if (!selectedAddress) {
+      return;
+    }
+
+    setForm((current) => ({
+      ...current,
+      fullName: selectedAddress.fullName,
+      phone: selectedAddress.phone,
+      city: selectedAddress.city,
+      area: selectedAddress.area,
+      street: selectedAddress.street ?? '',
+      building: selectedAddress.building ?? '',
+    }));
+  }, [addresses, selectedAddressId]);
+
+  async function placeOrder() {
+    if (!lines.length || isSubmitting) {
+      return;
+    }
+
+    if (!form.fullName.trim() || !form.phone.trim() || !form.city.trim() || !form.area.trim() || !form.street.trim()) {
+      pushToast({
+        title: t('Missing details'),
+        description: t('Please complete the delivery details before placing your order.'),
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          paymentMethod: form.paymentMethod,
+          customerName: form.fullName,
+          customerEmail: session.email,
+          customerPhone: form.phone,
+          shippingAddress: {
+            city: form.city,
+            area: form.area,
+            street: form.street,
+            building: form.building,
+          },
+          billingAddress: null,
+          subtotal,
+          discountAmount: 0,
+          shippingAmount,
+          taxAmount: 0,
+          totalAmount: total,
+          currency: 'JOD',
+          items: lines.map((line) => ({
+            productId: line.product.id,
+            variantId: line.variant.id,
+            productName: line.product.name,
+            sku: line.variant.sku,
+            sizeName: line.variant.size,
+            colorName: line.variant.color,
+            imageUrl: line.product.images[0]?.url ?? null,
+            unitPrice: line.variant.price,
+            quantity: line.quantity,
+            lineTotal: line.variant.price * line.quantity,
+          })),
+        }),
+      });
+
+      const result = (await response.json()) as { data?: { order?: { id?: string } }; error?: string };
+
+      if (!response.ok || result.error || !result.data?.order?.id) {
+        throw new Error(result.error ?? 'Failed to place order');
+      }
+
+      clearCart();
+      router.push(`/order-success/${result.data.order.id}`);
+    } catch (error) {
+      pushToast({
+        title: t('Order failed'),
+        description: error instanceof Error ? error.message : t('Something went wrong while placing the order.'),
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <Container className="py-8 md:py-14">
       <SectionHeading title="CHECKOUT" description="Cash on Delivery is supported. Card checkout requires a configured payment provider." />
@@ -445,26 +701,115 @@ export function CheckoutPageView() {
           <Step title="1. DELIVERY" active />
           <Step title="2. PAYMENT" />
           <Step title="3. REVIEW" />
+          {!lines.length ? (
+            <div className="rounded-[24px] border border-white/8 bg-black/10 p-5 text-sm text-[var(--text-secondary)]">
+              {t('YOUR BAG IS EMPTY.')}
+            </div>
+          ) : null}
+          {addresses.length ? (
+            <div className="space-y-3 rounded-[24px] border border-white/8 bg-black/10 p-4">
+              <div className="text-xs tracking-[0.24em] text-[var(--muted)]">{t('Saved addresses')}</div>
+              <div className="grid gap-3">
+                {addresses.map((address) => (
+                  <button
+                    key={address.id}
+                    type="button"
+                    onClick={() => setSelectedAddressId(address.id)}
+                    className={`rounded-[22px] border px-4 py-4 text-left transition ${
+                      selectedAddressId === address.id
+                        ? 'border-white bg-white text-black'
+                        : 'border-white/10 bg-transparent text-[var(--text)]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="text-sm font-medium uppercase tracking-[0.16em]">{address.label}</div>
+                      {address.isDefault ? (
+                        <span className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.2em] ${selectedAddressId === address.id ? 'bg-black text-white' : 'border border-white/10 text-[var(--muted)]'}`}>
+                          {t('Default')}
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className={`mt-2 text-sm ${selectedAddressId === address.id ? 'text-black/70' : 'text-[var(--text-secondary)]'}`}>
+                      {address.fullName} · {address.phone}
+                    </div>
+                    <div className={`mt-1 text-sm ${selectedAddressId === address.id ? 'text-black/70' : 'text-[var(--text-secondary)]'}`}>
+                      {[address.city, address.area, address.street, address.building].filter(Boolean).join(', ')}
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <div className="flex justify-end">
+                <Link href="/addresses/new" className="rounded-full border border-white/10 px-4 py-2 text-xs tracking-[0.2em]">
+                  {t('ADD ADDRESS')}
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-[24px] border border-white/8 bg-black/10 p-5 text-sm text-[var(--text-secondary)]">
+              <div>{t('No saved addresses.')}</div>
+              <Link href="/addresses/new" className="mt-4 inline-flex rounded-full border border-white/10 px-4 py-2 text-xs tracking-[0.2em] text-[var(--text)]">
+                {t('ADD ADDRESS')}
+              </Link>
+            </div>
+          )}
           <div className="grid gap-4 md:grid-cols-2">
-            {['Full Name', 'Phone', 'City', 'Area', 'Street', 'Building'].map((field) => (
-              <input key={field} placeholder={t(field)} className="h-12 rounded-full border border-white/10 bg-black/20 px-5 text-sm outline-none" />
+            {checkoutFields.map((field) => (
+              <input
+                key={field.key}
+                value={form[field.key]}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    [field.key]: event.target.value,
+                  }))
+                }
+                placeholder={t(field.label)}
+                className="h-12 rounded-full border border-white/10 bg-black/20 px-5 text-sm outline-none"
+              />
             ))}
           </div>
-          <select className="h-12 rounded-full border border-white/10 bg-black/20 px-5 text-sm outline-none">
-            <option>{t('Cash on Delivery')}</option>
+          <select
+            value={form.paymentMethod}
+            onChange={(event) => setForm((current) => ({ ...current, paymentMethod: event.target.value }))}
+            className="h-12 rounded-full border border-white/10 bg-black/20 px-5 text-sm outline-none"
+          >
+            <option value="cash_on_delivery">{t('Cash on Delivery')}</option>
             <option disabled>{t('Card (not configured)')}</option>
           </select>
         </div>
         <div className="rounded-[28px] border border-white/8 bg-white/3 p-6">
           <div className="mb-4 text-xs tracking-[0.25em] text-[var(--muted)]">{t('ORDER SUMMARY')}</div>
-          <SummaryRow label={t('Subtotal')} value={formatCurrency(0)} />
-          <SummaryRow label={t('Delivery')} value={formatCurrency(3.5)} />
-          <SummaryRow label={t('Total')} value={formatCurrency(3.5)} emphasis />
+          <div className="mb-5 space-y-3">
+            {lines.map((line) => (
+              <div key={line.variant.id} className="flex items-center gap-3 rounded-[22px] border border-white/8 bg-black/10 p-3">
+                <img
+                  src={line.product.images[0]?.url ?? '/products/product-placeholder.svg'}
+                  alt={line.product.name}
+                  className="h-16 w-14 rounded-[14px] object-cover"
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm">{t(line.product.name)}</div>
+                  <div className="mt-1 text-xs text-[var(--text-secondary)]">
+                    {line.variant.color} / {line.variant.size} x {line.quantity}
+                  </div>
+                </div>
+                <div className="text-sm">{formatCurrency(line.variant.price * line.quantity)}</div>
+              </div>
+            ))}
+          </div>
+          <SummaryRow label={t('Subtotal')} value={formatCurrency(subtotal)} />
+          <SummaryRow label={t('Delivery')} value={formatCurrency(shippingAmount)} />
+          <SummaryRow label={t('Total')} value={formatCurrency(total)} emphasis />
           <p className="mt-5 text-sm leading-7 text-[var(--text-secondary)]">
             {t('Final pricing should be confirmed by a Supabase checkout RPC before production launch.')}
           </p>
-          <button type="button" className="mt-6 w-full rounded-full bg-[var(--text)] px-5 py-3 text-sm tracking-[0.2em] text-black">
-            {t('PLACE ORDER')}
+          <button
+            type="button"
+            disabled={!lines.length || isSubmitting}
+            onClick={placeOrder}
+            className="mt-6 w-full rounded-full bg-[var(--text)] px-5 py-3 text-sm tracking-[0.2em] text-black disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {isSubmitting ? t('PLEASE WAIT') : t('PLACE ORDER')}
           </button>
         </div>
       </div>

@@ -435,7 +435,12 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                 <div className="rounded-[32px] border border-white/8 bg-white/3 p-8 text-center">
                   <div className="font-display text-3xl uppercase">{t('YOUR BAG IS EMPTY.')}</div>
                   <p className="mt-3 text-sm text-[var(--text-secondary)]">{t('But that can be fixed.')}</p>
-                  <Link href="/shop" onClick={onClose} className="mt-6 inline-flex rounded-full bg-[var(--text)] px-5 py-3 text-sm tracking-[0.2em] text-black">
+                  <Link
+                    href="/shop"
+                    onClick={onClose}
+                    className="mt-6 inline-flex rounded-full bg-[var(--accent)] px-5 py-3 text-sm tracking-[0.2em]"
+                    style={{ color: 'var(--background)' }}
+                  >
                     {t('SHOP THE DROP')}
                   </Link>
                 </div>
@@ -450,7 +455,12 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                 <Link href="/cart" onClick={onClose} className="rounded-full border border-white/10 px-5 py-3 text-center text-sm tracking-[0.2em]">
                   {t('VIEW BAG')}
                 </Link>
-                <Link href="/checkout" onClick={onClose} className="rounded-full bg-[var(--text)] px-5 py-3 text-center text-sm tracking-[0.2em] text-black">
+                <Link
+                  href="/checkout"
+                  onClick={onClose}
+                  className="rounded-full bg-[var(--accent)] px-5 py-3 text-center text-sm tracking-[0.2em]"
+                  style={{ color: 'var(--background)' }}
+                >
                   {t('CHECKOUT')}
                 </Link>
               </div>

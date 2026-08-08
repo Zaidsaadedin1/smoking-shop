@@ -25,7 +25,7 @@ import {
 import { IconEye, IconPencil, IconPlus, IconTrash } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 import { ReactNode, useEffect, useMemo, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 import { AdminShell } from '@/components/customer/AdminShell';
 import { useLocale } from '@/components/storefront/locale-provider';
@@ -36,6 +36,7 @@ import {
   AdminCustomerRecord,
   AdminOrderRecord,
   AdminProductRecord,
+  AdminProductVariantRecord,
   AdminSizeRecord,
 } from '@/lib/admin/data';
 import { AdminEnumKey, AdminEnumLabelRow, AdminEnumLabels } from '@/lib/admin/enum-labels';
@@ -123,6 +124,32 @@ const adminSelectStyles = {
   },
 } as const;
 
+const adminPrimaryButtonStyles = {
+  root: {
+    background: '#f3f4f6',
+    color: '#111111',
+    border: '1px solid rgba(255,255,255,0.12)',
+  },
+  label: {
+    color: '#111111',
+    fontWeight: 700,
+    letterSpacing: '0.08em',
+  },
+} as const;
+
+const adminSecondaryButtonStyles = {
+  root: {
+    background: 'rgba(255,255,255,0.06)',
+    color: '#f3f4f6',
+    border: '1px solid var(--border)',
+  },
+  label: {
+    color: '#f3f4f6',
+    fontWeight: 700,
+    letterSpacing: '0.08em',
+  },
+} as const;
+
 function toSnakeCase(value: string) {
   return value.replace(/[A-Z]/g, (char) => `_${char.toLowerCase()}`);
 }
@@ -199,6 +226,17 @@ function statusBadge(status: string, label?: string) {
   return (
     <Badge color={tone} variant="light" radius="sm">
       {label ?? status}
+    </Badge>
+  );
+}
+
+function inventoryBadge(quantity: number) {
+  const tone = quantity <= 0 ? 'red' : quantity <= 5 ? 'yellow' : 'teal';
+  const label = quantity <= 0 ? 'Out of stock' : quantity <= 5 ? `Low: ${quantity}` : `${quantity} in stock`;
+
+  return (
+    <Badge color={tone} variant="light" radius="sm">
+      {label}
     </Badge>
   );
 }
@@ -382,7 +420,7 @@ function CrudManager<T extends { id: string }>({
           </Text>
         </Stack>
         {allowCreate ? (
-          <Button leftSection={<IconPlus size={16} />} radius={0} variant="default" onClick={() => setMode('create')}>
+          <Button leftSection={<IconPlus size={16} />} radius={0} variant="default" styles={adminPrimaryButtonStyles} onClick={() => setMode('create')}>
             {t(createLabel ?? 'Add new')}
           </Button>
         ) : null}
@@ -560,10 +598,10 @@ function CrudManager<T extends { id: string }>({
               })}
 
               <Group justify="flex-end" mt="md">
-                <Button variant="default" radius={0} onClick={() => setMode(null)}>
+                <Button variant="default" radius={0} styles={adminSecondaryButtonStyles} onClick={() => setMode(null)}>
                   {t('Cancel')}
                 </Button>
-                <Button type="submit" loading={submitting} radius={0}>
+                <Button type="submit" loading={submitting} radius={0} styles={adminPrimaryButtonStyles}>
                   {mode === 'edit' ? t('Save changes') : t('Create')}
                 </Button>
               </Group>
@@ -728,15 +766,22 @@ export function AdminProductsScreen({
   products,
   categories,
   brands,
+  sizes,
+  colors,
+  variants,
   enumLabels,
 }: {
   session: AdminSessionInfo;
   products: AdminProductRecord[];
   categories: AdminCategoryRecord[];
   brands: AdminBrandRecord[];
+  sizes: AdminSizeRecord[];
+  colors: AdminColorRecord[];
+  variants: AdminProductVariantRecord[];
   enumLabels: AdminEnumLabels;
 }) {
   const { locale } = useLocale();
+  const productVariantMap = new Map(products.map((product) => [product.id, variants.filter((variant) => variant.product_id === product.id)]));
 
   return (
     <AdminShell
@@ -745,104 +790,597 @@ export function AdminProductsScreen({
       subtitle="Every product is editable in place with create, view, edit, and delete flows."
       active="Products"
     >
-      <CrudManager
-        title="Catalog products"
-        description="Manage multilingual product records, pricing, status, and catalog assignments."
-        records={products}
-        defaults={{
-          name: '',
-          nameAr: '',
-          slug: '',
-          slugAr: '',
-          shortDescription: '',
-          shortDescriptionAr: '',
-          description: '',
-          descriptionAr: '',
-          mainImage: undefined,
-          subImages: undefined,
-          basePrice: 0,
-          compareAtPrice: '',
-          status: 'draft',
-          isFeatured: false,
-          categoryId: categories[0]?.id ?? '',
-          brandId: brands[0]?.id ?? '',
-        }}
-        fields={[
-          { name: 'name', label: 'Name', type: 'text', required: true },
-          { name: 'nameAr', label: 'Arabic name', type: 'text', editableOn: ['create', 'edit'] },
-          { name: 'slug', label: 'Slug', type: 'text', required: true, editableOn: ['create'] },
-          { name: 'slugAr', label: 'Arabic slug', type: 'text', editableOn: ['create', 'edit'] },
-          { name: 'shortDescription', label: 'Short description', type: 'textarea', editableOn: ['create', 'edit'] },
-          { name: 'shortDescriptionAr', label: 'Arabic short description', type: 'textarea', editableOn: ['create', 'edit'] },
-          { name: 'description', label: 'Description', type: 'textarea', editableOn: ['create', 'edit'] },
-          { name: 'descriptionAr', label: 'Arabic description', type: 'textarea', editableOn: ['create', 'edit'] },
-          { name: 'mainImage', label: 'Main image', type: 'file', required: true, editableOn: ['create', 'edit'] },
-          { name: 'subImages', label: 'Sub images', type: 'file', editableOn: ['create', 'edit'], multiple: true },
-          { name: 'basePrice', label: 'Base price', type: 'number', required: true, min: 0, step: 0.01 },
-          { name: 'compareAtPrice', label: 'Compare at price', type: 'number', min: 0, step: 0.01, editableOn: ['create', 'edit'] },
-          {
-            name: 'status',
-            label: 'Status',
-            type: 'select',
-            required: true,
-            editableOn: ['edit'],
-            options: ['draft', 'active', 'inactive', 'archived'].map((value) => ({
-              label: getEnumLabel(enumLabels, 'product_status', value, locale),
-              value,
-            })),
-          },
-          {
-            name: 'categoryId',
-            label: 'Category',
-            type: 'select',
-            editableOn: ['create', 'edit'],
-            options: categories.map((item) => ({ label: item.name, value: item.id })),
-          },
-          {
-            name: 'brandId',
-            label: 'Brand',
-            type: 'select',
-            editableOn: ['create', 'edit'],
-            options: brands.map((item) => ({ label: item.name, value: item.id })),
-          },
-          { name: 'isFeatured', label: 'Featured product', type: 'switch', editableOn: ['edit'] },
-        ]}
-        columns={[
-          { key: 'name', label: 'Name', render: (row) => row.name },
-          { key: 'name_ar', label: 'Arabic name', render: (row) => row.name_ar || '—' },
-          { key: 'primary_image_url', label: 'Main image', render: (row) => (row.primary_image_url ? 'Set' : '—') },
-          { key: 'sub_image_urls', label: 'Sub images', render: (row) => (row.sub_image_urls.length ? String(row.sub_image_urls.length) : '—') },
-          { key: 'slug', label: 'Slug', render: (row) => row.slug },
-          { key: 'slug_ar', label: 'Arabic slug', render: (row) => row.slug_ar || '—' },
-          { key: 'category_id', label: 'Category', render: (row) => categories.find((item) => item.id === row.category_id)?.name ?? '—' },
-          { key: 'brand_id', label: 'Brand', render: (row) => brands.find((item) => item.id === row.brand_id)?.name ?? '—' },
-          {
-            key: 'status',
-            label: 'Status',
-            render: (row) => statusBadge(row.status, getEnumLabel(enumLabels, 'product_status', row.status, locale)),
-          },
-          { key: 'base_price', label: 'Price', render: (row) => formatCurrency(row.base_price) },
-          { key: 'created_at', label: 'Created', render: (row) => formatDate(row.created_at) },
-        ]}
-        drawerExtras={({ selected }) =>
-          selected ? (
-            <Stack gap="xs">
-              {selected.primary_image_url ? <Image src={selected.primary_image_url} alt={selected.name} h={140} fit="cover" radius={0} /> : null}
-              {selected.sub_image_urls.length ? (
-                <Group gap="xs">
-                  {selected.sub_image_urls.map((url) => (
-                    <Image key={url} src={url} alt={selected.name} h={72} w={72} fit="cover" radius={0} />
-                  ))}
-                </Group>
-              ) : null}
-            </Stack>
-          ) : null
-        }
-        createRequest={{ url: '/api/admin/products', method: 'POST' }}
-        updateRequest={(id) => ({ url: `/api/admin/products/${id}`, method: 'PATCH' })}
-        deleteRequest={(id) => ({ url: `/api/admin/products/${id}`, method: 'DELETE' })}
+      <ProductCrudManager
+        products={products}
+        categories={categories}
+        brands={brands}
+        sizes={sizes}
+        colors={colors}
+        variants={variants}
+        enumLabels={enumLabels}
       />
     </AdminShell>
+  );
+}
+
+type ProductVariantFormRow = {
+  sizeId: string;
+  colorId: string;
+  sku: string;
+  barcode: string;
+  price: number | '';
+  compareAtPrice: number | '';
+  stockQuantity: number;
+  lowStockThreshold: number;
+  trackInventory: boolean;
+  allowBackorder: boolean;
+  weightGrams: number | '';
+  isActive: boolean;
+};
+
+type ProductFormValues = {
+  name: string;
+  nameAr?: string;
+  slug: string;
+  slugAr?: string;
+  shortDescription?: string;
+  shortDescriptionAr?: string;
+  description?: string;
+  descriptionAr?: string;
+  mainImage?: FileList;
+  subImages?: FileList;
+  basePrice: number;
+  compareAtPrice?: number | '';
+  status: string;
+  isFeatured: boolean;
+  categoryId: string;
+  brandId: string;
+  variants: ProductVariantFormRow[];
+};
+
+function emptyVariantRow(): ProductVariantFormRow {
+  return {
+    sizeId: '',
+    colorId: '',
+    sku: '',
+    barcode: '',
+    price: '',
+    compareAtPrice: '',
+    stockQuantity: 5,
+    lowStockThreshold: 5,
+    trackInventory: true,
+    allowBackorder: false,
+    weightGrams: 300,
+    isActive: true,
+  };
+}
+
+function ProductCrudManager({
+  products,
+  categories,
+  brands,
+  sizes,
+  colors,
+  variants,
+  enumLabels,
+}: {
+  products: AdminProductRecord[];
+  categories: AdminCategoryRecord[];
+  brands: AdminBrandRecord[];
+  sizes: AdminSizeRecord[];
+  colors: AdminColorRecord[];
+  variants: AdminProductVariantRecord[];
+  enumLabels: AdminEnumLabels;
+}) {
+  const router = useRouter();
+  const { t, locale } = useLocale();
+  const [mode, setMode] = useState<'create' | 'edit' | 'view' | null>(null);
+  const [selected, setSelected] = useState<AdminProductRecord | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const productVariantMap = useMemo(
+    () => new Map(products.map((product) => [product.id, variants.filter((variant) => variant.product_id === product.id)])),
+    [products, variants]
+  );
+  const schema = useMemo(
+    () =>
+      z.object({
+        name: z.string().trim().min(1, t('This field is required')),
+        nameAr: z.string().optional(),
+        slug: z.string().trim().min(1, t('This field is required')),
+        slugAr: z.string().optional(),
+        shortDescription: z.string().optional(),
+        shortDescriptionAr: z.string().optional(),
+        description: z.string().optional(),
+        descriptionAr: z.string().optional(),
+        mainImage: z.any().optional(),
+        subImages: z.any().optional(),
+        basePrice: z.coerce.number({ error: () => ({ message: t('Enter a valid number') }) }).min(0, t('Value is too low')),
+        compareAtPrice: z.union([z.coerce.number(), z.literal('')]).optional(),
+        status: z.string().trim().min(1, t('This field is required')),
+        isFeatured: z.boolean().default(false),
+        categoryId: z.string().optional(),
+        brandId: z.string().optional(),
+        variants: z.array(
+          z.object({
+            sizeId: z.string().optional(),
+            colorId: z.string().optional(),
+            sku: z.string().trim().min(1, t('This field is required')),
+            barcode: z.string().optional(),
+            price: z.union([z.coerce.number(), z.literal('')]).optional(),
+            compareAtPrice: z.union([z.coerce.number(), z.literal('')]).optional(),
+            stockQuantity: z.coerce.number().min(0, t('Value is too low')),
+            lowStockThreshold: z.coerce.number().min(0, t('Value is too low')),
+            trackInventory: z.boolean().default(true),
+            allowBackorder: z.boolean().default(false),
+            weightGrams: z.union([z.coerce.number(), z.literal('')]).optional(),
+            isActive: z.boolean().default(true),
+          })
+        ),
+      }),
+    [t]
+  );
+  const defaultVariantRows = useMemo<ProductVariantFormRow[]>(
+    () =>
+      (sizes.length ? sizes : [{ id: '', name: '', name_ar: '', code: '', sort_order: 0, is_active: true }]).map((size) => ({
+        ...emptyVariantRow(),
+        sizeId: size.id,
+        colorId: colors[0]?.id ?? '',
+        sku: size.code ? `SKU-${size.code}` : '',
+      })),
+    [colors, sizes]
+  );
+  const defaults = useMemo<ProductFormValues>(
+    () => ({
+      name: '',
+      nameAr: '',
+      slug: '',
+      slugAr: '',
+      shortDescription: '',
+      shortDescriptionAr: '',
+      description: '',
+      descriptionAr: '',
+      mainImage: undefined,
+      subImages: undefined,
+      basePrice: 0,
+      compareAtPrice: '',
+      status: 'draft',
+      isFeatured: false,
+      categoryId: categories[0]?.id ?? '',
+      brandId: brands[0]?.id ?? '',
+      variants: defaultVariantRows,
+    }),
+    [brands, categories, defaultVariantRows]
+  );
+  const { control, formState: { errors }, getValues, handleSubmit, register, reset, setValue } = useForm<any>({
+    resolver: zodResolver(schema),
+    defaultValues: defaults,
+  });
+  const { fields: variantFields, append, remove, replace } = useFieldArray<any>({
+    control,
+    name: 'variants',
+  });
+  const watchedBasePrice = useWatch({ control, name: 'basePrice' });
+  const watchedCompareAtPrice = useWatch({ control, name: 'compareAtPrice' });
+  const watchedVariants = useWatch({ control, name: 'variants' }) as ProductVariantFormRow[] | undefined;
+
+  useEffect(() => {
+    if (!mode) {
+      return;
+    }
+
+    if (mode === 'create') {
+      reset(defaults);
+      replace(defaultVariantRows);
+      return;
+    }
+
+    if (selected) {
+        const mappedVariants = (productVariantMap.get(selected.id) ?? []).map((variant: AdminProductVariantRecord) => ({
+          sizeId: variant.size_id ?? '',
+          colorId: variant.color_id ?? colors[0]?.id ?? '',
+          sku: variant.sku,
+          barcode: variant.barcode ?? '',
+          price: variant.price ?? selected.base_price,
+          compareAtPrice: variant.compare_at_price ?? selected.compare_at_price ?? '',
+          stockQuantity: variant.stock_quantity,
+          lowStockThreshold: variant.low_stock_threshold,
+          trackInventory: variant.track_inventory,
+        allowBackorder: variant.allow_backorder,
+        weightGrams: variant.weight_grams ?? '',
+        isActive: variant.is_active,
+      }));
+
+      reset({
+        ...defaults,
+        name: selected.name,
+        nameAr: selected.name_ar,
+        slug: selected.slug,
+        slugAr: selected.slug_ar,
+        shortDescription: selected.short_description,
+        shortDescriptionAr: selected.short_description_ar,
+        description: selected.description,
+        descriptionAr: selected.description_ar,
+        basePrice: selected.base_price,
+        compareAtPrice: selected.compare_at_price ?? '',
+        status: selected.status,
+        isFeatured: selected.is_featured,
+        categoryId: selected.category_id,
+        brandId: selected.brand_id,
+        variants: mappedVariants.length ? mappedVariants : defaultVariantRows,
+      });
+      replace(mappedVariants.length ? mappedVariants : defaultVariantRows);
+    }
+  }, [defaultVariantRows, defaults, mode, productVariantMap, replace, reset, selected?.id]);
+
+  useEffect(() => {
+    if (mode !== 'create' && mode !== 'edit') {
+      return;
+    }
+
+    (watchedVariants ?? []).forEach((variant, index) => {
+      if (variant?.price === '' || variant?.price === undefined || variant?.price === null) {
+        setValue(`variants.${index}.price`, watchedBasePrice === '' || watchedBasePrice === undefined ? '' : watchedBasePrice, {
+          shouldDirty: false,
+          shouldTouch: false,
+        });
+      }
+
+      if (variant?.compareAtPrice === '' || variant?.compareAtPrice === undefined || variant?.compareAtPrice === null) {
+        setValue(
+          `variants.${index}.compareAtPrice`,
+          watchedCompareAtPrice === '' || watchedCompareAtPrice === undefined ? '' : watchedCompareAtPrice,
+          {
+            shouldDirty: false,
+            shouldTouch: false,
+          }
+        );
+      }
+    });
+  }, [mode, setValue, watchedBasePrice, watchedCompareAtPrice, watchedVariants]);
+
+  async function onSubmit(values: any) {
+    setSubmitting(true);
+    const request =
+      mode === 'edit' && selected
+        ? { url: `/api/admin/products/${selected.id}`, method: 'PATCH' as const }
+        : { url: '/api/admin/products', method: 'POST' as const };
+    const formData = new FormData();
+
+    const entries: Array<[string, unknown]> = [
+      ['name', values.name],
+      ['nameAr', values.nameAr],
+      ['slug', values.slug],
+      ['slugAr', values.slugAr],
+      ['shortDescription', values.shortDescription],
+      ['shortDescriptionAr', values.shortDescriptionAr],
+      ['description', values.description],
+      ['descriptionAr', values.descriptionAr],
+      ['basePrice', values.basePrice],
+      ['compareAtPrice', values.compareAtPrice],
+      ['status', values.status],
+      ['isFeatured', values.isFeatured],
+      ['categoryId', values.categoryId],
+      ['brandId', values.brandId],
+      [
+        'variantsJson',
+        JSON.stringify(
+          (values.variants as ProductVariantFormRow[]).map((variant: ProductVariantFormRow) => ({
+            ...variant,
+            price: variant.price === '' ? values.basePrice : variant.price,
+            compareAtPrice: variant.compareAtPrice === '' ? (values.compareAtPrice === '' ? null : values.compareAtPrice) : variant.compareAtPrice,
+            weightGrams: variant.weightGrams === '' ? 300 : variant.weightGrams,
+          }))
+        ),
+      ],
+    ];
+
+    for (const [key, value] of entries) {
+      if (value === undefined || value === null) continue;
+      formData.append(key, String(value));
+    }
+
+    for (const file of Array.from((values.mainImage ?? []) as FileList | File[])) {
+      if (file.size > 0) formData.append('mainImage', file);
+    }
+    for (const file of Array.from((values.subImages ?? []) as FileList | File[])) {
+      if (file.size > 0) formData.append('subImages', file);
+    }
+
+    const response = await fetch(request.url, { method: request.method, body: formData });
+    setSubmitting(false);
+
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+      window.alert(payload?.error ?? t('Something went wrong'));
+      return;
+    }
+
+    setMode(null);
+    setSelected(null);
+    router.refresh();
+  }
+
+  async function handleDelete(row: AdminProductRecord) {
+    if (!window.confirm(t('Are you sure you want to delete this record?'))) return;
+    const response = await fetch(`/api/admin/products/${row.id}`, { method: 'DELETE' });
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+      window.alert(payload?.error ?? t('Something went wrong'));
+      return;
+    }
+    router.refresh();
+  }
+
+  return (
+    <Paper radius={0} p="lg" style={{ background: 'var(--surface)', border: '1px solid var(--surface-border)' }}>
+      <Group justify="space-between" align="end" mb="md">
+        <Stack gap={4}>
+          <Text size="xs" tt="uppercase" c="dimmed" style={{ letterSpacing: 2.2 }}>{t('Control center')}</Text>
+          <Text fw={700} size="1.35rem">{t('Catalog products')}</Text>
+          <Text size="sm" c="dimmed">{t('Manage multilingual product records, pricing, status, and catalog assignments.')}</Text>
+        </Stack>
+        <Button leftSection={<IconPlus size={16} />} radius={0} variant="default" styles={adminPrimaryButtonStyles} onClick={() => setMode('create')}>
+          {t('Add new')}
+        </Button>
+      </Group>
+
+      <ScrollArea>
+        <Table verticalSpacing="md" striped highlightOnHover withTableBorder>
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>{t('Name')}</Table.Th>
+              <Table.Th>{t('Arabic name')}</Table.Th>
+              <Table.Th>{t('Category')}</Table.Th>
+              <Table.Th>{t('Brand')}</Table.Th>
+              <Table.Th>{t('Variants')}</Table.Th>
+              <Table.Th>{t('Stock')}</Table.Th>
+              <Table.Th>{t('Status')}</Table.Th>
+              <Table.Th>{t('Price')}</Table.Th>
+              <Table.Th>{t('Created')}</Table.Th>
+              <Table.Th>{t('Actions')}</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {products.map((row) => (
+              <Table.Tr key={row.id}>
+                <Table.Td>{row.name}</Table.Td>
+                <Table.Td>{row.name_ar || '—'}</Table.Td>
+                <Table.Td>{categories.find((item) => item.id === row.category_id)?.name ?? '—'}</Table.Td>
+                <Table.Td>{brands.find((item) => item.id === row.brand_id)?.name ?? '—'}</Table.Td>
+                <Table.Td>{row.variant_count}</Table.Td>
+                <Table.Td>{row.total_stock}</Table.Td>
+                <Table.Td>{statusBadge(row.status, getEnumLabel(enumLabels, 'product_status', row.status, locale))}</Table.Td>
+                <Table.Td>{formatCurrency(row.base_price)}</Table.Td>
+                <Table.Td>{formatDate(row.created_at)}</Table.Td>
+                <Table.Td>
+                  <Group gap={6} wrap="nowrap">
+                    <ActionIcon variant="subtle" color="gray" onClick={() => { setSelected(row); setMode('view'); }}><IconEye size={16} /></ActionIcon>
+                    <ActionIcon variant="subtle" color="gray" onClick={() => { setSelected(row); setMode('edit'); }}><IconPencil size={16} /></ActionIcon>
+                    <ActionIcon variant="subtle" color="red" onClick={() => handleDelete(row)}><IconTrash size={16} /></ActionIcon>
+                  </Group>
+                </Table.Td>
+              </Table.Tr>
+            ))}
+          </Table.Tbody>
+        </Table>
+      </ScrollArea>
+
+      <Drawer
+        opened={mode !== null}
+        onClose={() => { setMode(null); setSelected(null); }}
+        position="right"
+        size="xl"
+        title={mode === 'view' ? t('View record') : mode === 'edit' ? t('Edit record') : t('Create record')}
+        styles={{
+          content: { background: 'var(--background)', color: 'var(--text)' },
+          header: { background: 'var(--card)', borderBottom: '1px solid var(--border)' },
+          title: { textTransform: 'uppercase', letterSpacing: '0.16em', fontWeight: 700 },
+        }}
+      >
+        {mode === 'view' && selected ? (
+          <Stack gap="md">
+            <Paper
+              radius={0}
+              p="lg"
+              style={{
+                background: 'linear-gradient(180deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.03) 100%)',
+                border: '1px solid var(--surface-border)',
+              }}
+            >
+              <Group align="start" wrap="nowrap">
+                {selected.primary_image_url ? (
+                  <Image src={selected.primary_image_url} alt={selected.name} h={220} w={172} fit="cover" radius={0} />
+                ) : (
+                  <Paper radius={0} w={172} h={220} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)' }} />
+                )}
+                <Stack gap={6} style={{ flex: 1 }}>
+                  <Text size="xs" tt="uppercase" c="dimmed" style={{ letterSpacing: 2 }}>
+                    {brands.find((item) => item.id === selected.brand_id)?.name ?? 'Brand'}
+                  </Text>
+                  <Text fw={800} size="1.6rem" tt="uppercase" style={{ lineHeight: 1.05 }}>
+                    {selected.name}
+                  </Text>
+                  {selected.name_ar ? (
+                    <Text size="sm" c="var(--text-secondary)">{selected.name_ar}</Text>
+                  ) : null}
+                  <Group gap="xs">
+                    {statusBadge(selected.status, getEnumLabel(enumLabels, 'product_status', selected.status, locale))}
+                    <Badge variant="light" radius="sm" color="gray">{formatCurrency(selected.base_price)}</Badge>
+                    {inventoryBadge(selected.total_stock)}
+                    <Badge variant="light" radius="sm" color="gray">{selected.variant_count} variants</Badge>
+                  </Group>
+                  <Divider my="xs" />
+                  <SimpleGrid cols={2} spacing="xs">
+                    <Box>
+                      <Text size="xs" tt="uppercase" c="dimmed">Category</Text>
+                      <Text size="sm">{categories.find((item) => item.id === selected.category_id)?.name ?? '—'}</Text>
+                    </Box>
+                    <Box>
+                      <Text size="xs" tt="uppercase" c="dimmed">Slug</Text>
+                      <Text size="sm">{selected.slug}</Text>
+                    </Box>
+                  </SimpleGrid>
+                  {selected.short_description ? (
+                    <>
+                      <Text size="xs" tt="uppercase" c="dimmed" mt="xs">Short description</Text>
+                      <Text size="sm" c="var(--text-secondary)">{selected.short_description}</Text>
+                    </>
+                  ) : null}
+                </Stack>
+              </Group>
+            </Paper>
+            <Paper radius={0} p="md" style={{ background: 'var(--surface)', border: '1px solid var(--surface-border)' }}>
+              <Text size="xs" tt="uppercase" c="dimmed" mb="sm" style={{ letterSpacing: 2 }}>Variants</Text>
+              <Stack gap="sm">
+                {(productVariantMap.get(selected.id) ?? []).length ? (
+                  (productVariantMap.get(selected.id) ?? []).map((variant) => (
+                    <Paper
+                      key={variant.id}
+                      radius={0}
+                      p="sm"
+                      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)' }}
+                    >
+                      <Group justify="space-between" align="start">
+                        <Stack gap={4}>
+                          <Group gap="xs">
+                            <Badge variant="light" radius="sm" color="gray">
+                              {colors.find((item) => item.id === variant.color_id)?.name ?? 'Default color'}
+                            </Badge>
+                            <Badge variant="light" radius="sm" color="gray">
+                              {sizes.find((item) => item.id === variant.size_id)?.name ?? 'One size'}
+                            </Badge>
+                            {variant.is_active ? (
+                              <Badge variant="light" radius="sm" color="teal">Active</Badge>
+                            ) : (
+                              <Badge variant="light" radius="sm" color="gray">Inactive</Badge>
+                            )}
+                          </Group>
+                          <Text fw={700}>{variant.sku}</Text>
+                          <Group gap="md">
+                            <Text size="sm" c="var(--text-secondary)">{t('Price')}: {variant.price !== null ? formatCurrency(variant.price) : '—'}</Text>
+                            <Text size="sm" c="var(--text-secondary)">{t('Low stock threshold')}: {variant.low_stock_threshold}</Text>
+                            <Text size="sm" c="var(--text-secondary)">{t('Weight grams')}: {variant.weight_grams ?? 300}</Text>
+                          </Group>
+                        </Stack>
+                        <Stack gap={6} align="end">
+                          {inventoryBadge(variant.stock_quantity)}
+                          <Text size="xs" c="dimmed">
+                            {variant.track_inventory ? t('Track inventory') : t('Inventory off')}
+                          </Text>
+                          {variant.allow_backorder ? (
+                            <Badge variant="light" radius="sm" color="yellow">{t('Allow backorder')}</Badge>
+                          ) : null}
+                        </Stack>
+                      </Group>
+                    </Paper>
+                  ))
+                ) : (
+                  <Text size="sm" c="dimmed">No variants configured.</Text>
+                )}
+              </Stack>
+            </Paper>
+            {selected.description ? (
+              <Paper radius={0} p="md" style={{ background: 'var(--surface)', border: '1px solid var(--surface-border)' }}>
+                <Text size="xs" tt="uppercase" c="dimmed" mb="sm" style={{ letterSpacing: 2 }}>Description</Text>
+                <Text size="sm" c="var(--text-secondary)">{selected.description}</Text>
+              </Paper>
+            ) : null}
+          </Stack>
+        ) : (
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Stack gap="md">
+              <SimpleGrid cols={{ base: 1, md: 2 }}>
+                <TextInput label={t('Name')} error={errors.name?.message ? String(errors.name.message) : undefined} radius="xs" styles={adminInputStyles} {...register('name')} />
+                <TextInput label={t('Arabic name')} error={errors.nameAr?.message ? String(errors.nameAr.message) : undefined} radius="xs" styles={adminInputStyles} {...register('nameAr')} />
+                <TextInput label={t('Slug')} error={errors.slug?.message ? String(errors.slug.message) : undefined} radius="xs" styles={adminInputStyles} {...register('slug')} />
+                <TextInput label={t('Arabic slug')} error={errors.slugAr?.message as string | undefined} radius="xs" styles={adminInputStyles} {...register('slugAr')} />
+                <TextInput label={t('Base price')} type="number" step={0.01} min={0} error={errors.basePrice?.message ? String(errors.basePrice.message) : undefined} radius="xs" styles={adminInputStyles} {...register('basePrice')} />
+                <TextInput label={t('Compare at price')} type="number" step={0.01} min={0} error={errors.compareAtPrice?.message as string | undefined} radius="xs" styles={adminInputStyles} {...register('compareAtPrice')} />
+                <NativeSelect label={t('Category')} radius="xs" styles={adminSelectStyles} data={categories.map((item) => ({ label: item.name, value: item.id }))} {...register('categoryId')} />
+                <NativeSelect label={t('Brand')} radius="xs" styles={adminSelectStyles} data={brands.map((item) => ({ label: item.name, value: item.id }))} {...register('brandId')} />
+                <NativeSelect label={t('Status')} radius="xs" styles={adminSelectStyles} data={['draft', 'active', 'inactive', 'archived'].map((value) => ({ label: getEnumLabel(enumLabels, 'product_status', value, locale), value }))} {...register('status')} />
+                <Controller control={control} name="isFeatured" render={({ field }) => <Switch checked={Boolean(field.value)} label={t('Featured product')} onChange={(event) => field.onChange(event.currentTarget.checked)} radius="xs" size="md" color="dark" />} />
+              </SimpleGrid>
+              <Textarea label={t('Short description')} minRows={3} radius="xs" styles={adminInputStyles} {...register('shortDescription')} />
+              <Textarea label={t('Arabic short description')} minRows={3} radius="xs" styles={adminInputStyles} {...register('shortDescriptionAr')} />
+              <Textarea label={t('Description')} minRows={4} radius="xs" styles={adminInputStyles} {...register('description')} />
+              <Textarea label={t('Arabic description')} minRows={4} radius="xs" styles={adminInputStyles} {...register('descriptionAr')} />
+              <Box>
+                <Text size="sm" mb={6}>{t('Main image')}</Text>
+                <input type="file" accept="image/*" {...register('mainImage')} />
+              </Box>
+              <Box>
+                <Text size="sm" mb={6}>{t('Sub images')}</Text>
+                <input type="file" accept="image/*" multiple {...register('subImages')} />
+              </Box>
+
+              <Paper radius={0} p="md" style={{ background: 'var(--surface)', border: '1px solid var(--surface-border)' }}>
+                <Group justify="space-between" mb="sm">
+                  <div>
+                    <Text fw={700}>{t('Product variants')}</Text>
+                    <Text size="sm" c="dimmed">{t('Set available sizes, colors, and stock in the same product drawer.')}</Text>
+                  </div>
+                  <Button
+                    variant="default"
+                    radius={0}
+                    styles={adminPrimaryButtonStyles}
+                    onClick={() =>
+                      append({
+                        ...emptyVariantRow(),
+                        colorId: colors[0]?.id ?? '',
+                        price: getValues('basePrice') ?? '',
+                        compareAtPrice: getValues('compareAtPrice') ?? '',
+                      })
+                    }
+                  >
+                    {t('Add variant')}
+                  </Button>
+                </Group>
+                <Stack gap="md">
+                  {variantFields.map((field, index) => (
+                    <Paper key={field.id} radius={0} p="sm" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)' }}>
+                      <Group justify="space-between" mb="sm">
+                        <Text fw={600}>{t('Variant')} #{index + 1}</Text>
+                        {variantFields.length > 1 ? (
+                          <ActionIcon variant="subtle" color="red" onClick={() => remove(index)}>
+                            <IconTrash size={16} />
+                          </ActionIcon>
+                        ) : null}
+                      </Group>
+                      <SimpleGrid cols={{ base: 1, md: 2 }}>
+                        <NativeSelect label={t('Size')} radius="xs" styles={adminSelectStyles} data={[{ label: '—', value: '' }, ...sizes.map((item) => ({ label: item.name, value: item.id }))]} {...register(`variants.${index}.sizeId` as const)} />
+                        <NativeSelect label={t('Color')} radius="xs" styles={adminSelectStyles} data={[{ label: '—', value: '' }, ...colors.map((item) => ({ label: item.name, value: item.id }))]} {...register(`variants.${index}.colorId` as const)} />
+                        <TextInput label="SKU" error={(errors.variants as any)?.[index]?.sku?.message ? String((errors.variants as any)[index].sku.message) : undefined} radius="xs" styles={adminInputStyles} {...register(`variants.${index}.sku` as const)} />
+                        <TextInput label={t('Barcode')} radius="xs" styles={adminInputStyles} {...register(`variants.${index}.barcode` as const)} />
+                        <TextInput label={t('Price')} type="number" step={0.01} min={0} radius="xs" styles={adminInputStyles} {...register(`variants.${index}.price` as const)} />
+                        <TextInput label={t('Compare at price')} type="number" step={0.01} min={0} radius="xs" styles={adminInputStyles} {...register(`variants.${index}.compareAtPrice` as const)} />
+                        <TextInput label={t('Stock quantity')} type="number" step={1} min={0} max={9999} radius="xs" styles={adminInputStyles} {...register(`variants.${index}.stockQuantity` as const)} />
+                        <TextInput label={t('Low stock threshold')} type="number" step={1} min={0} max={9999} radius="xs" styles={adminInputStyles} {...register(`variants.${index}.lowStockThreshold` as const)} />
+                        <TextInput label={t('Weight grams')} type="number" step={1} min={0} radius="xs" styles={adminInputStyles} {...register(`variants.${index}.weightGrams` as const)} />
+                        <Stack gap="xs" justify="end">
+                          <Controller control={control} name={`variants.${index}.trackInventory` as const} render={({ field }) => <Switch checked={Boolean(field.value)} label={t('Track inventory')} onChange={(event) => field.onChange(event.currentTarget.checked)} radius="xs" size="md" color="dark" />} />
+                          <Controller control={control} name={`variants.${index}.allowBackorder` as const} render={({ field }) => <Switch checked={Boolean(field.value)} label={t('Allow backorder')} onChange={(event) => field.onChange(event.currentTarget.checked)} radius="xs" size="md" color="dark" />} />
+                          <Controller control={control} name={`variants.${index}.isActive` as const} render={({ field }) => <Switch checked={Boolean(field.value)} label={t('Active')} onChange={(event) => field.onChange(event.currentTarget.checked)} radius="xs" size="md" color="dark" />} />
+                        </Stack>
+                      </SimpleGrid>
+                    </Paper>
+                  ))}
+                </Stack>
+              </Paper>
+
+              <Group justify="flex-end" mt="md">
+                <Button variant="default" radius={0} styles={adminSecondaryButtonStyles} onClick={() => setMode(null)}>
+                  {t('Cancel')}
+                </Button>
+                <Button type="submit" loading={submitting} radius={0} styles={adminPrimaryButtonStyles}>
+                  {mode === 'edit' ? t('Save changes') : t('Create')}
+                </Button>
+              </Group>
+            </Stack>
+          </form>
+        )}
+      </Drawer>
+    </Paper>
   );
 }
 

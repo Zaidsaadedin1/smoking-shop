@@ -196,6 +196,45 @@ export const messages: Record<string, LocaleMessages> = {
   'Notification settings': { en: 'Notification settings', ar: 'إعدادات الإشعارات' },
   'Search products, collections, brands': { en: 'Search products, collections, brands', ar: 'ابحثي عن المنتجات والمجموعات والعلامات' },
   'Search by product, category, or brand': { en: 'Search by product, category, or brand', ar: 'ابحثي حسب المنتج أو الفئة أو العلامة' },
+  'YOUR CATALOG IS READY FOR ITS FIRST DROP.': {
+    en: 'YOUR CATALOG IS READY FOR ITS FIRST DROP.',
+    ar: 'الكتالوج جاهز لأول إطلاق له.',
+  },
+  'Add active products and categories in admin to populate the storefront home automatically.': {
+    en: 'Add active products and categories in admin to populate the storefront home automatically.',
+    ar: 'أضيفي منتجات وفئات مفعلة من لوحة الإدارة لملء الصفحة الرئيسية تلقائياً.',
+  },
+  'VIEW SHOP': { en: 'VIEW SHOP', ar: 'عرض المتجر' },
+  'SHOP THIS PIECE': { en: 'SHOP THIS PIECE', ar: 'تسوقي هذه القطعة' },
+  'DISCOVER THIS PRODUCT': { en: 'DISCOVER THIS PRODUCT', ar: 'اكتشفي هذا المنتج' },
+  'NO LIVE HOME CONTENT YET.': {
+    en: 'NO LIVE HOME CONTENT YET.',
+    ar: 'لا يوجد محتوى مباشر للصفحة الرئيسية بعد.',
+  },
+  'Publish categories, images, and active products in the database to populate the storefront home.': {
+    en: 'Publish categories, images, and active products in the database to populate the storefront home.',
+    ar: 'انشري الفئات والصور والمنتجات المفعلة في قاعدة البيانات لملء الصفحة الرئيسية.',
+  },
+  'Address details': { en: 'Address details', ar: 'تفاصيل العنوان' },
+  'Save a complete delivery location so future checkout feels instant and accurate.': {
+    en: 'Save a complete delivery location so future checkout feels instant and accurate.',
+    ar: 'احفظي موقع توصيل كاملاً ليصبح إتمام الشراء مستقبلاً أسرع وأكثر دقة.',
+  },
+  'Choose a clear label for home, office, or studio.': {
+    en: 'Choose a clear label for home, office, or studio.',
+    ar: 'اختاري تسمية واضحة للمنزل أو المكتب أو الاستوديو.',
+  },
+  'Keep phone and area details accurate for delivery calls.': {
+    en: 'Keep phone and area details accurate for delivery calls.',
+    ar: 'احرصي على دقة الهاتف وتفاصيل المنطقة لمكالمات التوصيل.',
+  },
+  'Set one address as default to speed up checkout.': {
+    en: 'Set one address as default to speed up checkout.',
+    ar: 'اجعلي أحد العناوين افتراضياً لتسريع إتمام الشراء.',
+  },
+  'Home, Studio, Office': { en: 'Home, Studio, Office', ar: 'المنزل، الاستوديو، المكتب' },
+  'Full recipient name': { en: 'Full recipient name', ar: 'اسم المستلم الكامل' },
+  'Building, floor, apartment': { en: 'Building, floor, apartment', ar: 'البناية، الطابق، الشقة' },
   Email: { en: 'Email', ar: 'البريد الإلكتروني' },
   Phone: { en: 'Phone', ar: 'الهاتف' },
   Password: { en: 'Password', ar: 'كلمة المرور' },
@@ -590,11 +629,167 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'We will send a reset link if your Supabase project is configured.',
     ar: 'سنرسل رابط إعادة تعيين إذا كان مشروع Supabase مهيأ.',
   },
+  'CUSTOMER ACCESS': { en: 'CUSTOMER ACCESS', ar: 'دخول العملاء' },
+  'CUSTOMER DASHBOARD': { en: 'CUSTOMER DASHBOARD', ar: 'لوحة العميل' },
+  'CREATE ACCOUNT': { en: 'CREATE ACCOUNT', ar: 'إنشاء حساب' },
+  'SEND RESET LINK': { en: 'SEND RESET LINK', ar: 'إرسال رابط الاستعادة' },
+  'SIGN OUT': { en: 'SIGN OUT', ar: 'تسجيل الخروج' },
+  'Already have an account? Sign in': { en: 'Already have an account? Sign in', ar: 'لديك حساب بالفعل؟ سجلي الدخول' },
+  'Create account': { en: 'Create account', ar: 'إنشاء حساب' },
+  'Forgot password?': { en: 'Forgot password?', ar: 'هل نسيت كلمة المرور؟' },
+  'Create a customer account for orders, favorites, addresses, and faster checkout.': {
+    en: 'Create a customer account for orders, favorites, addresses, and faster checkout.',
+    ar: 'أنشئي حساب عميل للطلبات والمفضلة والعناوين وإتمام الشراء بشكل أسرع.',
+  },
+  'Send a password reset email to your account.': {
+    en: 'Send a password reset email to your account.',
+    ar: 'أرسلي رسالة إعادة تعيين كلمة المرور إلى حسابك.',
+  },
+  'BACK TO ACCOUNT': { en: 'BACK TO ACCOUNT', ar: 'العودة إلى الحساب' },
+  'BACK TO ADDRESSES': { en: 'BACK TO ADDRESSES', ar: 'العودة إلى العناوين' },
+  'ADD ADDRESS': { en: 'ADD ADDRESS', ar: 'إضافة عنوان' },
+  'SAVE ADDRESS': { en: 'SAVE ADDRESS', ar: 'حفظ العنوان' },
+  'Add your first address so checkout and delivery details are ready.': {
+    en: 'Add your first address so checkout and delivery details are ready.',
+    ar: 'أضيفي عنوانك الأول ليكون الشراء وتفاصيل التوصيل جاهزين.',
+  },
+  'Create a saved delivery address for your account.': {
+    en: 'Create a saved delivery address for your account.',
+    ar: 'أنشئي عنوان توصيل محفوظاً لحسابك.',
+  },
+  CANCEL: { en: 'CANCEL', ar: 'إلغاء' },
+  'Password reset email sent.': { en: 'Password reset email sent.', ar: 'تم إرسال رسالة إعادة تعيين كلمة المرور.' },
+  'Account created. Confirm your email, then sign in.': {
+    en: 'Account created. Confirm your email, then sign in.',
+    ar: 'تم إنشاء الحساب. أكدي بريدك الإلكتروني ثم سجلي الدخول.',
+  },
+  'Your profile, saved pieces, delivery details, and order history are all in one place.': {
+    en: 'Your profile, saved pieces, delivery details, and order history are all in one place.',
+    ar: 'ملفك الشخصي والقطع المحفوظة وتفاصيل التوصيل وسجل الطلبات كلها في مكان واحد.',
+  },
+  'Signed in as': { en: 'Signed in as', ar: 'تم تسجيل الدخول باسم' },
+  'Account status': { en: 'Account status', ar: 'حالة الحساب' },
+  'Customer account is active and ready for orders.': {
+    en: 'Customer account is active and ready for orders.',
+    ar: 'حساب العميل نشط وجاهز للطلبات.',
+  },
+  'Update your contact details and account identity.': {
+    en: 'Update your contact details and account identity.',
+    ar: 'حدّثي بيانات التواصل وهوية الحساب.',
+  },
+  'Track placed orders, payment state, and delivery progress.': {
+    en: 'Track placed orders, payment state, and delivery progress.',
+    ar: 'تابعي الطلبات المدخلة وحالة الدفع وتقدم التوصيل.',
+  },
+  'Open your saved wishlist and revisit the products you marked.': {
+    en: 'Open your saved wishlist and revisit the products you marked.',
+    ar: 'افتحي قائمة المفضلة المحفوظة وارجعي إلى المنتجات التي حددتها.',
+  },
+  'Review your saved delivery addresses for faster checkout.': {
+    en: 'Review your saved delivery addresses for faster checkout.',
+    ar: 'راجعي عناوين التوصيل المحفوظة لإتمام شراء أسرع.',
+  },
+  'Manage password recovery, communication preferences, and account actions.': {
+    en: 'Manage password recovery, communication preferences, and account actions.',
+    ar: 'أديري استعادة كلمة المرور وتفضيلات التواصل وإجراءات الحساب.',
+  },
+  'See account events, order updates, and wishlist reminders.': {
+    en: 'See account events, order updates, and wishlist reminders.',
+    ar: 'شاهدي أحداث الحساب وتحديثات الطلبات وتذكيرات المفضلة.',
+  },
+  'MY ORDERS': { en: 'MY ORDERS', ar: 'طلباتي' },
+  'Track every purchase, payment state, and delivery handoff.': {
+    en: 'Track every purchase, payment state, and delivery handoff.',
+    ar: 'تابعي كل عملية شراء وحالة الدفع وتسليم الشحنة.',
+  },
+  'Order not found.': { en: 'Order not found.', ar: 'الطلب غير موجود.' },
+  'This order does not belong to the current account or is no longer available.': {
+    en: 'This order does not belong to the current account or is no longer available.',
+    ar: 'هذا الطلب لا يخص الحساب الحالي أو لم يعد متاحاً.',
+  },
+  'BACK TO ORDERS': { en: 'BACK TO ORDERS', ar: 'العودة إلى الطلبات' },
+  'Order details, payment state, and delivery information.': {
+    en: 'Order details, payment state, and delivery information.',
+    ar: 'تفاصيل الطلب وحالة الدفع ومعلومات التوصيل.',
+  },
+  'Placed on': { en: 'Placed on', ar: 'تاريخ الطلب' },
+  'FAVORITES': { en: 'FAVORITES', ar: 'المفضلة' },
+  'Saved products connected to your customer account.': {
+    en: 'Saved products connected to your customer account.',
+    ar: 'المنتجات المحفوظة المرتبطة بحساب العميل.',
+  },
+  'Tap the heart on any product to start building your wishlist.': {
+    en: 'Tap the heart on any product to start building your wishlist.',
+    ar: 'اضغطي على القلب في أي منتج لبدء بناء قائمة المفضلة.',
+  },
+  'ADDRESSES': { en: 'ADDRESSES', ar: 'العناوين' },
+  'Review the shipping details saved to your customer account.': {
+    en: 'Review the shipping details saved to your customer account.',
+    ar: 'راجعي تفاصيل الشحن المحفوظة في حساب العميل.',
+  },
+  Default: { en: 'Default', ar: 'افتراضي' },
+  'No saved addresses.': { en: 'No saved addresses.', ar: 'لا توجد عناوين محفوظة.' },
+  'Addresses will appear here after they are added during checkout or account management.': {
+    en: 'Addresses will appear here after they are added during checkout or account management.',
+    ar: 'ستظهر العناوين هنا بعد إضافتها أثناء الدفع أو إدارة الحساب.',
+  },
+  'GO TO CHECKOUT': { en: 'GO TO CHECKOUT', ar: 'الذهاب إلى الدفع' },
+  PROFILE: { en: 'PROFILE', ar: 'الملف الشخصي' },
+  'Account identity and contact details linked to this customer session.': {
+    en: 'Account identity and contact details linked to this customer session.',
+    ar: 'هوية الحساب وبيانات التواصل المرتبطة بجلسة العميل الحالية.',
+  },
+  'Customer account controls, recovery, and communication preferences.': {
+    en: 'Customer account controls, recovery, and communication preferences.',
+    ar: 'عناصر تحكم حساب العميل والاستعادة وتفضيلات التواصل.',
+  },
+  Security: { en: 'Security', ar: 'الأمان' },
+  'Profile status': { en: 'Profile status', ar: 'حالة الملف الشخصي' },
+  'Password resets are handled through the forgot password flow for this account.': {
+    en: 'Password resets are handled through the forgot password flow for this account.',
+    ar: 'إعادة تعيين كلمة المرور تتم عبر مسار نسيت كلمة المرور لهذا الحساب.',
+  },
+  'A single stream for customer account and order events.': {
+    en: 'A single stream for customer account and order events.',
+    ar: 'سجل موحد لأحداث حساب العميل والطلبات.',
+  },
+  'Your latest order status updates appear here.': {
+    en: 'Your latest order status updates appear here.',
+    ar: 'تظهر هنا آخر تحديثات حالة طلباتك.',
+  },
+  'Favorites can trigger reminders when inventory gets low.': {
+    en: 'Favorites can trigger reminders when inventory gets low.',
+    ar: 'يمكن للمفضلة تشغيل تذكيرات عندما يصبح المخزون منخفضاً.',
+  },
+  'Future shipping, payment, and delivery events can be listed here.': {
+    en: 'Future shipping, payment, and delivery events can be listed here.',
+    ar: 'يمكن عرض أحداث الشحن والدفع والتوصيل المستقبلية هنا.',
+  },
+  'Your product feedback and submitted ratings.': {
+    en: 'Your product feedback and submitted ratings.',
+    ar: 'ملاحظاتك على المنتجات والتقييمات المرسلة.',
+  },
+  'No reviews yet.': { en: 'No reviews yet.', ar: 'لا توجد تقييمات بعد.' },
+  'Submitted product feedback will appear here after review creation is connected.': {
+    en: 'Submitted product feedback will appear here after review creation is connected.',
+    ar: 'ستظهر ملاحظات المنتجات المرسلة هنا بعد ربط إنشاء التقييمات.',
+  },
+  pending: { en: 'Pending', ar: 'قيد الانتظار' },
+  confirmed: { en: 'Confirmed', ar: 'مؤكد' },
+  processing: { en: 'Processing', ar: 'قيد المعالجة' },
+  shipped: { en: 'Shipped', ar: 'تم الشحن' },
+  delivered: { en: 'Delivered', ar: 'تم التسليم' },
+  cash_on_delivery: { en: 'Cash on delivery', ar: 'الدفع عند الاستلام' },
   'PLEASE WAIT': { en: 'PLEASE WAIT', ar: 'يرجى الانتظار' },
   'LOG IN': { en: 'LOG IN', ar: 'تسجيل الدخول' },
   'Form captured. Wire this to your Supabase auth environment keys before launch.': {
     en: 'Form captured. Wire this to your Supabase auth environment keys before launch.',
     ar: 'تم التقاط النموذج. اربطيه بمفاتيح بيئة Supabase قبل الإطلاق.',
+  },
+  'Try again in a moment.': { en: 'Try again in a moment.', ar: 'حاولي مرة أخرى بعد قليل.' },
+  'Password must be at least 6 characters': {
+    en: 'Password must be at least 6 characters',
+    ar: 'يجب أن تكون كلمة المرور 6 أحرف على الأقل',
   },
 };
 

@@ -1,4 +1,4 @@
-import { fallbackFlashSale, fallbackProducts, storeCategories, storeSettings } from '@/lib/commerce-data';
+import { storeSettings } from '@/lib/commerce-data';
 import { CatalogFilters, FlashSale, StoreCategory, StoreProduct, StoreSettings } from '@/lib/commerce-types';
 import { filterProducts } from '@/lib/commerce-utils';
 import { fetchSupabaseRest } from '@/lib/supabase/rest';
@@ -17,23 +17,40 @@ type SupabaseProduct = {
   name: string;
   short_description: string | null;
   description: string | null;
+  base_price: string | number | null;
+  compare_at_price?: string | number | null;
   category_id: string | null;
-  brand_name?: string | null;
+  brand_id?: string | null;
   status: string;
   is_featured?: boolean | null;
+};
+
+type SupabaseBrand = {
+  id: string;
+  name: string;
 };
 
 type SupabaseVariant = {
   id: string;
   product_id: string;
   sku: string | null;
-  color_name?: string | null;
-  color_hex?: string | null;
-  size_name?: string | null;
+  color_id?: string | null;
+  size_id?: string | null;
   price: string | number | null;
   compare_at_price?: string | number | null;
   stock_quantity: number;
   allow_backorder?: boolean | null;
+};
+
+type SupabaseSize = {
+  id: string;
+  name: string;
+};
+
+type SupabaseColor = {
+  id: string;
+  name: string;
+  hex_code?: string | null;
 };
 
 type SupabaseImage = {
@@ -81,24 +98,24 @@ export async function getCategories(): Promise<StoreCategory[]> {
   });
 
   if (!categories?.length) {
-    return storeCategories;
+    return [];
   }
 
-  return categories.map((category, index) => ({
+  return categories.map((category) => ({
     id: category.id,
     slug: category.slug,
     name: category.name,
-    description: category.description ?? storeCategories[index % storeCategories.length].description,
-    accent: storeCategories[index % storeCategories.length].accent,
-    image: category.image_url ?? storeCategories[index % storeCategories.length].image,
+    description: category.description ?? '',
+    accent: category.name,
+    image: category.image_url ?? '',
   }));
 }
 
 export async function getProducts(): Promise<StoreProduct[]> {
-  const [products, categories, variants, images] = await Promise.all([
+  const [products, categories, brands, sizes, colors, variants, images] = await Promise.all([
     fetchSupabaseRest<SupabaseProduct[]>('products', {
       query: {
-        select: 'id,slug,name,short_description,description,category_id,brand_name,status,is_featured',
+        select: 'id,slug,name,short_description,description,base_price,compare_at_price,category_id,brand_id,status,is_featured',
         status: 'eq.active',
         order: 'created_at.desc',
       },
@@ -110,9 +127,30 @@ export async function getProducts(): Promise<StoreProduct[]> {
       },
       revalidate: 60,
     }),
+    fetchSupabaseRest<SupabaseBrand[]>('brands', {
+      query: {
+        select: 'id,name',
+        is_active: 'eq.true',
+      },
+      revalidate: 60,
+    }),
+    fetchSupabaseRest<SupabaseSize[]>('sizes', {
+      query: {
+        select: 'id,name',
+        is_active: 'eq.true',
+      },
+      revalidate: 60,
+    }),
+    fetchSupabaseRest<SupabaseColor[]>('colors', {
+      query: {
+        select: 'id,name,hex_code',
+        is_active: 'eq.true',
+      },
+      revalidate: 60,
+    }),
     fetchSupabaseRest<SupabaseVariant[]>('product_variants', {
       query: {
-        select: 'id,product_id,sku,color_name,color_hex,size_name,price,compare_at_price,stock_quantity,allow_backorder',
+        select: 'id,product_id,sku,color_id,size_id,price,compare_at_price,stock_quantity,allow_backorder',
         is_active: 'eq.true',
       },
       revalidate: 60,
@@ -126,56 +164,70 @@ export async function getProducts(): Promise<StoreProduct[]> {
     }),
   ]);
 
-  if (!products?.length || !variants?.length) {
-    return fallbackProducts;
+  if (!products?.length) {
+    return [];
   }
 
   const categoriesById = new Map((categories ?? []).map((category) => [category.id, category]));
-  const variantsByProduct = groupBy(variants, (variant) => variant.product_id);
+  const brandsById = new Map((brands ?? []).map((brand) => [brand.id, brand]));
+  const sizesById = new Map((sizes ?? []).map((size) => [size.id, size]));
+  const colorsById = new Map((colors ?? []).map((color) => [color.id, color]));
+  const variantsByProduct = groupBy(variants ?? [], (variant) => variant.product_id);
   const imagesByProduct = groupBy(images ?? [], (image) => image.product_id);
 
   return products.reduce<StoreProduct[]>((acc, product) => {
       const productVariants = variantsByProduct[product.id] ?? [];
 
-      if (!productVariants.length) {
-        return acc;
-      }
-
       const category = product.category_id ? categoriesById.get(product.category_id) : null;
-      const primaryFallback = fallbackProducts.find((item) => item.categorySlug === category?.slug) ?? fallbackProducts[0];
+      const productImages = (imagesByProduct[product.id] ?? [])
+        .map((image, index) => ({
+          id: image.id ?? `${product.id}-${index}`,
+          url: image.image_url,
+          alt: image.alt_text ?? product.name,
+          isPrimary: Boolean(image.is_primary),
+        }))
+        .filter((image) => Boolean(image.url));
 
       acc.push({
         id: product.id,
         slug: product.slug,
         name: product.name,
-        shortDescription: product.short_description ?? 'A sharp, limited piece from the latest drop.',
-        description: product.description ?? product.short_description ?? 'Product description coming from Supabase.',
-        categorySlug: category?.slug ?? 'tops',
-        brand: product.brand_name ?? 'Tourmaline Coven',
+        shortDescription: product.short_description ?? '',
+        description: product.description ?? product.short_description ?? '',
+        categorySlug: category?.slug ?? 'uncategorized',
+        brand: (product.brand_id ? brandsById.get(product.brand_id)?.name : null) ?? 'Tourmaline Coven',
         tags: [category?.name ?? 'fashion', 'dark feminine', 'gothic'],
-        images:
-          imagesByProduct[product.id]?.map((image, index) => ({
-            id: image.id ?? `${product.id}-${index}`,
-            url: image.image_url,
-            alt: image.alt_text ?? product.name,
-            isPrimary: Boolean(image.is_primary),
-          })) ?? primaryFallback.images,
-        variants: productVariants.map((variant) => ({
-          id: variant.id,
-          sku: variant.sku ?? `${product.slug}-${variant.id}`,
-          color: variant.color_name ?? 'Black',
-          colorHex: variant.color_hex ?? '#111111',
-          size: variant.size_name ?? 'ONE SIZE',
-          price: Number(variant.price ?? 0),
-          compareAtPrice: variant.compare_at_price ? Number(variant.compare_at_price) : null,
-          stockQuantity: Number(variant.stock_quantity ?? 0),
-          allowBackorder: Boolean(variant.allow_backorder),
-        })),
+        images: productImages,
+        variants: productVariants.length
+          ? productVariants.map((variant) => ({
+              id: variant.id,
+              sku: variant.sku ?? `${product.slug}-${variant.id}`,
+              color: (variant.color_id ? colorsById.get(variant.color_id)?.name : null) ?? 'Default',
+              colorHex: (variant.color_id ? colorsById.get(variant.color_id)?.hex_code : null) ?? '#111111',
+              size: (variant.size_id ? sizesById.get(variant.size_id)?.name : null) ?? 'ONE SIZE',
+              price: Number(variant.price ?? 0),
+              compareAtPrice: variant.compare_at_price ? Number(variant.compare_at_price) : null,
+              stockQuantity: Number(variant.stock_quantity ?? 0),
+              allowBackorder: Boolean(variant.allow_backorder),
+            }))
+          : [
+              {
+                id: `${product.id}-base`,
+                sku: `${product.slug}-base`,
+                color: 'Default',
+                colorHex: '#111111',
+                size: 'ONE SIZE',
+                price: Number(product.base_price ?? 0),
+                compareAtPrice: product.compare_at_price ? Number(product.compare_at_price) : null,
+                stockQuantity: 1,
+                allowBackorder: true,
+              },
+            ],
         status: product.status === 'active' ? 'active' : 'inactive',
         isFeatured: Boolean(product.is_featured),
         isNew: false,
-        rating: primaryFallback.rating,
-        reviewCount: primaryFallback.reviewCount,
+        rating: 0,
+        reviewCount: 0,
       } satisfies StoreProduct);
 
       return acc;
@@ -198,20 +250,20 @@ export async function getFlashSale(nowIso = new Date().toISOString()): Promise<F
   const sale = sales?.[0];
 
   if (!sale) {
-    return fallbackFlashSale;
+    return null;
   }
 
   return {
     id: sale.id,
     title: sale.title,
-    description: sale.description ?? fallbackFlashSale.description,
+    description: sale.description ?? '',
     discountLabel: `${sale.discount_value}% OFF`,
     startsAt: sale.starts_at,
     endsAt: sale.ends_at,
-    ctaText: sale.button_text ?? fallbackFlashSale.ctaText,
-    ctaUrl: sale.button_url ?? fallbackFlashSale.ctaUrl,
+    ctaText: sale.button_text ?? '',
+    ctaUrl: sale.button_url ?? '/shop?sale=true',
     showAsModal: Boolean(sale.show_as_modal),
-    image: sale.image_url ?? fallbackFlashSale.image,
+    image: sale.image_url ?? '',
   };
 }
 

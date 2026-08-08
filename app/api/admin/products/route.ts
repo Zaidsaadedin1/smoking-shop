@@ -1,6 +1,6 @@
 import { ensureAdminApiAccess, handleApiError } from '@/app/api/admin/_utils';
 import { getAdminAccessToken } from '@/lib/admin/auth';
-import { createProduct, replaceProductImages } from '@/lib/api/store-api';
+import { createProduct, replaceProductImages, replaceProductVariants } from '@/lib/api/store-api';
 import { jsonError, jsonOk, optionalString, requireNumber, requireString } from '@/lib/api/http';
 import { listProducts } from '@/lib/api/store-api';
 import { saveUploadedImage, saveUploadedImages } from '@/lib/admin/uploads';
@@ -20,6 +20,29 @@ function parseOptionalNumber(value: unknown) {
 
 function parseBoolean(value: unknown) {
   return value === true || value === 'true' || value === 'on' || value === '1';
+}
+
+function parseVariants(value: unknown) {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return [];
+  }
+
+  const parsed = JSON.parse(value) as Array<Record<string, unknown>>;
+
+  return parsed.map((variant, index) => ({
+    size_id: optionalString(variant.sizeId),
+    color_id: optionalString(variant.colorId),
+    sku: requireString(variant.sku, `variants[${index}].sku`),
+    barcode: optionalString(variant.barcode),
+    price: parseOptionalNumber(variant.price),
+    compare_at_price: parseOptionalNumber(variant.compareAtPrice),
+    stock_quantity: requireNumber(Number(variant.stockQuantity ?? 0), `variants[${index}].stockQuantity`),
+    low_stock_threshold: requireNumber(Number(variant.lowStockThreshold ?? 0), `variants[${index}].lowStockThreshold`),
+    track_inventory: parseBoolean(variant.trackInventory),
+    allow_backorder: parseBoolean(variant.allowBackorder),
+    weight_grams: parseOptionalNumber(variant.weightGrams),
+    is_active: variant.isActive === undefined ? true : parseBoolean(variant.isActive),
+  }));
 }
 
 async function parseProductRequest(request: Request) {
@@ -76,6 +99,7 @@ export async function POST(request: Request) {
     const { body, mainImageFile, subImageFiles } = await parseProductRequest(request);
     const basePrice = Number(body.basePrice);
     const compareAtPrice = parseOptionalNumber(body.compareAtPrice);
+    const variants = parseVariants(body.variantsJson);
     const result = await createProduct({
       name: requireString(body.name, 'name'),
       name_ar: optionalString(body.nameAr),
@@ -109,6 +133,12 @@ export async function POST(request: Request) {
 
     if (imagesResult.error) {
       return jsonError(imagesResult.error, imagesResult.status);
+    }
+
+    const variantsResult = await replaceProductVariants(result.data.id, variants, auth);
+
+    if (variantsResult.error) {
+      return jsonError(variantsResult.error, variantsResult.status);
     }
 
     return jsonOk(result.data, { status: 201 });

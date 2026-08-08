@@ -1,5 +1,13 @@
-import { AuthPageView } from '@/components/storefront/storefront-pages';
+import { redirect } from 'next/navigation';
+import { AuthPageView } from '@/components/storefront/storefront-account-pages';
+import { getCustomerSession } from '@/lib/customer/auth';
 
-export default function ForgotPasswordPage() {
+export default async function ForgotPasswordPage() {
+  const session = await getCustomerSession();
+
+  if (session) {
+    redirect('/account');
+  }
+
   return <AuthPageView mode="forgot-password" />;
 }

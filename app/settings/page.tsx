@@ -1,5 +1,7 @@
-import { SettingsScreen } from '@/components/customer/screens/OrderAndProfileScreens';
+import { SettingsPageView } from '@/components/storefront/storefront-account-pages';
+import { requireCustomerSession } from '@/lib/customer/auth';
 
-export default function SettingsPage() {
-  return <SettingsScreen />;
+export default async function SettingsPage() {
+  const session = await requireCustomerSession();
+  return <SettingsPageView session={session} />;
 }

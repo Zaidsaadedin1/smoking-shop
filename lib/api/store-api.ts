@@ -94,9 +94,19 @@ type VariantApiRow = {
   id: string;
   product_id: string;
   sku: string;
+  size_id?: string | null;
+  color_id?: string | null;
+  barcode?: string | null;
   price: string | number | null;
+  compare_at_price?: string | number | null;
   stock_quantity: number;
+  low_stock_threshold?: number;
+  track_inventory?: boolean;
+  allow_backorder?: boolean;
+  weight_grams?: number | null;
   is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
 };
 
 type ProductImageApiRow = {
@@ -374,7 +384,7 @@ export async function listProducts(filters: {
     fetchSupabaseRest<ProductApiRow[]>('products', { query, ...(auth?.headers ? { headers: auth.headers } : {}), revalidate: 0 }),
     fetchSupabaseRest<VariantApiRow[]>('product_variants', {
       query: {
-        select: 'id,product_id,sku,price,stock_quantity,is_active',
+        select: 'id,product_id,size_id,color_id,sku,barcode,price,compare_at_price,stock_quantity,low_stock_threshold,track_inventory,allow_backorder,weight_grams,is_active',
         is_active: 'eq.true',
       },
       ...(auth?.headers ? { headers: auth.headers } : {}),
@@ -414,7 +424,7 @@ export async function getProductById(idOrSlug: string, auth?: SupabaseRequestAut
   const [variants, images, reviews] = await Promise.all([
     fetchSupabaseRest<VariantApiRow[]>('product_variants', {
       query: {
-        select: 'id,product_id,sku,price,stock_quantity,is_active',
+        select: 'id,product_id,size_id,color_id,sku,barcode,price,compare_at_price,stock_quantity,low_stock_threshold,track_inventory,allow_backorder,weight_grams,is_active,created_at,updated_at',
         product_id: `eq.${result.data.id}`,
         order: 'created_at.asc',
       },
@@ -456,6 +466,59 @@ export async function getProductById(idOrSlug: string, auth?: SupabaseRequestAut
 
 export async function createProduct(payload: Record<string, unknown>, auth?: SupabaseRequestAuth) {
   return insertSupabaseRow<ProductApiRow>('products', payload, true, auth);
+}
+
+export async function listProductVariants(auth?: SupabaseRequestAuth) {
+  return fetchSupabaseRest<VariantApiRow[]>('product_variants', {
+    query: {
+      select: 'id,product_id,size_id,color_id,sku,barcode,price,compare_at_price,stock_quantity,low_stock_threshold,track_inventory,allow_backorder,weight_grams,is_active,created_at,updated_at',
+      order: 'created_at.desc',
+    },
+    ...(auth?.headers ? { headers: auth.headers } : {}),
+    revalidate: 0,
+  });
+}
+
+export async function createProductVariant(payload: Record<string, unknown>, auth?: SupabaseRequestAuth) {
+  return insertSupabaseRow<VariantApiRow>('product_variants', payload, true, auth);
+}
+
+export async function replaceProductVariants(
+  productId: string,
+  variants: Array<Record<string, unknown>>,
+  auth?: SupabaseRequestAuth
+) {
+  const removeResult = await deleteSupabaseRow<VariantApiRow>('product_variants', { product_id: `eq.${productId}` }, false, auth);
+
+  if (removeResult.error) {
+    return removeResult;
+  }
+
+  if (variants.length === 0) {
+    return {
+      data: [],
+      error: null,
+      status: 200,
+    };
+  }
+
+  return insertSupabaseRow<VariantApiRow[]>(
+    'product_variants',
+    variants.map((variant) => ({
+      ...variant,
+      product_id: productId,
+    })),
+    false,
+    auth
+  );
+}
+
+export async function updateProductVariant(id: string, payload: Record<string, unknown>, auth?: SupabaseRequestAuth) {
+  return updateSupabaseRow<VariantApiRow>('product_variants', payload, { id: `eq.${id}` }, true, auth);
+}
+
+export async function deleteProductVariant(id: string, auth?: SupabaseRequestAuth) {
+  return deleteSupabaseRow<VariantApiRow>('product_variants', { id: `eq.${id}` }, true, auth);
 }
 
 export async function updateProduct(id: string, payload: Record<string, unknown>, auth?: SupabaseRequestAuth) {
@@ -526,7 +589,7 @@ export async function createReview(payload: Record<string, unknown>) {
   return insertSupabaseRow<ReviewRow>('reviews', payload, true);
 }
 
-export async function listAddresses(userId: string) {
+export async function listAddresses(userId: string, auth?: SupabaseRequestAuth) {
   return fetchSupabaseRest<AddressRow[]>('addresses', {
     query: {
       select:
@@ -534,23 +597,24 @@ export async function listAddresses(userId: string) {
       user_id: `eq.${userId}`,
       order: 'created_at.desc',
     },
+    ...(auth?.headers ? { headers: auth.headers } : {}),
     revalidate: 0,
   });
 }
 
-export async function createAddress(payload: Record<string, unknown>) {
-  return insertSupabaseRow<AddressRow>('addresses', payload, true);
+export async function createAddress(payload: Record<string, unknown>, auth?: SupabaseRequestAuth) {
+  return insertSupabaseRow<AddressRow>('addresses', payload, true, auth);
 }
 
-export async function updateAddress(id: string, payload: Record<string, unknown>) {
-  return updateSupabaseRow<AddressRow>('addresses', payload, { id: `eq.${id}` }, true);
+export async function updateAddress(id: string, payload: Record<string, unknown>, auth?: SupabaseRequestAuth) {
+  return updateSupabaseRow<AddressRow>('addresses', payload, { id: `eq.${id}` }, true, auth);
 }
 
-export async function deleteAddress(id: string) {
-  return deleteSupabaseRow<AddressRow>('addresses', { id: `eq.${id}` }, true);
+export async function deleteAddress(id: string, auth?: SupabaseRequestAuth) {
+  return deleteSupabaseRow<AddressRow>('addresses', { id: `eq.${id}` }, true, auth);
 }
 
-export async function listFavorites(userId: string) {
+export async function listFavorites(userId: string, auth?: SupabaseRequestAuth) {
   const [favorites, products] = await Promise.all([
     fetchSupabaseRest<FavoriteRow[]>('favorites', {
       query: {
@@ -558,6 +622,7 @@ export async function listFavorites(userId: string) {
         user_id: `eq.${userId}`,
         order: 'created_at.desc',
       },
+      ...(auth?.headers ? { headers: auth.headers } : {}),
       revalidate: 0,
     }),
     listProducts({}),
@@ -571,18 +636,19 @@ export async function listFavorites(userId: string) {
   }));
 }
 
-export async function addFavorite(payload: Record<string, unknown>) {
-  return insertSupabaseRow<FavoriteRow>('favorites', payload, true);
+export async function addFavorite(payload: Record<string, unknown>, auth?: SupabaseRequestAuth) {
+  return insertSupabaseRow<FavoriteRow>('favorites', payload, true, auth);
 }
 
-export async function removeFavorite(userId: string, productId: string) {
+export async function removeFavorite(userId: string, productId: string, auth?: SupabaseRequestAuth) {
   return deleteSupabaseRow<FavoriteRow>(
     'favorites',
     {
       user_id: `eq.${userId}`,
       product_id: `eq.${productId}`,
     },
-    true
+    true,
+    auth
   );
 }
 
@@ -698,12 +764,12 @@ export async function deleteOrder(id: string, auth?: SupabaseRequestAuth) {
   return deleteSupabaseRow<OrderRow>('orders', { id: `eq.${id}` }, true, auth);
 }
 
-export async function getOrderById(id: string) {
+export async function getOrderById(id: string, auth?: SupabaseRequestAuth) {
   const order = await fetchSupabaseSingle<OrderRow>('orders', {
     select:
       'id,order_number,user_id,status,payment_status,payment_method,customer_name,customer_email,customer_phone,shipping_address,billing_address,subtotal,discount_amount,shipping_amount,tax_amount,total_amount,currency,coupon_code,notes,tracking_number,shipping_carrier,created_at',
     id: `eq.${id}`,
-  });
+  }, auth);
 
   if (!order.data) {
     return order;
@@ -757,7 +823,7 @@ export async function createOrder(payload: {
     quantity: number;
     lineTotal: number;
   }>;
-}) {
+}, auth?: SupabaseRequestAuth) {
   const orderInsert = await insertSupabaseRow<OrderRow>(
     'orders',
     {
@@ -778,7 +844,8 @@ export async function createOrder(payload: {
       coupon_code: payload.couponCode ?? null,
       notes: payload.notes ?? null,
     },
-    true
+    true,
+    auth
   );
 
   if (!orderInsert.data) {
@@ -801,6 +868,7 @@ export async function createOrder(payload: {
       line_total: item.lineTotal,
     })),
     prefer: ['return=representation'],
+    ...(auth?.headers ? { headers: auth.headers } : {}),
   });
 
   if (itemsInsert.error) {

@@ -1,5 +1,7 @@
-import { ReviewsScreen } from '@/components/customer/screens/CatalogScreens';
+import { ReviewsPageView } from '@/components/storefront/storefront-account-pages';
+import { requireCustomerSession } from '@/lib/customer/auth';
 
-export default function ReviewsPage() {
-  return <ReviewsScreen />;
+export default async function ReviewsPage() {
+  await requireCustomerSession();
+  return <ReviewsPageView reviews={[]} />;
 }

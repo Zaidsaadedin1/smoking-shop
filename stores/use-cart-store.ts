@@ -10,6 +10,7 @@ export type CartLine = {
   productId: string;
   variantId: string;
   quantity: number;
+  product?: StoreProduct;
 };
 
 export type CartProductLine = {
@@ -41,7 +42,7 @@ export const useCartStore = create<CartState>()(
             return {
               items: state.items.map((item) =>
                 item.variantId === variantId
-                  ? { ...item, quantity: item.quantity + quantity }
+                  ? { ...item, quantity: item.quantity + quantity, product }
                   : item
               ),
             };
@@ -56,6 +57,7 @@ export const useCartStore = create<CartState>()(
                 productId: product.id,
                 variantId: variant?.id ?? variantId,
                 quantity,
+                product,
               },
             ],
           };
@@ -87,7 +89,7 @@ export const useCartStore = create<CartState>()(
 export function getCartProducts(items: CartLine[]): CartProductLine[] {
   return items
     .map((line) => {
-      const product = fallbackProducts.find((item) => item.id === line.productId);
+      const product = line.product ?? fallbackProducts.find((item) => item.id === line.productId);
       const variant = product?.variants.find((item) => item.id === line.variantId);
 
       if (!product || !variant) {

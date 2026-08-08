@@ -96,8 +96,38 @@ export function ProductCard({ product }: { product: StoreProduct }) {
               type="button"
               whileTap={{ scale: 0.85 }}
               animate={favorite ? { scale: [1, 1.3, 1] } : undefined}
-              onClick={(event) => {
+              onClick={async (event) => {
                 event.preventDefault();
+
+                try {
+                  const response = await fetch(
+                    favorite ? `/api/favorites?productId=${encodeURIComponent(product.id)}` : '/api/favorites',
+                    favorite
+                      ? { method: 'DELETE' }
+                      : {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({ productId: product.id }),
+                        }
+                  );
+
+                  if (!response.ok && response.status !== 401) {
+                    pushToast({
+                      title: t('Something went wrong'),
+                      description: t('Try again in a moment.'),
+                    });
+                    return;
+                  }
+                } catch {
+                  pushToast({
+                    title: t('Something went wrong'),
+                    description: t('Try again in a moment.'),
+                  });
+                  return;
+                }
+
                 toggleFavorite(product.id);
                 pushToast({
                   title: favorite ? t('REMOVED FROM WISHLIST') : t('SAVE TO YOUR WISHLIST'),

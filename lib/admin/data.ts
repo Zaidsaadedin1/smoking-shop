@@ -4,6 +4,7 @@ import {
   listCategories,
   listColors,
   listOrders,
+  listProductVariants,
   listProducts,
   listProfiles,
   listSizes,
@@ -74,6 +75,26 @@ export type AdminProductRecord = {
   brand_id: string;
   primary_image_url: string;
   sub_image_urls: string[];
+  variant_count: number;
+  total_stock: number;
+  created_at: string;
+};
+
+export type AdminProductVariantRecord = {
+  id: string;
+  product_id: string;
+  size_id: string;
+  color_id: string;
+  sku: string;
+  barcode: string;
+  price: number | null;
+  compare_at_price: number | null;
+  stock_quantity: number;
+  low_stock_threshold: number;
+  track_inventory: boolean;
+  allow_backorder: boolean;
+  weight_grams: number | null;
+  is_active: boolean;
   created_at: string;
 };
 
@@ -152,7 +173,31 @@ export async function getAdminProducts(): Promise<AdminProductRecord[]> {
     brand_id: row.brand_id ?? '',
     primary_image_url: row.images?.[0]?.image_url ?? '',
     sub_image_urls: row.images?.slice(1).map((image) => image.image_url) ?? [],
+    variant_count: row.variants?.length ?? 0,
+    total_stock: (row.variants ?? []).reduce((sum, variant) => sum + Number(variant.stock_quantity ?? 0), 0),
     created_at: row.created_at,
+  }));
+}
+
+export async function getAdminProductVariants(): Promise<AdminProductVariantRecord[]> {
+  const auth = await getAdminSupabaseAuth();
+  const rows = await listProductVariants(auth);
+  return (rows ?? []).map((row) => ({
+    id: row.id,
+    product_id: row.product_id,
+    size_id: row.size_id ?? '',
+    color_id: row.color_id ?? '',
+    sku: row.sku,
+    barcode: row.barcode ?? '',
+    price: toNumber(row.price),
+    compare_at_price: toNumber(row.compare_at_price),
+    stock_quantity: Number(row.stock_quantity ?? 0),
+    low_stock_threshold: Number(row.low_stock_threshold ?? 0),
+    track_inventory: Boolean(row.track_inventory),
+    allow_backorder: Boolean(row.allow_backorder),
+    weight_grams: toNumber(row.weight_grams),
+    is_active: Boolean(row.is_active),
+    created_at: row.created_at ?? '',
   }));
 }
 

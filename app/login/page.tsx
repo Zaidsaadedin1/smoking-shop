@@ -1,5 +1,13 @@
-import { AuthPageView } from '@/components/storefront/storefront-pages';
+import { redirect } from 'next/navigation';
+import { AuthPageView } from '@/components/storefront/storefront-account-pages';
+import { getCustomerSession } from '@/lib/customer/auth';
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const session = await getCustomerSession();
+
+  if (session) {
+    redirect('/account');
+  }
+
   return <AuthPageView mode="login" />;
 }

@@ -1,6 +1,6 @@
 import { ensureAdminApiAccess, handleApiError } from '@/app/api/admin/_utils';
 import { getAdminAccessToken } from '@/lib/admin/auth';
-import { deleteProduct, getProductById, replaceProductImages, updateProduct } from '@/lib/api/store-api';
+import { deleteProduct, getProductById, replaceProductImages, replaceProductVariants, updateProduct } from '@/lib/api/store-api';
 import { saveUploadedImage, saveUploadedImages } from '@/lib/admin/uploads';
 import { jsonError, jsonOk, optionalString } from '@/lib/api/http';
 
@@ -19,6 +19,29 @@ function parseOptionalNumber(value: unknown) {
 
 function parseBoolean(value: unknown) {
   return value === true || value === 'true' || value === 'on' || value === '1';
+}
+
+function parseVariants(value: unknown) {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return [];
+  }
+
+  const parsed = JSON.parse(value) as Array<Record<string, unknown>>;
+
+  return parsed.map((variant, index) => ({
+    size_id: optionalString(variant.sizeId),
+    color_id: optionalString(variant.colorId),
+    sku: optionalString(variant.sku) ?? `variant-${index + 1}`,
+    barcode: optionalString(variant.barcode),
+    price: parseOptionalNumber(variant.price),
+    compare_at_price: parseOptionalNumber(variant.compareAtPrice),
+    stock_quantity: Number(variant.stockQuantity ?? 0),
+    low_stock_threshold: Number(variant.lowStockThreshold ?? 0),
+    track_inventory: parseBoolean(variant.trackInventory),
+    allow_backorder: parseBoolean(variant.allowBackorder),
+    weight_grams: parseOptionalNumber(variant.weightGrams),
+    is_active: variant.isActive === undefined ? true : parseBoolean(variant.isActive),
+  }));
 }
 
 async function parseProductRequest(request: Request) {
@@ -56,6 +79,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const { id } = await params;
     const { body, mainImageFile, subImageFiles } = await parseProductRequest(request);
     const payload: Record<string, unknown> = {};
+    const hasVariants = body.variantsJson !== undefined;
 
     if (body.name !== undefined) payload.name = optionalString(body.name);
     if (body.nameAr !== undefined) payload.name_ar = optionalString(body.nameAr);
@@ -102,6 +126,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
       if (imagesResult.error) {
         return jsonError(imagesResult.error, imagesResult.status);
+      }
+    }
+
+    if (hasVariants) {
+      const variantsResult = await replaceProductVariants(id, parseVariants(body.variantsJson), auth);
+
+      if (variantsResult.error) {
+        return jsonError(variantsResult.error, variantsResult.status);
       }
     }
 

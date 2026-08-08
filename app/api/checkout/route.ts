@@ -1,8 +1,16 @@
 import { createOrder } from '@/lib/api/store-api';
 import { jsonError, jsonOk, optionalString, requireNumber, requireString } from '@/lib/api/http';
+import { getCustomerAuthHeaders, getCustomerSession } from '@/lib/customer/auth';
 
 export async function POST(request: Request) {
   try {
+    const session = await getCustomerSession();
+
+    if (!session) {
+      return jsonError('Unauthorized', 401);
+    }
+
+    const authHeaders = await getCustomerAuthHeaders();
     const body = (await request.json()) as Record<string, unknown>;
     const items = Array.isArray(body.items) ? body.items : null;
 
@@ -11,10 +19,10 @@ export async function POST(request: Request) {
     }
 
     const result = await createOrder({
-      userId: optionalString(body.userId),
+      userId: session.id,
       paymentMethod: requireString(body.paymentMethod, 'paymentMethod'),
-      customerName: requireString(body.customerName, 'customerName'),
-      customerEmail: optionalString(body.customerEmail),
+      customerName: optionalString(body.customerName) ?? session.fullName,
+      customerEmail: optionalString(body.customerEmail) ?? session.email,
       customerPhone: requireString(body.customerPhone, 'customerPhone'),
       shippingAddress: (body.shippingAddress as Record<string, unknown>) ?? {},
       billingAddress: (body.billingAddress as Record<string, unknown>) ?? null,
@@ -42,7 +50,7 @@ export async function POST(request: Request) {
           lineTotal: requireNumber(row.lineTotal, 'items[].lineTotal'),
         };
       }),
-    });
+    }, authHeaders ? { headers: authHeaders } : undefined);
 
     if (result.error) {
       return jsonError(result.error, result.status);

@@ -1,15 +1,27 @@
 import { createOrder, listOrders } from '@/lib/api/store-api';
 import { jsonError, jsonOk, optionalString, requireNumber, requireString } from '@/lib/api/http';
+import { getCustomerAuthHeaders, getCustomerSession } from '@/lib/customer/auth';
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const userId = searchParams.get('userId');
-  const orders = await listOrders(userId);
+  const session = await getCustomerSession();
+
+  if (!session) {
+    return jsonError('Unauthorized', 401);
+  }
+
+  const authHeaders = await getCustomerAuthHeaders();
+  const orders = await listOrders(session.id, authHeaders ? { headers: authHeaders } : undefined);
   return jsonOk(orders ?? []);
 }
 
 export async function POST(request: Request) {
   try {
+    const session = await getCustomerSession();
+
+    if (!session) {
+      return jsonError('Unauthorized', 401);
+    }
+
     const body = (await request.json()) as Record<string, unknown>;
     const items = Array.isArray(body.items) ? body.items : null;
 
@@ -18,10 +30,10 @@ export async function POST(request: Request) {
     }
 
     const result = await createOrder({
-      userId: optionalString(body.userId),
+      userId: session.id,
       paymentMethod: requireString(body.paymentMethod, 'paymentMethod'),
-      customerName: requireString(body.customerName, 'customerName'),
-      customerEmail: optionalString(body.customerEmail),
+      customerName: optionalString(body.customerName) ?? session.fullName,
+      customerEmail: optionalString(body.customerEmail) ?? session.email,
       customerPhone: requireString(body.customerPhone, 'customerPhone'),
       shippingAddress: (body.shippingAddress as Record<string, unknown>) ?? {},
       billingAddress: (body.billingAddress as Record<string, unknown>) ?? null,
