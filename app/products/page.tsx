@@ -1,8 +1,5 @@
-import { ProductsScreen } from '@/components/customer/screens/CatalogScreens';
-import { getProducts } from '@/lib/storefront-server';
+import { redirect } from 'next/navigation';
 
-export default async function ProductsPage() {
-  const products = await getProducts();
-
-  return <ProductsScreen products={products} />;
+export default function ProductsPage() {
+  redirect('/shop');
 }

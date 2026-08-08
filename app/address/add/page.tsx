@@ -1,5 +1,5 @@
-import { AddAddressScreen } from '@/components/customer/screens/OrderAndProfileScreens';
+import { redirect } from 'next/navigation';
 
 export default function AddAddressPage() {
-  return <AddAddressScreen />;
+  redirect('/addresses/new');
 }

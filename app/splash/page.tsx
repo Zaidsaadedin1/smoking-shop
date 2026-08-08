@@ -1,5 +1,5 @@
-import { SplashScreen } from '@/components/customer/screens/OrderAndProfileScreens';
+import { redirect } from 'next/navigation';
 
 export default function SplashPage() {
-  return <SplashScreen />;
+  redirect('/');
 }

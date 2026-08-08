@@ -1,5 +1,5 @@
-import { ForgotPasswordScreen } from '@/components/customer/screens/AuthScreens';
+import { redirect } from 'next/navigation';
 
-export default function ForgotPasswordPage() {
-  return <ForgotPasswordScreen />;
+export default function AuthForgotPasswordPage() {
+  redirect('/forgot-password');
 }

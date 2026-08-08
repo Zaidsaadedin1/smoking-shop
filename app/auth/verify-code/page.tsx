@@ -1,5 +1,5 @@
-import { VerifyCodeScreen } from '@/components/customer/screens/AuthScreens';
+import { redirect } from 'next/navigation';
 
-export default function VerifyCodePage() {
-  return <VerifyCodeScreen />;
+export default function AuthVerifyCodePage() {
+  redirect('/login');
 }

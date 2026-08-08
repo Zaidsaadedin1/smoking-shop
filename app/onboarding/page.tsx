@@ -1,5 +1,5 @@
-import { OnboardingScreen } from '@/components/customer/screens/OrderAndProfileScreens';
+import { redirect } from 'next/navigation';
 
 export default function OnboardingPage() {
-  return <OnboardingScreen />;
+  redirect('/account');
 }
