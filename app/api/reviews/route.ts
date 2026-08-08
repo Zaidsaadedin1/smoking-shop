@@ -6,6 +6,7 @@ import {
   requireNumber,
   requireString,
 } from '@/lib/api/http';
+import { getCustomerAuthHeaders, getCustomerSession } from '@/lib/customer/auth';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -21,6 +22,13 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const session = await getCustomerSession();
+
+    if (!session) {
+      return jsonError('Unauthorized', 401);
+    }
+
+    const authHeaders = await getCustomerAuthHeaders();
     const body = (await request.json()) as Record<string, unknown>;
     const rating = requireNumber(body.rating, 'rating');
 
@@ -30,12 +38,12 @@ export async function POST(request: Request) {
 
     const result = await createReview({
       product_id: requireString(body.productId, 'productId'),
-      user_id: requireString(body.userId, 'userId'),
+      user_id: session.id,
       rating,
       title: optionalString(body.title),
       comment: optionalString(body.comment),
       is_approved: body.isApproved ?? false,
-    });
+    }, authHeaders ? { headers: authHeaders } : undefined);
 
     if (result.error) {
       return jsonError(result.error, result.status);

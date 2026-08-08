@@ -20,7 +20,11 @@ export default async function OrderSuccessPage({
           <Link href="/account" className="rounded-full border border-white/10 px-5 py-3 text-center text-sm tracking-[0.2em]">
             TRACK ORDER
           </Link>
-          <Link href="/shop" className="rounded-full bg-[var(--text)] px-5 py-3 text-center text-sm tracking-[0.2em] text-black">
+          <Link
+            href="/shop"
+            className="rounded-full bg-[var(--accent)] px-5 py-3 text-center text-sm tracking-[0.2em]"
+            style={{ color: 'var(--background)' }}
+          >
             CONTINUE SHOPPING
           </Link>
         </div>

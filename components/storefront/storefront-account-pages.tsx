@@ -33,6 +33,17 @@ type OrderView = {
   customerName?: string | null;
   customerPhone?: string | null;
   notes?: string | null;
+  items?: Array<{
+    id: string;
+    productName: string;
+    sku?: string | null;
+    sizeName?: string | null;
+    colorName?: string | null;
+    imageUrl?: string | null;
+    unitPrice: number;
+    quantity: number;
+    lineTotal: number;
+  }>;
 };
 
 type AddressView = {
@@ -300,6 +311,38 @@ export function OrderDetailPageView({ order }: { order: OrderView | null }) {
           <DetailRow label="Tracking number" value={order.trackingNumber ?? '-'} />
           <DetailRow label="Shipping carrier" value={order.shippingCarrier ?? '-'} />
           <DetailRow label="Notes" value={order.notes ?? '-'} />
+        </SurfacePanel>
+      </div>
+      <div className="mt-4">
+        <SurfacePanel title="Order items">
+          {order.items?.length ? (
+            <div className="space-y-4">
+              {order.items.map((item) => (
+                <div key={item.id} className="flex flex-col gap-4 rounded-[24px] border border-white/8 bg-black/10 p-4 md:flex-row">
+                  <img
+                    src={item.imageUrl || '/products/product-placeholder.svg'}
+                    alt={item.productName}
+                    className="h-32 w-full rounded-[18px] object-cover md:w-24"
+                  />
+                  <div className="flex-1">
+                    <div className="text-lg font-medium">{t(item.productName)}</div>
+                    <div className="mt-2 grid gap-2 text-sm text-[var(--text-secondary)] md:grid-cols-2">
+                      <div>{t('Color')}: {item.colorName ?? '-'}</div>
+                      <div>{t('Size')}: {item.sizeName ?? '-'}</div>
+                      <div>{t('Quantity')}: {item.quantity}</div>
+                      <div>{t('SKU')}: {item.sku ?? '-'}</div>
+                    </div>
+                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/8 pt-4 text-sm">
+                      <div>{t('Unit price')}: <span className="text-[var(--text)]">{formatMoney(item.unitPrice, order.currency)}</span></div>
+                      <div>{t('Line total')}: <span className="text-[var(--text)]">{formatMoney(item.lineTotal, order.currency)}</span></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-sm text-[var(--text-secondary)]">{t('No order items found.')}</div>
+          )}
         </SurfacePanel>
       </div>
     </Container>

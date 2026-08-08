@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { ArrowRight, Heart, Star } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ReactNode } from 'react';
 import { useLocale } from '@/components/storefront/locale-provider';
 import { StoreCategory, StoreProduct } from '@/lib/commerce-types';
@@ -69,6 +70,7 @@ export function ProductCard({ product }: { product: StoreProduct }) {
   const favorites = useCartStore((state) => state.favorites);
   const { pushToast } = useUiStore();
   const { t } = useLocale();
+  const router = useRouter();
   const favorite = favorites.includes(product.id);
   const price = getPrimaryPrice(product);
   const compareAtPrice = getCompareAtPrice(product);
@@ -113,7 +115,16 @@ export function ProductCard({ product }: { product: StoreProduct }) {
                         }
                   );
 
-                  if (!response.ok && response.status !== 401) {
+                  if (response.status === 401) {
+                    pushToast({
+                      title: t('Sign in required'),
+                      description: t('Sign in to save products to your wishlist.'),
+                    });
+                    router.push('/login');
+                    return;
+                  }
+
+                  if (!response.ok) {
                     pushToast({
                       title: t('Something went wrong'),
                       description: t('Try again in a moment.'),

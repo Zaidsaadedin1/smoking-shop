@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowRight, Check, Minus, Plus, SlidersHorizontal, Star } from 'lucide-react';
+import { ArrowRight, Check, Heart, Minus, Plus, SlidersHorizontal, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ReactNode, useEffect, useMemo, useState } from 'react';
@@ -121,12 +121,27 @@ export function ShopPageView({
 export function ProductPageView({
   product,
   relatedProducts,
+  customer,
+  initialIsFavorite,
+  initialReviews,
 }: {
   product: StoreProduct;
   relatedProducts: StoreProduct[];
+  customer: { id: string; fullName: string } | null;
+  initialIsFavorite: boolean;
+  initialReviews: Array<{
+    id: string;
+    rating: number;
+    title: string;
+    comment: string;
+    createdAt: string;
+    authorName: string;
+  }>;
 }) {
   const { t } = useLocale();
+  const router = useRouter();
   const addItem = useCartStore((state) => state.addItem);
+  const toggleFavorite = useCartStore((state) => state.toggleFavorite);
   const openCart = useUiStore((state) => state.openCart);
   const pushToast = useUiStore((state) => state.pushToast);
   const colors = getProductColors(product);
@@ -144,6 +159,12 @@ export function ProductPageView({
   const [selectedSize, setSelectedSize] = useState(sizes[0] ?? '');
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
+  const [reviews, setReviews] = useState(initialReviews);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewTitle, setReviewTitle] = useState('');
+  const [reviewComment, setReviewComment] = useState('');
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const variantMatchesColor = (variant: StoreProduct['variants'][number], color: string) =>
     variant.color === color || variant.color === 'Default';
 
@@ -157,6 +178,123 @@ export function ProductPageView({
     selectedVariant.allowBackorder
       ? 99
       : Math.max(1, selectedVariant.stockQuantity);
+
+  async function handleFavoriteToggle() {
+    if (!customer) {
+      pushToast({
+        title: t('Sign in required'),
+        description: t('Sign in to save products to your wishlist.'),
+      });
+      router.push('/login');
+      return;
+    }
+
+    const nextFavorite = !isFavorite;
+    const response = await fetch(
+      nextFavorite ? '/api/favorites' : `/api/favorites?productId=${encodeURIComponent(product.id)}`,
+      nextFavorite
+        ? {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ productId: product.id }),
+          }
+        : { method: 'DELETE' }
+    );
+
+    if (!response.ok) {
+      pushToast({
+        title: t('Something went wrong'),
+        description: t('Try again in a moment.'),
+      });
+      return;
+    }
+
+    setIsFavorite(nextFavorite);
+    toggleFavorite(product.id);
+    pushToast({
+      title: nextFavorite ? t('SAVE TO YOUR WISHLIST') : t('REMOVED FROM WISHLIST'),
+      description: t(product.name),
+    });
+  }
+
+  async function handleReviewSubmit() {
+    if (!customer) {
+      pushToast({
+        title: t('Sign in required'),
+        description: t('Sign in to review products.'),
+      });
+      router.push('/login');
+      return;
+    }
+
+    if (!reviewComment.trim()) {
+      pushToast({
+        title: t('Review comment is required'),
+        description: t('Write a short review before submitting.'),
+      });
+      return;
+    }
+
+    setIsSubmittingReview(true);
+
+    try {
+      const response = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productId: product.id,
+          rating: reviewRating,
+          title: reviewTitle,
+          comment: reviewComment,
+        }),
+      });
+
+      if (response.status === 401) {
+        router.push('/login');
+        return;
+      }
+
+      if (!response.ok) {
+        const payload = (await response.json()) as { error?: string };
+        throw new Error(payload.error ?? 'Failed to submit review');
+      }
+
+      setReviews((current) => [
+        {
+          id: crypto.randomUUID(),
+          rating: reviewRating,
+          title: reviewTitle,
+          comment: reviewComment,
+          createdAt: new Intl.DateTimeFormat('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          }).format(new Date()),
+          authorName: customer.fullName,
+        },
+        ...current,
+      ]);
+      setReviewTitle('');
+      setReviewComment('');
+      setReviewRating(5);
+      pushToast({
+        title: t('Review submitted'),
+        description: t('Your review was submitted successfully.'),
+      });
+    } catch (error) {
+      pushToast({
+        title: t('Something went wrong'),
+        description: error instanceof Error ? t(error.message) : t('Try again in a moment.'),
+      });
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  }
+
   return (
     <div className="pb-20 pt-6 md:pb-24">
       <Container>
@@ -205,7 +343,19 @@ export function ProductPageView({
             </div>
           </div>
           <div className="lg:sticky lg:top-28 lg:h-fit">
-            <div className="text-xs tracking-[0.26em] text-[var(--muted)]">{product.brand}</div>
+            <div className="flex items-start justify-between gap-4">
+              <div className="text-xs tracking-[0.26em] text-[var(--muted)]">{product.brand}</div>
+              <button
+                type="button"
+                onClick={handleFavoriteToggle}
+                className={`inline-flex h-11 w-11 items-center justify-center rounded-full border transition ${
+                  isFavorite ? 'border-white bg-white text-black' : 'border-white/10 text-[var(--text-secondary)]'
+                }`}
+                aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+              >
+                <Heart className={`h-4 w-4 ${isFavorite ? 'fill-current' : ''}`} />
+              </button>
+            </div>
             <h1 className="mt-3 font-display text-4xl uppercase md:text-6xl">{t(product.name)}</h1>
             <div className="mt-4 flex items-center gap-4">
               <div className="text-2xl">{formatCurrency(selectedVariant.price)}</div>
@@ -332,6 +482,82 @@ export function ProductPageView({
               <Accordion title="RETURNS">
                 {t('Return eligibility depends on item type. Nail sets and intimate items remain final sale unless faulty.')}
               </Accordion>
+            </div>
+
+            <div className="mt-8 rounded-[28px] border border-white/8 bg-white/3 p-5">
+              <div className="text-xs tracking-[0.24em] text-[var(--muted)]">{t('PRODUCT REVIEWS')}</div>
+              {customer ? (
+                <div className="mt-4 space-y-4 border-b border-white/8 pb-5">
+                  <div className="flex flex-wrap gap-2">
+                    {[1, 2, 3, 4, 5].map((value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setReviewRating(value)}
+                        className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm ${
+                          reviewRating === value ? 'border-white bg-white text-black' : 'border-white/10'
+                        }`}
+                      >
+                        <Star className={`h-4 w-4 ${reviewRating >= value ? 'fill-current' : ''}`} />
+                        {value}
+                      </button>
+                    ))}
+                  </div>
+                  <input
+                    value={reviewTitle}
+                    onChange={(event) => setReviewTitle(event.target.value)}
+                    placeholder={t('Review title')}
+                    className="h-12 w-full rounded-full border border-white/10 bg-black/20 px-5 text-sm text-[var(--text)] outline-none"
+                  />
+                  <textarea
+                    value={reviewComment}
+                    onChange={(event) => setReviewComment(event.target.value)}
+                    placeholder={t('Write your review')}
+                    rows={4}
+                    className="w-full rounded-[24px] border border-white/10 bg-black/20 px-5 py-4 text-sm text-[var(--text)] outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleReviewSubmit}
+                    disabled={isSubmittingReview}
+                    className="rounded-full bg-[var(--accent)] px-5 py-3 text-sm tracking-[0.2em] disabled:opacity-40"
+                    style={{ color: 'var(--background)' }}
+                  >
+                    {isSubmittingReview ? t('PLEASE WAIT') : t('SUBMIT REVIEW')}
+                  </button>
+                </div>
+              ) : (
+                <div className="mt-4 rounded-[22px] border border-white/8 bg-black/10 p-4 text-sm text-[var(--text-secondary)]">
+                  <div>{t('Sign in to review products.')}</div>
+                  <Link href="/login" className="mt-3 inline-flex rounded-full border border-white/10 px-4 py-2 text-xs tracking-[0.2em] text-[var(--text)]">
+                    {t('LOG IN')}
+                  </Link>
+                </div>
+              )}
+
+              <div className="mt-5 space-y-4">
+                {reviews.length ? (
+                  reviews.map((review) => (
+                    <div key={review.id} className="rounded-[22px] border border-white/8 bg-black/10 p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <div className="text-sm font-medium">{review.authorName}</div>
+                          <div className="mt-1 text-xs tracking-[0.2em] text-[var(--muted)]">{review.createdAt}</div>
+                        </div>
+                        <div className="flex items-center gap-1 text-sm">
+                          {Array.from({ length: review.rating }).map((_, index) => (
+                            <Star key={`${review.id}-${index}`} className="h-4 w-4 fill-current" />
+                          ))}
+                        </div>
+                      </div>
+                      {review.title ? <div className="mt-3 text-sm uppercase tracking-[0.14em]">{review.title}</div> : null}
+                      <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">{review.comment}</p>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-sm text-[var(--text-secondary)]">{t('No reviews yet.')}</div>
+                )}
+              </div>
             </div>
           </div>
         </div>

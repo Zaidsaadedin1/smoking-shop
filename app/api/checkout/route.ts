@@ -53,6 +53,14 @@ export async function POST(request: Request) {
     }, authHeaders ? { headers: authHeaders } : undefined);
 
     if (result.error) {
+      const normalizedError = result.error.toLowerCase();
+      if (
+        normalizedError.includes('row-level security') ||
+        normalizedError.includes('row level security') ||
+        normalizedError.includes('violates row-level security policy')
+      ) {
+        return jsonError('Checkout is blocked by the current Supabase orders RLS policy. Update the orders insert policy to allow authenticated customers to create their own orders.', 403);
+      }
       return jsonError(result.error, result.status);
     }
 

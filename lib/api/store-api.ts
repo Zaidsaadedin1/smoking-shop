@@ -585,8 +585,8 @@ export async function listReviews(productId: string) {
   });
 }
 
-export async function createReview(payload: Record<string, unknown>) {
-  return insertSupabaseRow<ReviewRow>('reviews', payload, true);
+export async function createReview(payload: Record<string, unknown>, auth?: SupabaseRequestAuth) {
+  return insertSupabaseRow<ReviewRow>('reviews', payload, true, auth);
 }
 
 export async function listAddresses(userId: string, auth?: SupabaseRequestAuth) {
@@ -782,6 +782,7 @@ export async function getOrderById(id: string, auth?: SupabaseRequestAuth) {
       order_id: `eq.${order.data.id}`,
       order: 'created_at.asc',
     },
+    ...(auth?.headers ? { headers: auth.headers } : {}),
     revalidate: 0,
   });
 
