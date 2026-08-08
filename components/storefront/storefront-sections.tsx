@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Heart, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ReactNode } from 'react';
+import { FormEvent, ReactNode, useState } from 'react';
 import { useLocale } from '@/components/storefront/locale-provider';
 import { StoreCategory, StoreProduct } from '@/lib/commerce-types';
 import {
@@ -219,6 +219,45 @@ export function EditorialBanner() {
 
 export function NewsletterSection() {
   const { t } = useLocale();
+  const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!email.trim()) {
+      setMessage({ type: 'error', text: t('Email address is required') });
+      return;
+    }
+
+    setIsSubmitting(true);
+    setMessage(null);
+
+    try {
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const payload = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        setMessage({ type: 'error', text: t(payload.error ?? 'Something went wrong') });
+        return;
+      }
+
+      setEmail('');
+      setMessage({ type: 'success', text: t('You are on the list.') });
+    } catch {
+      setMessage({ type: 'error', text: t('Try again in a moment.') });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <section className="border border-[var(--border)] bg-[var(--card)] p-8 md:p-10">
@@ -229,16 +268,28 @@ export function NewsletterSection() {
           {t('Drops, secret sales and new pieces — before everyone else.')}
         </p>
       </div>
-      <form className="mt-8 flex flex-col gap-3 md:flex-row">
+      <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-3 md:flex-row">
         <input
           type="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
           placeholder={t('Email address')}
           className="h-14 flex-1 rounded-full border border-white/10 bg-black/20 px-6 text-sm outline-none placeholder:text-[var(--muted)]"
         />
-        <button type="submit" className="h-14 rounded-full bg-[var(--text)] px-8 text-sm tracking-[0.2em] text-black">
-          {t('JOIN')}
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="h-14 rounded-full bg-[var(--accent)] px-8 text-sm tracking-[0.2em] disabled:opacity-40"
+          style={{ color: 'var(--background)' }}
+        >
+          {isSubmitting ? t('PLEASE WAIT') : t('JOIN')}
         </button>
       </form>
+      {message ? (
+        <p className={`mt-4 text-sm ${message.type === 'success' ? 'text-[var(--text)]' : 'text-[var(--blush)]'}`}>
+          {message.text}
+        </p>
+      ) : null}
     </section>
   );
 }

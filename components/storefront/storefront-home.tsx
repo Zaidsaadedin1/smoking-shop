@@ -25,7 +25,7 @@ export function StorefrontHome({
   const newDrop = products.slice(0, 4);
   const nails = products.filter((product) => product.categorySlug === 'nails').slice(0, 4);
   const featured = products.filter((product) => product.isFeatured).slice(0, 4);
-  const collectionCategories = categories.filter((category) => category.image).slice(0, 3);
+  const collectionCategories = categories.slice(0, 3);
   const bestSellers = featured.length ? featured : products.slice(0, 4);
 
   return (
@@ -198,11 +198,15 @@ function CollectionTriptych({ categories }: { categories: StoreCategory[] }) {
     <section className="grid gap-px bg-[var(--border)] md:grid-cols-3">
       {categories.map((category) => (
         <Link key={category.id} href={`/shop?category=${category.slug}`} className="group relative block overflow-hidden bg-black">
-          <img
-            src={category.image}
-            alt={category.name}
-            className="h-[440px] w-full object-cover transition duration-500 group-hover:scale-[1.03] md:h-[520px]"
-          />
+          {category.image ? (
+            <img
+              src={category.image}
+              alt={category.name}
+              className="h-[440px] w-full object-cover transition duration-500 group-hover:scale-[1.03] md:h-[520px]"
+            />
+          ) : (
+            <div className="h-[440px] w-full bg-[radial-gradient(circle_at_top,rgba(126,34,64,0.36),transparent_34%),linear-gradient(180deg,#161113_0%,#0d0b0c_100%)] md:h-[520px]" />
+          )}
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.18),rgba(0,0,0,0.22)_30%,rgba(0,0,0,0.7)_100%)]" />
           <div className="absolute inset-x-0 bottom-0 p-5 text-center">
             <div className="text-[11px] tracking-[0.3em] text-white/60">{category.accent}</div>

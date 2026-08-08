@@ -6,8 +6,8 @@ export const storeSettings: StoreSettings = {
   supportEmail: 'orders@tourmalinecoven.com',
   supportPhone: '+962 7 9000 8888',
   socials: {
-    instagram: 'https://instagram.com/tourmalinecoven',
-    tiktok: 'https://tiktok.com/@tourmalinecoven',
+    instagram: 'https://www.instagram.com/tourmalinecoven/?hl=en',
+    facebook: 'https://www.facebook.com/profile.php?id=61592041071634',
   },
 };
 

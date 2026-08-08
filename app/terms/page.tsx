@@ -1,5 +1,5 @@
-import { TermsScreen } from '@/components/customer/screens/OrderAndProfileScreens';
+import { TermsSupportPage } from '@/components/storefront/storefront-support-pages';
 
 export default function TermsPage() {
-  return <TermsScreen />;
+  return <TermsSupportPage />;
 }

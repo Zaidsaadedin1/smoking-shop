@@ -29,6 +29,7 @@ import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 import { AdminShell } from '@/components/customer/AdminShell';
 import { useLocale } from '@/components/storefront/locale-provider';
+import { useThemeMode } from '@/components/storefront/theme-provider';
 import {
   AdminBrandRecord,
   AdminCategoryRecord,
@@ -46,6 +47,41 @@ type AdminSessionInfo = {
   fullName: string;
   email: string;
   role: 'admin' | 'super_admin';
+};
+
+type AdminOrderDetail = {
+  id: string;
+  order_number: string;
+  status: string;
+  payment_status: string;
+  payment_method: string;
+  customer_name: string | null;
+  customer_email: string | null;
+  customer_phone: string | null;
+  shipping_address: Record<string, unknown>;
+  billing_address: Record<string, unknown> | null;
+  subtotal: string | number;
+  discount_amount: string | number;
+  shipping_amount: string | number;
+  tax_amount: string | number;
+  total_amount: string | number;
+  currency: string;
+  coupon_code: string | null;
+  notes: string | null;
+  tracking_number: string | null;
+  shipping_carrier: string | null;
+  created_at: string;
+  items?: Array<{
+    id: string;
+    product_name: string;
+    sku: string | null;
+    size_name: string | null;
+    color_name: string | null;
+    image_url: string | null;
+    unit_price: string | number;
+    quantity: number;
+    line_total: string | number;
+  }>;
 };
 
 type Option = {
@@ -126,12 +162,12 @@ const adminSelectStyles = {
 
 const adminPrimaryButtonStyles = {
   root: {
-    background: '#f3f4f6',
-    color: '#111111',
-    border: '1px solid rgba(255,255,255,0.12)',
+    background: 'var(--accent)',
+    color: 'var(--background)',
+    border: '1px solid var(--border)',
   },
   label: {
-    color: '#111111',
+    color: 'var(--background)',
     fontWeight: 700,
     letterSpacing: '0.08em',
   },
@@ -139,12 +175,12 @@ const adminPrimaryButtonStyles = {
 
 const adminSecondaryButtonStyles = {
   root: {
-    background: 'rgba(255,255,255,0.06)',
-    color: '#f3f4f6',
+    background: 'var(--surface)',
+    color: 'var(--text)',
     border: '1px solid var(--border)',
   },
   label: {
-    color: '#f3f4f6',
+    color: 'var(--text)',
     fontWeight: 700,
     letterSpacing: '0.08em',
   },
@@ -227,6 +263,155 @@ function statusBadge(status: string, label?: string) {
     <Badge color={tone} variant="light" radius="sm">
       {label ?? status}
     </Badge>
+  );
+}
+
+function AdminOrderDetailPanel({ orderId }: { orderId: string }) {
+  const { t } = useLocale();
+  const [detail, setDetail] = useState<AdminOrderDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    async function load() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(`/api/admin/orders/${orderId}`);
+        const payload = (await response.json()) as { data?: AdminOrderDetail; error?: string };
+
+        if (!response.ok || !payload.data) {
+          throw new Error(payload.error ?? 'Something went wrong');
+        }
+
+        if (active) {
+          setDetail(payload.data);
+        }
+      } catch (requestError) {
+        if (active) {
+          setError(requestError instanceof Error ? requestError.message : 'Something went wrong');
+        }
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void load();
+
+    return () => {
+      active = false;
+    };
+  }, [orderId]);
+
+  if (loading) {
+    return <Text size="sm" c="dimmed">{t('Loading order details...')}</Text>;
+  }
+
+  if (error || !detail) {
+    return <Text size="sm" c="red">{t(error ?? 'Something went wrong')}</Text>;
+  }
+
+  const shippingAddress = detail.shipping_address ?? {};
+  const billingAddress = detail.billing_address ?? {};
+
+  return (
+    <Stack gap="md">
+      <SimpleGrid cols={{ base: 1, md: 2 }}>
+        <Paper p="md" radius={0} style={{ background: 'var(--surface)', border: '1px solid var(--surface-border)' }}>
+          <Text size="xs" tt="uppercase" c="dimmed" mb="sm">{t('Delivery')}</Text>
+          <Stack gap={6}>
+            <Text size="sm">{detail.customer_name || '—'}</Text>
+            <Text size="sm" c="dimmed">{detail.customer_phone || '—'}</Text>
+            <Text size="sm" c="dimmed">{detail.customer_email || '—'}</Text>
+            <Divider my="xs" />
+            {Object.entries(shippingAddress).length ? (
+              Object.entries(shippingAddress).map(([key, value]) => (
+                <Group key={key} justify="space-between" align="start">
+                  <Text size="xs" c="dimmed" tt="uppercase">{t(key.replaceAll('_', ' '))}</Text>
+                  <Text size="sm" ta="right">{String(value || '—')}</Text>
+                </Group>
+              ))
+            ) : (
+              <Text size="sm" c="dimmed">—</Text>
+            )}
+          </Stack>
+        </Paper>
+
+        <Paper p="md" radius={0} style={{ background: 'var(--surface)', border: '1px solid var(--surface-border)' }}>
+          <Text size="xs" tt="uppercase" c="dimmed" mb="sm">{t('Billing')}</Text>
+          <Stack gap={6}>
+            <Group justify="space-between">
+              <Text size="xs" c="dimmed" tt="uppercase">{t('Coupon code')}</Text>
+              <Text size="sm">{detail.coupon_code || '—'}</Text>
+            </Group>
+            <Group justify="space-between">
+              <Text size="xs" c="dimmed" tt="uppercase">{t('Tracking number')}</Text>
+              <Text size="sm">{detail.tracking_number || '—'}</Text>
+            </Group>
+            <Group justify="space-between">
+              <Text size="xs" c="dimmed" tt="uppercase">{t('Shipping carrier')}</Text>
+              <Text size="sm">{detail.shipping_carrier || '—'}</Text>
+            </Group>
+            <Divider my="xs" />
+            {Object.entries(billingAddress).length ? (
+              Object.entries(billingAddress).map(([key, value]) => (
+                <Group key={key} justify="space-between" align="start">
+                  <Text size="xs" c="dimmed" tt="uppercase">{t(key.replaceAll('_', ' '))}</Text>
+                  <Text size="sm" ta="right">{String(value || '—')}</Text>
+                </Group>
+              ))
+            ) : (
+              <Text size="sm" c="dimmed">{t('Same as shipping')}</Text>
+            )}
+          </Stack>
+        </Paper>
+      </SimpleGrid>
+
+      <Paper p="md" radius={0} style={{ background: 'var(--surface)', border: '1px solid var(--surface-border)' }}>
+        <Text size="xs" tt="uppercase" c="dimmed" mb="sm">{t('Order items')}</Text>
+        <Stack gap="sm">
+          {detail.items?.length ? (
+            detail.items.map((item) => (
+              <Group key={item.id} align="start" wrap="nowrap" style={{ paddingBottom: 12, borderBottom: '1px solid var(--border)' }}>
+                <Image
+                  src={item.image_url || '/products/product-placeholder.svg'}
+                  alt={item.product_name}
+                  w={72}
+                  h={92}
+                  radius={0}
+                  fit="cover"
+                />
+                <Stack gap={6} style={{ flex: 1 }}>
+                  <Text fw={600}>{item.product_name}</Text>
+                  <SimpleGrid cols={{ base: 1, sm: 2 }}>
+                    <Text size="sm" c="dimmed">{t('Color')}: {item.color_name || '—'}</Text>
+                    <Text size="sm" c="dimmed">{t('Size')}: {item.size_name || '—'}</Text>
+                    <Text size="sm" c="dimmed">{t('Quantity')}: {item.quantity}</Text>
+                    <Text size="sm" c="dimmed">{t('SKU')}: {item.sku || '—'}</Text>
+                  </SimpleGrid>
+                  <Group justify="space-between">
+                    <Text size="sm">{t('Unit price')}: {formatCurrency(Number(item.unit_price), detail.currency)}</Text>
+                    <Text size="sm" fw={600}>{t('Line total')}: {formatCurrency(Number(item.line_total), detail.currency)}</Text>
+                  </Group>
+                </Stack>
+              </Group>
+            ))
+          ) : (
+            <Text size="sm" c="dimmed">{t('No order items found.')}</Text>
+          )}
+        </Stack>
+      </Paper>
+
+      <Group justify="space-between">
+        <Text size="sm" c="dimmed">{t('Placed on')}: {formatDate(detail.created_at)}</Text>
+        <Badge color="gray" radius={0}>{detail.order_number}</Badge>
+      </Group>
+    </Stack>
   );
 }
 
@@ -1487,6 +1672,9 @@ export function AdminOrdersScreen({
           { key: 'payment_method', label: 'Payment method', render: (row) => getEnumLabel(enumLabels, 'payment_method', row.payment_method, locale) },
           { key: 'total_amount', label: 'Total', render: (row) => formatCurrency(row.total_amount) },
         ]}
+        drawerExtras={({ mode, selected }) =>
+          mode === 'view' && selected ? <AdminOrderDetailPanel orderId={selected.id} /> : null
+        }
         createRequest={{ url: '/api/admin/orders', method: 'POST' }}
         updateRequest={(id) => ({ url: `/api/admin/orders/${id}`, method: 'PATCH' })}
         deleteRequest={(id) => ({ url: `/api/admin/orders/${id}`, method: 'DELETE' })}
@@ -1641,7 +1829,7 @@ export function AdminSettingsScreen({
             title="Categories"
             description="Organize storefront navigation and category metadata."
             records={categories}
-            defaults={{ name: '', nameAr: '', slug: '', slugAr: '', description: '', descriptionAr: '', imageUrl: '', sortOrder: 0, isActive: true }}
+            defaults={{ name: '', nameAr: '', slug: '', slugAr: '', description: '', descriptionAr: '', image: undefined, sortOrder: 0, isActive: true }}
             fields={[
               { name: 'name', label: 'Name', type: 'text', required: true, editableOn: ['create', 'edit'] },
               { name: 'nameAr', label: 'Arabic name', type: 'text', editableOn: ['create', 'edit'] },
@@ -1649,9 +1837,9 @@ export function AdminSettingsScreen({
               { name: 'slugAr', label: 'Arabic slug', type: 'text', editableOn: ['create', 'edit'] },
               { name: 'description', label: 'Description', type: 'textarea', editableOn: ['create', 'edit'] },
               { name: 'descriptionAr', label: 'Arabic description', type: 'textarea', editableOn: ['create', 'edit'] },
-              { name: 'imageUrl', label: 'Image URL', type: 'text', editableOn: ['create', 'edit'] },
-              { name: 'sortOrder', label: 'Sort order', type: 'number', min: 0, step: 1, editableOn: ['edit'] },
-              { name: 'isActive', label: 'Active', type: 'switch', editableOn: ['edit'] },
+              { name: 'image', label: 'Primary image', type: 'file', editableOn: ['create', 'edit'] },
+              { name: 'sortOrder', label: 'Sort order', type: 'number', min: 0, step: 1, editableOn: ['create', 'edit'] },
+              { name: 'isActive', label: 'Active', type: 'switch', editableOn: ['create', 'edit'] },
             ]}
             columns={[
               { key: 'name', label: 'Name', render: (row) => row.name },
@@ -1661,9 +1849,19 @@ export function AdminSettingsScreen({
               { key: 'sort_order', label: 'Sort order', render: (row) => row.sort_order },
               { key: 'is_active', label: 'Active', render: (row) => (row.is_active ? 'Yes' : 'No') },
             ]}
-            createRequest={{ url: '/api/admin/lookups/categories', method: 'POST' }}
-            updateRequest={() => ({ url: '/api/admin/lookups/categories', method: 'PATCH' })}
-            deleteRequest={(id) => ({ url: `/api/admin/lookups/categories?id=${id}`, method: 'DELETE' })}
+            drawerExtras={({ mode, selected }) =>
+              mode === 'view' && selected && selected.image_url ? (
+                <Paper radius={0} p="md" style={{ background: 'var(--surface)', border: '1px solid var(--surface-border)' }}>
+                  <Text size="xs" tt="uppercase" c="dimmed" mb="sm">
+                    {t('Primary image')}
+                  </Text>
+                  <Image src={selected.image_url} alt={selected.name} h={220} fit="cover" radius={0} />
+                </Paper>
+              ) : null
+            }
+            createRequest={{ url: '/api/admin/categories', method: 'POST' }}
+            updateRequest={(id) => ({ url: `/api/admin/categories/${id}`, method: 'PATCH' })}
+            deleteRequest={(id) => ({ url: `/api/admin/categories/${id}`, method: 'DELETE' })}
           />
         </Tabs.Panel>
 
@@ -1761,6 +1959,7 @@ export function AdminSettingsScreen({
 export function AdminLoginScreen() {
   const router = useRouter();
   const { t } = useLocale();
+  const { isDark } = useThemeMode();
   const schema = z.object({
     email: z.string().email(t('Enter a valid email')),
     password: z.string().min(1, t('This field is required')),
@@ -1802,34 +2001,96 @@ export function AdminLoginScreen() {
         minHeight: '100vh',
         display: 'grid',
         placeItems: 'center',
-        background:
-          'radial-gradient(circle at top, rgba(210,238,255,0.22), transparent 30%), linear-gradient(180deg, #091118 0%, #0f1b22 100%)',
+        padding: '1rem',
+        background: 'var(--admin-background)',
       }}
-      px="md"
     >
-      <Paper radius={28} p="xl" maw={520} w="100%" style={{ background: 'rgba(10,18,24,0.88)', border: '1px solid rgba(195,230,255,0.18)', backdropFilter: 'blur(24px)' }}>
-        <Text size="xs" tt="uppercase" c="#9cc8e8" style={{ letterSpacing: 3 }}>
-          {t('Admin panel')}
-        </Text>
-        <Text fw={800} size="2.4rem" mt="sm" style={{ lineHeight: 1 }}>
-          {t('Sign in to continue')}
-        </Text>
-        <Text c="rgba(221,235,245,0.72)" mt="sm">
-          {t('Use an admin or super admin account to access the dashboard.')}
-        </Text>
+      <Box maw={1080} w="100%">
+        <SimpleGrid cols={{ base: 1, md: 2 }} spacing={0}>
+          <Paper
+            radius={0}
+            p="xl"
+            style={{
+              minHeight: 640,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              background: isDark
+                ? 'linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))'
+                : 'linear-gradient(160deg, rgba(255,255,255,0.92), rgba(255,247,242,0.78))',
+              border: '1px solid var(--border)',
+              borderRight: 'none',
+              backdropFilter: 'blur(24px)',
+            }}
+          >
+            <div>
+              <Text size="xs" tt="uppercase" c="dimmed" style={{ letterSpacing: 3 }}>
+                {t('Admin panel')}
+              </Text>
+              <Text fw={800} size="3rem" mt="md" tt="uppercase" style={{ lineHeight: 0.95, letterSpacing: 1.4 }}>
+                {t('Ice control room')}
+              </Text>
+              <Text mt="lg" c="var(--text-secondary)" maw={420} style={{ lineHeight: 1.8 }}>
+                {t('Use an admin or super admin account to access the dashboard.')}
+              </Text>
+            </div>
 
-        <Divider my="xl" color="rgba(195,230,255,0.12)" />
+            <Stack gap="sm">
+              {['Connected admin dashboard with live catalog, customer, order, and settings control.', 'Trackable orders', 'Profiles and roles', 'Taxonomy and brands'].map((item) => (
+                <Paper
+                  key={item}
+                  radius={0}
+                  p="md"
+                  style={{
+                    background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(23,23,23,0.04)',
+                    border: '1px solid var(--border)',
+                  }}
+                >
+                  <Text size="sm" c="var(--text-secondary)">{t(item)}</Text>
+                </Paper>
+              ))}
+            </Stack>
+          </Paper>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <Stack gap="md">
-            <TextInput label={t('Email')} error={errors.email?.message} {...register('email')} />
-            <TextInput type="password" label={t('Password')} error={errors.password?.message} {...register('password')} />
-            <Button type="submit" radius="xl" loading={isSubmitting} mt="md">
-              {t('LOG IN')}
-            </Button>
-          </Stack>
-        </form>
-      </Paper>
+          <Paper
+            radius={0}
+            p="xl"
+            style={{
+              minHeight: 640,
+              display: 'flex',
+              alignItems: 'center',
+              background: isDark ? 'rgba(12,12,12,0.9)' : 'rgba(255,252,249,0.92)',
+              border: '1px solid var(--border)',
+              backdropFilter: 'blur(24px)',
+              boxShadow: isDark ? 'none' : '0 32px 120px rgba(50, 26, 24, 0.10)',
+            }}
+          >
+            <Box w="100%">
+              <Text size="xs" tt="uppercase" c="dimmed" style={{ letterSpacing: 3 }}>
+                {t('Operations dashboard')}
+              </Text>
+              <Text fw={800} size="2.4rem" mt="sm" tt="uppercase" style={{ lineHeight: 1 }}>
+                {t('Sign in to continue')}
+              </Text>
+              <Text c="var(--text-secondary)" mt="sm">
+                {t('Use an admin or super admin account to access the dashboard.')}
+              </Text>
+
+              <Divider my="xl" color="var(--border)" />
+
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <Stack gap="md">
+                  <TextInput label={t('Email')} error={errors.email?.message} radius="xs" styles={adminInputStyles} {...register('email')} />
+                  <TextInput type="password" label={t('Password')} error={errors.password?.message} radius="xs" styles={adminInputStyles} {...register('password')} />
+                  <Button type="submit" radius={0} loading={isSubmitting} mt="md" styles={adminPrimaryButtonStyles}>
+                    {t('LOG IN')}
+                  </Button>
+                </Stack>
+              </form>
+            </Box>
+          </Paper>
+        </SimpleGrid>
+      </Box>
     </Box>
   );
 }

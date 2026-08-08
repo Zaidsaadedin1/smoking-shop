@@ -5,7 +5,7 @@ import { IconLayoutSidebarLeftCollapse, IconLogout } from '@tabler/icons-react';
 import Link from 'next/link';
 import { PropsWithChildren, useState } from 'react';
 import { LocaleSwitcher, useLocale } from '@/components/storefront/locale-provider';
-import { ThemeSwitcher } from '@/components/storefront/theme-provider';
+import { ThemeSwitcher, useThemeMode } from '@/components/storefront/theme-provider';
 
 const adminLinks = [
   { label: 'Dashboard', href: '/admin' },
@@ -28,14 +28,14 @@ type AdminShellProps = PropsWithChildren<{
 
 export function AdminShell({ children, title, subtitle, active, session }: AdminShellProps) {
   const { t } = useLocale();
+  const { isDark } = useThemeMode();
   const [collapsed, setCollapsed] = useState(false);
 
   return (
     <Box
       style={{
         minHeight: '100vh',
-        background:
-          'radial-gradient(circle at top, rgba(120, 21, 42, 0.18), transparent 24%), linear-gradient(180deg, #090909 0%, #111111 100%)',
+        background: 'var(--admin-background)',
         color: 'var(--text)',
       }}
     >
@@ -48,7 +48,18 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
             alignItems: 'start',
           }}
         >
-          <Paper radius={0} p="md" style={{ position: 'sticky', top: 16, background: 'rgba(12,12,12,0.92)', border: '1px solid var(--border)', backdropFilter: 'blur(24px)' }}>
+          <Paper
+            radius={0}
+            p="md"
+            style={{
+              position: 'sticky',
+              top: 16,
+              background: isDark ? 'rgba(12,12,12,0.92)' : 'rgba(255,250,247,0.88)',
+              border: '1px solid var(--border)',
+              backdropFilter: 'blur(24px)',
+              boxShadow: isDark ? 'none' : '0 24px 80px rgba(50, 26, 24, 0.08)',
+            }}
+          >
             <Group justify="space-between" mb="xl">
               {!collapsed ? (
                 <Stack gap={2}>
@@ -60,9 +71,9 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
                   </Text>
                 </Stack>
               ) : null}
-              <ActionIcon variant="subtle" color="gray" onClick={() => setCollapsed((value) => !value)}>
-                <IconLayoutSidebarLeftCollapse size={18} />
-              </ActionIcon>
+                  <ActionIcon variant="subtle" color={isDark ? 'gray' : 'dark'} onClick={() => setCollapsed((value) => !value)}>
+                    <IconLayoutSidebarLeftCollapse size={18} />
+                  </ActionIcon>
             </Group>
 
             <Stack gap="xs">
@@ -77,7 +88,7 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
                     styles={{
                       root: {
                         border: '1px solid var(--border)',
-                        background: active === link.label ? 'var(--card)' : 'transparent',
+                        background: active === link.label ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(23,23,23,0.08)') : 'transparent',
                         color: 'var(--text)',
                         letterSpacing: 1.5,
                       },
@@ -89,9 +100,26 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
               ))}
             </Stack>
 
-            <Paper radius={0} p="sm" mt="xl" style={{ background: 'rgba(22,22,22,0.92)', border: '1px solid var(--border)' }}>
+            <Paper
+              radius={0}
+              p="sm"
+              mt="xl"
+              style={{
+                background: isDark ? 'rgba(22,22,22,0.92)' : 'rgba(255,255,255,0.86)',
+                border: '1px solid var(--border)',
+              }}
+            >
               <Group wrap="nowrap" align="center">
-                <Avatar radius={0} color="dark">
+                <Avatar
+                  radius={0}
+                  color={isDark ? 'dark' : 'gray'}
+                  styles={{
+                    root: {
+                      background: isDark ? '#171717' : '#ece3de',
+                      color: isDark ? '#f4f4f4' : '#171717',
+                    },
+                  }}
+                >
                   {session.fullName.slice(0, 1).toUpperCase()}
                 </Avatar>
                 {!collapsed ? (
@@ -110,7 +138,16 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
           </Paper>
 
           <Stack gap="lg">
-            <Paper radius={0} p="lg" style={{ background: 'rgba(12,12,12,0.92)', border: '1px solid var(--border)', backdropFilter: 'blur(24px)' }}>
+            <Paper
+              radius={0}
+              p="lg"
+              style={{
+                background: isDark ? 'rgba(12,12,12,0.92)' : 'rgba(255,250,247,0.88)',
+                border: '1px solid var(--border)',
+                backdropFilter: 'blur(24px)',
+                boxShadow: isDark ? 'none' : '0 24px 80px rgba(50, 26, 24, 0.08)',
+              }}
+            >
               <Group justify="space-between" align="start">
                 <div>
                   <Text size="xs" tt="uppercase" c="var(--muted)" style={{ letterSpacing: 2.6 }}>

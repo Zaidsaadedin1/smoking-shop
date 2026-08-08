@@ -165,7 +165,10 @@ function Header({
           ))}
         </nav>
 
-        <Link href="/" className="font-display text-2xl uppercase tracking-[0.35em] md:text-3xl">
+        <Link
+          href="/"
+          className="text-center font-display text-[0.82rem] uppercase tracking-[0.18em] sm:text-[1rem] sm:tracking-[0.22em] md:text-3xl md:tracking-[0.35em]"
+        >
           {brandName}
         </Link>
 
@@ -319,9 +322,9 @@ function Footer({ settings }: { settings: StoreSettings }) {
           title="HELP"
           links={[
             { label: 'CONTACT', href: '/contact-us' },
-            { label: 'SHIPPING', href: '/checkout' },
-            { label: 'RETURNS', href: '/terms' },
-            { label: 'FAQ', href: '/about' },
+            { label: 'SHIPPING', href: '/shipping' },
+            { label: 'RETURNS', href: '/returns' },
+            { label: 'FAQ', href: '/faq' },
           ]}
         />
         <FooterColumn
@@ -330,7 +333,7 @@ function Footer({ settings }: { settings: StoreSettings }) {
             { label: 'PRIVACY POLICY', href: '/privacy-policy' },
             { label: 'TERMS', href: '/terms' },
             { label: 'INSTAGRAM', href: settings.socials.instagram },
-            { label: 'TIKTOK', href: settings.socials.tiktok },
+            { label: 'FACEBOOK', href: settings.socials.facebook },
           ]}
         />
       </div>

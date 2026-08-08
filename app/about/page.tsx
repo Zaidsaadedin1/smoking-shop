@@ -1,5 +1,5 @@
-import { AboutScreen } from '@/components/customer/screens/OrderAndProfileScreens';
+import { AboutSupportPage } from '@/components/storefront/storefront-support-pages';
 
 export default function AboutPage() {
-  return <AboutScreen />;
+  return <AboutSupportPage />;
 }

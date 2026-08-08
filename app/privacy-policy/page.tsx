@@ -1,5 +1,5 @@
-import { PrivacyPolicyScreen } from '@/components/customer/screens/OrderAndProfileScreens';
+import { PrivacySupportPage } from '@/components/storefront/storefront-support-pages';
 
 export default function PrivacyPolicyPage() {
-  return <PrivacyPolicyScreen />;
+  return <PrivacySupportPage />;
 }

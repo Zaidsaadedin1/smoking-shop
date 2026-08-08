@@ -537,6 +537,13 @@ export const messages: Record<string, LocaleMessages> = {
   'ENTER THE COVEN.': { en: 'ENTER THE COVEN.', ar: 'انضمي إلى الكوفن.' },
   'Drops, secret sales and new pieces — before everyone else.': { en: 'Drops, secret sales and new pieces — before everyone else.', ar: 'إصدارات وعروض سرية وقطع جديدة قبل الجميع.' },
   'Email address': { en: 'Email address', ar: 'البريد الإلكتروني' },
+  'Email address is required': { en: 'Email address is required', ar: 'البريد الإلكتروني مطلوب' },
+  'This email is already subscribed.': { en: 'This email is already subscribed.', ar: 'هذا البريد الإلكتروني مشترك بالفعل.' },
+  'You are on the list.': { en: 'You are on the list.', ar: 'تمت إضافتك إلى القائمة.' },
+  'Newsletter storage is not configured yet.': {
+    en: 'Newsletter storage is not configured yet.',
+    ar: 'تخزين النشرة غير مهيأ بعد.',
+  },
   JOIN: { en: 'JOIN', ar: 'انضمي' },
   'EDITORIAL': { en: 'EDITORIAL', ar: 'تحريري' },
   'SOFT ISN\'T WEAK.': { en: 'SOFT ISN\'T WEAK.', ar: 'النعومة ليست ضعفاً.' },
