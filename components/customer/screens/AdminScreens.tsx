@@ -87,6 +87,42 @@ type CrudManagerProps<T extends { id: string }> = {
   allowDelete?: boolean;
 };
 
+const adminInputStyles = {
+  input: {
+    borderRadius: '0.25rem',
+    background: 'var(--card)',
+    borderColor: 'var(--border)',
+    color: 'var(--text)',
+  },
+  label: {
+    marginBottom: 6,
+    color: 'var(--text)',
+    fontSize: '0.82rem',
+    letterSpacing: '0.04em',
+  },
+  error: {
+    marginTop: 4,
+  },
+} as const;
+
+const adminSelectStyles = {
+  input: {
+    borderRadius: '0.25rem',
+    background: 'var(--card)',
+    borderColor: 'var(--border)',
+    color: 'var(--text)',
+  },
+  label: {
+    marginBottom: 6,
+    color: 'var(--text)',
+    fontSize: '0.82rem',
+    letterSpacing: '0.04em',
+  },
+  section: {
+    color: 'var(--muted)',
+  },
+} as const;
+
 function toSnakeCase(value: string) {
   return value.replace(/[A-Z]/g, (char) => `_${char.toLowerCase()}`);
 }
@@ -447,6 +483,8 @@ function CrudManager<T extends { id: string }>({
                       placeholder={field.placeholder ? t(field.placeholder) : undefined}
                       minRows={4}
                       error={errorMessage}
+                      radius="xs"
+                      styles={adminInputStyles}
                       {...register(field.name)}
                     />
                   );
@@ -458,6 +496,8 @@ function CrudManager<T extends { id: string }>({
                       key={field.name}
                       label={t(field.label)}
                       error={errorMessage}
+                      radius="xs"
+                      styles={adminSelectStyles}
                       data={field.options?.map((option) => ({
                         label: t(option.label),
                         value: option.value,
@@ -478,6 +518,9 @@ function CrudManager<T extends { id: string }>({
                           checked={Boolean(controllerField.value)}
                           label={t(field.label)}
                           onChange={(event) => controllerField.onChange(event.currentTarget.checked)}
+                          radius="xs"
+                          size="md"
+                          color="dark"
                         />
                       )}
                     />
@@ -509,6 +552,8 @@ function CrudManager<T extends { id: string }>({
                     step={field.step}
                     min={field.min}
                     error={errorMessage}
+                    radius="xs"
+                    styles={adminInputStyles}
                     {...register(field.name)}
                   />
                 );
