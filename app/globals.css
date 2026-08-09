@@ -417,3 +417,168 @@ img {
     animation: none !important;
   }
 }
+
+.tc-api-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background:
+    radial-gradient(circle at top, rgba(126, 34, 64, 0.16), transparent 24%),
+    rgba(7, 7, 7, 0.42);
+  backdrop-filter: blur(12px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 180ms ease,
+    visibility 180ms ease;
+}
+
+[data-theme='light'] .tc-api-overlay {
+  background:
+    radial-gradient(circle at top, rgba(126, 34, 64, 0.12), transparent 24%),
+    rgba(246, 244, 241, 0.56);
+}
+
+.tc-api-overlay--visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: all;
+}
+
+.tc-api-overlay__panel {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.1rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 1.75rem;
+  padding: 1.15rem 1.4rem 1.15rem 1.2rem;
+  background:
+    radial-gradient(circle at top, rgba(126, 34, 64, 0.22), transparent 45%),
+    linear-gradient(180deg, color-mix(in srgb, var(--card) 96%, transparent) 0%, color-mix(in srgb, var(--background-secondary) 92%, transparent) 100%);
+  color: var(--text);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.32),
+    0 0 48px rgba(86, 19, 44, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.tc-api-overlay__gems {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 4.8rem;
+  height: 3.6rem;
+}
+
+.tc-api-overlay__gem {
+  position: absolute;
+  width: 1.55rem;
+  aspect-ratio: 1;
+  clip-path: polygon(50% 0%, 88% 24%, 100% 62%, 50% 100%, 0% 62%, 12% 24%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background:
+    linear-gradient(145deg, rgba(255, 231, 244, 0.95) 0%, rgba(174, 56, 103, 0.92) 35%, rgba(52, 8, 28, 0.98) 100%);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -10px 18px rgba(24, 4, 12, 0.45),
+    0 10px 22px rgba(43, 6, 20, 0.45);
+}
+
+.tc-api-overlay__gem::before {
+  content: '';
+  position: absolute;
+  inset: 0.18rem;
+  clip-path: inherit;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.5) 0%, transparent 38%),
+    linear-gradient(315deg, rgba(255, 255, 255, 0.08) 0%, transparent 60%);
+  opacity: 0.82;
+}
+
+.tc-api-overlay__gem--left {
+  left: 0.1rem;
+  transform: translateY(0.2rem) scale(0.84);
+  animation: tc-api-overlay-gem-left 1.6s ease-in-out infinite;
+}
+
+.tc-api-overlay__gem--center {
+  z-index: 1;
+  transform: translateY(-0.1rem) scale(1.05);
+  animation: tc-api-overlay-gem-center 1.6s ease-in-out infinite;
+}
+
+.tc-api-overlay__gem--right {
+  right: 0.1rem;
+  transform: translateY(0.28rem) scale(0.84);
+  animation: tc-api-overlay-gem-right 1.6s ease-in-out infinite;
+}
+
+.tc-api-overlay__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+
+.tc-api-overlay__eyebrow {
+  color: var(--text-secondary);
+  font-size: 0.64rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
+
+.tc-api-overlay__label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+@keyframes tc-api-overlay-gem-left {
+  0%,
+  100% {
+    transform: translateY(0.28rem) scale(0.82);
+    filter: brightness(0.88);
+  }
+  50% {
+    transform: translateY(-0.14rem) scale(0.9);
+    filter: brightness(1.1);
+  }
+}
+
+@keyframes tc-api-overlay-gem-center {
+  0%,
+  100% {
+    transform: translateY(-0.08rem) scale(1.02);
+    filter: brightness(1);
+  }
+  50% {
+    transform: translateY(-0.38rem) scale(1.1);
+    filter: brightness(1.2);
+  }
+}
+
+@keyframes tc-api-overlay-gem-right {
+  0%,
+  100% {
+    transform: translateY(0.18rem) scale(0.82);
+    filter: brightness(0.88);
+  }
+  50% {
+    transform: translateY(-0.2rem) scale(0.9);
+    filter: brightness(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tc-api-overlay,
+  .tc-api-overlay__gem {
+    transition: none !important;
+    animation: none !important;
+  }
+}
