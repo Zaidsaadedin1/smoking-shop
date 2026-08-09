@@ -613,18 +613,58 @@ export async function replaceProductImages(
     };
   }
 
-  return insertSupabaseRow<ProductImageApiRow[]>(
+  const [primaryImageUrl, ...secondaryImageUrls] = cleanedUrls;
+
+  const primaryInsert = await insertSupabaseRow<ProductImageApiRow>(
     'product_images',
-    cleanedUrls.map((imageUrl, index) => ({
+    {
+      product_id: productId,
+      image_url: primaryImageUrl,
+      is_primary: true,
+      sort_order: 0,
+      alt_text: null,
+    },
+    true,
+    auth
+  );
+
+  if (primaryInsert.error) {
+    return primaryInsert;
+  }
+
+  if (secondaryImageUrls.length === 0) {
+    return {
+      data: primaryInsert.data ? [primaryInsert.data] : [],
+      error: null,
+      status: primaryInsert.status,
+    };
+  }
+
+  const secondaryInsert = await insertSupabaseRow<ProductImageApiRow[]>(
+    'product_images',
+    secondaryImageUrls.map((imageUrl, index) => ({
       product_id: productId,
       image_url: imageUrl,
-      is_primary: index === 0,
-      sort_order: index,
+      is_primary: false,
+      sort_order: index + 1,
       alt_text: null,
     })),
     false,
     auth
   );
+
+  if (secondaryInsert.error) {
+    return secondaryInsert;
+  }
+
+  return {
+    data: [
+      ...(primaryInsert.data ? [primaryInsert.data] : []),
+      ...(secondaryInsert.data ?? []),
+    ],
+    error: null,
+    status: secondaryInsert.status,
+  };
 }
 
 export async function deleteProduct(id: string, auth?: SupabaseRequestAuth) {

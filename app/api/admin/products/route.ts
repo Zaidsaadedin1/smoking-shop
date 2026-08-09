@@ -1,6 +1,12 @@
 import { ensureAdminApiAccess, handleApiError } from '@/app/api/admin/_utils';
 import { getAdminAccessToken } from '@/lib/admin/auth';
-import { createProduct, replaceProductImages, replaceProductVariants } from '@/lib/api/store-api';
+import {
+  createProduct,
+  getProductById,
+  listProductVariants,
+  replaceProductImages,
+  replaceProductVariants,
+} from '@/lib/api/store-api';
 import { jsonError, jsonOk, optionalString, requireNumber, requireString } from '@/lib/api/http';
 import { listProducts } from '@/lib/api/store-api';
 import { saveUploadedImage, saveUploadedImages } from '@/lib/admin/uploads';
@@ -22,6 +28,20 @@ function parseBoolean(value: unknown) {
   return value === true || value === 'true' || value === 'on' || value === '1';
 }
 
+async function ensureProductSlugAvailable(slug: string, accessToken: string | null) {
+  const auth = getAuthHeaders(accessToken);
+  const existing = await getProductById(slug, auth);
+
+  if (existing.data) {
+    return jsonError(
+      'A product with this slug already exists. Please choose a different slug.',
+      409
+    );
+  }
+
+  return null;
+}
+
 function parseVariants(value: unknown) {
   if (typeof value !== 'string' || value.trim().length === 0) {
     return [];
@@ -36,13 +56,62 @@ function parseVariants(value: unknown) {
     barcode: optionalString(variant.barcode),
     price: parseOptionalNumber(variant.price),
     compare_at_price: parseOptionalNumber(variant.compareAtPrice),
-    stock_quantity: requireNumber(Number(variant.stockQuantity ?? 0), `variants[${index}].stockQuantity`),
-    low_stock_threshold: requireNumber(Number(variant.lowStockThreshold ?? 0), `variants[${index}].lowStockThreshold`),
+    stock_quantity: requireNumber(
+      Number(variant.stockQuantity ?? 0),
+      `variants[${index}].stockQuantity`
+    ),
+    low_stock_threshold: requireNumber(
+      Number(variant.lowStockThreshold ?? 0),
+      `variants[${index}].lowStockThreshold`
+    ),
     track_inventory: parseBoolean(variant.trackInventory),
     allow_backorder: parseBoolean(variant.allowBackorder),
     weight_grams: parseOptionalNumber(variant.weightGrams),
     is_active: variant.isActive === undefined ? true : parseBoolean(variant.isActive),
   }));
+}
+
+function findDuplicateSkus(variants: Array<{ sku: string }>) {
+  const seen = new Set<string>();
+  const duplicates = new Set<string>();
+
+  for (const variant of variants) {
+    const sku = variant.sku.trim();
+
+    if (seen.has(sku)) {
+      duplicates.add(sku);
+      continue;
+    }
+
+    seen.add(sku);
+  }
+
+  return Array.from(duplicates);
+}
+
+async function ensureVariantSkusAvailable(
+  variants: Array<{ sku: string }>,
+  accessToken: string | null
+) {
+  const duplicateSkus = findDuplicateSkus(variants);
+
+  if (duplicateSkus.length > 0) {
+    return jsonError(`Duplicate variant SKU in this product: ${duplicateSkus[0]}`, 409);
+  }
+
+  const auth = getAuthHeaders(accessToken);
+  const existingVariants = (await listProductVariants(auth)) ?? [];
+
+  const requestedSkus = new Set(variants.map((variant) => variant.sku.trim()));
+  const conflictingVariant = existingVariants.find((variant) =>
+    requestedSkus.has(variant.sku.trim())
+  );
+
+  if (conflictingVariant) {
+    return jsonError(`Variant SKU already exists: ${conflictingVariant.sku}`, 409);
+  }
+
+  return null;
 }
 
 async function parseProductRequest(request: Request) {
@@ -64,7 +133,9 @@ async function parseProductRequest(request: Request) {
   return {
     body: Object.fromEntries(formData.entries()),
     mainImageFile: mainImage instanceof File && mainImage.size > 0 ? mainImage : null,
-    subImageFiles: subImages.filter((value): value is File => value instanceof File && value.size > 0),
+    subImageFiles: subImages.filter(
+      (value): value is File => value instanceof File && value.size > 0
+    ),
   };
 }
 
@@ -77,12 +148,15 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const auth = getAuthHeaders(await getAdminAccessToken());
-  const products = await listProducts({
-    search: searchParams.get('search'),
-    status: searchParams.get('status'),
-    categoryId: searchParams.get('categoryId'),
-    limit: searchParams.get('limit') ? Number(searchParams.get('limit')) : null,
-  }, auth);
+  const products = await listProducts(
+    {
+      search: searchParams.get('search'),
+      status: searchParams.get('status'),
+      categoryId: searchParams.get('categoryId'),
+      limit: searchParams.get('limit') ? Number(searchParams.get('limit')) : null,
+    },
+    auth
+  );
 
   return jsonOk(products ?? []);
 }
@@ -95,28 +169,45 @@ export async function POST(request: Request) {
   }
 
   try {
-    const auth = getAuthHeaders(await getAdminAccessToken());
+    const accessToken = await getAdminAccessToken();
+    const auth = getAuthHeaders(accessToken);
     const { body, mainImageFile, subImageFiles } = await parseProductRequest(request);
     const basePrice = Number(body.basePrice);
     const compareAtPrice = parseOptionalNumber(body.compareAtPrice);
     const variants = parseVariants(body.variantsJson);
-    const result = await createProduct({
-      name: requireString(body.name, 'name'),
-      name_ar: optionalString(body.nameAr),
-      slug: requireString(body.slug, 'slug'),
-      slug_ar: optionalString(body.slugAr),
-      short_description: optionalString(body.shortDescription),
-      short_description_ar: optionalString(body.shortDescriptionAr),
-      description: optionalString(body.description),
-      description_ar: optionalString(body.descriptionAr),
-      base_price: requireNumber(basePrice, 'basePrice'),
-      compare_at_price: compareAtPrice,
-      currency: optionalString(body.currency) ?? 'JOD',
-      status: optionalString(body.status) ?? 'draft',
-      is_featured: parseBoolean(body.isFeatured),
-      category_id: optionalString(body.categoryId),
-      brand_id: optionalString(body.brandId),
-    }, auth);
+    const slug = requireString(body.slug, 'slug');
+    const slugConflict = await ensureProductSlugAvailable(slug, accessToken);
+
+    if (slugConflict) {
+      return slugConflict;
+    }
+
+    const skuConflict = await ensureVariantSkusAvailable(variants, accessToken);
+
+    if (skuConflict) {
+      return skuConflict;
+    }
+
+    const result = await createProduct(
+      {
+        name: requireString(body.name, 'name'),
+        name_ar: optionalString(body.nameAr),
+        slug,
+        slug_ar: optionalString(body.slugAr),
+        short_description: optionalString(body.shortDescription),
+        short_description_ar: optionalString(body.shortDescriptionAr),
+        description: optionalString(body.description),
+        description_ar: optionalString(body.descriptionAr),
+        base_price: requireNumber(basePrice, 'basePrice'),
+        compare_at_price: compareAtPrice,
+        currency: optionalString(body.currency) ?? 'JOD',
+        status: optionalString(body.status) ?? 'draft',
+        is_featured: parseBoolean(body.isFeatured),
+        category_id: optionalString(body.categoryId),
+        brand_id: optionalString(body.brandId),
+      },
+      auth
+    );
 
     if (result.error) {
       return jsonError(result.error, result.status);
@@ -126,9 +217,13 @@ export async function POST(request: Request) {
       return jsonError('Product creation failed', 500);
     }
 
-    const uploadedMainImage = mainImageFile ? await saveUploadedImage(mainImageFile, 'products') : null;
+    const uploadedMainImage = mainImageFile
+      ? await saveUploadedImage(mainImageFile, 'products')
+      : null;
     const uploadedSubImages = await saveUploadedImages(subImageFiles, 'products');
-    const imageUrls = [uploadedMainImage, ...uploadedSubImages].filter((value): value is string => Boolean(value));
+    const imageUrls = [uploadedMainImage, ...uploadedSubImages].filter((value): value is string =>
+      Boolean(value)
+    );
     const imagesResult = await replaceProductImages(result.data.id, imageUrls, auth);
 
     if (imagesResult.error) {

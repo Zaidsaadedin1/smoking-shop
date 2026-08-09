@@ -10,6 +10,7 @@ import {
   Drawer,
   Group,
   Image,
+  Modal,
   NativeSelect,
   Paper,
   ScrollArea,
@@ -107,6 +108,18 @@ type CrudColumn<T> = {
   key: string;
   label: string;
   render: (row: T) => ReactNode;
+};
+
+type ModalErrorState = {
+  title: string;
+  messages: string[];
+};
+
+type FilePreviewItem = {
+  id: string;
+  url: string;
+  name: string;
+  isExisting: boolean;
 };
 
 type CrudManagerProps<T extends { id: string }> = {
@@ -288,6 +301,90 @@ function buildSchema(fields: CrudField[], t: (value: string) => string) {
   });
 
   return z.object(shape);
+}
+
+function revokePreviewItems(items: FilePreviewItem[]) {
+  items.forEach((item) => {
+    if (!item.isExisting) {
+      URL.revokeObjectURL(item.url);
+    }
+  });
+}
+
+function collectFormErrorMessages(value: unknown): string[] {
+  if (!value) {
+    return [];
+  }
+
+  if (typeof value === 'object' && 'message' in value && typeof value.message === 'string') {
+    return [value.message];
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap((entry) => collectFormErrorMessages(entry));
+  }
+
+  if (typeof value === 'object') {
+    return Object.values(value).flatMap((entry) => collectFormErrorMessages(entry));
+  }
+
+  return [];
+}
+
+function openFieldErrorModal(
+  errors: unknown,
+  setModalError: (value: ModalErrorState) => void,
+  title: string
+) {
+  const messages = Array.from(new Set(collectFormErrorMessages(errors))).filter(Boolean);
+
+  if (messages.length === 0) {
+    setModalError({ title, messages: ['Please review the highlighted fields.'] });
+    return;
+  }
+
+  setModalError({ title, messages });
+}
+
+function ErrorModal({
+  error,
+  onClose,
+}: {
+  error: ModalErrorState | null;
+  onClose: () => void;
+}) {
+  return (
+    <Modal
+      opened={Boolean(error)}
+      onClose={onClose}
+      centered
+      title={error?.title}
+      styles={{
+        content: {
+          background: 'var(--surface)',
+          color: 'var(--text)',
+          border: '1px solid var(--surface-border)',
+        },
+        header: {
+          background: 'var(--surface)',
+          borderBottom: '1px solid var(--border)',
+        },
+        title: {
+          textTransform: 'uppercase',
+          letterSpacing: '0.12em',
+          fontWeight: 700,
+        },
+      }}
+    >
+      <Stack gap="sm">
+        {(error?.messages ?? []).map((message, index) => (
+          <Text key={`${message}-${index}`} size="sm">
+            {message}
+          </Text>
+        ))}
+      </Stack>
+    </Modal>
+  );
 }
 
 function statusBadge(status: string, label?: string) {
@@ -577,6 +674,8 @@ function CrudManager<T extends { id: string }>({
   const [mode, setMode] = useState<'create' | 'edit' | 'view' | null>(null);
   const [selected, setSelected] = useState<T | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [modalError, setModalError] = useState<ModalErrorState | null>(null);
+  const [filePreviews, setFilePreviews] = useState<Record<string, FilePreviewItem[]>>({});
   const schema = useMemo(() => buildSchema(fields, t), [fields, t]);
   const editableFields = fields.filter((field) => {
     if (!mode || mode === 'view') {
@@ -595,15 +694,24 @@ function CrudManager<T extends { id: string }>({
     handleSubmit,
     register,
     reset,
+    setValue,
   } = useForm<Record<string, unknown>>({
     resolver: zodResolver(schema),
     defaultValues: defaults,
+    mode: 'onTouched',
+    reValidateMode: 'onChange',
   });
 
   useEffect(() => {
     if (!mode) {
       return;
     }
+
+     setModalError(null);
+     setFilePreviews((current) => {
+       Object.values(current).forEach(revokePreviewItems);
+       return {};
+     });
 
     if (mode === 'create') {
       reset(defaults);
@@ -612,19 +720,65 @@ function CrudManager<T extends { id: string }>({
 
     if (selected) {
       const nextValues: Record<string, unknown> = { ...defaults };
+      const nextFilePreviews: Record<string, FilePreviewItem[]> = {};
 
       for (const field of fields) {
         const value =
           getRowFieldValue(selected as Record<string, unknown>, field.name) ?? defaults[field.name];
         nextValues[field.name] = field.type === 'datetime' ? toDateTimeInputValue(value) : value;
+
+        if (field.type === 'file') {
+          const existingUrl = getRowFieldValue(
+            selected as Record<string, unknown>,
+            `${field.name}Url`
+          );
+
+          if (typeof existingUrl === 'string' && existingUrl.trim().length > 0) {
+            nextFilePreviews[field.name] = [
+              {
+                id: `${field.name}-existing`,
+                url: existingUrl,
+                name: existingUrl.split('/').pop() ?? existingUrl,
+                isExisting: true,
+              },
+            ];
+          }
+        }
       }
 
       reset(nextValues);
+      setFilePreviews(nextFilePreviews);
     }
   }, [defaults, fields, mode, reset, selected]);
 
+  useEffect(() => {
+    return () => {
+      Object.values(filePreviews).forEach(revokePreviewItems);
+    };
+  }, [filePreviews]);
+
+  function setFieldPreviews(fieldName: string, nextItems: FilePreviewItem[]) {
+    setFilePreviews((current) => {
+      revokePreviewItems(current[fieldName] ?? []);
+      return {
+        ...current,
+        [fieldName]: nextItems,
+      };
+    });
+  }
+
+  function clearFileField(fieldName: string) {
+    setFieldPreviews(fieldName, []);
+    setValue(fieldName, undefined, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
+  }
+
+  function handleInvalidSubmit(formErrors: unknown) {
+    openFieldErrorModal(formErrors, setModalError, t('Please fix the form errors'));
+  }
+
   async function onSubmit(values: Record<string, unknown>) {
     setSubmitting(true);
+    setModalError(null);
 
     const request = mode === 'edit' && selected ? updateRequest(selected.id) : createRequest;
     const hasFileFields = editableFields.some((field) => field.type === 'file');
@@ -638,16 +792,28 @@ function CrudManager<T extends { id: string }>({
 
         if (field.type === 'file') {
           const files = value instanceof FileList ? Array.from(value) : [];
-          if (field.required && mode === 'create' && files.length === 0) {
+          const previewItems = filePreviews[field.name] ?? [];
+          const existingImage = previewItems.find((item) => item.isExisting);
+
+          if (field.required && mode === 'create' && files.length === 0 && !existingImage) {
             setSubmitting(false);
-            window.alert(t('This field is required'));
+            setModalError({
+              title: t('Image required'),
+              messages: [t('This field is required')],
+            });
             return;
           }
+
           for (const file of files) {
             if (file.size > 0) {
               formData.append(field.name, file);
             }
           }
+
+          formData.append(
+            `${field.name}Url`,
+            existingImage && files.length === 0 ? existingImage.url : ''
+          );
           continue;
         }
 
@@ -693,7 +859,10 @@ function CrudManager<T extends { id: string }>({
 
     if (!response.ok) {
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      window.alert(payload?.error ?? t('Something went wrong'));
+      setModalError({
+        title: t('Request failed'),
+        messages: [payload?.error ?? t('Something went wrong')],
+      });
       return;
     }
 
@@ -712,7 +881,10 @@ function CrudManager<T extends { id: string }>({
 
     if (!response.ok) {
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      window.alert(payload?.error ?? t('Something went wrong'));
+      setModalError({
+        title: t('Delete failed'),
+        messages: [payload?.error ?? t('Something went wrong')],
+      });
       return;
     }
 
@@ -835,6 +1007,7 @@ function CrudManager<T extends { id: string }>({
           },
         }}
       >
+        <ErrorModal error={modalError} onClose={() => setModalError(null)} />
         {mode === 'view' && selected ? (
           <Stack gap="sm">
             {drawerExtras ? drawerExtras({ mode, selected }) : null}
@@ -848,7 +1021,7 @@ function CrudManager<T extends { id: string }>({
             ))}
           </Stack>
         ) : (
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form onSubmit={handleSubmit(onSubmit, handleInvalidSubmit)}>
             <Stack gap="md">
               {drawerExtras ? drawerExtras({ mode, selected }) : null}
               {editableFields.map((field) => {
@@ -911,6 +1084,9 @@ function CrudManager<T extends { id: string }>({
                 }
 
                 if (field.type === 'file') {
+                  const previewItems = filePreviews[field.name] ?? [];
+                  const fileRegistration = register(field.name);
+
                   return (
                     <Box key={field.name}>
                       <Text size="sm" mb={6}>
@@ -920,12 +1096,66 @@ function CrudManager<T extends { id: string }>({
                         type="file"
                         accept="image/*"
                         multiple={field.multiple}
-                        {...register(field.name)}
+                        name={fileRegistration.name}
+                        ref={fileRegistration.ref}
+                        onBlur={fileRegistration.onBlur}
+                        onChange={(event) => {
+                          const files = Array.from(event.currentTarget.files ?? []);
+                          fileRegistration.onChange(event);
+                          setFieldPreviews(
+                            field.name,
+                            files.map((file, index) => ({
+                              id: `${field.name}-${file.name}-${file.lastModified}-${index}`,
+                              url: URL.createObjectURL(file),
+                              name: file.name,
+                              isExisting: false,
+                            }))
+                          );
+                        }}
                       />
                       {errorMessage ? (
                         <Text c="red" size="xs" mt={4}>
                           {errorMessage}
                         </Text>
+                      ) : null}
+                      {previewItems.length > 0 ? (
+                        <Stack gap="xs" mt="sm">
+                          {previewItems.map((item) => (
+                            <Paper
+                              key={item.id}
+                              p="xs"
+                              radius={0}
+                              style={{
+                                background: 'rgba(255,255,255,0.03)',
+                                border: '1px solid var(--border)',
+                              }}
+                            >
+                              <Group justify="space-between" align="start" wrap="nowrap">
+                                <Group align="start" wrap="nowrap">
+                                  <Image src={item.url} alt={item.name} w={72} h={92} fit="cover" />
+                                  <Stack gap={2}>
+                                    <Text size="sm" fw={600}>
+                                      {item.isExisting ? t('Current image') : t('Selected image')}
+                                    </Text>
+                                    <Text size="xs" c="dimmed">
+                                      {item.name}
+                                    </Text>
+                                  </Stack>
+                                </Group>
+                                <Button
+                                  type="button"
+                                  size="xs"
+                                  variant="default"
+                                  radius={0}
+                                  styles={adminSecondaryButtonStyles}
+                                  onClick={() => clearFileField(field.name)}
+                                >
+                                  {t('Remove')}
+                                </Button>
+                              </Group>
+                            </Paper>
+                          ))}
+                        </Stack>
                       ) : null}
                     </Box>
                   );
@@ -955,6 +1185,7 @@ function CrudManager<T extends { id: string }>({
 
               <Group justify="flex-end" mt="md">
                 <Button
+                  type="button"
                   variant="default"
                   radius={0}
                   styles={adminSecondaryButtonStyles}
@@ -1258,6 +1489,55 @@ function emptyVariantRow(): ProductVariantFormRow {
   };
 }
 
+function randomToken(length: number, alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789') {
+  return Array.from({ length }, () => alphabet[Math.floor(Math.random() * alphabet.length)]).join(
+    ''
+  );
+}
+
+function randomDigits(length: number) {
+  return Array.from({ length }, () => Math.floor(Math.random() * 10)).join('');
+}
+
+function buildVariantSku(sizeCode?: string, colorCode?: string) {
+  return ['SKU', sizeCode, colorCode, randomToken(6)].filter(Boolean).join('-');
+}
+
+function buildVariantBarcode() {
+  return randomDigits(13);
+}
+
+function requiredNumberField(t: (value: string) => string, minimum = 0) {
+  return z.preprocess(
+    (value) => {
+      if (value === '' || value === null || value === undefined) {
+        return value;
+      }
+
+      return Number(value);
+    },
+    z
+      .number({ error: () => ({ message: t('Enter a valid number') }) })
+      .min(minimum, t('Value is too low'))
+  );
+}
+
+function optionalNumberField(t: (value: string) => string, minimum = 0) {
+  return z.preprocess(
+    (value) => {
+      if (value === '' || value === null || value === undefined) {
+        return undefined;
+      }
+
+      return Number(value);
+    },
+    z
+      .number({ error: () => ({ message: t('Enter a valid number') }) })
+      .min(minimum, t('Value is too low'))
+      .optional()
+  );
+}
+
 function ProductCrudManager({
   products,
   categories,
@@ -1280,6 +1560,11 @@ function ProductCrudManager({
   const [mode, setMode] = useState<'create' | 'edit' | 'view' | null>(null);
   const [selected, setSelected] = useState<AdminProductRecord | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [modalError, setModalError] = useState<ModalErrorState | null>(null);
+  const [mainImagePreview, setMainImagePreview] = useState<FilePreviewItem[]>([]);
+  const [subImagePreviews, setSubImagePreviews] = useState<FilePreviewItem[]>([]);
+  const [existingMainImageUrl, setExistingMainImageUrl] = useState('');
+  const [existingSubImageUrls, setExistingSubImageUrls] = useState<string[]>([]);
   const productVariantMap = useMemo(
     () =>
       new Map(
@@ -1303,10 +1588,8 @@ function ProductCrudManager({
         descriptionAr: z.string().optional(),
         mainImage: z.any().optional(),
         subImages: z.any().optional(),
-        basePrice: z.coerce
-          .number({ error: () => ({ message: t('Enter a valid number') }) })
-          .min(0, t('Value is too low')),
-        compareAtPrice: z.union([z.coerce.number(), z.literal('')]).optional(),
+        basePrice: requiredNumberField(t, 0),
+        compareAtPrice: optionalNumberField(t, 0),
         status: z.string().trim().min(1, t('This field is required')),
         isFeatured: z.boolean().default(false),
         categoryId: z.string().optional(),
@@ -1317,13 +1600,13 @@ function ProductCrudManager({
             colorId: z.string().optional(),
             sku: z.string().trim().min(1, t('This field is required')),
             barcode: z.string().optional(),
-            price: z.union([z.coerce.number(), z.literal('')]).optional(),
-            compareAtPrice: z.union([z.coerce.number(), z.literal('')]).optional(),
-            stockQuantity: z.coerce.number().min(0, t('Value is too low')),
-            lowStockThreshold: z.coerce.number().min(0, t('Value is too low')),
+            price: optionalNumberField(t, 0),
+            compareAtPrice: optionalNumberField(t, 0),
+            stockQuantity: requiredNumberField(t, 0),
+            lowStockThreshold: requiredNumberField(t, 0),
             trackInventory: z.boolean().default(true),
             allowBackorder: z.boolean().default(false),
-            weightGrams: z.union([z.coerce.number(), z.literal('')]).optional(),
+            weightGrams: optionalNumberField(t, 0),
             isActive: z.boolean().default(true),
           })
         ),
@@ -1339,7 +1622,8 @@ function ProductCrudManager({
         ...emptyVariantRow(),
         sizeId: size.id,
         colorId: colors[0]?.id ?? '',
-        sku: size.code ? `SKU-${size.code}` : '',
+        sku: buildVariantSku(size.code, colors[0]?.code),
+        barcode: buildVariantBarcode(),
       })),
     [colors, sizes]
   );
@@ -1376,6 +1660,8 @@ function ProductCrudManager({
   } = useForm<any>({
     resolver: zodResolver(schema),
     defaultValues: defaults,
+    mode: 'onTouched',
+    reValidateMode: 'onChange',
   });
   const {
     fields: variantFields,
@@ -1397,9 +1683,21 @@ function ProductCrudManager({
       return;
     }
 
+    setModalError(null);
+    setMainImagePreview((current) => {
+      revokePreviewItems(current);
+      return [];
+    });
+    setSubImagePreviews((current) => {
+      revokePreviewItems(current);
+      return [];
+    });
+
     if (mode === 'create') {
       reset(defaults);
       replace(defaultVariantRows);
+      setExistingMainImageUrl('');
+      setExistingSubImageUrls([]);
       return;
     }
 
@@ -1440,11 +1738,28 @@ function ProductCrudManager({
         variants: mappedVariants.length ? mappedVariants : defaultVariantRows,
       });
       replace(mappedVariants.length ? mappedVariants : defaultVariantRows);
+      setExistingMainImageUrl(selected.primary_image_url ?? '');
+      setExistingSubImageUrls([...(selected.sub_image_urls ?? [])]);
     }
-  }, [defaultVariantRows, defaults, mode, productVariantMap, replace, reset, selected?.id]);
+  }, [
+    defaultVariantRows,
+    defaults,
+    mode,
+    productVariantMap,
+    replace,
+    reset,
+    selected?.id,
+  ]);
 
   useEffect(() => {
-    if (mode !== 'create' && mode !== 'edit') {
+    return () => {
+      revokePreviewItems(mainImagePreview);
+      revokePreviewItems(subImagePreviews);
+    };
+  }, [mainImagePreview, subImagePreviews]);
+
+  useEffect(() => {
+    if (mode !== 'create') {
       return;
     }
 
@@ -1479,8 +1794,23 @@ function ProductCrudManager({
     });
   }, [mode, setValue, watchedBasePrice, watchedCompareAtPrice, watchedVariants]);
 
+  function handleInvalidSubmit(formErrors: unknown) {
+    openFieldErrorModal(formErrors, setModalError, t('Please fix the form errors'));
+  }
+
+  function replaceMainImagePreview(nextItems: FilePreviewItem[]) {
+    revokePreviewItems(mainImagePreview);
+    setMainImagePreview(nextItems);
+  }
+
+  function replaceSubImagePreviews(nextItems: FilePreviewItem[]) {
+    revokePreviewItems(subImagePreviews);
+    setSubImagePreviews(nextItems);
+  }
+
   async function onSubmit(values: any) {
     setSubmitting(true);
+    setModalError(null);
     const request =
       mode === 'edit' && selected
         ? { url: `/api/admin/products/${selected.id}`, method: 'PATCH' as const }
@@ -1525,6 +1855,9 @@ function ProductCrudManager({
       formData.append(key, String(value));
     }
 
+    formData.append('mainImageUrl', existingMainImageUrl);
+    formData.append('subImageUrlsJson', JSON.stringify(existingSubImageUrls));
+
     for (const file of Array.from((values.mainImage ?? []) as FileList | File[])) {
       if (file.size > 0) formData.append('mainImage', file);
     }
@@ -1537,7 +1870,10 @@ function ProductCrudManager({
 
     if (!response.ok) {
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      window.alert(payload?.error ?? t('Something went wrong'));
+      setModalError({
+        title: t('Request failed'),
+        messages: [payload?.error ?? t('Something went wrong')],
+      });
       return;
     }
 
@@ -1551,7 +1887,10 @@ function ProductCrudManager({
     const response = await fetch(`/api/admin/products/${row.id}`, { method: 'DELETE' });
     if (!response.ok) {
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      window.alert(payload?.error ?? t('Something went wrong'));
+      setModalError({
+        title: t('Delete failed'),
+        messages: [payload?.error ?? t('Something went wrong')],
+      });
       return;
     }
     router.refresh();
@@ -1675,6 +2014,7 @@ function ProductCrudManager({
           title: { textTransform: 'uppercase', letterSpacing: '0.16em', fontWeight: 700 },
         }}
       >
+        <ErrorModal error={modalError} onClose={() => setModalError(null)} />
         {mode === 'view' && selected ? (
           <Stack gap="md">
             <Paper
@@ -1767,6 +2107,27 @@ function ProductCrudManager({
               p="md"
               style={{ background: 'var(--surface)', border: '1px solid var(--surface-border)' }}
             >
+              {selected.primary_image_url || selected.sub_image_urls.length ? (
+                <>
+                  <Text size="xs" tt="uppercase" c="dimmed" mb="sm" style={{ letterSpacing: 2 }}>
+                    {t('Product images')}
+                  </Text>
+                  <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} mb="md">
+                    {[selected.primary_image_url, ...selected.sub_image_urls]
+                      .filter(Boolean)
+                      .map((imageUrl, index) => (
+                        <Image
+                          key={`${imageUrl}-${index}`}
+                          src={imageUrl}
+                          alt={index === 0 ? t('Primary product image') : t('Product image')}
+                          h={180}
+                          fit="cover"
+                          radius={0}
+                        />
+                      ))}
+                  </SimpleGrid>
+                </>
+              ) : null}
               <Text size="xs" tt="uppercase" c="dimmed" mb="sm" style={{ letterSpacing: 2 }}>
                 Variants
               </Text>
@@ -1854,7 +2215,7 @@ function ProductCrudManager({
             ) : null}
           </Stack>
         ) : (
-          <form onSubmit={handleSubmit(onSubmit)}>
+          <form onSubmit={handleSubmit(onSubmit, handleInvalidSubmit)}>
             <Stack gap="md">
               <SimpleGrid cols={{ base: 1, md: 2 }}>
                 <TextInput
@@ -1976,14 +2337,220 @@ function ProductCrudManager({
                 <Text size="sm" mb={6}>
                   {t('Main image')}
                 </Text>
-                <input type="file" accept="image/*" {...register('mainImage')} />
+                <input
+                  type="file"
+                  accept="image/*"
+                  {...register('mainImage', {
+                    onChange: (event) => {
+                      const files = Array.from(event.currentTarget.files ?? []) as File[];
+                      replaceMainImagePreview(
+                        files.map((file, index) => ({
+                          id: `main-${file.name}-${file.lastModified}-${index}`,
+                          url: URL.createObjectURL(file),
+                          name: file.name,
+                          isExisting: false,
+                        }))
+                      );
+                    },
+                  })}
+                />
+                {existingMainImageUrl || mainImagePreview.length ? (
+                  <Paper
+                    mt="sm"
+                    p="xs"
+                    radius={0}
+                    style={{
+                      background: 'rgba(255,255,255,0.03)',
+                      border: '1px solid var(--border)',
+                    }}
+                  >
+                    <Group justify="space-between" align="start" wrap="nowrap">
+                      <Group align="start" wrap="nowrap">
+                        <Image
+                          src={mainImagePreview[0]?.url ?? existingMainImageUrl}
+                          alt={t('Main image')}
+                          w={84}
+                          h={104}
+                          fit="cover"
+                        />
+                        <Stack gap={2}>
+                          <Text size="sm" fw={600}>
+                            {mainImagePreview.length ? t('Selected main image') : t('Current main image')}
+                          </Text>
+                          <Text size="xs" c="dimmed">
+                            {mainImagePreview[0]?.name ??
+                              existingMainImageUrl.split('/').pop() ??
+                              t('Main image')}
+                          </Text>
+                        </Stack>
+                      </Group>
+                      <Button
+                        type="button"
+                        size="xs"
+                        variant="default"
+                        radius={0}
+                        styles={adminSecondaryButtonStyles}
+                        onClick={() => {
+                          replaceMainImagePreview([]);
+                          setExistingMainImageUrl('');
+                          setValue('mainImage', undefined, {
+                            shouldDirty: true,
+                            shouldTouch: true,
+                            shouldValidate: true,
+                          });
+                        }}
+                      >
+                        {t('Remove')}
+                      </Button>
+                    </Group>
+                  </Paper>
+                ) : null}
               </Box>
               <Box>
                 <Text size="sm" mb={6}>
                   {t('Sub images')}
                 </Text>
-                <input type="file" accept="image/*" multiple {...register('subImages')} />
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  {...register('subImages', {
+                    onChange: (event) => {
+                      const files = Array.from(event.currentTarget.files ?? []) as File[];
+                      replaceSubImagePreviews(
+                        files.map((file, index) => ({
+                          id: `sub-${file.name}-${file.lastModified}-${index}`,
+                          url: URL.createObjectURL(file),
+                          name: file.name,
+                          isExisting: false,
+                        }))
+                      );
+                    },
+                  })}
+                />
+                {existingSubImageUrls.length || subImagePreviews.length ? (
+                  <SimpleGrid cols={{ base: 1, sm: 2 }} mt="sm">
+                    {existingSubImageUrls.map((imageUrl, index) => (
+                      <Paper
+                        key={`existing-sub-${imageUrl}-${index}`}
+                        p="xs"
+                        radius={0}
+                        style={{
+                          background: 'rgba(255,255,255,0.03)',
+                          border: '1px solid var(--border)',
+                        }}
+                      >
+                        <Group justify="space-between" align="start" wrap="nowrap">
+                          <Group align="start" wrap="nowrap">
+                            <Image src={imageUrl} alt={t('Sub image')} w={72} h={92} fit="cover" />
+                            <Stack gap={2}>
+                              <Text size="sm" fw={600}>
+                                {t('Current sub image')}
+                              </Text>
+                              <Text size="xs" c="dimmed">
+                                {imageUrl.split('/').pop() ?? t('Sub image')}
+                              </Text>
+                            </Stack>
+                          </Group>
+                          <Button
+                            type="button"
+                            size="xs"
+                            variant="default"
+                            radius={0}
+                            styles={adminSecondaryButtonStyles}
+                            onClick={() =>
+                              setExistingSubImageUrls((current) =>
+                                current.filter((value) => value !== imageUrl)
+                              )
+                            }
+                          >
+                            {t('Remove')}
+                          </Button>
+                        </Group>
+                      </Paper>
+                    ))}
+                    {subImagePreviews.map((item) => (
+                      <Paper
+                        key={item.id}
+                        p="xs"
+                        radius={0}
+                        style={{
+                          background: 'rgba(255,255,255,0.03)',
+                          border: '1px solid var(--border)',
+                        }}
+                      >
+                        <Group justify="space-between" align="start" wrap="nowrap">
+                          <Group align="start" wrap="nowrap">
+                            <Image src={item.url} alt={item.name} w={72} h={92} fit="cover" />
+                            <Stack gap={2}>
+                              <Text size="sm" fw={600}>
+                                {t('Selected sub image')}
+                              </Text>
+                              <Text size="xs" c="dimmed">
+                                {item.name}
+                              </Text>
+                            </Stack>
+                          </Group>
+                          <Button
+                            type="button"
+                            size="xs"
+                            variant="default"
+                            radius={0}
+                            styles={adminSecondaryButtonStyles}
+                            onClick={() => {
+                              replaceSubImagePreviews([]);
+                              setValue('subImages', undefined, {
+                                shouldDirty: true,
+                                shouldTouch: true,
+                                shouldValidate: true,
+                              });
+                            }}
+                          >
+                            {t('Remove')}
+                          </Button>
+                        </Group>
+                      </Paper>
+                    ))}
+                  </SimpleGrid>
+                ) : null}
               </Box>
+              {mode === 'edit' && (existingMainImageUrl || existingSubImageUrls.length) ? (
+                <Paper
+                  radius={0}
+                  p="md"
+                  style={{ background: 'var(--surface)', border: '1px solid var(--surface-border)' }}
+                >
+                  <Text size="xs" tt="uppercase" c="dimmed" mb="sm" style={{ letterSpacing: 2 }}>
+                    {t('Loaded product images')}
+                  </Text>
+                  <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }}>
+                    {[existingMainImageUrl, ...existingSubImageUrls]
+                      .filter(Boolean)
+                      .map((imageUrl, index) => (
+                        <Paper
+                          key={`${imageUrl}-${index}`}
+                          p="xs"
+                          radius={0}
+                          style={{
+                            background: 'rgba(255,255,255,0.03)',
+                            border: '1px solid var(--border)',
+                          }}
+                        >
+                          <Image
+                            src={imageUrl}
+                            alt={index === 0 ? t('Primary product image') : t('Product image')}
+                            h={180}
+                            fit="cover"
+                            radius={0}
+                          />
+                          <Text size="xs" c="dimmed" mt="xs">
+                            {index === 0 ? t('Primary image') : `${t('Sub image')} ${index}`}
+                          </Text>
+                        </Paper>
+                      ))}
+                  </SimpleGrid>
+                </Paper>
+              ) : null}
 
               <Paper
                 radius={0}
@@ -1998,6 +2565,7 @@ function ProductCrudManager({
                     </Text>
                   </div>
                   <Button
+                    type="button"
                     variant="default"
                     radius={0}
                     styles={adminPrimaryButtonStyles}
@@ -2005,6 +2573,8 @@ function ProductCrudManager({
                       append({
                         ...emptyVariantRow(),
                         colorId: colors[0]?.id ?? '',
+                        sku: buildVariantSku(undefined, colors[0]?.code),
+                        barcode: buildVariantBarcode(),
                         price: getValues('basePrice') ?? '',
                         compareAtPrice: getValues('compareAtPrice') ?? '',
                       })
@@ -2171,6 +2741,7 @@ function ProductCrudManager({
 
               <Group justify="flex-end" mt="md">
                 <Button
+                  type="button"
                   variant="default"
                   radius={0}
                   styles={adminSecondaryButtonStyles}
@@ -3042,6 +3613,7 @@ export function AdminLoginScreen() {
   const router = useRouter();
   const { t } = useLocale();
   const { isDark } = useThemeMode();
+  const [modalError, setModalError] = useState<ModalErrorState | null>(null);
   const schema = z.object({
     email: z.string().email(t('Enter a valid email')),
     password: z.string().min(1, t('This field is required')),
@@ -3056,9 +3628,16 @@ export function AdminLoginScreen() {
       email: '',
       password: '',
     },
+    mode: 'onTouched',
+    reValidateMode: 'onChange',
   });
 
+  function handleInvalidSubmit(formErrors: unknown) {
+    openFieldErrorModal(formErrors, setModalError, t('Please fix the form errors'));
+  }
+
   async function onSubmit(values: { email: string; password: string }) {
+    setModalError(null);
     const response = await fetch('/api/admin/login', {
       method: 'POST',
       headers: {
@@ -3069,7 +3648,10 @@ export function AdminLoginScreen() {
 
     if (!response.ok) {
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-      window.alert(payload?.error ?? t('Something went wrong'));
+      setModalError({
+        title: t('Login failed'),
+        messages: [payload?.error ?? t('Something went wrong')],
+      });
       return;
     }
 
@@ -3087,6 +3669,7 @@ export function AdminLoginScreen() {
         background: 'var(--admin-background)',
       }}
     >
+      <ErrorModal error={modalError} onClose={() => setModalError(null)} />
       <Box maw={1080} w="100%">
         <SimpleGrid cols={{ base: 1, md: 2 }} spacing={0}>
           <Paper
@@ -3173,7 +3756,7 @@ export function AdminLoginScreen() {
 
               <Divider my="xl" color="var(--border)" />
 
-              <form onSubmit={handleSubmit(onSubmit)}>
+              <form onSubmit={handleSubmit(onSubmit, handleInvalidSubmit)}>
                 <Stack gap="md">
                   <TextInput
                     label={t('Email')}
