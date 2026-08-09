@@ -29,7 +29,7 @@ import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 import { AdminShell } from '@/components/customer/AdminShell';
-import { useLocale } from '@/components/storefront/locale-provider';
+import { LocaleSwitcher, useLocale } from '@/components/storefront/locale-provider';
 import { useThemeMode } from '@/components/storefront/theme-provider';
 import {
   AdminBrandRecord,
@@ -3741,10 +3741,15 @@ export function AdminLoginScreen() {
               backdropFilter: 'blur(24px)',
             }}
           >
+            <Group justify="space-between" align="start">
+              <div>
+                <Text size="xs" tt="uppercase" c="dimmed" style={{ letterSpacing: 3 }}>
+                  {t('Admin panel')}
+                </Text>
+              </div>
+              <LocaleSwitcher />
+            </Group>
             <div>
-              <Text size="xs" tt="uppercase" c="dimmed" style={{ letterSpacing: 3 }}>
-                {t('Admin panel')}
-              </Text>
               <Text
                 fw={800}
                 size="3rem"

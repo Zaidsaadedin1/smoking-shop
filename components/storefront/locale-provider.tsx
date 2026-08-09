@@ -17,6 +17,11 @@ const LocaleContext = createContext<LocaleContextValue | null>(null);
 export function LocaleProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>('en');
 
+  function applyLocale(nextLocale: Locale) {
+    setLocaleState(nextLocale);
+    window.localStorage.setItem('tourmaline-coven-locale', nextLocale);
+  }
+
   useEffect(() => {
     const stored = window.localStorage.getItem('tourmaline-coven-locale');
     if (stored === 'en' || stored === 'ar') {
@@ -25,16 +30,26 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    function handleStorage(event: StorageEvent) {
+      if (event.key === 'tourmaline-coven-locale' && (event.newValue === 'en' || event.newValue === 'ar')) {
+        setLocaleState(event.newValue);
+      }
+    }
+
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
+
+  useEffect(() => {
     document.documentElement.lang = locale;
     document.documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr';
-    window.localStorage.setItem('tourmaline-coven-locale', locale);
   }, [locale]);
 
   const value = useMemo<LocaleContextValue>(
     () => ({
       locale,
       dir: locale === 'ar' ? 'rtl' : 'ltr',
-      setLocale: setLocaleState,
+      setLocale: applyLocale,
       t: (text) => translateText(text, locale),
       localize: (english, arabic) => {
         if (locale === 'ar') {
