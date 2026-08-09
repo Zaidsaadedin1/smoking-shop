@@ -130,7 +130,7 @@ function Hero({ product, slides }: { product: StoreProduct | null; slides: HeroS
     const imageUrl = locale === 'ar' ? activeSlide.imageArUrl : activeSlide.imageEnUrl;
 
     return (
-      <section className="relative min-h-[78vh] overflow-hidden border-b border-[var(--border)] md:min-h-[86vh]">
+      <section className="relative overflow-hidden border-b border-[var(--border)] bg-black">
         <motion.img
           key={`${activeSlide.id}-${locale}`}
           src={imageUrl}
@@ -138,11 +138,11 @@ function Hero({ product, slides }: { product: StoreProduct | null; slides: HeroS
           initial={{ opacity: 0, scale: 1.04 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.9, ease: 'easeOut' }}
-          className="absolute inset-0 h-full w-full object-cover"
+          className="block h-auto w-full"
         />
         <div className="noise-overlay absolute inset-0" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.1),rgba(0,0,0,0.18)_20%,rgba(0,0,0,0.66)_100%)]" />
-        <div className="relative flex min-h-[78vh] items-end justify-center pb-14 md:min-h-[86vh] md:pb-20">
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.18),rgba(0,0,0,0.24)_20%,rgba(0,0,0,0.68)_100%)]" />
+        <div className="absolute inset-0 flex items-end justify-center pb-10 md:pb-16">
           <motion.div
             key={activeSlide.id}
             initial={{ opacity: 0, y: 25 }}

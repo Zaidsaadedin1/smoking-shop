@@ -39,7 +39,8 @@ export async function PATCH(
   }
 
   try {
-    const auth = getAuthHeaders(await getAdminAccessToken());
+    const accessToken = await getAdminAccessToken();
+    const auth = getAuthHeaders(accessToken);
     const { id } = await params;
     const { body, imageFile } = await parseCategoryRequest(request);
     const payload: Record<string, unknown> = {};
@@ -51,7 +52,7 @@ export async function PATCH(
     if (body.description !== undefined) payload.description = optionalString(body.description);
     if (body.descriptionAr !== undefined) payload.description_ar = optionalString(body.descriptionAr);
     if (imageFile) {
-      payload.image_url = await saveUploadedImage(imageFile, 'categories');
+      payload.image_url = await saveUploadedImage(imageFile, 'categories', accessToken);
     } else if (body.imageUrl !== undefined) {
       payload.image_url = optionalString(body.imageUrl);
     }

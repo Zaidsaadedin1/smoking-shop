@@ -240,8 +240,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
           .sort((left, right) => Number(left.sort_order ?? 0) - Number(right.sort_order ?? 0))
           .map((image) => image.image_url)
       );
-      const uploadedMainImage = mainImageFile ? await saveUploadedImage(mainImageFile, 'products') : null;
-      const uploadedSubImages = subImageFiles.length > 0 ? await saveUploadedImages(subImageFiles, 'products') : [];
+      const uploadedMainImage = mainImageFile
+        ? await saveUploadedImage(mainImageFile, 'products', accessToken)
+        : null;
+      const uploadedSubImages =
+        subImageFiles.length > 0
+          ? await saveUploadedImages(subImageFiles, 'products', accessToken)
+          : [];
       const retainedMainImage = optionalString(body.mainImageUrl);
       const retainedSubImages = parseImageUrls(body.subImageUrlsJson);
       const imageUrls = normalizeImageUrls([

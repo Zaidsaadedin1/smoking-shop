@@ -48,9 +48,12 @@ export async function POST(request: Request) {
   }
 
   try {
-    const auth = getAuthHeaders(await getAdminAccessToken());
+    const accessToken = await getAdminAccessToken();
+    const auth = getAuthHeaders(accessToken);
     const { body, imageFile } = await parseCategoryRequest(request);
-    const uploadedImage = imageFile ? await saveUploadedImage(imageFile, 'categories') : null;
+    const uploadedImage = imageFile
+      ? await saveUploadedImage(imageFile, 'categories', accessToken)
+      : null;
     const result = await createCategory({
       name: requireString(body.name, 'name'),
       name_ar: optionalString(body.nameAr),

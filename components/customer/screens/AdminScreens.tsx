@@ -1564,6 +1564,8 @@ function ProductCrudManager({
   const [modalError, setModalError] = useState<ModalErrorState | null>(null);
   const [mainImagePreview, setMainImagePreview] = useState<FilePreviewItem[]>([]);
   const [subImagePreviews, setSubImagePreviews] = useState<FilePreviewItem[]>([]);
+  const [mainImageFiles, setMainImageFiles] = useState<File[]>([]);
+  const [subImageFiles, setSubImageFiles] = useState<File[]>([]);
   const [existingMainImageUrl, setExistingMainImageUrl] = useState('');
   const [existingSubImageUrls, setExistingSubImageUrls] = useState<string[]>([]);
   const productVariantMap = useMemo(
@@ -1693,6 +1695,8 @@ function ProductCrudManager({
       revokePreviewItems(current);
       return [];
     });
+    setMainImageFiles([]);
+    setSubImageFiles([]);
 
     if (mode === 'create') {
       reset(defaults);
@@ -1859,10 +1863,10 @@ function ProductCrudManager({
     formData.append('mainImageUrl', existingMainImageUrl);
     formData.append('subImageUrlsJson', JSON.stringify(existingSubImageUrls));
 
-    for (const file of Array.from((values.mainImage ?? []) as FileList | File[])) {
+    for (const file of mainImageFiles) {
       if (file.size > 0) formData.append('mainImage', file);
     }
-    for (const file of Array.from((values.subImages ?? []) as FileList | File[])) {
+    for (const file of subImageFiles) {
       if (file.size > 0) formData.append('subImages', file);
     }
 
@@ -2344,6 +2348,7 @@ function ProductCrudManager({
                   {...register('mainImage', {
                     onChange: (event) => {
                       const files = Array.from(event.currentTarget.files ?? []) as File[];
+                      setMainImageFiles(files);
                       replaceMainImagePreview(
                         files.map((file, index) => ({
                           id: `main-${file.name}-${file.lastModified}-${index}`,
@@ -2392,6 +2397,7 @@ function ProductCrudManager({
                         radius={0}
                         styles={adminSecondaryButtonStyles}
                         onClick={() => {
+                          setMainImageFiles([]);
                           replaceMainImagePreview([]);
                           setExistingMainImageUrl('');
                           setValue('mainImage', undefined, {
@@ -2418,6 +2424,7 @@ function ProductCrudManager({
                   {...register('subImages', {
                     onChange: (event) => {
                       const files = Array.from(event.currentTarget.files ?? []) as File[];
+                      setSubImageFiles(files);
                       replaceSubImagePreviews(
                         files.map((file, index) => ({
                           id: `sub-${file.name}-${file.lastModified}-${index}`,
@@ -2430,7 +2437,7 @@ function ProductCrudManager({
                   })}
                 />
                 {existingSubImageUrls.length || subImagePreviews.length ? (
-                  <SimpleGrid cols={{ base: 1, sm: 2 }} mt="sm">
+                  <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} mt="sm">
                     {existingSubImageUrls.map((imageUrl, index) => (
                       <Paper
                         key={`existing-sub-${imageUrl}-${index}`}
@@ -2441,18 +2448,14 @@ function ProductCrudManager({
                           border: '1px solid var(--border)',
                         }}
                       >
-                        <Group justify="space-between" align="start" wrap="nowrap">
-                          <Group align="start" wrap="nowrap">
-                            <Image src={imageUrl} alt={t('Sub image')} w={72} h={92} fit="cover" />
-                            <Stack gap={2}>
-                              <Text size="sm" fw={600}>
-                                {t('Current sub image')}
-                              </Text>
-                              <Text size="xs" c="dimmed">
-                                {imageUrl.split('/').pop() ?? t('Sub image')}
-                              </Text>
-                            </Stack>
-                          </Group>
+                        <Stack gap="xs">
+                          <Image src={imageUrl} alt={t('Sub image')} h={180} fit="cover" radius={0} />
+                          <Text size="sm" fw={600}>
+                            {t('Current sub image')} {index + 1}
+                          </Text>
+                          <Text size="xs" c="dimmed" lineClamp={2}>
+                            {imageUrl.split('/').pop() ?? t('Sub image')}
+                          </Text>
                           <Button
                             type="button"
                             size="xs"
@@ -2467,10 +2470,10 @@ function ProductCrudManager({
                           >
                             {t('Remove')}
                           </Button>
-                        </Group>
+                        </Stack>
                       </Paper>
                     ))}
-                    {subImagePreviews.map((item) => (
+                    {subImagePreviews.map((item, index) => (
                       <Paper
                         key={item.id}
                         p="xs"
@@ -2480,18 +2483,14 @@ function ProductCrudManager({
                           border: '1px solid var(--border)',
                         }}
                       >
-                        <Group justify="space-between" align="start" wrap="nowrap">
-                          <Group align="start" wrap="nowrap">
-                            <Image src={item.url} alt={item.name} w={72} h={92} fit="cover" />
-                            <Stack gap={2}>
-                              <Text size="sm" fw={600}>
-                                {t('Selected sub image')}
-                              </Text>
-                              <Text size="xs" c="dimmed">
-                                {item.name}
-                              </Text>
-                            </Stack>
-                          </Group>
+                        <Stack gap="xs">
+                          <Image src={item.url} alt={item.name} h={180} fit="cover" radius={0} />
+                          <Text size="sm" fw={600}>
+                            {t('Selected sub image')} {index + 1}
+                          </Text>
+                          <Text size="xs" c="dimmed" lineClamp={2}>
+                            {item.name}
+                          </Text>
                           <Button
                             type="button"
                             size="xs"
@@ -2499,7 +2498,10 @@ function ProductCrudManager({
                             radius={0}
                             styles={adminSecondaryButtonStyles}
                             onClick={() => {
-                              replaceSubImagePreviews([]);
+                              const nextFiles = subImageFiles.filter((_, fileIndex) => fileIndex !== index);
+                              const nextPreviews = subImagePreviews.filter((preview) => preview.id !== item.id);
+                              setSubImageFiles(nextFiles);
+                              replaceSubImagePreviews(nextPreviews);
                               setValue('subImages', undefined, {
                                 shouldDirty: true,
                                 shouldTouch: true,
@@ -2509,49 +2511,12 @@ function ProductCrudManager({
                           >
                             {t('Remove')}
                           </Button>
-                        </Group>
+                        </Stack>
                       </Paper>
                     ))}
                   </SimpleGrid>
                 ) : null}
               </Box>
-              {mode === 'edit' && (existingMainImageUrl || existingSubImageUrls.length) ? (
-                <Paper
-                  radius={0}
-                  p="md"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--surface-border)' }}
-                >
-                  <Text size="xs" tt="uppercase" c="dimmed" mb="sm" style={{ letterSpacing: 2 }}>
-                    {t('Loaded product images')}
-                  </Text>
-                  <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }}>
-                    {[existingMainImageUrl, ...existingSubImageUrls]
-                      .filter(Boolean)
-                      .map((imageUrl, index) => (
-                        <Paper
-                          key={`${imageUrl}-${index}`}
-                          p="xs"
-                          radius={0}
-                          style={{
-                            background: 'rgba(255,255,255,0.03)',
-                            border: '1px solid var(--border)',
-                          }}
-                        >
-                          <Image
-                            src={imageUrl}
-                            alt={index === 0 ? t('Primary product image') : t('Product image')}
-                            h={180}
-                            fit="cover"
-                            radius={0}
-                          />
-                          <Text size="xs" c="dimmed" mt="xs">
-                            {index === 0 ? t('Primary image') : `${t('Sub image')} ${index}`}
-                          </Text>
-                        </Paper>
-                      ))}
-                  </SimpleGrid>
-                </Paper>
-              ) : null}
 
               <Paper
                 radius={0}

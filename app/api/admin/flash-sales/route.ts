@@ -74,12 +74,15 @@ export async function POST(request: Request) {
   }
 
   try {
-    const auth = getAuthHeaders(await getAdminAccessToken());
+    const accessToken = await getAdminAccessToken();
+    const auth = getAuthHeaders(accessToken);
     const { body, imageFile } = await parseFlashSaleRequest(request);
     const startsAt = parseDateTime(body.startsAt, 'startsAt');
     const endsAt = parseDateTime(body.endsAt, 'endsAt');
     validateDateRange(startsAt, endsAt);
-    const uploadedImage = imageFile ? await saveUploadedImage(imageFile, 'flash-sales') : null;
+    const uploadedImage = imageFile
+      ? await saveUploadedImage(imageFile, 'flash-sales', accessToken)
+      : null;
     const result = await createFlashSale(
       {
         title: requireString(body.title, 'title'),

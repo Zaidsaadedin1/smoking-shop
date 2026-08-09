@@ -218,9 +218,9 @@ export async function POST(request: Request) {
     }
 
     const uploadedMainImage = mainImageFile
-      ? await saveUploadedImage(mainImageFile, 'products')
+      ? await saveUploadedImage(mainImageFile, 'products', accessToken)
       : null;
-    const uploadedSubImages = await saveUploadedImages(subImageFiles, 'products');
+    const uploadedSubImages = await saveUploadedImages(subImageFiles, 'products', accessToken);
     const imageUrls = [uploadedMainImage, ...uploadedSubImages].filter((value): value is string =>
       Boolean(value)
     );

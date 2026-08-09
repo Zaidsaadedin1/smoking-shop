@@ -59,10 +59,15 @@ export async function POST(request: Request) {
   }
 
   try {
-    const auth = getAuthHeaders(await getAdminAccessToken());
+    const accessToken = await getAdminAccessToken();
+    const auth = getAuthHeaders(accessToken);
     const { body, imageEnFile, imageArFile } = await parseHeroSlideRequest(request);
-    const uploadedImageEn = imageEnFile ? await saveUploadedImage(imageEnFile, 'hero-slides') : null;
-    const uploadedImageAr = imageArFile ? await saveUploadedImage(imageArFile, 'hero-slides') : null;
+    const uploadedImageEn = imageEnFile
+      ? await saveUploadedImage(imageEnFile, 'hero-slides', accessToken)
+      : null;
+    const uploadedImageAr = imageArFile
+      ? await saveUploadedImage(imageArFile, 'hero-slides', accessToken)
+      : null;
 
     const result = await createHeroSlide(
       {

@@ -69,7 +69,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   try {
     const { id } = await params;
-    const auth = getAuthHeaders(await getAdminAccessToken());
+    const accessToken = await getAdminAccessToken();
+    const auth = getAuthHeaders(accessToken);
     const { body, imageFile } = await parseFlashSaleRequest(request);
     const payload: Record<string, unknown> = {};
 
@@ -101,7 +102,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (body.buttonText !== undefined) payload.button_text = optionalString(body.buttonText);
     if (body.buttonUrl !== undefined) payload.button_url = optionalString(body.buttonUrl);
     if (imageFile) {
-      payload.image_url = await saveUploadedImage(imageFile, 'flash-sales');
+      payload.image_url = await saveUploadedImage(imageFile, 'flash-sales', accessToken);
     } else if (body.imageUrl !== undefined) {
       payload.image_url = optionalString(body.imageUrl);
     }

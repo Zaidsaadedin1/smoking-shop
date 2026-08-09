@@ -53,7 +53,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
   try {
     const { id } = await params;
-    const auth = getAuthHeaders(await getAdminAccessToken());
+    const accessToken = await getAdminAccessToken();
+    const auth = getAuthHeaders(accessToken);
     const { body, imageEnFile, imageArFile } = await parseHeroSlideRequest(request);
     const payload: Record<string, unknown> = {};
 
@@ -67,12 +68,12 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (body.buttonTextAr !== undefined) payload.button_text_ar = optionalString(body.buttonTextAr);
     if (body.buttonUrl !== undefined) payload.button_url = optionalString(body.buttonUrl);
     if (imageEnFile) {
-      payload.image_en_url = await saveUploadedImage(imageEnFile, 'hero-slides');
+      payload.image_en_url = await saveUploadedImage(imageEnFile, 'hero-slides', accessToken);
     } else if (body.imageEnUrl !== undefined) {
       payload.image_en_url = optionalString(body.imageEnUrl);
     }
     if (imageArFile) {
-      payload.image_ar_url = await saveUploadedImage(imageArFile, 'hero-slides');
+      payload.image_ar_url = await saveUploadedImage(imageArFile, 'hero-slides', accessToken);
     } else if (body.imageArUrl !== undefined) {
       payload.image_ar_url = optionalString(body.imageArUrl);
     }
