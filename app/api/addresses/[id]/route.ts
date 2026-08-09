@@ -1,11 +1,16 @@
 import { deleteAddress, updateAddress } from '@/lib/api/store-api';
 import { jsonError, jsonOk, optionalString } from '@/lib/api/http';
+import { getCustomerAuthHeaders, getCustomerSession } from '@/lib/customer/auth';
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const session = await getCustomerSession();
+
+    if (!session) {
+      return jsonError('Unauthorized', 401);
+    }
+
+    const authHeaders = await getCustomerAuthHeaders();
     const { id } = await params;
     const body = (await request.json()) as Record<string, unknown>;
     const payload: Record<string, unknown> = {};
@@ -24,7 +29,11 @@ export async function PATCH(
     if (body.notes !== undefined) payload.notes = optionalString(body.notes);
     if (body.isDefault !== undefined) payload.is_default = body.isDefault;
 
-    const result = await updateAddress(id, payload);
+    const result = await updateAddress(
+      id,
+      payload,
+      authHeaders ? { headers: authHeaders } : undefined
+    );
 
     if (result.error) {
       return jsonError(result.error, result.status);
@@ -36,12 +45,16 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+  const session = await getCustomerSession();
+
+  if (!session) {
+    return jsonError('Unauthorized', 401);
+  }
+
+  const authHeaders = await getCustomerAuthHeaders();
   const { id } = await params;
-  const result = await deleteAddress(id);
+  const result = await deleteAddress(id, authHeaders ? { headers: authHeaders } : undefined);
 
   if (result.error) {
     return jsonError(result.error, result.status);

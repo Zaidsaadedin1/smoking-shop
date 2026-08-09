@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   ArrowLeft,
   Bell,
+  Pencil,
   Heart,
   LogOut,
   MapPin,
@@ -11,6 +12,7 @@ import {
   Settings,
   ShieldCheck,
   Star,
+  Trash2,
   User2,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -518,6 +520,26 @@ export function FavoritesPageView({ products }: { products: StoreProduct[] }) {
 
 export function AddressesPageView({ addresses }: { addresses: AddressView[] }) {
   const { t } = useLocale();
+  const router = useRouter();
+  const [deletingAddressId, startDeleteTransition] = useTransition();
+
+  function handleDelete(addressId: string) {
+    if (!window.confirm(t('Are you sure you want to delete this address?'))) {
+      return;
+    }
+
+    startDeleteTransition(async () => {
+      const response = await fetch(`/api/addresses/${addressId}`, { method: 'DELETE' });
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+
+      if (!response.ok) {
+        window.alert(t(payload?.error ?? 'Something went wrong'));
+        return;
+      }
+
+      router.refresh();
+    });
+  }
 
   return (
     <Container className="py-8 md:py-14">
@@ -552,6 +574,25 @@ export function AddressesPageView({ addresses }: { addresses: AddressView[] }) {
                 </div>
                 {address.street ? <div>{address.street}</div> : null}
                 {address.building ? <div>{address.building}</div> : null}
+              </div>
+              <div className="mt-5 flex flex-wrap gap-3 border-t border-white/8 pt-4">
+                <Link href={`/address/${address.id}/edit`} className={secondaryButtonClassName}>
+                  <span className="inline-flex items-center gap-2">
+                    <Pencil className="h-4 w-4" />
+                    {t('EDIT')}
+                  </span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => handleDelete(address.id)}
+                  disabled={deletingAddressId}
+                  className={secondaryButtonClassName}
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <Trash2 className="h-4 w-4" />
+                    {deletingAddressId ? t('PLEASE WAIT') : t('REMOVE')}
+                  </span>
+                </button>
               </div>
             </div>
           ))}
@@ -694,12 +735,19 @@ export function ReviewsPageView({ reviews }: { reviews: ReviewView[] }) {
   );
 }
 
-export function CreateAddressPageView() {
+export function CreateAddressPageView({
+  initialAddress,
+  addressId,
+}: {
+  initialAddress?: Partial<AddressView>;
+  addressId?: string;
+}) {
   const { t } = useLocale();
   const { isDark } = useThemeMode();
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [isSubmitting, startTransition] = useTransition();
+  const isEditMode = Boolean(addressId);
   const schema = z.object({
     label: z.string().min(2, 'This field is required'),
     fullName: z.string().min(2, 'This field is required'),
@@ -720,22 +768,26 @@ export function CreateAddressPageView() {
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      label: '',
-      fullName: '',
-      phone: '',
-      city: '',
-      area: '',
-      street: '',
-      building: '',
-      isDefault: false,
+      label: initialAddress?.label ?? '',
+      fullName: initialAddress?.fullName ?? '',
+      phone: initialAddress?.phone ?? '',
+      city: initialAddress?.city ?? '',
+      area: initialAddress?.area ?? '',
+      street: initialAddress?.street ?? '',
+      building: initialAddress?.building ?? '',
+      isDefault: initialAddress?.isDefault ?? false,
     },
   });
 
   return (
     <Container className="py-8 md:py-14">
       <SectionHeading
-        title="ADD ADDRESS"
-        description="Create a saved delivery address for your account."
+        title={isEditMode ? 'EDIT ADDRESS' : 'ADD ADDRESS'}
+        description={
+          isEditMode
+            ? 'Update a saved delivery address for your account.'
+            : 'Create a saved delivery address for your account.'
+        }
         action={<BackButton href="/addresses" label="BACK TO ADDRESSES" />}
       />
       <div className="grid gap-5 xl:grid-cols-[0.85fr_1.15fr]">
@@ -753,11 +805,13 @@ export function CreateAddressPageView() {
               {t('Delivery')}
             </div>
             <h2 className="mt-4 font-display text-4xl uppercase leading-none md:text-5xl">
-              {t('Address details')}
+              {t(isEditMode ? 'Edit address details' : 'Address details')}
             </h2>
             <p className="mt-4 max-w-sm text-sm leading-7 text-[var(--text-secondary)]">
               {t(
-                'Save a complete delivery location so future checkout feels instant and accurate.'
+                isEditMode
+                  ? 'Update delivery details here so future checkout stays accurate and fast.'
+                  : 'Save a complete delivery location so future checkout feels instant and accurate.'
               )}
             </p>
             <div className="mt-8 space-y-3">
@@ -781,13 +835,16 @@ export function CreateAddressPageView() {
             onSubmit={handleSubmit((values) =>
               startTransition(async () => {
                 setServerError(null);
-                const response = await fetch('/api/addresses', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify(values),
-                });
+                const response = await fetch(
+                  isEditMode ? `/api/addresses/${addressId}` : '/api/addresses',
+                  {
+                    method: isEditMode ? 'PATCH' : 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(values),
+                  }
+                );
 
                 const payload = (await response.json()) as { error?: string };
 
@@ -887,7 +944,7 @@ export function CreateAddressPageView() {
                 className={primaryButtonClassName}
                 style={getPrimaryButtonStyle(isDark)}
               >
-                {isSubmitting ? t('PLEASE WAIT') : t('SAVE ADDRESS')}
+                {isSubmitting ? t('PLEASE WAIT') : t(isEditMode ? 'SAVE CHANGES' : 'SAVE ADDRESS')}
               </button>
             </div>
           </form>
