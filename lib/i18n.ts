@@ -412,6 +412,178 @@ export const messages: Record<string, LocaleMessages> = {
   'My Addresses': { en: 'My Addresses', ar: 'عناويني' },
   'Privacy Policy': { en: 'Privacy Policy', ar: 'سياسة الخصوصية' },
   'Terms & Conditions': { en: 'Terms & Conditions', ar: 'الشروط والأحكام' },
+  ABOUT: { en: 'ABOUT', ar: 'من نحن' },
+  'CONTACT US': { en: 'CONTACT US', ar: 'اتصلي بنا' },
+  POLICY: { en: 'POLICY', ar: 'السياسات' },
+  DELIVERY: { en: 'DELIVERY', ar: 'التوصيل' },
+  'Talk to the store about orders, product questions, or delivery updates.': {
+    en: 'Talk to the store about orders, product questions, or delivery updates.',
+    ar: 'تواصلي مع المتجر بخصوص الطلبات أو استفسارات المنتجات أو تحديثات التوصيل.',
+  },
+  'Brand story, mood, and store positioning.': {
+    en: 'Brand story, mood, and store positioning.',
+    ar: 'قصة العلامة وأجواؤها وتموضعها في السوق.',
+  },
+  'Shipping policy, dispatch timing, and delivery expectations.': {
+    en: 'Shipping policy, dispatch timing, and delivery expectations.',
+    ar: 'سياسة الشحن ومدة تجهيز الطلبات وتوقعات التوصيل.',
+  },
+  'Return and exchange guidance for eligible items.': {
+    en: 'Return and exchange guidance for eligible items.',
+    ar: 'إرشادات الاسترجاع والاستبدال للمنتجات المؤهلة.',
+  },
+  'Quick answers to the most common store and order questions.': {
+    en: 'Quick answers to the most common store and order questions.',
+    ar: 'إجابات سريعة لأكثر الأسئلة شيوعاً حول المتجر والطلبات.',
+  },
+  'How account, address, and order data are handled.': {
+    en: 'How account, address, and order data are handled.',
+    ar: 'كيف يتم التعامل مع بيانات الحساب والعنوان والطلب.',
+  },
+  'Store terms for ordering, payment, shipping, and returns.': {
+    en: 'Store terms for ordering, payment, shipping, and returns.',
+    ar: 'شروط المتجر للطلبات والدفع والشحن والاسترجاع.',
+  },
+  'Customer support': { en: 'Customer support', ar: 'دعم العملاء' },
+  'Email: orders@tourmalinecoven.com': {
+    en: 'Email: orders@tourmalinecoven.com',
+    ar: 'البريد الإلكتروني: orders@tourmalinecoven.com',
+  },
+  'Phone and WhatsApp': { en: 'Phone and WhatsApp', ar: 'الهاتف وواتساب' },
+  'Phone: +962 7 9000 8888': {
+    en: 'Phone: +962 7 9000 8888',
+    ar: 'الهاتف: +962 7 9000 8888',
+  },
+  'Support hours': { en: 'Support hours', ar: 'ساعات الدعم' },
+  'Saturday to Thursday, 10 AM to 6 PM Amman time.': {
+    en: 'Saturday to Thursday, 10 AM to 6 PM Amman time.',
+    ar: 'من السبت إلى الخميس، من 10 صباحاً إلى 6 مساءً بتوقيت عمّان.',
+  },
+  'Response window': { en: 'Response window', ar: 'مدة الرد' },
+  'Most order and support requests are answered within one business day.': {
+    en: 'Most order and support requests are answered within one business day.',
+    ar: 'يتم الرد على معظم طلبات الدعم والطلبات خلال يوم عمل واحد.',
+  },
+  'Brand point of view': { en: 'Brand point of view', ar: 'رؤية العلامة' },
+  'Tourmaline Coven is built around dark feminine styling, sharp silhouettes, and a mood-first storefront.': {
+    en: 'Tourmaline Coven is built around dark feminine styling, sharp silhouettes, and a mood-first storefront.',
+    ar: 'تورمالين كوفن مبني حول أسلوب أنثوي داكن وخطوط حادة ومتجر يقوده المزاج البصري أولاً.',
+  },
+  'Product direction': { en: 'Product direction', ar: 'اتجاه المنتجات' },
+  'The catalog focuses on statement apparel, accessories, and detail pieces with a gothic and editorial tone.': {
+    en: 'The catalog focuses on statement apparel, accessories, and detail pieces with a gothic and editorial tone.',
+    ar: 'يركز الكتالوج على الملابس الملفتة والإكسسوارات والقطع التفصيلية بطابع قوطي وتحريري.',
+  },
+  'Store experience': { en: 'Store experience', ar: 'تجربة المتجر' },
+  'The storefront is designed to feel dramatic, direct, and premium across both Arabic and English.': {
+    en: 'The storefront is designed to feel dramatic, direct, and premium across both Arabic and English.',
+    ar: 'تم تصميم واجهة المتجر لتبدو درامية وواضحة وفاخرة باللغتين العربية والإنجليزية.',
+  },
+  'Customer focus': { en: 'Customer focus', ar: 'تركيز العميل' },
+  'Orders, saved addresses, favorites, and account history stay connected through a single signed-in customer flow.': {
+    en: 'Orders, saved addresses, favorites, and account history stay connected through a single signed-in customer flow.',
+    ar: 'تبقى الطلبات والعناوين المحفوظة والمفضلة وسجل الحساب مترابطة عبر تجربة عميل واحدة بعد تسجيل الدخول.',
+  },
+  'Processing time': { en: 'Processing time', ar: 'مدة المعالجة' },
+  'Orders usually move into processing within one business day after confirmation.': {
+    en: 'Orders usually move into processing within one business day after confirmation.',
+    ar: 'تدخل الطلبات عادة مرحلة المعالجة خلال يوم عمل واحد بعد التأكيد.',
+  },
+  'Amman delivery': { en: 'Amman delivery', ar: 'توصيل عمّان' },
+  'Orders inside Amman usually arrive within 1 to 3 business days.': {
+    en: 'Orders inside Amman usually arrive within 1 to 3 business days.',
+    ar: 'تصل الطلبات داخل عمّان عادة خلال 1 إلى 3 أيام عمل.',
+  },
+  'Jordan delivery': { en: 'Jordan delivery', ar: 'التوصيل داخل الأردن' },
+  'Orders outside Amman usually arrive within 2 to 5 business days depending on location.': {
+    en: 'Orders outside Amman usually arrive within 2 to 5 business days depending on location.',
+    ar: 'تصل الطلبات خارج عمّان عادة خلال 2 إلى 5 أيام عمل حسب الموقع.',
+  },
+  'Tracking updates': { en: 'Tracking updates', ar: 'تحديثات التتبع' },
+  'Tracking number and carrier details appear in your account once the order is packed or shipped.': {
+    en: 'Tracking number and carrier details appear in your account once the order is packed or shipped.',
+    ar: 'يظهر رقم التتبع وتفاصيل شركة الشحن في حسابك بمجرد تجهيز الطلب أو شحنه.',
+  },
+  'Return eligibility': { en: 'Return eligibility', ar: 'أهلية الاسترجاع' },
+  'Eligible items must be unused, unworn, and returned in their original condition.': {
+    en: 'Eligible items must be unused, unworn, and returned in their original condition.',
+    ar: 'يجب أن تكون القطع المؤهلة غير مستخدمة وغير ملبوسة وأن تُعاد بحالتها الأصلية.',
+  },
+  'Final sale items': { en: 'Final sale items', ar: 'قطع البيع النهائي' },
+  'Nail sets, intimate items, and clearly marked sale items may be final sale unless faulty.': {
+    en: 'Nail sets, intimate items, and clearly marked sale items may be final sale unless faulty.',
+    ar: 'قد تكون مجموعات الأظافر والقطع الشخصية والقطع المخفضة المعلّم عليها بوضوح بيعاً نهائياً ما لم تكن بها مشكلة.',
+  },
+  'Return request window': { en: 'Return request window', ar: 'مدة طلب الاسترجاع' },
+  'Contact support as soon as possible after delivery if you need a return or exchange review.': {
+    en: 'Contact support as soon as possible after delivery if you need a return or exchange review.',
+    ar: 'تواصلي مع الدعم بأسرع وقت بعد الاستلام إذا كنت بحاجة إلى مراجعة طلب استرجاع أو استبدال.',
+  },
+  'Damaged or incorrect orders': { en: 'Damaged or incorrect orders', ar: 'الطلبات التالفة أو الخاطئة' },
+  'If your order arrives damaged or incorrect, contact support with your order number and photos.': {
+    en: 'If your order arrives damaged or incorrect, contact support with your order number and photos.',
+    ar: 'إذا وصل طلبك تالفاً أو غير صحيح، تواصلي مع الدعم وأرسلي رقم الطلب والصور.',
+  },
+  'How do I track my order?': { en: 'How do I track my order?', ar: 'كيف أتتبع طلبي؟' },
+  'Open your account orders page to see order status, tracking number, and delivery updates.': {
+    en: 'Open your account orders page to see order status, tracking number, and delivery updates.',
+    ar: 'افتحي صفحة الطلبات في حسابك لرؤية حالة الطلب ورقم التتبع وتحديثات التوصيل.',
+  },
+  'Can I save multiple addresses?': { en: 'Can I save multiple addresses?', ar: 'هل يمكنني حفظ عدة عناوين؟' },
+  'Yes. Signed-in customers can save multiple delivery addresses and choose one during checkout.': {
+    en: 'Yes. Signed-in customers can save multiple delivery addresses and choose one during checkout.',
+    ar: 'نعم. يمكن للعملاء المسجلين حفظ عدة عناوين توصيل واختيار أحدها أثناء الدفع.',
+  },
+  'Do I need an account to check out?': { en: 'Do I need an account to check out?', ar: 'هل أحتاج إلى حساب لإتمام الشراء؟' },
+  'Yes. Checkout is restricted to registered customers so orders, addresses, and account history stay connected.': {
+    en: 'Yes. Checkout is restricted to registered customers so orders, addresses, and account history stay connected.',
+    ar: 'نعم. إتمام الشراء مخصص للعملاء المسجلين حتى تبقى الطلبات والعناوين وسجل الحساب مترابطة.',
+  },
+  'Can I review a product?': { en: 'Can I review a product?', ar: 'هل يمكنني تقييم منتج؟' },
+  'Yes. Signed-in customers can submit reviews directly from the product page.': {
+    en: 'Yes. Signed-in customers can submit reviews directly from the product page.',
+    ar: 'نعم. يمكن للعملاء المسجلين إرسال التقييمات مباشرة من صفحة المنتج.',
+  },
+  'Account information': { en: 'Account information', ar: 'معلومات الحساب' },
+  'We store the customer profile details required to support sign-in, account management, and order history.': {
+    en: 'We store the customer profile details required to support sign-in, account management, and order history.',
+    ar: 'نحفظ تفاصيل ملف العميل المطلوبة لدعم تسجيل الدخول وإدارة الحساب وسجل الطلبات.',
+  },
+  'Order and delivery data': { en: 'Order and delivery data', ar: 'بيانات الطلب والتوصيل' },
+  'Shipping details, contact information, and order records are used to process and deliver purchases.': {
+    en: 'Shipping details, contact information, and order records are used to process and deliver purchases.',
+    ar: 'تُستخدم تفاصيل الشحن ومعلومات التواصل وسجلات الطلبات لمعالجة المشتريات وتسليمها.',
+  },
+  'Admin access': { en: 'Admin access', ar: 'وصول الإدارة' },
+  'Authorized store administrators can access operational order, customer, and catalog data inside the admin panel.': {
+    en: 'Authorized store administrators can access operational order, customer, and catalog data inside the admin panel.',
+    ar: 'يمكن للمسؤولين المصرح لهم الوصول إلى بيانات الطلبات والعملاء والكتالوج داخل لوحة الإدارة.',
+  },
+  'Support requests': { en: 'Support requests', ar: 'طلبات الدعم' },
+  'Messages sent to support may be retained to resolve account, delivery, and order issues.': {
+    en: 'Messages sent to support may be retained to resolve account, delivery, and order issues.',
+    ar: 'قد يتم الاحتفاظ بالرسائل المرسلة إلى الدعم لمعالجة مشكلات الحساب والتوصيل والطلبات.',
+  },
+  'Orders and pricing': { en: 'Orders and pricing', ar: 'الطلبات والأسعار' },
+  'Published prices, availability, and catalog content may change before an order is confirmed.': {
+    en: 'Published prices, availability, and catalog content may change before an order is confirmed.',
+    ar: 'قد تتغير الأسعار المنشورة والتوفر ومحتوى الكتالوج قبل تأكيد الطلب.',
+  },
+  'Payment methods': { en: 'Payment methods', ar: 'طرق الدفع' },
+  'Available payment methods are shown during checkout and may vary based on store configuration.': {
+    en: 'Available payment methods are shown during checkout and may vary based on store configuration.',
+    ar: 'تظهر طرق الدفع المتاحة أثناء الدفع وقد تختلف بحسب إعدادات المتجر.',
+  },
+  'Shipping and delivery': { en: 'Shipping and delivery', ar: 'الشحن والتوصيل' },
+  'Delivery windows are estimates and may vary based on address, courier capacity, and order volume.': {
+    en: 'Delivery windows are estimates and may vary based on address, courier capacity, and order volume.',
+    ar: 'مواعيد التوصيل تقديرية وقد تختلف حسب العنوان وقدرة شركة الشحن وحجم الطلبات.',
+  },
+  'Returns and support': { en: 'Returns and support', ar: 'الاسترجاع والدعم' },
+  'Return eligibility depends on item type, condition, and the support review process described on the returns page.': {
+    en: 'Return eligibility depends on item type, condition, and the support review process described on the returns page.',
+    ar: 'تعتمد أهلية الاسترجاع على نوع القطعة وحالتها وآلية مراجعة الدعم الموضحة في صفحة الاسترجاع.',
+  },
   Logout: { en: 'Logout', ar: 'تسجيل الخروج' },
   'Push notifications': { en: 'Push notifications', ar: 'إشعارات الدفع' },
   'Marketing emails': { en: 'Marketing emails', ar: 'رسائل تسويقية' },

@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
@@ -107,9 +107,11 @@ export function StorefrontHome({
 function Hero({ product, slides }: { product: StoreProduct | null; slides: HeroSlide[] }) {
   const { t, localize, locale } = useLocale();
   const [activeIndex, setActiveIndex] = useState(0);
+  const [gemBurstKey, setGemBurstKey] = useState(0);
 
   useEffect(() => {
     setActiveIndex(0);
+    setGemBurstKey(0);
   }, [slides.length]);
 
   useEffect(() => {
@@ -128,67 +130,82 @@ function Hero({ product, slides }: { product: StoreProduct | null; slides: HeroS
   if (slides.length > 0) {
     const activeSlide = slides[activeIndex] ?? slides[0];
     const imageUrl = locale === 'ar' ? activeSlide.imageArUrl : activeSlide.imageEnUrl;
+    const triggerSlide = (nextIndex: number) => {
+      setGemBurstKey((current) => current + 1);
+      setActiveIndex(nextIndex);
+    };
 
     return (
       <section className="relative overflow-hidden border-b border-[var(--border)] bg-black">
-        <motion.img
-          key={`${activeSlide.id}-${locale}`}
-          src={imageUrl}
-          alt={localize(activeSlide.title, activeSlide.titleAr)}
-          initial={{ opacity: 0, scale: 1.04 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.9, ease: 'easeOut' }}
-          className="block h-auto w-full"
-        />
+        <div className="relative">
+          <AnimatePresence mode="wait">
+            <motion.img
+              key={`${activeSlide.id}-${locale}`}
+              src={imageUrl}
+              alt={localize(activeSlide.title, activeSlide.titleAr)}
+              initial={{ opacity: 0, scale: 1.06, filter: 'blur(8px)' }}
+              animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, scale: 0.985, filter: 'blur(10px)' }}
+              transition={{ duration: 1.05, ease: [0.22, 1, 0.36, 1] }}
+              className="block h-auto w-full"
+            />
+          </AnimatePresence>
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <GemFallBurst burstKey={gemBurstKey || activeIndex + 1} />
+          </div>
+        </div>
         <div className="noise-overlay absolute inset-0" />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.18),rgba(0,0,0,0.24)_20%,rgba(0,0,0,0.68)_100%)]" />
         <div className="absolute inset-0 flex items-end justify-center pb-10 md:pb-16">
-          <motion.div
-            key={activeSlide.id}
-            initial={{ opacity: 0, y: 25 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="max-w-[620px] px-6 text-center"
-          >
-            <div className="text-[10px] tracking-[0.34em] text-white/72">
-              {localize(activeSlide.eyebrow, activeSlide.eyebrowAr)}
-            </div>
-            <h1
-              className="mt-6 font-display text-[3.2rem] uppercase leading-[0.86] tracking-[-0.04em] text-[#efe0c3] md:text-[5.4rem]"
-              style={{ textShadow: '0 10px 30px rgba(0,0,0,0.45)' }}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeSlide.id}
+              initial={{ opacity: 0, y: 38 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 18 }}
+              transition={{ duration: 0.82, ease: [0.22, 1, 0.36, 1] }}
+              className="max-w-[620px] px-6 text-center"
             >
-              {localize(activeSlide.title, activeSlide.titleAr)}
-            </h1>
-            {activeSlide.description ? (
-              <p className="mt-5 text-sm leading-7 text-white/78">
-                {localize(activeSlide.description, activeSlide.descriptionAr)}
-              </p>
-            ) : null}
-            <div className="mt-6 flex items-center justify-center gap-3">
-              <Link
-                href={activeSlide.buttonUrl || '/shop'}
-                className="border border-white/30 bg-black/35 px-5 py-2 text-[11px] tracking-[0.28em] backdrop-blur-sm"
-                style={{ color: '#f7efe3' }}
-              >
-                {localize(activeSlide.buttonText, activeSlide.buttonTextAr)}
-              </Link>
-            </div>
-            {slides.length > 1 ? (
-              <div className="mt-6 flex items-center justify-center gap-2">
-                {slides.map((slide, index) => (
-                  <button
-                    key={slide.id}
-                    type="button"
-                    aria-label={`Go to slide ${index + 1}`}
-                    onClick={() => setActiveIndex(index)}
-                    className={`h-2.5 rounded-full transition-all ${
-                      index === activeIndex ? 'w-8 bg-[#efe0c3]' : 'w-2.5 bg-white/40'
-                    }`}
-                  />
-                ))}
+              <div className="text-[10px] tracking-[0.34em] text-white/72">
+                {localize(activeSlide.eyebrow, activeSlide.eyebrowAr)}
               </div>
-            ) : null}
-          </motion.div>
+              <h1
+                className="mt-6 font-display text-[3.2rem] uppercase leading-[0.86] tracking-[-0.04em] text-[#efe0c3] md:text-[5.4rem]"
+                style={{ textShadow: '0 10px 30px rgba(0,0,0,0.45)' }}
+              >
+                {localize(activeSlide.title, activeSlide.titleAr)}
+              </h1>
+              {activeSlide.description ? (
+                <p className="mt-5 text-sm leading-7 text-white/78">
+                  {localize(activeSlide.description, activeSlide.descriptionAr)}
+                </p>
+              ) : null}
+              <div className="mt-6 flex items-center justify-center gap-3">
+                <Link
+                  href={activeSlide.buttonUrl || '/shop'}
+                  className="border border-white/30 bg-black/35 px-5 py-2 text-[11px] tracking-[0.28em] backdrop-blur-sm"
+                  style={{ color: '#f7efe3' }}
+                >
+                  {localize(activeSlide.buttonText, activeSlide.buttonTextAr)}
+                </Link>
+              </div>
+              {slides.length > 1 ? (
+                <div className="mt-6 flex items-center justify-center gap-2">
+                  {slides.map((slide, index) => (
+                    <button
+                      key={slide.id}
+                      type="button"
+                      aria-label={`Go to slide ${index + 1}`}
+                      onClick={() => triggerSlide(index)}
+                      className={`h-2.5 rounded-full transition-all ${
+                        index === activeIndex ? 'w-8 bg-[#efe0c3]' : 'w-2.5 bg-white/40'
+                      }`}
+                    />
+                  ))}
+                </div>
+              ) : null}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </section>
     );
@@ -269,6 +286,49 @@ function Hero({ product, slides }: { product: StoreProduct | null; slides: HeroS
         </motion.div>
       </div>
     </section>
+  );
+}
+
+function GemFallBurst({ burstKey }: { burstKey: number }) {
+  const gems = [
+    { left: '12%', size: 16, delay: 0, duration: 1.9, rotate: -14 },
+    { left: '24%', size: 10, delay: 0.12, duration: 1.55, rotate: 18 },
+    { left: '33%', size: 12, delay: 0.08, duration: 1.7, rotate: -8 },
+    { left: '48%', size: 18, delay: 0.2, duration: 2.05, rotate: 12 },
+    { left: '57%', size: 11, delay: 0.06, duration: 1.65, rotate: -18 },
+    { left: '69%', size: 14, delay: 0.18, duration: 1.85, rotate: 22 },
+    { left: '81%', size: 9, delay: 0.1, duration: 1.48, rotate: -12 },
+  ];
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div key={burstKey} className="absolute inset-0">
+        {gems.map((gem, index) => (
+          <motion.span
+            key={`${burstKey}-${index}`}
+            className="absolute top-[-12%] block bg-[linear-gradient(145deg,rgba(255,232,243,0.95)_0%,rgba(183,72,117,0.96)_34%,rgba(40,5,19,0.98)_100%)] shadow-[0_10px_24px_rgba(36,5,18,0.5)]"
+            style={{
+              left: gem.left,
+              width: gem.size,
+              height: gem.size * 1.18,
+              clipPath: 'polygon(50% 0%, 86% 22%, 100% 65%, 50% 100%, 0% 65%, 14% 22%)',
+            }}
+            initial={{ y: '-12%', opacity: 0, scale: 0.65, rotate: 0 }}
+            animate={{
+              y: ['-12%', '18%', '48%', '92%'],
+              opacity: [0, 0.95, 0.78, 0],
+              scale: [0.65, 1, 0.92, 0.78],
+              rotate: [0, gem.rotate, gem.rotate * 2.4, gem.rotate * 3.2],
+            }}
+            transition={{
+              duration: gem.duration,
+              delay: gem.delay,
+              ease: 'easeIn',
+            }}
+          />
+        ))}
+      </motion.div>
+    </AnimatePresence>
   );
 }
 
