@@ -1,11 +1,20 @@
+import { redirect } from 'next/navigation';
 import { CheckoutPageView } from '@/components/storefront/storefront-pages';
 import { listAddresses } from '@/lib/api/store-api';
-import { getCustomerAuthHeaders, requireCustomerSession } from '@/lib/customer/auth';
+import { getCustomerAuthHeaders, getCustomerSession } from '@/lib/customer/auth';
 
 export default async function CheckoutPage() {
-  const session = await requireCustomerSession();
+  const session = await getCustomerSession();
+
+  if (!session) {
+    redirect('/login?next=/checkout');
+  }
+
   const authHeaders = await getCustomerAuthHeaders();
-  const addresses = await listAddresses(session.id, authHeaders ? { headers: authHeaders } : undefined);
+  const addresses = await listAddresses(
+    session.id,
+    authHeaders ? { headers: authHeaders } : undefined
+  );
 
   return (
     <CheckoutPageView

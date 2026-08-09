@@ -59,6 +59,7 @@ export function ShopPageView({
 
   return (
     <div className="space-y-10 pb-16 md:space-y-16 md:pb-24">
+      {flashSale ? <CatalogFlashSaleBanner flashSale={flashSale} /> : null}
       <CatalogHero title={title} description={description} />
       <div className="border-y border-[var(--border)] bg-[var(--card)]">
         <Container className="py-3">
@@ -67,7 +68,9 @@ export function ShopPageView({
               type="button"
               onClick={() => setCategory('all')}
               className={`flex items-center justify-between border px-3 py-3 text-left text-[10px] uppercase tracking-[0.18em] ${
-                category === 'all' ? 'border-[var(--text)] bg-[var(--background)]' : 'border-[var(--border)]'
+                category === 'all'
+                  ? 'border-[var(--text)] bg-[var(--background)]'
+                  : 'border-[var(--border)]'
               }`}
             >
               <span>{t('ALL')}</span>
@@ -79,7 +82,9 @@ export function ShopPageView({
                 type="button"
                 onClick={() => setCategory(item.slug)}
                 className={`flex items-center justify-between border px-3 py-3 text-left text-[10px] uppercase tracking-[0.18em] ${
-                  category === item.slug ? 'border-[var(--text)] bg-[var(--background)]' : 'border-[var(--border)]'
+                  category === item.slug
+                    ? 'border-[var(--text)] bg-[var(--background)]'
+                    : 'border-[var(--border)]'
                 }`}
               >
                 <span>{localize(item.name, item.nameAr)}</span>
@@ -91,7 +96,9 @@ export function ShopPageView({
       </div>
       <Container>
         <div className="mb-4 flex items-center justify-between border-b border-[var(--border)] py-3 text-[10px] uppercase tracking-[0.22em] text-[var(--muted)]">
-          <div>{filtered.length} {t('PIECES')}</div>
+          <div>
+            {filtered.length} {t('PIECES')}
+          </div>
           <div className="flex items-center gap-3">
             <button type="button" className="inline-flex items-center gap-2">
               <SlidersHorizontal className="h-3.5 w-3.5" />
@@ -115,6 +122,38 @@ export function ShopPageView({
         <NewsletterSection />
       </Container>
     </div>
+  );
+}
+
+function CatalogFlashSaleBanner({ flashSale }: { flashSale: FlashSale }) {
+  const { dir, t } = useLocale();
+
+  return (
+    <section className="border-y border-[var(--border)] bg-[linear-gradient(135deg,rgba(103,24,48,0.9),rgba(18,10,13,0.98))] px-4 py-5 md:px-8">
+      <Container className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <div className="text-[10px] uppercase tracking-[0.28em] text-white/62">
+            {flashSale.title}
+          </div>
+          <div className="mt-2 font-display text-4xl uppercase leading-none text-[#e4c2c2] md:text-5xl">
+            {flashSale.discountLabel}
+          </div>
+          {flashSale.description ? (
+            <div className="mt-2 text-[11px] uppercase tracking-[0.16em] text-white/74">
+              {flashSale.description}
+            </div>
+          ) : null}
+        </div>
+
+        <Link
+          href={flashSale.ctaUrl || '/shop?sale=true'}
+          className="inline-flex items-center gap-2 self-start border border-white/15 bg-black/20 px-5 py-3 text-[11px] uppercase tracking-[0.24em] text-[#f3e7e7] md:self-center"
+        >
+          <span className="text-[#f0a6b6]">{flashSale.ctaText || t('Shop sale')}</span>
+          <ArrowRight className={`h-4 w-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
+        </Link>
+      </Container>
+    </section>
   );
 }
 
@@ -155,7 +194,9 @@ export function ProductPageView({
           alt: product.name,
         },
       ];
-  const [selectedColor, setSelectedColor] = useState(colors.find((color) => color.name !== 'Default')?.name ?? colors[0]?.name ?? '');
+  const [selectedColor, setSelectedColor] = useState(
+    colors.find((color) => color.name !== 'Default')?.name ?? colors[0]?.name ?? ''
+  );
   const [selectedSize, setSelectedSize] = useState(sizes[0]?.name ?? '');
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -169,15 +210,27 @@ export function ProductPageView({
     variant.color === color || variant.color === 'Default';
 
   const selectedVariant =
-    product.variants.find((variant) => variantMatchesColor(variant, selectedColor) && variant.size === selectedSize) ??
+    product.variants.find(
+      (variant) => variantMatchesColor(variant, selectedColor) && variant.size === selectedSize
+    ) ??
     product.variants.find((variant) => variantMatchesColor(variant, selectedColor)) ??
     product.variants[0];
 
   const discount = calculateDiscount(selectedVariant.price, selectedVariant.compareAtPrice);
-  const maxQuantity =
-    selectedVariant.allowBackorder
-      ? 99
-      : Math.max(1, selectedVariant.stockQuantity);
+  const maxQuantity = selectedVariant.allowBackorder
+    ? 99
+    : Math.max(1, selectedVariant.stockQuantity);
+
+  function handleBuyNow() {
+    addItem(product, selectedVariant.id, Math.min(quantity, maxQuantity));
+
+    if (!customer) {
+      router.push('/login?next=%2Fcheckout');
+      return;
+    }
+
+    router.push('/checkout');
+  }
 
   async function handleFavoriteToggle() {
     if (!customer) {
@@ -191,7 +244,9 @@ export function ProductPageView({
 
     const nextFavorite = !isFavorite;
     const response = await fetch(
-      nextFavorite ? '/api/favorites' : `/api/favorites?productId=${encodeURIComponent(product.id)}`,
+      nextFavorite
+        ? '/api/favorites'
+        : `/api/favorites?productId=${encodeURIComponent(product.id)}`,
       nextFavorite
         ? {
             method: 'POST',
@@ -344,39 +399,68 @@ export function ProductPageView({
           </div>
           <div className="lg:sticky lg:top-28 lg:h-fit">
             <div className="flex items-start justify-between gap-4">
-              <div className="text-xs tracking-[0.26em] text-[var(--muted)]">{localize(product.brand, product.brandAr)}</div>
+              <div className="text-xs tracking-[0.26em] text-[var(--muted)]">
+                {localize(product.brand, product.brandAr)}
+              </div>
               <button
                 type="button"
                 onClick={handleFavoriteToggle}
                 className={`inline-flex h-11 w-11 items-center justify-center rounded-full border transition ${
-                  isFavorite ? 'border-white bg-white text-black' : 'border-white/10 text-[var(--text-secondary)]'
+                  isFavorite
+                    ? 'border-white bg-white text-black'
+                    : 'border-white/10 text-[var(--text-secondary)]'
                 }`}
                 aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
               >
                 <Heart className={`h-4 w-4 ${isFavorite ? 'fill-current' : ''}`} />
               </button>
             </div>
-            <h1 className="mt-3 font-display text-4xl uppercase md:text-6xl">{localize(product.name, product.nameAr)}</h1>
+            <h1 className="mt-3 font-display text-4xl uppercase md:text-6xl">
+              {localize(product.name, product.nameAr)}
+            </h1>
             <div className="mt-4 flex items-center gap-4">
               <div className="text-2xl">{formatCurrency(selectedVariant.price)}</div>
-              {selectedVariant.compareAtPrice ? <div className="text-lg text-[var(--muted)] line-through">{formatCurrency(selectedVariant.compareAtPrice)}</div> : null}
-              {discount > 0 ? <div className="rounded-full bg-[var(--accent)] px-3 py-1 text-xs tracking-[0.2em]">{discount}% OFF</div> : null}
+              {selectedVariant.compareAtPrice ? (
+                <div className="text-lg text-[var(--muted)] line-through">
+                  {formatCurrency(selectedVariant.compareAtPrice)}
+                </div>
+              ) : null}
+              {discount > 0 ? (
+                <div
+                  className="rounded-full bg-[var(--accent)] px-3 py-1 text-xs tracking-[0.2em]"
+                  style={{ color: 'var(--background)' }}
+                >
+                  {discount}% OFF
+                </div>
+              ) : null}
             </div>
             <div className="mt-4">
               <Rating rating={product.rating} reviewCount={product.reviewCount} />
             </div>
-            <p className="mt-5 text-sm leading-7 text-[var(--text-secondary)]">{localize(product.shortDescription, product.shortDescriptionAr)}</p>
+            <p className="mt-5 text-sm leading-7 text-[var(--text-secondary)]">
+              {localize(product.shortDescription, product.shortDescriptionAr)}
+            </p>
 
             <div className="mt-8 rounded-[28px] border border-white/8 bg-white/3 p-5">
               <div className="flex flex-wrap items-center gap-2">
-                {statusPill(selectedVariant.stockQuantity > 0 || selectedVariant.allowBackorder ? 'READY TO SHIP' : 'SOLD OUT')}
+                {statusPill(
+                  selectedVariant.stockQuantity > 0 || selectedVariant.allowBackorder
+                    ? 'READY TO SHIP'
+                    : 'SOLD OUT'
+                )}
                 {discount > 0 ? statusPill(`${discount}% OFF`) : null}
                 {selectedVariant.allowBackorder ? statusPill('BACKORDER AVAILABLE') : null}
               </div>
               <div className="mt-4 grid gap-3 sm:grid-cols-3">
                 <VariantMetric label="SKU" value={selectedVariant.sku} />
-                <VariantMetric label="COLOR" value={localize(selectedVariant.color, selectedVariant.colorAr)} />
-                <VariantMetric label="SIZE" value={localize(selectedVariant.size, selectedVariant.sizeAr)} />
+                <VariantMetric
+                  label="COLOR"
+                  value={localize(selectedVariant.color, selectedVariant.colorAr)}
+                />
+                <VariantMetric
+                  label="SIZE"
+                  value={localize(selectedVariant.size, selectedVariant.sizeAr)}
+                />
               </div>
             </div>
 
@@ -389,10 +473,15 @@ export function ProductPageView({
                     type="button"
                     onClick={() => setSelectedColor(color.name)}
                     className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm ${
-                      selectedColor === color.name ? 'border-white bg-white text-black' : 'border-white/10'
+                      selectedColor === color.name
+                        ? 'border-white bg-white text-black'
+                        : 'border-white/10'
                     }`}
                   >
-                    <span className="h-3 w-3 rounded-full border border-black/10" style={{ background: color.hex }} />
+                    <span
+                      className="h-3 w-3 rounded-full border border-black/10"
+                      style={{ background: color.hex }}
+                    />
                     {localize(color.name, color.nameAr)}
                   </button>
                 ))}
@@ -417,7 +506,9 @@ export function ProductPageView({
                       onClick={() => setSelectedSize(sizeOption.name)}
                       disabled={!available}
                       className={`rounded-full border px-4 py-2 text-sm ${
-                        selectedSize === sizeOption.name ? 'border-white bg-white text-black' : 'border-white/10'
+                        selectedSize === sizeOption.name
+                          ? 'border-white bg-white text-black'
+                          : 'border-white/10'
                       } disabled:cursor-not-allowed disabled:opacity-40`}
                     >
                       {localize(sizeOption.name, sizeOption.nameAr)}
@@ -429,7 +520,10 @@ export function ProductPageView({
 
             <div className="mt-8 flex items-center gap-4">
               <div className="flex items-center gap-3 rounded-full border border-white/10 px-4 py-3">
-                <button type="button" onClick={() => setQuantity((value) => Math.max(1, value - 1))}>
+                <button
+                  type="button"
+                  onClick={() => setQuantity((value) => Math.max(1, value - 1))}
+                >
                   <Minus className="h-4 w-4" />
                 </button>
                 <span>{quantity}</span>
@@ -464,10 +558,18 @@ export function ProductPageView({
                   });
                 }}
                 className="rounded-full bg-[var(--text)] px-6 py-4 text-sm tracking-[0.2em] text-black disabled:cursor-not-allowed disabled:opacity-40"
+                style={{ color: 'var(--background)' }}
               >
                 {t('AddToCartButton')}
               </button>
-              <Link href="/checkout" className="rounded-full border border-white/10 px-6 py-4 text-center text-sm tracking-[0.2em]">
+              <Link
+                href="/checkout"
+                onClick={(event) => {
+                  event.preventDefault();
+                  handleBuyNow();
+                }}
+                className="rounded-full border border-white/10 px-6 py-4 text-center text-sm tracking-[0.2em]"
+              >
                 {t('BUY NOW')}
               </Link>
             </div>
@@ -477,15 +579,21 @@ export function ProductPageView({
                 {localize(product.description, product.descriptionAr)}
               </Accordion>
               <Accordion title="SHIPPING">
-                {t('Delivery across Jordan. Orders in Amman usually arrive within 1-3 business days.')}
+                {t(
+                  'Delivery across Jordan. Orders in Amman usually arrive within 1-3 business days.'
+                )}
               </Accordion>
               <Accordion title="RETURNS">
-                {t('Return eligibility depends on item type. Nail sets and intimate items remain final sale unless faulty.')}
+                {t(
+                  'Return eligibility depends on item type. Nail sets and intimate items remain final sale unless faulty.'
+                )}
               </Accordion>
             </div>
 
             <div className="mt-8 rounded-[28px] border border-white/8 bg-white/3 p-5">
-              <div className="text-xs tracking-[0.24em] text-[var(--muted)]">{t('PRODUCT REVIEWS')}</div>
+              <div className="text-xs tracking-[0.24em] text-[var(--muted)]">
+                {t('PRODUCT REVIEWS')}
+              </div>
               {customer ? (
                 <div className="mt-4 space-y-4 border-b border-white/8 pb-5">
                   <div className="flex flex-wrap gap-2">
@@ -495,10 +603,14 @@ export function ProductPageView({
                         type="button"
                         onClick={() => setReviewRating(value)}
                         className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm ${
-                          reviewRating === value ? 'border-white bg-white text-black' : 'border-white/10'
+                          reviewRating === value
+                            ? 'border-white bg-white text-black'
+                            : 'border-white/10'
                         }`}
                       >
-                        <Star className={`h-4 w-4 ${reviewRating >= value ? 'fill-current' : ''}`} />
+                        <Star
+                          className={`h-4 w-4 ${reviewRating >= value ? 'fill-current' : ''}`}
+                        />
                         {value}
                       </button>
                     ))}
@@ -529,7 +641,10 @@ export function ProductPageView({
               ) : (
                 <div className="mt-4 rounded-[22px] border border-white/8 bg-black/10 p-4 text-sm text-[var(--text-secondary)]">
                   <div>{t('Sign in to review products.')}</div>
-                  <Link href="/login" className="mt-3 inline-flex rounded-full border border-white/10 px-4 py-2 text-xs tracking-[0.2em] text-[var(--text)]">
+                  <Link
+                    href="/login"
+                    className="mt-3 inline-flex rounded-full border border-white/10 px-4 py-2 text-xs tracking-[0.2em] text-[var(--text)]"
+                  >
                     {t('LOG IN')}
                   </Link>
                 </div>
@@ -538,11 +653,16 @@ export function ProductPageView({
               <div className="mt-5 space-y-4">
                 {reviews.length ? (
                   reviews.map((review) => (
-                    <div key={review.id} className="rounded-[22px] border border-white/8 bg-black/10 p-4">
+                    <div
+                      key={review.id}
+                      className="rounded-[22px] border border-white/8 bg-black/10 p-4"
+                    >
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
                           <div className="text-sm font-medium">{review.authorName}</div>
-                          <div className="mt-1 text-xs tracking-[0.2em] text-[var(--muted)]">{review.createdAt}</div>
+                          <div className="mt-1 text-xs tracking-[0.2em] text-[var(--muted)]">
+                            {review.createdAt}
+                          </div>
                         </div>
                         <div className="flex items-center gap-1 text-sm">
                           {Array.from({ length: review.rating }).map((_, index) => (
@@ -550,8 +670,14 @@ export function ProductPageView({
                           ))}
                         </div>
                       </div>
-                      {review.title ? <div className="mt-3 text-sm uppercase tracking-[0.14em]">{review.title}</div> : null}
-                      <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">{review.comment}</p>
+                      {review.title ? (
+                        <div className="mt-3 text-sm uppercase tracking-[0.14em]">
+                          {review.title}
+                        </div>
+                      ) : null}
+                      <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">
+                        {review.comment}
+                      </p>
                     </div>
                   ))
                 ) : (
@@ -636,26 +762,54 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
         <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
           <div className="space-y-4">
             {lines.map((line) => (
-              <div key={line.variant.id} className="flex flex-col gap-4 rounded-[28px] border border-white/8 bg-white/3 p-4 md:flex-row">
-                <img src={line.product.images[0]?.url} alt={localize(line.product.name, line.product.nameAr)} className="h-40 w-full rounded-[22px] object-cover md:w-32" />
+              <div
+                key={line.variant.id}
+                className="flex flex-col gap-4 rounded-[28px] border border-white/8 bg-white/3 p-4 md:flex-row"
+              >
+                <img
+                  src={line.product.images[0]?.url}
+                  alt={localize(line.product.name, line.product.nameAr)}
+                  className="h-40 w-full rounded-[22px] object-cover md:w-32"
+                />
                 <div className="flex-1">
                   <div className="text-lg">{localize(line.product.name, line.product.nameAr)}</div>
-                  <div className="mt-2 text-sm text-[var(--text-secondary)]">{localize(line.variant.color, line.variant.colorAr)} / {localize(line.variant.size, line.variant.sizeAr)}</div>
+                  <div className="mt-2 text-sm text-[var(--text-secondary)]">
+                    {localize(line.variant.color, line.variant.colorAr)} /{' '}
+                    {localize(line.variant.size, line.variant.sizeAr)}
+                  </div>
                   <div className="mt-3 flex items-center justify-between">
                     <div>{formatCurrency(line.variant.price)}</div>
                     <div className="flex items-center gap-2 rounded-full border border-white/10 px-3 py-2">
-                      <button type="button" onClick={() => updateQuantity(line.variant.id, line.quantity - 1)}><Minus className="h-4 w-4" /></button>
+                      <button
+                        type="button"
+                        onClick={() => updateQuantity(line.variant.id, line.quantity - 1)}
+                      >
+                        <Minus className="h-4 w-4" />
+                      </button>
                       <span>{line.quantity}</span>
-                      <button type="button" onClick={() => updateQuantity(line.variant.id, line.quantity + 1)}><Plus className="h-4 w-4" /></button>
+                      <button
+                        type="button"
+                        onClick={() => updateQuantity(line.variant.id, line.quantity + 1)}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
-                  <button type="button" onClick={() => removeItem(line.variant.id)} className="mt-4 text-xs tracking-[0.2em] text-[var(--muted)]">{t('REMOVE')}</button>
+                  <button
+                    type="button"
+                    onClick={() => removeItem(line.variant.id)}
+                    className="mt-4 text-xs tracking-[0.2em] text-[var(--muted)]"
+                  >
+                    {t('REMOVE')}
+                  </button>
                 </div>
               </div>
             ))}
           </div>
           <div className="h-fit rounded-[28px] border border-white/8 bg-white/3 p-5 lg:sticky lg:top-28">
-            <div className="mb-5 text-xs tracking-[0.25em] text-[var(--muted)]">{t('ORDER SUMMARY')}</div>
+            <div className="mb-5 text-xs tracking-[0.25em] text-[var(--muted)]">
+              {t('ORDER SUMMARY')}
+            </div>
             <SummaryRow label={t('Subtotal')} value={formatCurrency(subtotal)} />
             <SummaryRow label={t('Delivery')} value={formatCurrency(3.5)} />
             <SummaryRow label={t('Tax')} value={formatCurrency(0)} />
@@ -663,8 +817,16 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
               <SummaryRow label={t('Total')} value={formatCurrency(total)} emphasis />
             </div>
             <div className="mt-5 grid gap-3">
-              <input placeholder={t('CouponInput')} className="h-12 rounded-full border border-white/10 bg-black/20 px-5 text-sm outline-none" />
-              <button type="button" className="rounded-full border border-white/10 px-5 py-3 text-sm tracking-[0.2em]">{t('Apply')}</button>
+              <input
+                placeholder={t('CouponInput')}
+                className="h-12 rounded-full border border-white/10 bg-black/20 px-5 text-sm outline-none"
+              />
+              <button
+                type="button"
+                className="rounded-full border border-white/10 px-5 py-3 text-sm tracking-[0.2em]"
+              >
+                {t('Apply')}
+              </button>
               <Link
                 href="/checkout"
                 className="rounded-full bg-[var(--accent)] px-5 py-3 text-center text-sm tracking-[0.2em]"
@@ -698,13 +860,21 @@ export function FavoritesPageView({ products }: { products: StoreProduct[] }) {
 
   return (
     <Container className="py-8 md:py-14">
-      <SectionHeading title="YOUR WISHLIST IS TOO QUIET." description="Save the pieces worth circling back for." />
+      <SectionHeading
+        title="YOUR WISHLIST IS TOO QUIET."
+        description="Save the pieces worth circling back for."
+      />
       {favoriteProducts.length ? (
         <ProductGrid products={favoriteProducts} />
       ) : (
         <div className="rounded-[32px] border border-white/8 bg-white/3 p-10 text-center">
           <p className="text-sm text-[var(--text-secondary)]">Nothing saved yet.</p>
-          <Link href="/shop" className="mt-6 inline-flex rounded-full bg-[var(--text)] px-5 py-3 text-sm tracking-[0.2em] text-black">VIEW PRODUCTS</Link>
+          <Link
+            href="/shop"
+            className="mt-6 inline-flex rounded-full bg-[var(--text)] px-5 py-3 text-sm tracking-[0.2em] text-black"
+          >
+            VIEW PRODUCTS
+          </Link>
         </div>
       )}
     </Container>
@@ -778,6 +948,13 @@ type CheckoutSessionView = {
   phone: string;
 };
 
+type ActiveFlashSaleView = {
+  id: string;
+  title: string;
+  discount_type: 'percentage' | 'fixed';
+  discount_value: number;
+};
+
 type CheckoutFormState = {
   fullName: string;
   phone: string;
@@ -799,9 +976,12 @@ export function CheckoutPageView({
   const router = useRouter();
   const items = useCartStore((state) => state.items);
   const clearCart = useCartStore((state) => state.clearCart);
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
+  const removeItem = useCartStore((state) => state.removeItem);
   const pushToast = useUiStore((state) => state.pushToast);
   const lines = useMemo(() => getCartProducts(items), [items]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeFlashSale, setActiveFlashSale] = useState<ActiveFlashSaleView | null>(null);
   const defaultAddress = addresses.find((address) => address.isDefault) ?? addresses[0] ?? null;
   const [selectedAddressId, setSelectedAddressId] = useState(defaultAddress?.id ?? '');
   const [form, setForm] = useState<CheckoutFormState>({
@@ -814,8 +994,20 @@ export function CheckoutPageView({
     paymentMethod: 'cash_on_delivery',
   });
   const subtotal = lines.reduce((sum, line) => sum + line.variant.price * line.quantity, 0);
+  const discountAmount = useMemo(() => {
+    if (!activeFlashSale) {
+      return 0;
+    }
+
+    const rawDiscount =
+      activeFlashSale.discount_type === 'percentage'
+        ? (subtotal * activeFlashSale.discount_value) / 100
+        : activeFlashSale.discount_value;
+
+    return Math.min(subtotal, Number(rawDiscount.toFixed(2)));
+  }, [activeFlashSale, subtotal]);
   const shippingAmount = lines.length ? 3.5 : 0;
-  const total = subtotal + shippingAmount;
+  const total = Math.max(0, subtotal - discountAmount + shippingAmount);
   const checkoutFields: Array<{ label: string; key: keyof CheckoutFormState }> = [
     { label: 'Full Name', key: 'fullName' },
     { label: 'Phone', key: 'phone' },
@@ -847,12 +1039,70 @@ export function CheckoutPageView({
     }));
   }, [addresses, selectedAddressId]);
 
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadActiveFlashSale() {
+      if (!lines.length) {
+        if (mounted) {
+          setActiveFlashSale(null);
+        }
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/flash-sales/active');
+        const payload = (await response.json()) as {
+          data?: Array<{
+            id: string;
+            title: string;
+            discount_type: 'percentage' | 'fixed';
+            discount_value: string | number;
+          }>;
+        };
+        const sale = payload.data?.[0];
+
+        if (!mounted) {
+          return;
+        }
+
+        if (!sale) {
+          setActiveFlashSale(null);
+          return;
+        }
+
+        setActiveFlashSale({
+          id: sale.id,
+          title: sale.title,
+          discount_type: sale.discount_type,
+          discount_value: Number(sale.discount_value),
+        });
+      } catch {
+        if (mounted) {
+          setActiveFlashSale(null);
+        }
+      }
+    }
+
+    void loadActiveFlashSale();
+
+    return () => {
+      mounted = false;
+    };
+  }, [lines.length]);
+
   async function placeOrder() {
     if (!lines.length || isSubmitting) {
       return;
     }
 
-    if (!form.fullName.trim() || !form.phone.trim() || !form.city.trim() || !form.area.trim() || !form.street.trim()) {
+    if (
+      !form.fullName.trim() ||
+      !form.phone.trim() ||
+      !form.city.trim() ||
+      !form.area.trim() ||
+      !form.street.trim()
+    ) {
       pushToast({
         title: t('Missing details'),
         description: t('Please complete the delivery details before placing your order.'),
@@ -881,11 +1131,12 @@ export function CheckoutPageView({
           },
           billingAddress: null,
           subtotal,
-          discountAmount: 0,
+          discountAmount,
           shippingAmount,
           taxAmount: 0,
           totalAmount: total,
           currency: 'JOD',
+          couponCode: activeFlashSale?.title ?? null,
           items: lines.map((line) => ({
             productId: line.product.id,
             variantId: line.variant.id,
@@ -901,7 +1152,10 @@ export function CheckoutPageView({
         }),
       });
 
-      const result = (await response.json()) as { data?: { order?: { id?: string } }; error?: string };
+      const result = (await response.json()) as {
+        data?: { order?: { id?: string } };
+        error?: string;
+      };
 
       if (!response.ok || result.error || !result.data?.order?.id) {
         throw new Error(result.error ?? 'Failed to place order');
@@ -912,7 +1166,10 @@ export function CheckoutPageView({
     } catch (error) {
       pushToast({
         title: t('Order failed'),
-        description: error instanceof Error ? error.message : t('Something went wrong while placing the order.'),
+        description:
+          error instanceof Error
+            ? error.message
+            : t('Something went wrong while placing the order.'),
       });
     } finally {
       setIsSubmitting(false);
@@ -921,12 +1178,56 @@ export function CheckoutPageView({
 
   return (
     <Container className="py-8 md:py-14">
-      <SectionHeading title="CHECKOUT" description="Cash on Delivery is supported. Card checkout requires a configured payment provider." />
+      <section className="relative overflow-hidden rounded-[34px] border border-white/8 bg-[linear-gradient(135deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] px-6 py-8 md:px-8 md:py-10">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(140,36,71,0.24),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(214,180,180,0.08),transparent_28%)]" />
+        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <div className="text-[11px] uppercase tracking-[0.34em] text-[var(--muted)]">
+              {t('Secure checkout')}
+            </div>
+            <h1 className="mt-3 font-display text-4xl uppercase leading-none md:text-6xl">
+              {t('CHECKOUT')}
+            </h1>
+            <p className="mt-4 max-w-2xl text-sm uppercase tracking-[0.14em] text-[var(--text-secondary)]">
+              {t(
+                'Cash on Delivery is supported. Card checkout requires a configured payment provider.'
+              )}
+            </p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {[
+              { label: 'Bag lines', value: String(lines.length || 0) },
+              {
+                label: 'Discount',
+                value: discountAmount > 0 ? formatCurrency(discountAmount) : '—',
+              },
+              { label: 'Total', value: formatCurrency(total) },
+            ].map((metric) => (
+              <div
+                key={metric.label}
+                className="rounded-[22px] border border-white/10 bg-black/16 px-4 py-4 backdrop-blur-sm"
+              >
+                <div className="text-[10px] uppercase tracking-[0.24em] text-[var(--muted)]">
+                  {t(metric.label)}
+                </div>
+                <div className="mt-2 text-lg uppercase tracking-[0.08em] text-[var(--text)]">
+                  {metric.value}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
       <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
-        <div className="space-y-4 rounded-[28px] border border-white/8 bg-white/3 p-6">
-          <Step title="1. DELIVERY" active />
-          <Step title="2. PAYMENT" />
-          <Step title="3. REVIEW" />
+        <div className="space-y-5 rounded-[30px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-6 md:p-7">
+          <div className="rounded-[22px] border border-white/8 bg-black/10 px-5 py-4">
+            <div className="text-[10px] uppercase tracking-[0.24em] text-[var(--muted)]">
+              {t('Single-page checkout')}
+            </div>
+            <div className="mt-2 text-sm uppercase tracking-[0.14em] text-[var(--text-secondary)]">
+              {t('Delivery, payment, and review are handled on this one screen.')}
+            </div>
+          </div>
           {!lines.length ? (
             <div className="rounded-[24px] border border-white/8 bg-black/10 p-5 text-sm text-[var(--text-secondary)]">
               {t('YOUR BAG IS EMPTY.')}
@@ -934,7 +1235,9 @@ export function CheckoutPageView({
           ) : null}
           {addresses.length ? (
             <div className="space-y-3 rounded-[24px] border border-white/8 bg-black/10 p-4">
-              <div className="text-xs tracking-[0.24em] text-[var(--muted)]">{t('Saved addresses')}</div>
+              <div className="text-xs tracking-[0.24em] text-[var(--muted)]">
+                {t('Saved addresses')}
+              </div>
               <div className="grid gap-3">
                 {addresses.map((address) => (
                   <button
@@ -948,24 +1251,37 @@ export function CheckoutPageView({
                     }`}
                   >
                     <div className="flex items-center justify-between gap-3">
-                      <div className="text-sm font-medium uppercase tracking-[0.16em]">{address.label}</div>
+                      <div className="text-sm font-medium uppercase tracking-[0.16em]">
+                        {address.label}
+                      </div>
                       {address.isDefault ? (
-                        <span className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.2em] ${selectedAddressId === address.id ? 'bg-black text-white' : 'border border-white/10 text-[var(--muted)]'}`}>
+                        <span
+                          className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.2em] ${selectedAddressId === address.id ? 'bg-black text-white' : 'border border-white/10 text-[var(--muted)]'}`}
+                        >
                           {t('Default')}
                         </span>
                       ) : null}
                     </div>
-                    <div className={`mt-2 text-sm ${selectedAddressId === address.id ? 'text-black/70' : 'text-[var(--text-secondary)]'}`}>
+                    <div
+                      className={`mt-2 text-sm ${selectedAddressId === address.id ? 'text-black/70' : 'text-[var(--text-secondary)]'}`}
+                    >
                       {address.fullName} · {address.phone}
                     </div>
-                    <div className={`mt-1 text-sm ${selectedAddressId === address.id ? 'text-black/70' : 'text-[var(--text-secondary)]'}`}>
-                      {[address.city, address.area, address.street, address.building].filter(Boolean).join(', ')}
+                    <div
+                      className={`mt-1 text-sm ${selectedAddressId === address.id ? 'text-black/70' : 'text-[var(--text-secondary)]'}`}
+                    >
+                      {[address.city, address.area, address.street, address.building]
+                        .filter(Boolean)
+                        .join(', ')}
                     </div>
                   </button>
                 ))}
               </div>
               <div className="flex justify-end">
-                <Link href="/addresses/new" className="rounded-full border border-white/10 px-4 py-2 text-xs tracking-[0.2em]">
+                <Link
+                  href="/addresses/new"
+                  className="rounded-full border border-white/10 px-4 py-2 text-xs tracking-[0.2em]"
+                >
                   {t('ADD ADDRESS')}
                 </Link>
               </div>
@@ -973,7 +1289,10 @@ export function CheckoutPageView({
           ) : (
             <div className="rounded-[24px] border border-white/8 bg-black/10 p-5 text-sm text-[var(--text-secondary)]">
               <div>{t('No saved addresses.')}</div>
-              <Link href="/addresses/new" className="mt-4 inline-flex rounded-full border border-white/10 px-4 py-2 text-xs tracking-[0.2em] text-[var(--text)]">
+              <Link
+                href="/addresses/new"
+                className="mt-4 inline-flex rounded-full border border-white/10 px-4 py-2 text-xs tracking-[0.2em] text-[var(--text)]"
+              >
                 {t('ADD ADDRESS')}
               </Link>
             </div>
@@ -996,38 +1315,96 @@ export function CheckoutPageView({
           </div>
           <select
             value={form.paymentMethod}
-            onChange={(event) => setForm((current) => ({ ...current, paymentMethod: event.target.value }))}
+            onChange={(event) =>
+              setForm((current) => ({ ...current, paymentMethod: event.target.value }))
+            }
             className="h-12 rounded-full border border-white/10 bg-black/20 px-5 text-sm outline-none"
           >
             <option value="cash_on_delivery">{t('Cash on Delivery')}</option>
             <option disabled>{t('Card (not configured)')}</option>
           </select>
         </div>
-        <div className="rounded-[28px] border border-white/8 bg-white/3 p-6">
-          <div className="mb-4 text-xs tracking-[0.25em] text-[var(--muted)]">{t('ORDER SUMMARY')}</div>
+        <div className="rounded-[30px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-6">
+          <div className="mb-4 text-xs tracking-[0.25em] text-[var(--muted)]">
+            {t('ORDER SUMMARY')}
+          </div>
           <div className="mb-5 space-y-3">
             {lines.map((line) => (
-              <div key={line.variant.id} className="flex items-center gap-3 rounded-[22px] border border-white/8 bg-black/10 p-3">
-                <img
-                  src={line.product.images[0]?.url ?? '/products/product-placeholder.svg'}
-                  alt={localize(line.product.name, line.product.nameAr)}
-                  className="h-16 w-14 rounded-[14px] object-cover"
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm">{localize(line.product.name, line.product.nameAr)}</div>
-                  <div className="mt-1 text-xs text-[var(--text-secondary)]">
-                    {localize(line.variant.color, line.variant.colorAr)} / {localize(line.variant.size, line.variant.sizeAr)} x {line.quantity}
+              <div
+                key={line.variant.id}
+                className="rounded-[24px] border border-white/8 bg-black/10 p-3"
+              >
+                <div className="flex items-center gap-3">
+                  <img
+                    src={line.product.images[0]?.url ?? '/products/product-placeholder.svg'}
+                    alt={localize(line.product.name, line.product.nameAr)}
+                    className="h-16 w-14 rounded-[14px] object-cover"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm">
+                      {localize(line.product.name, line.product.nameAr)}
+                    </div>
+                    <div className="mt-1 text-xs text-[var(--text-secondary)]">
+                      {localize(line.variant.color, line.variant.colorAr)} /{' '}
+                      {localize(line.variant.size, line.variant.sizeAr)}
+                    </div>
+                    <div className="mt-3 inline-flex items-center gap-3 rounded-full border border-white/10 px-3 py-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateQuantity(line.variant.id, Math.max(1, line.quantity - 1))
+                        }
+                        className="text-[var(--text-secondary)] transition hover:text-[var(--text)]"
+                        aria-label={`Decrease quantity for ${localize(line.product.name, line.product.nameAr)}`}
+                      >
+                        <Minus className="h-4 w-4" />
+                      </button>
+                      <span className="min-w-4 text-sm">{line.quantity}</span>
+                      <button
+                        type="button"
+                        disabled={
+                          !line.variant.allowBackorder &&
+                          line.quantity >= Math.max(1, line.variant.stockQuantity)
+                        }
+                        onClick={() => updateQuantity(line.variant.id, line.quantity + 1)}
+                        className="text-[var(--text-secondary)] transition hover:text-[var(--text)] disabled:cursor-not-allowed disabled:opacity-40"
+                        aria-label={`Increase quantity for ${localize(line.product.name, line.product.nameAr)}`}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <div className="mt-2 text-[10px] uppercase tracking-[0.2em] text-[var(--muted)]">
+                      {line.variant.allowBackorder
+                        ? t('Backorder available')
+                        : `${t('Max')}: ${Math.max(1, line.variant.stockQuantity)}`}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm">
+                      {formatCurrency(line.variant.price * line.quantity)}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeItem(line.variant.id)}
+                      className="mt-3 text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] transition hover:text-[var(--text)]"
+                    >
+                      {t('REMOVE')}
+                    </button>
                   </div>
                 </div>
-                <div className="text-sm">{formatCurrency(line.variant.price * line.quantity)}</div>
               </div>
             ))}
           </div>
           <SummaryRow label={t('Subtotal')} value={formatCurrency(subtotal)} />
+          {discountAmount > 0 ? (
+            <SummaryRow label={t('Flash sale')} value={`-${formatCurrency(discountAmount)}`} />
+          ) : null}
           <SummaryRow label={t('Delivery')} value={formatCurrency(shippingAmount)} />
           <SummaryRow label={t('Total')} value={formatCurrency(total)} emphasis />
           <p className="mt-5 text-sm leading-7 text-[var(--text-secondary)]">
-            {t('Final pricing should be confirmed by a Supabase checkout RPC before production launch.')}
+            {t(
+              'Final pricing should be confirmed by a Supabase checkout RPC before production launch.'
+            )}
           </p>
           <button
             type="button"
@@ -1043,11 +1420,7 @@ export function CheckoutPageView({
   );
 }
 
-export function AuthPageView({
-  mode,
-}: {
-  mode: 'login' | 'register' | 'forgot-password';
-}) {
+export function AuthPageView({ mode }: { mode: 'login' | 'register' | 'forgot-password' }) {
   const { t } = useLocale();
   const schema = z.object({
     email: z.string().email(),
@@ -1057,7 +1430,11 @@ export function AuthPageView({
 
   type FormValues = z.infer<typeof schema>;
   const [submitted, setSubmitted] = useState(false);
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormValues>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({
     resolver: zodResolver(schema),
   });
 
@@ -1066,7 +1443,11 @@ export function AuthPageView({
       <div className="mx-auto w-full max-w-lg rounded-[36px] border border-white/8 bg-white/3 p-8 md:p-10">
         <div className="text-xs tracking-[0.25em] text-[var(--muted)]">{t('SUPABASE AUTH')}</div>
         <h1 className="mt-3 font-display text-5xl uppercase">
-          {mode === 'login' ? t('LOG IN') : mode === 'register' ? t('JOIN THE COVEN') : t('RESET PASSWORD')}
+          {mode === 'login'
+            ? t('LOG IN')
+            : mode === 'register'
+              ? t('JOIN THE COVEN')
+              : t('RESET PASSWORD')}
         </h1>
         <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
           {mode === 'login'
@@ -1084,21 +1465,45 @@ export function AuthPageView({
         >
           {mode === 'register' ? (
             <Field label={t('Full Name')} error={errors.fullName?.message}>
-              <input {...register('fullName')} className="h-12 w-full rounded-full border border-white/10 bg-black/20 px-5 text-sm outline-none" />
+              <input
+                {...register('fullName')}
+                className="h-12 w-full rounded-full border border-white/10 bg-black/20 px-5 text-sm outline-none"
+              />
             </Field>
           ) : null}
           <Field label={t('Email')} error={errors.email?.message}>
-            <input {...register('email')} className="h-12 w-full rounded-full border border-white/10 bg-black/20 px-5 text-sm outline-none" />
+            <input
+              {...register('email')}
+              className="h-12 w-full rounded-full border border-white/10 bg-black/20 px-5 text-sm outline-none"
+            />
           </Field>
           {mode !== 'forgot-password' ? (
             <Field label={t('Password')} error={errors.password?.message}>
-              <input type="password" {...register('password')} className="h-12 w-full rounded-full border border-white/10 bg-black/20 px-5 text-sm outline-none" />
+              <input
+                type="password"
+                {...register('password')}
+                className="h-12 w-full rounded-full border border-white/10 bg-black/20 px-5 text-sm outline-none"
+              />
             </Field>
           ) : null}
-          <button type="submit" disabled={isSubmitting} className="w-full rounded-full bg-[var(--text)] px-5 py-3 text-sm tracking-[0.2em] text-black">
-            {isSubmitting ? t('PLEASE WAIT') : mode === 'login' ? t('LOG IN') : mode === 'register' ? t('Register') : t('Send code')}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full rounded-full bg-[var(--text)] px-5 py-3 text-sm tracking-[0.2em] text-black"
+          >
+            {isSubmitting
+              ? t('PLEASE WAIT')
+              : mode === 'login'
+                ? t('LOG IN')
+                : mode === 'register'
+                  ? t('Register')
+                  : t('Send code')}
           </button>
-          {submitted ? <p className="text-sm text-[var(--blush)]">{t('Form captured. Wire this to your Supabase auth environment keys before launch.')}</p> : null}
+          {submitted ? (
+            <p className="text-sm text-[var(--blush)]">
+              {t('Form captured. Wire this to your Supabase auth environment keys before launch.')}
+            </p>
+          ) : null}
         </form>
       </div>
     </Container>
@@ -1111,8 +1516,12 @@ function CatalogHero({ title, description }: { title: string; description: strin
     <section className="relative overflow-hidden border-b border-[var(--border)] py-10 md:py-14">
       <Container className="relative">
         <div className="text-[11px] tracking-[0.28em] text-[var(--muted)]">{t('STORE')}</div>
-        <h1 className="mt-3 text-2xl font-semibold uppercase tracking-[0.22em] md:text-4xl">{t(title)}</h1>
-        <p className="mt-3 max-w-2xl text-sm uppercase tracking-[0.12em] text-[var(--text-secondary)]">{t(description)}</p>
+        <h1 className="mt-3 text-2xl font-semibold uppercase tracking-[0.22em] md:text-4xl">
+          {t(title)}
+        </h1>
+        <p className="mt-3 max-w-2xl text-sm uppercase tracking-[0.12em] text-[var(--text-secondary)]">
+          {t(description)}
+        </p>
       </Container>
     </section>
   );
@@ -1140,7 +1549,9 @@ function FilterGroup({
             type="button"
             onClick={() => onChange(item)}
             className={`rounded-full border px-3 py-2 text-xs tracking-[0.18em] uppercase ${
-              value === item ? 'border-white bg-white text-black' : 'border-white/10 text-[var(--text-secondary)]'
+              value === item
+                ? 'border-white bg-white text-black'
+                : 'border-white/10 text-[var(--text-secondary)]'
             }`}
           >
             {t(item.replace('-', ' '))}
@@ -1151,9 +1562,19 @@ function FilterGroup({
   );
 }
 
-function SummaryRow({ label, value, emphasis = false }: { label: string; value: string; emphasis?: boolean }) {
+function SummaryRow({
+  label,
+  value,
+  emphasis = false,
+}: {
+  label: string;
+  value: string;
+  emphasis?: boolean;
+}) {
   return (
-    <div className={`flex items-center justify-between ${emphasis ? 'text-lg' : 'text-sm text-[var(--text-secondary)]'}`}>
+    <div
+      className={`flex items-center justify-between ${emphasis ? 'text-lg' : 'text-sm text-[var(--text-secondary)]'}`}
+    >
       <span>{label}</span>
       <span className={emphasis ? 'text-white' : ''}>{value}</span>
     </div>
@@ -1162,22 +1583,20 @@ function SummaryRow({ label, value, emphasis = false }: { label: string; value: 
 
 function Step({ title, active = false }: { title: string; active?: boolean }) {
   return (
-    <div className={`flex items-center gap-3 rounded-full border px-4 py-3 text-sm tracking-[0.2em] ${active ? 'border-white bg-white text-black' : 'border-white/10 text-[var(--text-secondary)]'}`}>
-      {active ? <Check className="h-4 w-4" /> : <span className="h-2 w-2 rounded-full bg-current" />}
+    <div
+      className={`flex items-center gap-3 rounded-full border px-4 py-3 text-sm tracking-[0.2em] ${active ? 'border-white bg-white text-black' : 'border-white/10 text-[var(--text-secondary)]'}`}
+    >
+      {active ? (
+        <Check className="h-4 w-4" />
+      ) : (
+        <span className="h-2 w-2 rounded-full bg-current" />
+      )}
       {title}
     </div>
   );
 }
 
-function Field({
-  label,
-  error,
-  children,
-}: {
-  label: string;
-  error?: string;
-  children: ReactNode;
-}) {
+function Field({ label, error, children }: { label: string; error?: string; children: ReactNode }) {
   return (
     <label className="block">
       <span className="mb-2 block text-xs tracking-[0.24em] text-[var(--muted)]">{label}</span>
@@ -1201,11 +1620,17 @@ function Accordion({
 
   return (
     <div className="border-b border-white/8 pb-4 last:border-b-0">
-      <button type="button" onClick={() => setOpen((value) => !value)} className="flex w-full items-center justify-between py-2 text-left text-sm tracking-[0.2em]">
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        className="flex w-full items-center justify-between py-2 text-left text-sm tracking-[0.2em]"
+      >
         <span>{t(title)}</span>
         <ArrowRight className={`h-4 w-4 transition ${open ? 'rotate-90' : ''}`} />
       </button>
-      {open ? <div className="pt-2 text-sm leading-7 text-[var(--text-secondary)]">{children}</div> : null}
+      {open ? (
+        <div className="pt-2 text-sm leading-7 text-[var(--text-secondary)]">{children}</div>
+      ) : null}
     </div>
   );
 }

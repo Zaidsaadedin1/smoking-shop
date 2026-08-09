@@ -76,16 +76,23 @@ export function useThemeMode() {
 }
 
 export function ThemeSwitcher() {
-  const { colorScheme, toggleColorScheme } = useThemeMode();
+  const { colorScheme, toggleColorScheme, isDark } = useThemeMode();
 
   return (
     <ActionIcon
-      variant="subtle"
-      color="gray"
+      variant="default"
+      color={isDark ? 'gray' : 'dark'}
       radius="xl"
       size={40}
       onClick={toggleColorScheme}
       aria-label={colorScheme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+      styles={{
+        root: {
+          border: isDark ? '1px solid rgba(255,255,255,0.10)' : '1px solid rgba(23,23,23,0.10)',
+          background: isDark ? 'rgba(0,0,0,0.20)' : 'rgba(255,255,255,0.72)',
+          color: isDark ? '#f4f4f4' : '#171717',
+        },
+      }}
     >
       {colorScheme === 'dark' ? <IconSun size={18} /> : <IconMoon size={18} />}
     </ActionIcon>

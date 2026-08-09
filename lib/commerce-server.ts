@@ -1,5 +1,16 @@
-import { storeSettings } from '@/lib/commerce-data';
-import { CatalogFilters, FlashSale, StoreCategory, StoreProduct, StoreSettings } from '@/lib/commerce-types';
+import {
+  fallbackFlashSale,
+  fallbackProducts,
+  storeCategories,
+  storeSettings,
+} from '@/lib/commerce-data';
+import {
+  CatalogFilters,
+  FlashSale,
+  StoreCategory,
+  StoreProduct,
+  StoreSettings,
+} from '@/lib/commerce-types';
 import { filterProducts } from '@/lib/commerce-utils';
 import { fetchSupabaseRest } from '@/lib/supabase/rest';
 
@@ -75,15 +86,22 @@ type SupabaseFlashSale = {
   id: string;
   title: string;
   description: string | null;
+  discount_type: string;
   discount_value: string | number;
   starts_at: string;
   ends_at: string;
+  modal_title?: string | null;
+  modal_description?: string | null;
   button_text?: string | null;
   button_url?: string | null;
   show_as_modal?: boolean | null;
   image_url?: string | null;
   is_active?: boolean | null;
 };
+
+function formatFlashSaleDiscountLabel(discountType: string, discountValue: string | number) {
+  return discountType === 'fixed' ? `Save ${discountValue}` : `${discountValue}% OFF`;
+}
 
 function groupBy<TItem>(items: TItem[], getKey: (item: TItem) => string) {
   return items.reduce<Record<string, TItem[]>>((acc, item) => {
@@ -108,7 +126,7 @@ export async function getCategories(): Promise<StoreCategory[]> {
   });
 
   if (!categories?.length) {
-    return [];
+    return storeCategories;
   }
 
   return categories.map((category) => ({
@@ -165,7 +183,8 @@ export async function getProducts(): Promise<StoreProduct[]> {
     }),
     fetchSupabaseRest<SupabaseVariant[]>('product_variants', {
       query: {
-        select: 'id,product_id,sku,color_id,size_id,price,compare_at_price,stock_quantity,allow_backorder',
+        select:
+          'id,product_id,sku,color_id,size_id,price,compare_at_price,stock_quantity,allow_backorder',
         is_active: 'eq.true',
       },
       revalidate: 60,
@@ -180,7 +199,7 @@ export async function getProducts(): Promise<StoreProduct[]> {
   ]);
 
   if (!products?.length) {
-    return [];
+    return fallbackProducts;
   }
 
   const categoriesById = new Map((categories ?? []).map((category) => [category.id, category]));
@@ -191,77 +210,80 @@ export async function getProducts(): Promise<StoreProduct[]> {
   const imagesByProduct = groupBy(images ?? [], (image) => image.product_id);
 
   return products.reduce<StoreProduct[]>((acc, product) => {
-      const productVariants = variantsByProduct[product.id] ?? [];
+    const productVariants = variantsByProduct[product.id] ?? [];
 
-      const category = product.category_id ? categoriesById.get(product.category_id) : null;
-      const productImages = (imagesByProduct[product.id] ?? [])
-        .map((image, index) => ({
-          id: image.id ?? `${product.id}-${index}`,
-          url: image.image_url,
-          alt: image.alt_text ?? product.name,
-          isPrimary: Boolean(image.is_primary),
-        }))
-        .filter((image) => Boolean(image.url));
+    const category = product.category_id ? categoriesById.get(product.category_id) : null;
+    const productImages = (imagesByProduct[product.id] ?? [])
+      .map((image, index) => ({
+        id: image.id ?? `${product.id}-${index}`,
+        url: image.image_url,
+        alt: image.alt_text ?? product.name,
+        isPrimary: Boolean(image.is_primary),
+      }))
+      .filter((image) => Boolean(image.url));
 
-      acc.push({
-        id: product.id,
-        slug: product.slug,
-        slugAr: product.slug_ar ?? '',
-        name: product.name,
-        nameAr: product.name_ar ?? '',
-        shortDescription: product.short_description ?? '',
-        shortDescriptionAr: product.short_description_ar ?? '',
-        description: product.description ?? product.short_description ?? '',
-        descriptionAr: product.description_ar ?? product.short_description_ar ?? '',
-        categorySlug: category?.slug ?? 'uncategorized',
-        brand: (product.brand_id ? brandsById.get(product.brand_id)?.name : null) ?? 'Tourmaline Coven',
-        brandAr: (product.brand_id ? brandsById.get(product.brand_id)?.name_ar : null) ?? '',
-        tags: [category?.name ?? 'fashion', 'dark feminine', 'gothic'],
-        images: productImages,
-        variants: productVariants.length
-          ? productVariants.map((variant) => ({
-              id: variant.id,
-              sku: variant.sku ?? `${product.slug}-${variant.id}`,
-              color: (variant.color_id ? colorsById.get(variant.color_id)?.name : null) ?? 'Default',
-              colorAr: (variant.color_id ? colorsById.get(variant.color_id)?.name_ar : null) ?? '',
-              colorHex: (variant.color_id ? colorsById.get(variant.color_id)?.hex_code : null) ?? '#111111',
-              size: (variant.size_id ? sizesById.get(variant.size_id)?.name : null) ?? 'ONE SIZE',
-              sizeAr: (variant.size_id ? sizesById.get(variant.size_id)?.name_ar : null) ?? '',
-              price: Number(variant.price ?? 0),
-              compareAtPrice: variant.compare_at_price ? Number(variant.compare_at_price) : null,
-              stockQuantity: Number(variant.stock_quantity ?? 0),
-              allowBackorder: Boolean(variant.allow_backorder),
-            }))
-          : [
-              {
-                id: `${product.id}-base`,
-                sku: `${product.slug}-base`,
-                color: 'Default',
-                colorAr: 'افتراضي',
-                colorHex: '#111111',
-                size: 'ONE SIZE',
-                sizeAr: 'مقاس واحد',
-                price: Number(product.base_price ?? 0),
-                compareAtPrice: product.compare_at_price ? Number(product.compare_at_price) : null,
-                stockQuantity: 1,
-                allowBackorder: true,
-              },
-            ],
-        status: product.status === 'active' ? 'active' : 'inactive',
-        isFeatured: Boolean(product.is_featured),
-        isNew: false,
-        rating: 0,
-        reviewCount: 0,
-      } satisfies StoreProduct);
+    acc.push({
+      id: product.id,
+      slug: product.slug,
+      slugAr: product.slug_ar ?? '',
+      name: product.name,
+      nameAr: product.name_ar ?? '',
+      shortDescription: product.short_description ?? '',
+      shortDescriptionAr: product.short_description_ar ?? '',
+      description: product.description ?? product.short_description ?? '',
+      descriptionAr: product.description_ar ?? product.short_description_ar ?? '',
+      categorySlug: category?.slug ?? 'uncategorized',
+      brand:
+        (product.brand_id ? brandsById.get(product.brand_id)?.name : null) ?? 'Tourmaline Coven',
+      brandAr: (product.brand_id ? brandsById.get(product.brand_id)?.name_ar : null) ?? '',
+      tags: [category?.name ?? 'fashion', 'dark feminine', 'gothic'],
+      images: productImages,
+      variants: productVariants.length
+        ? productVariants.map((variant) => ({
+            id: variant.id,
+            sku: variant.sku ?? `${product.slug}-${variant.id}`,
+            color: (variant.color_id ? colorsById.get(variant.color_id)?.name : null) ?? 'Default',
+            colorAr: (variant.color_id ? colorsById.get(variant.color_id)?.name_ar : null) ?? '',
+            colorHex:
+              (variant.color_id ? colorsById.get(variant.color_id)?.hex_code : null) ?? '#111111',
+            size: (variant.size_id ? sizesById.get(variant.size_id)?.name : null) ?? 'ONE SIZE',
+            sizeAr: (variant.size_id ? sizesById.get(variant.size_id)?.name_ar : null) ?? '',
+            price: Number(variant.price ?? 0),
+            compareAtPrice: variant.compare_at_price ? Number(variant.compare_at_price) : null,
+            stockQuantity: Number(variant.stock_quantity ?? 0),
+            allowBackorder: Boolean(variant.allow_backorder),
+          }))
+        : [
+            {
+              id: `${product.id}-base`,
+              sku: `${product.slug}-base`,
+              color: 'Default',
+              colorAr: 'افتراضي',
+              colorHex: '#111111',
+              size: 'ONE SIZE',
+              sizeAr: 'مقاس واحد',
+              price: Number(product.base_price ?? 0),
+              compareAtPrice: product.compare_at_price ? Number(product.compare_at_price) : null,
+              stockQuantity: 1,
+              allowBackorder: true,
+            },
+          ],
+      status: product.status === 'active' ? 'active' : 'inactive',
+      isFeatured: Boolean(product.is_featured),
+      isNew: false,
+      rating: 0,
+      reviewCount: 0,
+    } satisfies StoreProduct);
 
-      return acc;
-    }, []);
+    return acc;
+  }, []);
 }
 
 export async function getFlashSale(nowIso = new Date().toISOString()): Promise<FlashSale | null> {
   const sales = await fetchSupabaseRest<SupabaseFlashSale[]>('flash_sales', {
     query: {
-      select: 'id,title,description,discount_value,starts_at,ends_at,button_text,button_url,show_as_modal,image_url,is_active',
+      select:
+        'id,title,description,discount_type,discount_value,starts_at,ends_at,modal_title,modal_description,button_text,button_url,show_as_modal,image_url,is_active',
       is_active: 'eq.true',
       starts_at: `lte.${nowIso}`,
       ends_at: `gte.${nowIso}`,
@@ -274,20 +296,22 @@ export async function getFlashSale(nowIso = new Date().toISOString()): Promise<F
   const sale = sales?.[0];
 
   if (!sale) {
-    return null;
+    return fallbackFlashSale;
   }
 
   return {
     id: sale.id,
     title: sale.title,
     description: sale.description ?? '',
-    discountLabel: `${sale.discount_value}% OFF`,
+    discountLabel: formatFlashSaleDiscountLabel(sale.discount_type, sale.discount_value),
     startsAt: sale.starts_at,
     endsAt: sale.ends_at,
-    ctaText: sale.button_text ?? '',
+    ctaText: sale.button_text?.trim() || 'SHOP THE SALE',
     ctaUrl: sale.button_url ?? '/shop?sale=true',
     showAsModal: Boolean(sale.show_as_modal),
     image: sale.image_url ?? '',
+    modalTitle: sale.modal_title?.trim() || sale.title,
+    modalDescription: sale.modal_description?.trim() || sale.description || '',
   };
 }
 

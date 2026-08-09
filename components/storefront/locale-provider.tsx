@@ -2,6 +2,7 @@
 
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 import { Locale, localeLabelMap, translateText } from '@/lib/i18n';
+import { useThemeMode } from '@/components/storefront/theme-provider';
 
 type LocaleContextValue = {
   locale: Locale;
@@ -61,17 +62,33 @@ export function useLocale() {
 
 export function LocaleSwitcher() {
   const { locale, setLocale } = useLocale();
+  const { isDark } = useThemeMode();
 
   return (
-    <div className="inline-flex overflow-hidden rounded-full border border-white/10 bg-black/20">
+    <div
+      className="inline-flex overflow-hidden rounded-full border"
+      style={{
+        borderColor: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(23,23,23,0.10)',
+        background: isDark ? 'rgba(0,0,0,0.20)' : 'rgba(255,255,255,0.72)',
+      }}
+    >
       {(['en', 'ar'] as Locale[]).map((entry) => (
         <button
           key={entry}
           type="button"
           onClick={() => setLocale(entry)}
-          className={`px-3 py-2 text-[11px] tracking-[0.2em] transition ${
-            locale === entry ? 'bg-white text-black' : 'text-[var(--text-secondary)]'
-          }`}
+          className="px-3 py-2 text-[11px] tracking-[0.2em] transition"
+          style={{
+            background: locale === entry ? (isDark ? '#f4f4f4' : '#171717') : 'transparent',
+            color:
+              locale === entry
+                ? isDark
+                  ? '#111112'
+                  : '#fffaf7'
+                : isDark
+                  ? 'var(--text-secondary)'
+                  : 'rgba(23,23,23,0.62)',
+          }}
         >
           {localeLabelMap[entry]}
         </button>

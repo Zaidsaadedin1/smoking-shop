@@ -66,6 +66,8 @@ export type FlashSale = {
   ctaUrl: string;
   showAsModal?: boolean;
   image: string;
+  modalTitle?: string;
+  modalDescription?: string;
 };
 
 export type StoreSettings = {

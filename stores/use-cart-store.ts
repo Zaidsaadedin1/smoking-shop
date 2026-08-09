@@ -19,6 +19,25 @@ export type CartProductLine = {
   quantity: number;
 };
 
+function clampVariantQuantity(
+  product: StoreProduct | undefined,
+  variantId: string,
+  quantity: number
+) {
+  if (!product) {
+    return Math.max(1, quantity);
+  }
+
+  const variant =
+    product.variants.find((item) => item.id === variantId) ?? getPrimaryVariant(product);
+
+  if (!variant || variant.allowBackorder) {
+    return Math.max(1, quantity);
+  }
+
+  return Math.max(1, Math.min(quantity, Math.max(1, variant.stockQuantity)));
+}
+
 type CartState = {
   items: CartLine[];
   favorites: string[];
@@ -42,13 +61,22 @@ export const useCartStore = create<CartState>()(
             return {
               items: state.items.map((item) =>
                 item.variantId === variantId
-                  ? { ...item, quantity: item.quantity + quantity, product }
+                  ? {
+                      ...item,
+                      quantity: clampVariantQuantity(
+                        product,
+                        item.variantId,
+                        item.quantity + quantity
+                      ),
+                      product,
+                    }
                   : item
               ),
             };
           }
 
-          const variant = product.variants.find((item) => item.id === variantId) ?? getPrimaryVariant(product);
+          const variant =
+            product.variants.find((item) => item.id === variantId) ?? getPrimaryVariant(product);
 
           return {
             items: [
@@ -56,7 +84,7 @@ export const useCartStore = create<CartState>()(
               {
                 productId: product.id,
                 variantId: variant?.id ?? variantId,
-                quantity,
+                quantity: clampVariantQuantity(product, variant?.id ?? variantId, quantity),
                 product,
               },
             ],
@@ -69,7 +97,12 @@ export const useCartStore = create<CartState>()(
       updateQuantity: (variantId, quantity) =>
         set((state) => ({
           items: state.items.map((item) =>
-            item.variantId === variantId ? { ...item, quantity: Math.max(1, quantity) } : item
+            item.variantId === variantId
+              ? {
+                  ...item,
+                  quantity: clampVariantQuantity(item.product, item.variantId, quantity),
+                }
+              : item
           ),
         })),
       toggleFavorite: (productId) =>

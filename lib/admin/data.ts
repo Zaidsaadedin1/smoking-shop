@@ -1,4 +1,5 @@
 import {
+  listFlashSales,
   listAdminLookups,
   listBrands,
   listCategories,
@@ -129,6 +130,25 @@ export type AdminCustomerRecord = {
   created_at: string;
 };
 
+export type AdminFlashSaleRecord = {
+  id: string;
+  title: string;
+  description: string;
+  discount_type: string;
+  discount_value: number;
+  starts_at: string;
+  ends_at: string;
+  show_as_modal: boolean;
+  modal_title: string;
+  modal_description: string;
+  button_text: string;
+  button_url: string;
+  image_url: string;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+};
+
 function toNumber(value: string | number | null | undefined) {
   if (value === null || value === undefined || value === '') {
     return null;
@@ -174,7 +194,10 @@ export async function getAdminProducts(): Promise<AdminProductRecord[]> {
     primary_image_url: row.images?.[0]?.image_url ?? '',
     sub_image_urls: row.images?.slice(1).map((image) => image.image_url) ?? [],
     variant_count: row.variants?.length ?? 0,
-    total_stock: (row.variants ?? []).reduce((sum, variant) => sum + Number(variant.stock_quantity ?? 0), 0),
+    total_stock: (row.variants ?? []).reduce(
+      (sum, variant) => sum + Number(variant.stock_quantity ?? 0),
+      0
+    ),
     created_at: row.created_at,
   }));
 }
@@ -237,6 +260,29 @@ export async function getAdminCustomers(): Promise<AdminCustomerRecord[]> {
     role: row.role,
     is_blocked: row.is_blocked,
     created_at: row.created_at,
+  }));
+}
+
+export async function getAdminFlashSales(): Promise<AdminFlashSaleRecord[]> {
+  const auth = await getAdminSupabaseAuth();
+  const rows = await listFlashSales(auth);
+  return (rows ?? []).map((row) => ({
+    id: row.id,
+    title: row.title,
+    description: row.description ?? '',
+    discount_type: row.discount_type,
+    discount_value: Number(row.discount_value),
+    starts_at: row.starts_at,
+    ends_at: row.ends_at,
+    show_as_modal: Boolean(row.show_as_modal),
+    modal_title: row.modal_title ?? '',
+    modal_description: row.modal_description ?? '',
+    button_text: row.button_text ?? '',
+    button_url: row.button_url ?? '',
+    image_url: row.image_url ?? '',
+    sort_order: Number(row.sort_order ?? 0),
+    is_active: row.is_active ?? true,
+    created_at: row.created_at ?? '',
   }));
 }
 
@@ -303,17 +349,18 @@ export async function getAdminColors(): Promise<AdminColorRecord[]> {
 export async function getAdminDashboardData() {
   const auth = await getAdminSupabaseAuth();
 
-  const [products, orders, customers, categories, brands, sizes, colors, lookups, enumLabels] = await Promise.all([
-    getAdminProducts(),
-    getAdminOrders(),
-    getAdminCustomers(),
-    getAdminCategories(),
-    getAdminBrands(),
-    getAdminSizes(),
-    getAdminColors(),
-    listAdminLookups(auth),
-    readAdminEnumLabels(),
-  ]);
+  const [products, orders, customers, categories, brands, sizes, colors, lookups, enumLabels] =
+    await Promise.all([
+      getAdminProducts(),
+      getAdminOrders(),
+      getAdminCustomers(),
+      getAdminCategories(),
+      getAdminBrands(),
+      getAdminSizes(),
+      getAdminColors(),
+      listAdminLookups(auth),
+      readAdminEnumLabels(),
+    ]);
 
   return {
     products,

@@ -1,14 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import {
-  Heart,
-  Menu,
-  Search,
-  ShoppingBag,
-  User,
-  X,
-} from 'lucide-react';
+import { Heart, Menu, Search, ShoppingBag, User, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ReactNode, useEffect, useMemo, useState } from 'react';
@@ -96,7 +89,11 @@ export function StorefrontShell({
         onMenu={() => setMenuOpen(true)}
         onCart={openCart}
       />
-      <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} brandName={settings.brandName} />
+      <MobileMenu
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        brandName={settings.brandName}
+      />
       <main className="pb-24 md:pb-10">{children}</main>
       {!isCheckout ? <MobileBottomNav /> : null}
       <Footer settings={settings} />
@@ -136,30 +133,47 @@ function Header({
 }) {
   const { t, localize } = useLocale();
   const { isDark } = useThemeMode();
+  const navHoverClassName = isDark ? 'hover:text-white' : 'hover:text-[var(--text)]';
+  const badgeTextColor = isDark ? '#000000' : '#fffaf7';
+  const controlBorderColor = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(23,23,23,0.16)';
+  const controlBackground = isDark ? 'transparent' : 'rgba(255,250,247,0.92)';
+  const headerBackground = isDark ? 'rgba(0,0,0,0.60)' : 'rgba(248,243,238,0.88)';
+  const headerTextColor = isDark ? 'var(--text)' : '#201715';
+  const secondaryTextColor = isDark ? 'var(--text-secondary)' : '#5a433d';
+  const badgeBackground = isDark ? 'var(--text)' : '#201715';
   return (
     <header
       className={`sticky top-0 z-40 transition duration-300 ${
-        scrolled
-          ? 'border-b backdrop-blur-xl'
-          : 'bg-transparent'
+        scrolled ? 'border-b backdrop-blur-xl' : 'backdrop-blur-xl'
       }`}
-      style={scrolled ? { borderColor: 'var(--border)', background: isDark ? 'rgba(0,0,0,0.60)' : 'rgba(255,255,255,0.72)' } : undefined}
+      style={{
+        borderColor: scrolled ? 'var(--border)' : 'transparent',
+        background: isDark && !scrolled ? 'transparent' : headerBackground,
+        color: headerTextColor,
+      }}
     >
       <div className="mx-auto flex max-w-[1440px] items-center justify-between px-4 py-4 md:px-8 lg:px-12">
         <div className="flex items-center gap-3 md:hidden">
           <button
             type="button"
             onClick={onMenu}
-            className="rounded-full border border-white/10 p-2 text-[var(--text)]"
+            className="rounded-full border p-2 text-[var(--text)]"
+            style={{
+              borderColor: controlBorderColor,
+              background: controlBackground,
+            }}
             aria-label="Open navigation"
           >
             <Menu className="h-5 w-5" />
           </button>
         </div>
 
-        <nav className="hidden items-center gap-6 text-xs tracking-[0.32em] text-[var(--text-secondary)] md:flex">
+        <nav
+          className="hidden items-center gap-6 text-xs tracking-[0.32em] md:flex"
+          style={{ color: secondaryTextColor }}
+        >
           {desktopNav.map((item) => (
-            <Link key={item.href} href={item.href} className="transition hover:text-white">
+            <Link key={item.href} href={item.href} className={`transition ${navHoverClassName}`}>
               {t(item.label)}
             </Link>
           ))}
@@ -168,33 +182,62 @@ function Header({
         <Link
           href="/"
           className="text-center font-display text-[0.82rem] uppercase tracking-[0.18em] sm:text-[1rem] sm:tracking-[0.22em] md:text-3xl md:tracking-[0.35em]"
+          style={{ color: headerTextColor }}
         >
           {brandName}
         </Link>
 
-        <div className="flex items-center gap-2 text-[var(--text-secondary)] md:gap-3">
+        <div className="flex items-center gap-2 md:gap-3" style={{ color: secondaryTextColor }}>
           <div className="hidden md:block">
             <LocaleSwitcher />
           </div>
           <ThemeSwitcher />
-          <Link href="/search" className="rounded-full border border-white/10 p-2 transition hover:text-white">
+          <Link
+            href="/search"
+            className={`rounded-full border p-2 transition ${navHoverClassName}`}
+            style={{
+              borderColor: controlBorderColor,
+              background: controlBackground,
+            }}
+          >
             <Search className="h-4 w-4" />
           </Link>
-          <Link href="/favorites" className="hidden rounded-full border border-white/10 p-2 transition hover:text-white md:inline-flex">
+          <Link
+            href="/favorites"
+            className={`hidden rounded-full border p-2 transition md:inline-flex ${navHoverClassName}`}
+            style={{
+              borderColor: controlBorderColor,
+              background: controlBackground,
+            }}
+          >
             <Heart className="h-4 w-4" />
           </Link>
-          <Link href="/account" className="hidden rounded-full border border-white/10 p-2 transition hover:text-white md:inline-flex">
+          <Link
+            href="/account"
+            className={`hidden rounded-full border p-2 transition md:inline-flex ${navHoverClassName}`}
+            style={{
+              borderColor: controlBorderColor,
+              background: controlBackground,
+            }}
+          >
             <User className="h-4 w-4" />
           </Link>
           <button
             type="button"
             onClick={onCart}
-            className="relative rounded-full border border-white/10 p-2 transition hover:text-white"
+            className={`relative rounded-full border p-2 transition ${navHoverClassName}`}
+            style={{
+              borderColor: controlBorderColor,
+              background: controlBackground,
+            }}
             aria-label="Open cart"
           >
             <ShoppingBag className="h-4 w-4" />
             {cartCount > 0 ? (
-              <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--text)] px-1 text-[10px] text-black">
+              <span
+                className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px]"
+                style={{ color: badgeTextColor, background: badgeBackground }}
+              >
                 {cartCount}
               </span>
             ) : null}
@@ -238,7 +281,11 @@ function MobileMenu({
           >
             <div className="mb-10 flex items-center justify-between">
               <div className="font-display text-xl uppercase tracking-[0.3em]">{brandName}</div>
-              <button type="button" onClick={onClose} className="rounded-full border border-white/10 p-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-full border border-white/10 p-2"
+              >
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -250,7 +297,12 @@ function MobileMenu({
             </div>
             <div className="space-y-5 text-lg uppercase tracking-[0.2em] text-[var(--text-secondary)]">
               {desktopNav.map((item) => (
-                <Link key={item.href} href={item.href} onClick={onClose} className="block transition hover:text-white">
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onClose}
+                  className="block transition hover:text-white"
+                >
                   {t(item.label)}
                 </Link>
               ))}
@@ -312,7 +364,9 @@ function Footer({ settings }: { settings: StoreSettings }) {
     >
       <div className="mx-auto grid max-w-[1440px] gap-10 md:grid-cols-5">
         <div className="md:col-span-2">
-          <div className="font-display text-3xl uppercase tracking-[0.3em]">{settings.brandName}</div>
+          <div className="font-display text-3xl uppercase tracking-[0.3em]">
+            {settings.brandName}
+          </div>
           <p className="mt-4 max-w-md text-sm leading-7 text-[var(--text-secondary)]">
             {t('Dark feminine pieces, nails, and finishing touches.')}
           </p>
@@ -337,7 +391,10 @@ function Footer({ settings }: { settings: StoreSettings }) {
           ]}
         />
       </div>
-      <div className="mx-auto mt-12 flex max-w-[1440px] flex-col gap-2 border-t pt-6 text-xs tracking-[0.22em] text-[var(--muted)] md:flex-row md:items-center md:justify-between" style={{ borderColor: 'var(--border)' }}>
+      <div
+        className="mx-auto mt-12 flex max-w-[1440px] flex-col gap-2 border-t pt-6 text-xs tracking-[0.22em] text-[var(--muted)] md:flex-row md:items-center md:justify-between"
+        style={{ borderColor: 'var(--border)' }}
+      >
         <span>© 2026 {settings.brandName}</span>
         <span>{t('DELIVERY ACROSS JORDAN 🇯🇴  •  NEW DROP AVAILABLE NOW').split('  •  ')[0]}</span>
       </div>
@@ -401,34 +458,60 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                 <div className="text-xs tracking-[0.25em] text-[var(--muted)]">{t('YOUR BAG')}</div>
                 <div className="mt-1 font-display text-2xl uppercase">{t('HOLD')}</div>
               </div>
-              <button type="button" onClick={onClose} className="rounded-full border border-white/10 p-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-full border border-white/10 p-2"
+              >
                 <X className="h-4 w-4" />
               </button>
             </div>
             <div className="flex-1 space-y-4 overflow-y-auto">
               {lines.length ? (
                 lines.map((line) => (
-                  <div key={line.variant.id} className="flex gap-4 rounded-[24px] border border-white/8 bg-white/3 p-3">
-                    <img src={line.product.images[0]?.url} alt={localize(line.product.name, line.product.nameAr)} className="h-28 w-24 rounded-[18px] object-cover" />
+                  <div
+                    key={line.variant.id}
+                    className="flex gap-4 rounded-[24px] border border-white/8 bg-white/3 p-3"
+                  >
+                    <img
+                      src={line.product.images[0]?.url}
+                      alt={localize(line.product.name, line.product.nameAr)}
+                      className="h-28 w-24 rounded-[18px] object-cover"
+                    />
                     <div className="flex-1">
-                      <div className="text-sm uppercase tracking-[0.2em] text-[var(--muted)]">{line.product.categorySlug}</div>
-                      <div className="mt-1 text-base">{localize(line.product.name, line.product.nameAr)}</div>
+                      <div className="text-sm uppercase tracking-[0.2em] text-[var(--muted)]">
+                        {line.product.categorySlug}
+                      </div>
+                      <div className="mt-1 text-base">
+                        {localize(line.product.name, line.product.nameAr)}
+                      </div>
                       <div className="mt-2 text-sm text-[var(--text-secondary)]">
-                        {localize(line.variant.color, line.variant.colorAr)} / {localize(line.variant.size, line.variant.sizeAr)}
+                        {localize(line.variant.color, line.variant.colorAr)} /{' '}
+                        {localize(line.variant.size, line.variant.sizeAr)}
                       </div>
                       <div className="mt-3 flex items-center justify-between">
                         <div className="text-sm">{formatCurrency(line.variant.price)}</div>
                         <div className="flex items-center gap-2 rounded-full border border-white/10 px-3 py-1">
-                          <button type="button" onClick={() => updateQuantity(line.variant.id, line.quantity - 1)}>
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(line.variant.id, line.quantity - 1)}
+                          >
                             -
                           </button>
                           <span>{line.quantity}</span>
-                          <button type="button" onClick={() => updateQuantity(line.variant.id, line.quantity + 1)}>
+                          <button
+                            type="button"
+                            onClick={() => updateQuantity(line.variant.id, line.quantity + 1)}
+                          >
                             +
                           </button>
                         </div>
                       </div>
-                      <button type="button" onClick={() => removeItem(line.variant.id)} className="mt-3 text-xs tracking-[0.2em] text-[var(--muted)]">
+                      <button
+                        type="button"
+                        onClick={() => removeItem(line.variant.id)}
+                        className="mt-3 text-xs tracking-[0.2em] text-[var(--muted)]"
+                      >
                         {t('REMOVE')}
                       </button>
                     </div>
@@ -437,7 +520,9 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
               ) : (
                 <div className="rounded-[32px] border border-white/8 bg-white/3 p-8 text-center">
                   <div className="font-display text-3xl uppercase">{t('YOUR BAG IS EMPTY.')}</div>
-                  <p className="mt-3 text-sm text-[var(--text-secondary)]">{t('But that can be fixed.')}</p>
+                  <p className="mt-3 text-sm text-[var(--text-secondary)]">
+                    {t('But that can be fixed.')}
+                  </p>
                   <Link
                     href="/shop"
                     onClick={onClose}
@@ -455,7 +540,11 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                 <span>{formatCurrency(subtotal)}</span>
               </div>
               <div className="grid gap-3">
-                <Link href="/cart" onClick={onClose} className="rounded-full border border-white/10 px-5 py-3 text-center text-sm tracking-[0.2em]">
+                <Link
+                  href="/cart"
+                  onClick={onClose}
+                  className="rounded-full border border-white/10 px-5 py-3 text-center text-sm tracking-[0.2em]"
+                >
                   {t('VIEW BAG')}
                 </Link>
                 <Link
@@ -503,6 +592,13 @@ function FlashSaleModal({ sale }: { sale: FlashSale | null }) {
     setVisible(false);
   };
 
+  const modalKicker = t('AFTER DARK');
+  const modalTitle = sale.modalTitle?.trim() || sale.title;
+  const modalDescription = sale.modalDescription?.trim() || sale.description;
+  const ctaText = sale.ctaText?.trim() || t('SHOP THE SALE');
+  const imageSrc = sale.image || '/products/product-placeholder.svg';
+  const ctaTextColor = isDark ? '#8a304f' : '#f7efe3';
+
   return (
     <AnimatePresence>
       {visible ? (
@@ -520,23 +616,42 @@ function FlashSaleModal({ sale }: { sale: FlashSale | null }) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.94, y: 20 }}
             transition={{ duration: 0.35 }}
-            className="fixed left-1/2 top-1/2 z-[60] w-[92vw] max-w-3xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[36px] border"
+            className="fixed left-1/2 top-1/2 z-[60] w-[92vw] max-w-4xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[36px] border"
             style={{
               borderColor: 'var(--border)',
               background: isDark ? '#111112' : '#fffaf7',
             }}
           >
-            <div className="grid md:grid-cols-2">
-              <img src={sale.image} alt={sale.title} className="h-[260px] w-full object-cover md:h-full" />
-              <div className="relative p-8 md:p-10">
-                <button type="button" onClick={dismiss} className="absolute right-5 top-5 rounded-full border border-white/10 p-2">
+            <div className="grid md:grid-cols-[1.05fr_0.95fr]">
+              <img
+                src={imageSrc}
+                alt={sale.title}
+                className="h-[260px] w-full object-cover md:h-full"
+              />
+              <div className="relative flex min-h-[420px] flex-col justify-center p-8 md:p-10">
+                <button
+                  type="button"
+                  onClick={dismiss}
+                  className="absolute right-5 top-5 rounded-full border border-white/10 p-2"
+                >
                   <X className="h-4 w-4" />
                 </button>
-                <div className="text-xs tracking-[0.28em] text-[var(--muted)]">{t('AFTER DARK')}</div>
-                <div className="mt-4 font-display text-5xl uppercase leading-none">{sale.discountLabel}</div>
-                <p className="mt-4 max-w-xs text-sm leading-7 text-[var(--text-secondary)]">{t(sale.description)}</p>
-                <Link href={sale.ctaUrl} onClick={dismiss} className="mt-8 inline-flex rounded-full bg-[var(--text)] px-5 py-3 text-sm tracking-[0.2em] text-black">
-                  {t(sale.ctaText)}
+                <div className="text-xs tracking-[0.28em] text-[var(--muted)]">{modalKicker}</div>
+                <div className="mt-4 font-display text-5xl uppercase leading-none">
+                  {sale.discountLabel}
+                </div>
+                <h3 className="mt-5 max-w-sm text-lg uppercase tracking-[0.18em] text-[var(--text)]">
+                  {t(modalTitle)}
+                </h3>
+                <p className="mt-4 max-w-sm text-sm leading-7 text-[var(--text-secondary)]">
+                  {t(modalDescription)}
+                </p>
+                <Link
+                  href={sale.ctaUrl}
+                  onClick={dismiss}
+                  className="mt-8 inline-flex w-fit rounded-full bg-[var(--text)] px-6 py-3 text-sm tracking-[0.2em] text-black"
+                >
+                  <span style={{ color: ctaTextColor }}>{ctaText}</span>
                 </Link>
               </div>
             </div>
@@ -555,9 +670,7 @@ function ToastViewport({
   dismissToast: (id: string) => void;
 }) {
   useEffect(() => {
-    const timeouts = toasts.map((toast) =>
-      window.setTimeout(() => dismissToast(toast.id), 3200)
-    );
+    const timeouts = toasts.map((toast) => window.setTimeout(() => dismissToast(toast.id), 3200));
 
     return () => {
       timeouts.forEach((timeout) => window.clearTimeout(timeout));
@@ -580,7 +693,11 @@ function ToastViewport({
             }}
           >
             <div className="text-sm">{toast.title}</div>
-            {toast.description ? <div className="mt-1 text-xs leading-6 text-[var(--text-secondary)]">{toast.description}</div> : null}
+            {toast.description ? (
+              <div className="mt-1 text-xs leading-6 text-[var(--text-secondary)]">
+                {toast.description}
+              </div>
+            ) : null}
           </motion.div>
         ))}
       </AnimatePresence>
