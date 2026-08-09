@@ -2,7 +2,14 @@ import { StorefrontHome } from '@/components/storefront/storefront-home';
 import { getStorefrontData } from '@/lib/commerce-server';
 
 export default async function HomePage() {
-  const { categories, products, flashSale } = await getStorefrontData();
+  const { categories, products, flashSale, heroSlides } = await getStorefrontData();
 
-  return <StorefrontHome categories={categories} products={products} flashSale={flashSale} />;
+  return (
+    <StorefrontHome
+      categories={categories}
+      products={products}
+      flashSale={flashSale}
+      heroSlides={heroSlides}
+    />
+  );
 }

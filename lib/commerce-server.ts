@@ -7,6 +7,7 @@ import {
 import {
   CatalogFilters,
   FlashSale,
+  HeroSlide,
   StoreCategory,
   StoreProduct,
   StoreSettings,
@@ -96,6 +97,24 @@ type SupabaseFlashSale = {
   button_url?: string | null;
   show_as_modal?: boolean | null;
   image_url?: string | null;
+  is_active?: boolean | null;
+};
+
+type SupabaseHeroSlide = {
+  id: string;
+  eyebrow: string | null;
+  eyebrow_ar?: string | null;
+  title: string;
+  title_ar?: string | null;
+  description: string | null;
+  description_ar?: string | null;
+  button_text?: string | null;
+  button_text_ar?: string | null;
+  button_url?: string | null;
+  image_en_url?: string | null;
+  image_ar_url?: string | null;
+  display_seconds?: number | null;
+  sort_order?: number | null;
   is_active?: boolean | null;
 };
 
@@ -315,12 +334,43 @@ export async function getFlashSale(nowIso = new Date().toISOString()): Promise<F
   };
 }
 
+export async function getHeroSlides(): Promise<HeroSlide[]> {
+  const slides = await fetchSupabaseRest<SupabaseHeroSlide[]>('hero_slides', {
+    query: {
+      select:
+        'id,eyebrow,eyebrow_ar,title,title_ar,description,description_ar,button_text,button_text_ar,button_url,image_en_url,image_ar_url,display_seconds,sort_order,is_active',
+      is_active: 'eq.true',
+      order: 'sort_order.asc',
+    },
+    revalidate: 0,
+  });
+
+  return (slides ?? [])
+    .filter((slide) => Boolean(slide.image_en_url || slide.image_ar_url))
+    .map((slide) => ({
+      id: slide.id,
+      eyebrow: slide.eyebrow ?? 'Tourmaline Coven',
+      eyebrowAr: slide.eyebrow_ar ?? '',
+      title: slide.title,
+      titleAr: slide.title_ar ?? '',
+      description: slide.description ?? '',
+      descriptionAr: slide.description_ar ?? '',
+      buttonText: slide.button_text ?? 'SHOP THIS PIECE',
+      buttonTextAr: slide.button_text_ar ?? '',
+      buttonUrl: slide.button_url ?? '/shop',
+      imageEnUrl: slide.image_en_url ?? slide.image_ar_url ?? '',
+      imageArUrl: slide.image_ar_url ?? slide.image_en_url ?? '',
+      displaySeconds: Math.max(2, Number(slide.display_seconds ?? 6)),
+    }));
+}
+
 export async function getStorefrontData(filters: CatalogFilters = {}) {
-  const [settings, categories, products, flashSale] = await Promise.all([
+  const [settings, categories, products, flashSale, heroSlides] = await Promise.all([
     getStoreSettings(),
     getCategories(),
     getProducts(),
     getFlashSale(),
+    getHeroSlides(),
   ]);
 
   return {
@@ -329,6 +379,7 @@ export async function getStorefrontData(filters: CatalogFilters = {}) {
     products,
     filteredProducts: filterProducts(products, filters),
     flashSale,
+    heroSlides,
   };
 }
 

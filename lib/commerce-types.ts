@@ -70,6 +70,22 @@ export type FlashSale = {
   modalDescription?: string;
 };
 
+export type HeroSlide = {
+  id: string;
+  eyebrow: string;
+  eyebrowAr?: string;
+  title: string;
+  titleAr?: string;
+  description: string;
+  descriptionAr?: string;
+  buttonText: string;
+  buttonTextAr?: string;
+  buttonUrl: string;
+  imageEnUrl: string;
+  imageArUrl: string;
+  displaySeconds: number;
+};
+
 export type StoreSettings = {
   announcement: string;
   brandName: string;

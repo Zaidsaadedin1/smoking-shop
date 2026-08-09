@@ -137,6 +137,25 @@ type FlashSaleRow = {
   created_at?: string;
 };
 
+type HeroSlideRow = {
+  id: string;
+  eyebrow: string | null;
+  eyebrow_ar: string | null;
+  title: string;
+  title_ar: string | null;
+  description: string | null;
+  description_ar: string | null;
+  button_text: string | null;
+  button_text_ar: string | null;
+  button_url: string | null;
+  image_en_url: string | null;
+  image_ar_url: string | null;
+  display_seconds: number | null;
+  sort_order: number | null;
+  is_active: boolean | null;
+  created_at?: string;
+};
+
 type ReviewRow = {
   id: string;
   product_id: string;
@@ -714,6 +733,49 @@ export async function updateFlashSale(
 
 export async function deleteFlashSale(id: string, auth?: SupabaseRequestAuth) {
   return deleteSupabaseRow<FlashSaleRow>('flash_sales', { id: `eq.${id}` }, true, auth);
+}
+
+export async function listHeroSlides(auth?: SupabaseRequestAuth) {
+  return fetchSupabaseRest<HeroSlideRow[]>('hero_slides', {
+    query: {
+      select:
+        'id,eyebrow,eyebrow_ar,title,title_ar,description,description_ar,button_text,button_text_ar,button_url,image_en_url,image_ar_url,display_seconds,sort_order,is_active,created_at',
+      order: 'sort_order.asc',
+    },
+    ...(auth?.headers ? { headers: auth.headers } : {}),
+    revalidate: 0,
+  });
+}
+
+export async function listActiveHeroSlides() {
+  return fetchSupabaseRest<HeroSlideRow[]>('hero_slides', {
+    query: {
+      select:
+        'id,eyebrow,eyebrow_ar,title,title_ar,description,description_ar,button_text,button_text_ar,button_url,image_en_url,image_ar_url,display_seconds,sort_order,is_active,created_at',
+      is_active: 'eq.true',
+      order: 'sort_order.asc',
+    },
+    revalidate: 0,
+  });
+}
+
+export async function createHeroSlide(
+  payload: Record<string, unknown>,
+  auth?: SupabaseRequestAuth
+) {
+  return insertSupabaseRow<HeroSlideRow>('hero_slides', payload, true, auth);
+}
+
+export async function updateHeroSlide(
+  id: string,
+  payload: Record<string, unknown>,
+  auth?: SupabaseRequestAuth
+) {
+  return updateSupabaseRow<HeroSlideRow>('hero_slides', payload, { id: `eq.${id}` }, true, auth);
+}
+
+export async function deleteHeroSlide(id: string, auth?: SupabaseRequestAuth) {
+  return deleteSupabaseRow<HeroSlideRow>('hero_slides', { id: `eq.${id}` }, true, auth);
 }
 
 export async function listReviews(productId: string) {

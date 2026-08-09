@@ -37,6 +37,7 @@ import {
   AdminColorRecord,
   AdminCustomerRecord,
   AdminFlashSaleRecord,
+  AdminHeroSlideRecord,
   AdminOrderRecord,
   AdminProductRecord,
   AdminProductVariantRecord,
@@ -3077,6 +3078,7 @@ export function AdminSettingsScreen({
   sizes,
   colors,
   flashSales,
+  heroSlides,
   enumLabels,
 }: {
   session: AdminSessionInfo;
@@ -3085,6 +3087,7 @@ export function AdminSettingsScreen({
   sizes: AdminSizeRecord[];
   colors: AdminColorRecord[];
   flashSales: AdminFlashSaleRecord[];
+  heroSlides: AdminHeroSlideRecord[];
   enumLabels: AdminEnumLabels;
 }) {
   const { t, locale } = useLocale();
@@ -3152,6 +3155,7 @@ export function AdminSettingsScreen({
       >
         <Tabs.List mb="lg">
           <Tabs.Tab value="categories">{t('Categories')}</Tabs.Tab>
+          <Tabs.Tab value="hero-slides">{t('Hero slides')}</Tabs.Tab>
           <Tabs.Tab value="flash-sales">{t('Flash sales')}</Tabs.Tab>
           <Tabs.Tab value="enums">{t('Enums')}</Tabs.Tab>
           <Tabs.Tab value="brands">{t('Brands')}</Tabs.Tab>
@@ -3262,6 +3266,90 @@ export function AdminSettingsScreen({
             createRequest={{ url: '/api/admin/categories', method: 'POST' }}
             updateRequest={(id) => ({ url: `/api/admin/categories/${id}`, method: 'PATCH' })}
             deleteRequest={(id) => ({ url: `/api/admin/categories/${id}`, method: 'DELETE' })}
+          />
+        </Tabs.Panel>
+
+        <Tabs.Panel value="hero-slides">
+          <CrudManager
+            title="Hero slides"
+            description="Control the home hero carousel with separate English and Arabic artwork, auto-slide timing, and CTA copy. Recommended size: 2200 x 1400 px for each image."
+            records={heroSlides}
+            defaults={{
+              eyebrow: '',
+              eyebrowAr: '',
+              title: '',
+              titleAr: '',
+              description: '',
+              descriptionAr: '',
+              buttonText: '',
+              buttonTextAr: '',
+              buttonUrl: '',
+              imageEn: undefined,
+              imageAr: undefined,
+              displaySeconds: 6,
+              sortOrder: 0,
+              isActive: true,
+            }}
+            fields={[
+              { name: 'eyebrow', label: 'Eyebrow', type: 'text', editableOn: ['create', 'edit'] },
+              { name: 'eyebrowAr', label: 'Arabic eyebrow', type: 'text', editableOn: ['create', 'edit'] },
+              { name: 'title', label: 'Title', type: 'text', required: true, editableOn: ['create', 'edit'] },
+              { name: 'titleAr', label: 'Arabic title', type: 'text', editableOn: ['create', 'edit'] },
+              { name: 'description', label: 'Description', type: 'textarea', editableOn: ['create', 'edit'] },
+              { name: 'descriptionAr', label: 'Arabic description', type: 'textarea', editableOn: ['create', 'edit'] },
+              { name: 'buttonText', label: 'Button text', type: 'text', editableOn: ['create', 'edit'] },
+              { name: 'buttonTextAr', label: 'Arabic button text', type: 'text', editableOn: ['create', 'edit'] },
+              { name: 'buttonUrl', label: 'Button URL', type: 'text', editableOn: ['create', 'edit'] },
+              { name: 'imageEn', label: 'English image', type: 'file', editableOn: ['create', 'edit'] },
+              { name: 'imageAr', label: 'Arabic image', type: 'file', editableOn: ['create', 'edit'] },
+              {
+                name: 'displaySeconds',
+                label: 'Display seconds',
+                type: 'number',
+                required: true,
+                min: 2,
+                step: 1,
+                editableOn: ['create', 'edit'],
+              },
+              { name: 'sortOrder', label: 'Sort order', type: 'number', min: 0, step: 1, editableOn: ['create', 'edit'] },
+              { name: 'isActive', label: 'Active', type: 'switch', editableOn: ['create', 'edit'] },
+            ]}
+            columns={[
+              { key: 'title', label: 'Title', render: (row) => row.title },
+              { key: 'title_ar', label: 'Arabic title', render: (row) => row.title_ar || '—' },
+              { key: 'display_seconds', label: 'Seconds', render: (row) => row.display_seconds },
+              { key: 'sort_order', label: 'Sort order', render: (row) => row.sort_order },
+              { key: 'is_active', label: 'Active', render: (row) => (row.is_active ? 'Yes' : 'No') },
+            ]}
+            drawerExtras={({ mode, selected }) =>
+              mode === 'view' && selected ? (
+                <SimpleGrid cols={{ base: 1, md: 2 }}>
+                  {selected.image_en_url ? (
+                    <Paper radius={0} p="md" style={{ background: 'var(--surface)', border: '1px solid var(--surface-border)' }}>
+                      <Text size="xs" tt="uppercase" c="dimmed" mb="sm">
+                        {t('English image')}
+                      </Text>
+                      <Image src={selected.image_en_url} alt={selected.title} h={220} fit="cover" radius={0} />
+                    </Paper>
+                  ) : null}
+                  {selected.image_ar_url ? (
+                    <Paper radius={0} p="md" style={{ background: 'var(--surface)', border: '1px solid var(--surface-border)' }}>
+                      <Text size="xs" tt="uppercase" c="dimmed" mb="sm">
+                        {t('Arabic image')}
+                      </Text>
+                      <Image src={selected.image_ar_url} alt={selected.title_ar || selected.title} h={220} fit="cover" radius={0} />
+                    </Paper>
+                  ) : null}
+                </SimpleGrid>
+              ) : (
+                <Text size="sm" c="dimmed">
+                  {t('Use 2200 x 1400 px images. Keep the subject centered so mobile crops stay safe.')}
+                </Text>
+              )
+            }
+            createRequest={{ url: '/api/admin/hero-slides', method: 'POST' }}
+            updateRequest={(id) => ({ url: `/api/admin/hero-slides/${id}`, method: 'PATCH' })}
+            deleteRequest={(id) => ({ url: `/api/admin/hero-slides/${id}`, method: 'DELETE' })}
           />
         </Tabs.Panel>
 

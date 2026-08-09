@@ -1,5 +1,6 @@
 import {
   listFlashSales,
+  listHeroSlides,
   listAdminLookups,
   listBrands,
   listCategories,
@@ -149,6 +150,25 @@ export type AdminFlashSaleRecord = {
   created_at: string;
 };
 
+export type AdminHeroSlideRecord = {
+  id: string;
+  eyebrow: string;
+  eyebrow_ar: string;
+  title: string;
+  title_ar: string;
+  description: string;
+  description_ar: string;
+  button_text: string;
+  button_text_ar: string;
+  button_url: string;
+  image_en_url: string;
+  image_ar_url: string;
+  display_seconds: number;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+};
+
 function toNumber(value: string | number | null | undefined) {
   if (value === null || value === undefined || value === '') {
     return null;
@@ -282,6 +302,29 @@ export async function getAdminFlashSales(): Promise<AdminFlashSaleRecord[]> {
     image_url: row.image_url ?? '',
     sort_order: Number(row.sort_order ?? 0),
     is_active: row.is_active ?? true,
+    created_at: row.created_at ?? '',
+  }));
+}
+
+export async function getAdminHeroSlides(): Promise<AdminHeroSlideRecord[]> {
+  const auth = await getAdminSupabaseAuth();
+  const rows = await listHeroSlides(auth);
+  return (rows ?? []).map((row) => ({
+    id: row.id,
+    eyebrow: row.eyebrow ?? '',
+    eyebrow_ar: row.eyebrow_ar ?? '',
+    title: row.title,
+    title_ar: row.title_ar ?? '',
+    description: row.description ?? '',
+    description_ar: row.description_ar ?? '',
+    button_text: row.button_text ?? '',
+    button_text_ar: row.button_text_ar ?? '',
+    button_url: row.button_url ?? '',
+    image_en_url: row.image_en_url ?? '',
+    image_ar_url: row.image_ar_url ?? '',
+    display_seconds: Number(row.display_seconds ?? 6),
+    sort_order: Number(row.sort_order ?? 0),
+    is_active: Boolean(row.is_active),
     created_at: row.created_at ?? '',
   }));
 }

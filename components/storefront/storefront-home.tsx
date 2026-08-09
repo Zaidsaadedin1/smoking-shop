@@ -2,9 +2,10 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { useLocale } from '@/components/storefront/locale-provider';
-import { FlashSale, StoreCategory, StoreProduct } from '@/lib/commerce-types';
+import { FlashSale, HeroSlide, StoreCategory, StoreProduct } from '@/lib/commerce-types';
 import {
   Container,
   ProductGrid,
@@ -15,10 +16,12 @@ export function StorefrontHome({
   categories,
   products,
   flashSale,
+  heroSlides,
 }: {
   categories: StoreCategory[];
   products: StoreProduct[];
   flashSale: FlashSale | null;
+  heroSlides: HeroSlide[];
 }) {
   const { t } = useLocale();
   const heroProduct =
@@ -33,7 +36,7 @@ export function StorefrontHome({
 
   return (
     <div className="space-y-10 pb-16 md:space-y-16 md:pb-24">
-      <Hero product={heroProduct} />
+      <Hero product={heroProduct} slides={heroSlides} />
 
       {flashSale ? <PromoRibbon flashSale={flashSale} /> : null}
 
@@ -101,8 +104,95 @@ export function StorefrontHome({
   );
 }
 
-function Hero({ product }: { product: StoreProduct | null }) {
-  const { t, localize } = useLocale();
+function Hero({ product, slides }: { product: StoreProduct | null; slides: HeroSlide[] }) {
+  const { t, localize, locale } = useLocale();
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [slides.length]);
+
+  useEffect(() => {
+    if (slides.length <= 1) {
+      return;
+    }
+
+    const activeSlide = slides[activeIndex] ?? slides[0];
+    const timeout = window.setTimeout(() => {
+      setActiveIndex((current) => (current + 1) % slides.length);
+    }, Math.max(2, activeSlide.displaySeconds) * 1000);
+
+    return () => window.clearTimeout(timeout);
+  }, [activeIndex, slides]);
+
+  if (slides.length > 0) {
+    const activeSlide = slides[activeIndex] ?? slides[0];
+    const imageUrl = locale === 'ar' ? activeSlide.imageArUrl : activeSlide.imageEnUrl;
+
+    return (
+      <section className="relative min-h-[78vh] overflow-hidden border-b border-[var(--border)] md:min-h-[86vh]">
+        <motion.img
+          key={`${activeSlide.id}-${locale}`}
+          src={imageUrl}
+          alt={localize(activeSlide.title, activeSlide.titleAr)}
+          initial={{ opacity: 0, scale: 1.04 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.9, ease: 'easeOut' }}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="noise-overlay absolute inset-0" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.1),rgba(0,0,0,0.18)_20%,rgba(0,0,0,0.66)_100%)]" />
+        <div className="relative flex min-h-[78vh] items-end justify-center pb-14 md:min-h-[86vh] md:pb-20">
+          <motion.div
+            key={activeSlide.id}
+            initial={{ opacity: 0, y: 25 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="max-w-[620px] px-6 text-center"
+          >
+            <div className="text-[10px] tracking-[0.34em] text-white/72">
+              {localize(activeSlide.eyebrow, activeSlide.eyebrowAr)}
+            </div>
+            <h1
+              className="mt-6 font-display text-[3.2rem] uppercase leading-[0.86] tracking-[-0.04em] text-[#efe0c3] md:text-[5.4rem]"
+              style={{ textShadow: '0 10px 30px rgba(0,0,0,0.45)' }}
+            >
+              {localize(activeSlide.title, activeSlide.titleAr)}
+            </h1>
+            {activeSlide.description ? (
+              <p className="mt-5 text-sm leading-7 text-white/78">
+                {localize(activeSlide.description, activeSlide.descriptionAr)}
+              </p>
+            ) : null}
+            <div className="mt-6 flex items-center justify-center gap-3">
+              <Link
+                href={activeSlide.buttonUrl || '/shop'}
+                className="border border-white/30 bg-black/35 px-5 py-2 text-[11px] tracking-[0.28em] backdrop-blur-sm"
+                style={{ color: '#f7efe3' }}
+              >
+                {localize(activeSlide.buttonText, activeSlide.buttonTextAr)}
+              </Link>
+            </div>
+            {slides.length > 1 ? (
+              <div className="mt-6 flex items-center justify-center gap-2">
+                {slides.map((slide, index) => (
+                  <button
+                    key={slide.id}
+                    type="button"
+                    aria-label={`Go to slide ${index + 1}`}
+                    onClick={() => setActiveIndex(index)}
+                    className={`h-2.5 rounded-full transition-all ${
+                      index === activeIndex ? 'w-8 bg-[#efe0c3]' : 'w-2.5 bg-white/40'
+                    }`}
+                  />
+                ))}
+              </div>
+            ) : null}
+          </motion.div>
+        </div>
+      </section>
+    );
+  }
 
   if (!product?.images[0]?.url) {
     return (

@@ -6,17 +6,19 @@ import {
   getAdminColors,
   getAdminEnumLabels,
   getAdminFlashSales,
+  getAdminHeroSlides,
   getAdminSizes,
 } from '@/lib/admin/data';
 
 export default async function AdminSettingsPage() {
   const session = await requireAdminSession();
-  const [categories, brands, sizes, colors, flashSales, enumLabels] = await Promise.all([
+  const [categories, brands, sizes, colors, flashSales, heroSlides, enumLabels] = await Promise.all([
     getAdminCategories(),
     getAdminBrands(),
     getAdminSizes(),
     getAdminColors(),
     getAdminFlashSales(),
+    getAdminHeroSlides(),
     getAdminEnumLabels(),
   ]);
 
@@ -28,6 +30,7 @@ export default async function AdminSettingsPage() {
       sizes={sizes}
       colors={colors}
       flashSales={flashSales}
+      heroSlides={heroSlides}
       enumLabels={enumLabels}
     />
   );
