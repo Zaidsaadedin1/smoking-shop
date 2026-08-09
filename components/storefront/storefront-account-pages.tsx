@@ -680,8 +680,10 @@ function LogoutButton() {
       style={getSecondaryButtonStyle(isDark)}
       disabled={isPending}
     >
-      <LogOut className="h-4 w-4" />
-      {isPending ? t('PLEASE WAIT') : t('SIGN OUT')}
+      <span className="flex items-center justify-center gap-2 leading-none">
+        <LogOut className="h-4 w-4 shrink-0" />
+        <span>{isPending ? t('PLEASE WAIT') : t('SIGN OUT')}</span>
+      </span>
     </button>
   );
 }
