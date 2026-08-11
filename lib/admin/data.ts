@@ -1,4 +1,7 @@
 import {
+  listDeliveryZones,
+  listNavigationItems,
+  listCoupons,
   listFlashSales,
   listHeroSlides,
   listAdminLookups,
@@ -169,6 +172,43 @@ export type AdminHeroSlideRecord = {
   created_at: string;
 };
 
+export type AdminCouponRecord = {
+  id: string;
+  code: string;
+  name: string;
+  description: string;
+  discount_type: string;
+  discount_value: number;
+  min_subtotal: number | null;
+  starts_at: string;
+  ends_at: string;
+  is_active: boolean;
+  created_at: string;
+};
+
+export type AdminNavigationItemRecord = {
+  id: string;
+  parent_id: string;
+  label: string;
+  label_ar: string;
+  path: string;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+};
+
+export type AdminDeliveryZoneRecord = {
+  id: string;
+  country: string;
+  country_ar: string;
+  city: string;
+  city_ar: string;
+  fee: number;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+};
+
 function toNumber(value: string | number | null | undefined) {
   if (value === null || value === undefined || value === '') {
     return null;
@@ -325,6 +365,55 @@ export async function getAdminHeroSlides(): Promise<AdminHeroSlideRecord[]> {
     display_seconds: Number(row.display_seconds ?? 6),
     sort_order: Number(row.sort_order ?? 0),
     is_active: Boolean(row.is_active),
+    created_at: row.created_at ?? '',
+  }));
+}
+
+export async function getAdminCoupons(): Promise<AdminCouponRecord[]> {
+  const auth = await getAdminSupabaseAuth();
+  const rows = await listCoupons(auth);
+  return (rows ?? []).map((row) => ({
+    id: row.id,
+    code: row.code,
+    name: row.name,
+    description: row.description ?? '',
+    discount_type: row.discount_type,
+    discount_value: Number(row.discount_value),
+    min_subtotal: toNumber(row.min_subtotal),
+    starts_at: row.starts_at ?? '',
+    ends_at: row.ends_at ?? '',
+    is_active: row.is_active ?? true,
+    created_at: row.created_at ?? '',
+  }));
+}
+
+export async function getAdminNavigationItems(): Promise<AdminNavigationItemRecord[]> {
+  const auth = await getAdminSupabaseAuth();
+  const rows = await listNavigationItems(auth);
+  return (rows ?? []).map((row) => ({
+    id: row.id,
+    parent_id: row.parent_id ?? '',
+    label: row.label,
+    label_ar: row.label_ar ?? '',
+    path: row.path,
+    sort_order: Number(row.sort_order ?? 0),
+    is_active: row.is_active ?? true,
+    created_at: row.created_at ?? '',
+  }));
+}
+
+export async function getAdminDeliveryZones(): Promise<AdminDeliveryZoneRecord[]> {
+  const auth = await getAdminSupabaseAuth();
+  const rows = await listDeliveryZones(auth);
+  return (rows ?? []).map((row) => ({
+    id: row.id,
+    country: row.country,
+    country_ar: row.country_ar ?? '',
+    city: row.city ?? '',
+    city_ar: row.city_ar ?? '',
+    fee: Number(row.fee),
+    sort_order: Number(row.sort_order ?? 0),
+    is_active: row.is_active ?? true,
     created_at: row.created_at ?? '',
   }));
 }

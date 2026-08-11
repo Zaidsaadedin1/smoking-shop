@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { CheckoutPageView } from '@/components/storefront/storefront-pages';
-import { listAddresses } from '@/lib/api/store-api';
+import { listActiveDeliveryZones, listAddresses } from '@/lib/api/store-api';
 import { getCustomerAuthHeaders, getCustomerSession } from '@/lib/customer/auth';
 
 export default async function CheckoutPage() {
@@ -11,10 +11,10 @@ export default async function CheckoutPage() {
   }
 
   const authHeaders = await getCustomerAuthHeaders();
-  const addresses = await listAddresses(
-    session.id,
-    authHeaders ? { headers: authHeaders } : undefined
-  );
+  const [addresses, deliveryZones] = await Promise.all([
+    listAddresses(session.id, authHeaders ? { headers: authHeaders } : undefined),
+    listActiveDeliveryZones(),
+  ]);
 
   return (
     <CheckoutPageView
@@ -28,11 +28,22 @@ export default async function CheckoutPage() {
         label: address.label ?? 'Address',
         fullName: address.full_name,
         phone: address.phone,
+        country: address.country,
         city: address.city,
         area: address.area ?? '',
         street: address.street ?? '',
         building: address.building ?? '',
         isDefault: address.is_default,
+      }))}
+      deliveryZones={(deliveryZones ?? []).map((zone) => ({
+        id: zone.id,
+        country: zone.country,
+        countryAr: zone.country_ar ?? '',
+        city: zone.city ?? '',
+        cityAr: zone.city_ar ?? '',
+        fee: Number(zone.fee),
+        sortOrder: Number(zone.sort_order ?? 0),
+        isActive: zone.is_active ?? true,
       }))}
     />
   );

@@ -1,4 +1,11 @@
-import { FlashSale, StoreCategory, StoreProduct, StoreSettings } from '@/lib/commerce-types';
+import {
+  CouponDefinition,
+  FlashSale,
+  NavigationItem,
+  StoreCategory,
+  StoreProduct,
+  StoreSettings,
+} from '@/lib/commerce-types';
 
 export const storeSettings: StoreSettings = {
   announcement: 'DELIVERY ACROSS JORDAN 🇯🇴  •  NEW DROP AVAILABLE NOW',
@@ -50,19 +57,34 @@ export const storeCategories: StoreCategory[] = [
   },
 ];
 
-export const fallbackFlashSale: FlashSale = {
-  id: 'sale-midnight',
-  title: 'MIDNIGHT SALE',
-  description: '20% OFF SELECTED PIECES',
-  discountLabel: '20% OFF',
-  startsAt: '2026-08-08T18:00:00.000Z',
-  endsAt: '2026-08-09T21:59:00.000Z',
-  ctaText: 'SHOP THE SALE',
-  ctaUrl: '/shop?sale=true',
-  showAsModal: true,
-  image:
-    'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=900&q=80',
-};
+export const storeCoupons: CouponDefinition[] = [
+  {
+    code: 'WELCOME10',
+    name: 'Welcome 10',
+    description: '10% off orders above 25 JOD.',
+    discountType: 'percentage',
+    discountValue: 10,
+    minSubtotal: 25,
+    isActive: true,
+  },
+  {
+    code: 'NAILS5',
+    name: 'Nails 5',
+    description: '5 JOD off orders above 20 JOD.',
+    discountType: 'fixed',
+    discountValue: 5,
+    minSubtotal: 20,
+    isActive: true,
+  },
+];
+
+export const fallbackNavigationItems: NavigationItem[] = [
+  { id: 'nav-new', label: 'NEW', labelAr: 'الجديد', path: '/shop?sort=newest', sortOrder: 0 },
+  { id: 'nav-shop', label: 'SHOP', labelAr: 'تسوقي', path: '/shop', sortOrder: 1 },
+  { id: 'nav-tops', label: 'TOPS', labelAr: 'القمصان', path: '/shop?category=tops', sortOrder: 2 },
+  { id: 'nav-nails', label: 'NAILS', labelAr: 'الأظافر', path: '/shop?category=nails', sortOrder: 3 },
+  { id: 'nav-sale', label: 'SALE', labelAr: 'التخفيضات', path: '/shop?sale=true', sortOrder: 4 },
+];
 
 function product(
   id: string,

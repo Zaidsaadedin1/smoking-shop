@@ -70,6 +70,27 @@ export type FlashSale = {
   modalDescription?: string;
 };
 
+export type CouponDefinition = {
+  code: string;
+  name: string;
+  description?: string;
+  discountType: 'percentage' | 'fixed';
+  discountValue: number;
+  minSubtotal?: number;
+  startsAt?: string | null;
+  endsAt?: string | null;
+  isActive?: boolean;
+};
+
+export type AppliedCoupon = {
+  code: string;
+  name: string;
+  description?: string;
+  discountType: 'percentage' | 'fixed';
+  discountValue: number;
+  minSubtotal?: number;
+};
+
 export type HeroSlide = {
   id: string;
   eyebrow: string;
@@ -95,6 +116,27 @@ export type StoreSettings = {
     instagram: string;
     facebook: string;
   };
+};
+
+export type NavigationItem = {
+  id: string;
+  parentId?: string | null;
+  label: string;
+  labelAr?: string;
+  path: string;
+  sortOrder: number;
+  children?: NavigationItem[];
+};
+
+export type DeliveryZone = {
+  id: string;
+  country: string;
+  countryAr?: string;
+  city?: string | null;
+  cityAr?: string;
+  fee: number;
+  sortOrder: number;
+  isActive?: boolean;
 };
 
 export type CatalogFilters = {

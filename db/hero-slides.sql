@@ -35,66 +35,26 @@ create policy "admins_can_read_all_hero_slides"
 on public.hero_slides
 for select
 to authenticated
-using (
-  exists (
-    select 1
-    from public.profiles
-    where profiles.id = auth.uid()
-      and profiles.role in ('admin', 'super_admin')
-      and coalesce(profiles.is_blocked, false) = false
-  )
-);
+using (public.current_user_is_admin());
 
 drop policy if exists "admins_can_insert_hero_slides" on public.hero_slides;
 create policy "admins_can_insert_hero_slides"
 on public.hero_slides
 for insert
 to authenticated
-with check (
-  exists (
-    select 1
-    from public.profiles
-    where profiles.id = auth.uid()
-      and profiles.role in ('admin', 'super_admin')
-      and coalesce(profiles.is_blocked, false) = false
-  )
-);
+with check (public.current_user_is_admin());
 
 drop policy if exists "admins_can_update_hero_slides" on public.hero_slides;
 create policy "admins_can_update_hero_slides"
 on public.hero_slides
 for update
 to authenticated
-using (
-  exists (
-    select 1
-    from public.profiles
-    where profiles.id = auth.uid()
-      and profiles.role in ('admin', 'super_admin')
-      and coalesce(profiles.is_blocked, false) = false
-  )
-)
-with check (
-  exists (
-    select 1
-    from public.profiles
-    where profiles.id = auth.uid()
-      and profiles.role in ('admin', 'super_admin')
-      and coalesce(profiles.is_blocked, false) = false
-  )
-);
+using (public.current_user_is_admin())
+with check (public.current_user_is_admin());
 
 drop policy if exists "admins_can_delete_hero_slides" on public.hero_slides;
 create policy "admins_can_delete_hero_slides"
 on public.hero_slides
 for delete
 to authenticated
-using (
-  exists (
-    select 1
-    from public.profiles
-    where profiles.id = auth.uid()
-      and profiles.role in ('admin', 'super_admin')
-      and coalesce(profiles.is_blocked, false) = false
-  )
-);
+using (public.current_user_is_admin());

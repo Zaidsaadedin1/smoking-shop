@@ -7,18 +7,10 @@ import { usePathname } from 'next/navigation';
 import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { LocaleSwitcher, useLocale } from '@/components/storefront/locale-provider';
 import { ThemeSwitcher, useThemeMode } from '@/components/storefront/theme-provider';
-import { FlashSale, StoreSettings } from '@/lib/commerce-types';
+import { FlashSale, NavigationItem, StoreSettings } from '@/lib/commerce-types';
 import { formatCurrency } from '@/lib/commerce-utils';
 import { getCartProducts, useCartStore } from '@/stores/use-cart-store';
 import { useUiStore } from '@/stores/use-ui-store';
-
-const desktopNav = [
-  { label: 'NEW', href: '/shop?sort=newest' },
-  { label: 'SHOP', href: '/shop' },
-  { label: 'TOPS', href: '/shop?category=tops' },
-  { label: 'NAILS', href: '/shop?category=nails' },
-  { label: 'SALE', href: '/shop?sale=true' },
-];
 
 const mobileNav = [
   { label: 'HOME', href: '/', icon: Search },
@@ -32,10 +24,12 @@ export function StorefrontShell({
   children,
   settings,
   flashSale,
+  navigationItems,
 }: {
   children: ReactNode;
   settings: StoreSettings;
   flashSale: FlashSale | null;
+  navigationItems: NavigationItem[];
 }) {
   const pathname = usePathname();
   const { t, localize } = useLocale();
@@ -88,15 +82,17 @@ export function StorefrontShell({
         scrolled={scrolled || pathname !== '/'}
         onMenu={() => setMenuOpen(true)}
         onCart={openCart}
+        navigationItems={navigationItems}
       />
       <MobileMenu
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
         brandName={settings.brandName}
+        navigationItems={navigationItems}
       />
       <main className="pb-24 md:pb-10">{children}</main>
       {!isCheckout ? <MobileBottomNav /> : null}
-      <Footer settings={settings} />
+      <Footer settings={settings} navigationItems={navigationItems} />
       <CartDrawer open={isCartOpen} onClose={closeCart} />
       <FlashSaleModal sale={flashSale} />
       <ToastViewport toasts={toasts} dismissToast={dismissToast} />
@@ -124,12 +120,14 @@ function Header({
   scrolled,
   onMenu,
   onCart,
+  navigationItems,
 }: {
   brandName: string;
   cartCount: number;
   scrolled: boolean;
   onMenu: () => void;
   onCart: () => void;
+  navigationItems: NavigationItem[];
 }) {
   const { t, localize } = useLocale();
   const { isDark } = useThemeMode();
@@ -172,10 +170,37 @@ function Header({
           className="hidden items-center gap-6 text-xs tracking-[0.32em] md:flex"
           style={{ color: secondaryTextColor }}
         >
-          {desktopNav.map((item) => (
-            <Link key={item.href} href={item.href} className={`transition ${navHoverClassName}`}>
-              {t(item.label)}
-            </Link>
+          {navigationItems.map((item) => (
+            <div key={item.id} className="group relative">
+              <Link
+                href={item.path}
+                className={`inline-flex items-center gap-2 border-b border-transparent py-2 transition ${navHoverClassName} group-hover:border-current`}
+              >
+                <span>{localize(item.label, item.labelAr)}</span>
+                {item.children?.length ? (
+                  <span className="text-[8px] opacity-60 transition duration-200 group-hover:opacity-100">
+                    ▾
+                  </span>
+                ) : null}
+              </Link>
+              {item.children?.length ? (
+                <div className="invisible absolute left-0 top-full z-50 min-w-64 pt-3 opacity-0 transition duration-200 group-hover:visible group-hover:opacity-100">
+                  <div className="overflow-hidden border border-[var(--border)] bg-[var(--background)] shadow-[0_18px_40px_rgba(0,0,0,0.16)]">
+                    <div className="space-y-0.5 p-2">
+                    {item.children.map((child) => (
+                      <Link
+                        key={child.id}
+                        href={child.path}
+                        className="block border border-transparent px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-[var(--text-secondary)] transition hover:border-[var(--border)] hover:bg-[var(--card)] hover:text-[var(--text)]"
+                      >
+                        {localize(child.label, child.labelAr)}
+                      </Link>
+                    ))}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </div>
           ))}
         </nav>
 
@@ -252,10 +277,12 @@ function MobileMenu({
   open,
   onClose,
   brandName,
+  navigationItems,
 }: {
   open: boolean;
   onClose: () => void;
   brandName: string;
+  navigationItems: NavigationItem[];
 }) {
   const { t, localize } = useLocale();
   const { isDark } = useThemeMode();
@@ -296,15 +323,26 @@ function MobileMenu({
               <ThemeSwitcher />
             </div>
             <div className="space-y-5 text-lg uppercase tracking-[0.2em] text-[var(--text-secondary)]">
-              {desktopNav.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={onClose}
-                  className="block transition hover:text-white"
-                >
-                  {t(item.label)}
-                </Link>
+              {navigationItems.map((item) => (
+                <div key={item.id}>
+                  <Link href={item.path} onClick={onClose} className="block transition hover:text-white">
+                    {localize(item.label, item.labelAr)}
+                  </Link>
+                  {item.children?.length ? (
+                    <div className="mt-3 space-y-3 border-s border-white/10 ps-4 text-sm tracking-[0.16em]">
+                      {item.children.map((child) => (
+                        <Link
+                          key={child.id}
+                          href={child.path}
+                          onClick={onClose}
+                          className="block transition hover:text-white"
+                        >
+                          {localize(child.label, child.labelAr)}
+                        </Link>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
               ))}
               <Link href="/account" onClick={onClose} className="block transition hover:text-white">
                 {t('ACCOUNT')}
@@ -352,8 +390,14 @@ function MobileBottomNav() {
   );
 }
 
-function Footer({ settings }: { settings: StoreSettings }) {
-  const { t } = useLocale();
+function Footer({
+  settings,
+  navigationItems,
+}: {
+  settings: StoreSettings;
+  navigationItems: NavigationItem[];
+}) {
+  const { t, localize } = useLocale();
   return (
     <footer
       className="border-t px-4 py-16 md:px-8 lg:px-12"
@@ -371,7 +415,13 @@ function Footer({ settings }: { settings: StoreSettings }) {
             {t('Dark feminine pieces, nails, and finishing touches.')}
           </p>
         </div>
-        <FooterColumn title="SHOP" links={desktopNav} />
+        <FooterColumn
+          title="SHOP"
+          links={navigationItems.map((item) => ({
+            label: localize(item.label, item.labelAr),
+            href: item.path,
+          }))}
+        />
         <FooterColumn
           title="HELP"
           links={[

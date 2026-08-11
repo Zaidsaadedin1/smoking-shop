@@ -14,6 +14,7 @@ export default async function AddressesPage() {
         label: address.label ?? 'Address',
         fullName: address.full_name,
         phone: address.phone,
+        country: address.country,
         city: address.city,
         area: address.area ?? '',
         street: address.street ?? '',

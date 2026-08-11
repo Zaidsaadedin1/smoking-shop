@@ -15,9 +15,10 @@ import {
   Rating,
   SectionHeading,
 } from '@/components/storefront/storefront-sections';
-import { FlashSale, StoreCategory, StoreProduct } from '@/lib/commerce-types';
+import { DeliveryZone, FlashSale, StoreCategory, StoreProduct } from '@/lib/commerce-types';
 import {
   calculateDiscount,
+  calculateDiscountAmount,
   filterProducts,
   formatCurrency,
   getCompareAtPrice,
@@ -26,6 +27,8 @@ import {
   getProductInventory,
   getProductSizes,
 } from '@/lib/commerce-utils';
+import { calculateCouponDiscount } from '@/lib/coupon-utils';
+import { resolveDeliveryFee } from '@/lib/delivery-zones';
 import { getCartProducts, useCartStore } from '@/stores/use-cart-store';
 import { useUiStore } from '@/stores/use-ui-store';
 
@@ -35,6 +38,8 @@ export function ShopPageView({
   title = 'SHOP',
   description = 'Dark feminine pieces, nails, and finishing touches.',
   initialCategory,
+  initialSort,
+  initialSale = false,
   flashSale,
 }: {
   products: StoreProduct[];
@@ -42,19 +47,24 @@ export function ShopPageView({
   title?: string;
   description?: string;
   initialCategory?: string;
+  initialSort?: 'newest' | 'price-asc' | 'price-desc' | 'featured';
+  initialSale?: boolean;
   flashSale?: FlashSale | null;
 }) {
   const { t, localize } = useLocale();
   const [category, setCategory] = useState(initialCategory ?? 'all');
-  const [sort, setSort] = useState<'newest' | 'price-asc' | 'price-desc' | 'featured'>('newest');
+  const [sort, setSort] = useState<'newest' | 'price-asc' | 'price-desc' | 'featured'>(
+    initialSort ?? 'newest'
+  );
 
   const filtered = useMemo(
     () =>
       filterProducts(products, {
         category: category !== 'all' ? category : undefined,
         sort,
+        sale: initialSale || undefined,
       }),
-    [category, products, sort]
+    [category, initialSale, products, sort]
   );
 
   return (
@@ -76,7 +86,7 @@ export function ShopPageView({
               <span>{t('ALL')}</span>
               <span className="text-[var(--muted)]">+</span>
             </button>
-            {categories.slice(0, 6).map((item) => (
+            {categories.map((item) => (
               <button
                 key={item.id}
                 type="button"
@@ -737,8 +747,14 @@ function VariantMetric({ label, value }: { label: string; value: string }) {
 export function CartPageView({ products }: { products: StoreProduct[] }) {
   const { t, localize } = useLocale();
   const items = useCartStore((state) => state.items);
+  const appliedCoupon = useCartStore((state) => state.appliedCoupon);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
+  const setAppliedCoupon = useCartStore((state) => state.setAppliedCoupon);
+  const clearAppliedCoupon = useCartStore((state) => state.clearAppliedCoupon);
+  const pushToast = useUiStore((state) => state.pushToast);
+  const [couponCode, setCouponCode] = useState(appliedCoupon?.code ?? '');
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const lines = items
     .map((item) => {
       const product = products.find((entry) => entry.id === item.productId);
@@ -750,7 +766,130 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
     })
     .filter((line): line is NonNullable<typeof line> => Boolean(line));
   const subtotal = lines.reduce((sum, line) => sum + line.variant.price * line.quantity, 0);
-  const total = subtotal + 3.5;
+  const couponDiscountAmount = useMemo(
+    () => (appliedCoupon ? calculateCouponDiscount(subtotal, appliedCoupon) : 0),
+    [appliedCoupon, subtotal]
+  );
+  const total = Math.max(0, subtotal - couponDiscountAmount);
+
+  useEffect(() => {
+    setCouponCode(appliedCoupon?.code ?? '');
+  }, [appliedCoupon?.code]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function revalidateCoupon() {
+      if (!appliedCoupon || !lines.length) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/coupons/validate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code: appliedCoupon.code,
+            subtotal,
+          }),
+        });
+
+        const result = (await response.json()) as {
+          data?: typeof appliedCoupon;
+          error?: string;
+        };
+
+        if (!mounted) {
+          return;
+        }
+
+        if (!response.ok || result.error || !result.data) {
+          clearAppliedCoupon();
+          pushToast({
+            title: t('Coupon removed'),
+            description:
+              result.error
+                ? localizeCouponError(result.error, t)
+                : t('This coupon no longer applies to your bag.'),
+          });
+          return;
+        }
+
+        if (!appliedCoupon || !sameAppliedCoupon(appliedCoupon, result.data)) {
+          setAppliedCoupon(result.data);
+        }
+      } catch {
+        if (mounted) {
+          clearAppliedCoupon();
+        }
+      }
+    }
+
+    void revalidateCoupon();
+
+    return () => {
+      mounted = false;
+    };
+  }, [
+    appliedCoupon?.code,
+    appliedCoupon?.description,
+    appliedCoupon?.discountType,
+    appliedCoupon?.discountValue,
+    appliedCoupon?.minSubtotal,
+    clearAppliedCoupon,
+    lines.length,
+    pushToast,
+    setAppliedCoupon,
+    subtotal,
+    t,
+  ]);
+
+  async function applyCoupon() {
+    if (!couponCode.trim() || isApplyingCoupon) {
+      return;
+    }
+
+    setIsApplyingCoupon(true);
+
+    try {
+      const response = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: couponCode,
+          subtotal,
+        }),
+      });
+      const result = (await response.json()) as {
+        data?: NonNullable<typeof appliedCoupon>;
+        error?: string;
+      };
+
+      if (!response.ok || result.error || !result.data) {
+        throw new Error(result.error ?? 'Failed to apply coupon');
+      }
+
+      setAppliedCoupon(result.data);
+      pushToast({
+        title: t('Coupon applied'),
+        description: `${result.data.code} ${t('is active on this order.')}`,
+      });
+    } catch (error) {
+      pushToast({
+        title: t('Coupon failed'),
+        description:
+          error instanceof Error
+            ? localizeCouponError(error.message, t)
+            : t('Unable to apply that coupon right now.'),
+      });
+    } finally {
+      setIsApplyingCoupon(false);
+    }
+  }
 
   return (
     <Container className="py-8 md:py-14">
@@ -811,22 +950,45 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
               {t('ORDER SUMMARY')}
             </div>
             <SummaryRow label={t('Subtotal')} value={formatCurrency(subtotal)} />
-            <SummaryRow label={t('Delivery')} value={formatCurrency(3.5)} />
+            {couponDiscountAmount > 0 ? (
+              <SummaryRow
+                label={appliedCoupon ? `${t('Coupon')} (${appliedCoupon.code})` : t('Coupon')}
+                value={`-${formatCurrency(couponDiscountAmount)}`}
+              />
+            ) : null}
+            <SummaryRow label={t('Delivery')} value={lines.length ? t('Calculated at checkout') : formatCurrency(0)} />
             <SummaryRow label={t('Tax')} value={formatCurrency(0)} />
             <div className="mt-4 border-t border-white/8 pt-4">
               <SummaryRow label={t('Total')} value={formatCurrency(total)} emphasis />
             </div>
             <div className="mt-5 grid gap-3">
               <input
-                placeholder={t('CouponInput')}
+                value={couponCode}
+                onChange={(event) => setCouponCode(event.target.value)}
+                placeholder={t('Enter promo code')}
                 className="h-12 rounded-full border border-white/10 bg-black/20 px-5 text-sm outline-none"
               />
-              <button
-                type="button"
-                className="rounded-full border border-white/10 px-5 py-3 text-sm tracking-[0.2em]"
-              >
-                {t('Apply')}
-              </button>
+              {appliedCoupon ? (
+                <button
+                  type="button"
+                  onClick={clearAppliedCoupon}
+                  className="rounded-full border border-white/10 px-5 py-3 text-sm tracking-[0.2em]"
+                >
+                  {t('REMOVE COUPON')}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  disabled={!lines.length || isApplyingCoupon}
+                  onClick={applyCoupon}
+                  className="rounded-full border border-white/10 px-5 py-3 text-sm tracking-[0.2em] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {isApplyingCoupon ? t('APPLYING') : t('Apply')}
+                </button>
+              )}
+              {appliedCoupon?.description ? (
+                <div className="text-xs text-[var(--text-secondary)]">{appliedCoupon.description}</div>
+              ) : null}
               <Link
                 href="/checkout"
                 className="rounded-full bg-[var(--accent)] px-5 py-3 text-center text-sm tracking-[0.2em]"
@@ -935,6 +1097,7 @@ type CheckoutAddressView = {
   label: string;
   fullName: string;
   phone: string;
+  country: string;
   city: string;
   area: string;
   street?: string;
@@ -958,6 +1121,7 @@ type ActiveFlashSaleView = {
 type CheckoutFormState = {
   fullName: string;
   phone: string;
+  country: string;
   city: string;
   area: string;
   street: string;
@@ -968,54 +1132,108 @@ type CheckoutFormState = {
 export function CheckoutPageView({
   session,
   addresses,
+  deliveryZones,
 }: {
   session: CheckoutSessionView;
   addresses: CheckoutAddressView[];
+  deliveryZones: DeliveryZone[];
 }) {
   const { t, localize } = useLocale();
   const router = useRouter();
   const items = useCartStore((state) => state.items);
+  const appliedCoupon = useCartStore((state) => state.appliedCoupon);
   const clearCart = useCartStore((state) => state.clearCart);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
+  const setAppliedCoupon = useCartStore((state) => state.setAppliedCoupon);
+  const clearAppliedCoupon = useCartStore((state) => state.clearAppliedCoupon);
   const pushToast = useUiStore((state) => state.pushToast);
   const lines = useMemo(() => getCartProducts(items), [items]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [couponCode, setCouponCode] = useState(appliedCoupon?.code ?? '');
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [activeFlashSale, setActiveFlashSale] = useState<ActiveFlashSaleView | null>(null);
   const defaultAddress = addresses.find((address) => address.isDefault) ?? addresses[0] ?? null;
   const [selectedAddressId, setSelectedAddressId] = useState(defaultAddress?.id ?? '');
   const [form, setForm] = useState<CheckoutFormState>({
     fullName: defaultAddress?.fullName ?? session.fullName,
     phone: defaultAddress?.phone ?? session.phone,
+    country: defaultAddress?.country ?? '',
     city: defaultAddress?.city ?? '',
     area: defaultAddress?.area ?? '',
     street: defaultAddress?.street ?? '',
     building: defaultAddress?.building ?? '',
     paymentMethod: 'cash_on_delivery',
   });
+  const countryOptions = useMemo(
+    () =>
+      deliveryZones.reduce<Array<{ value: string; label: string }>>((acc, zone) => {
+        if (acc.some((item) => item.value === zone.country)) {
+          return acc;
+        }
+
+        acc.push({
+          value: zone.country,
+          label: localize(zone.country, zone.countryAr),
+        });
+        return acc;
+      }, []),
+    [deliveryZones, localize]
+  );
+  const cityOptions = useMemo(
+    () =>
+      deliveryZones
+        .filter((zone) => zone.country === form.country && zone.city)
+        .reduce<Array<{ value: string; label: string }>>((acc, zone) => {
+          if (!zone.city || acc.some((item) => item.value === zone.city)) {
+            return acc;
+          }
+
+          acc.push({
+            value: zone.city,
+            label: localize(zone.city, zone.cityAr),
+          });
+          return acc;
+        }, []),
+    [deliveryZones, form.country, localize]
+  );
   const subtotal = lines.reduce((sum, line) => sum + line.variant.price * line.quantity, 0);
-  const discountAmount = useMemo(() => {
+  const flashSaleDiscountAmount = useMemo(() => {
     if (!activeFlashSale) {
       return 0;
     }
 
-    const rawDiscount =
-      activeFlashSale.discount_type === 'percentage'
-        ? (subtotal * activeFlashSale.discount_value) / 100
-        : activeFlashSale.discount_value;
-
-    return Math.min(subtotal, Number(rawDiscount.toFixed(2)));
+    return calculateDiscountAmount(
+      subtotal,
+      activeFlashSale.discount_type,
+      activeFlashSale.discount_value
+    );
   }, [activeFlashSale, subtotal]);
-  const shippingAmount = lines.length ? 3.5 : 0;
+  const couponDiscountAmount = useMemo(() => {
+    if (!appliedCoupon) {
+      return 0;
+    }
+
+    const remainingSubtotal = Math.max(0, subtotal - flashSaleDiscountAmount);
+    return Math.min(remainingSubtotal, calculateCouponDiscount(subtotal, appliedCoupon));
+  }, [appliedCoupon, flashSaleDiscountAmount, subtotal]);
+  const shippingAmount = lines.length
+    ? (resolveDeliveryFee(deliveryZones, form.country, form.city) ?? 0)
+    : 0;
+  const hasConfiguredDelivery = !lines.length || resolveDeliveryFee(deliveryZones, form.country, form.city) !== null;
+  const discountAmount = flashSaleDiscountAmount + couponDiscountAmount;
   const total = Math.max(0, subtotal - discountAmount + shippingAmount);
   const checkoutFields: Array<{ label: string; key: keyof CheckoutFormState }> = [
     { label: 'Full Name', key: 'fullName' },
     { label: 'Phone', key: 'phone' },
-    { label: 'City', key: 'city' },
     { label: 'Area', key: 'area' },
     { label: 'Street', key: 'street' },
     { label: 'Building', key: 'building' },
   ];
+
+  useEffect(() => {
+    setCouponCode(appliedCoupon?.code ?? '');
+  }, [appliedCoupon?.code]);
 
   useEffect(() => {
     if (!selectedAddressId) {
@@ -1032,12 +1250,32 @@ export function CheckoutPageView({
       ...current,
       fullName: selectedAddress.fullName,
       phone: selectedAddress.phone,
+      country: selectedAddress.country,
       city: selectedAddress.city,
       area: selectedAddress.area,
       street: selectedAddress.street ?? '',
       building: selectedAddress.building ?? '',
     }));
   }, [addresses, selectedAddressId]);
+
+  useEffect(() => {
+    if (!form.country) {
+      return;
+    }
+
+    if (cityOptions.length === 0) {
+      return;
+    }
+
+    if (cityOptions.some((option) => option.value === form.city)) {
+      return;
+    }
+
+    setForm((current) => ({
+      ...current,
+      city: cityOptions[0]?.value ?? '',
+    }));
+  }, [cityOptions, form.city, form.country]);
 
   useEffect(() => {
     let mounted = true;
@@ -1091,6 +1329,120 @@ export function CheckoutPageView({
     };
   }, [lines.length]);
 
+  useEffect(() => {
+    let mounted = true;
+
+    async function revalidateCoupon() {
+      if (!appliedCoupon || !lines.length) {
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/coupons/validate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            code: appliedCoupon.code,
+            subtotal,
+          }),
+        });
+        const result = (await response.json()) as {
+          data?: typeof appliedCoupon;
+          error?: string;
+        };
+
+        if (!mounted) {
+          return;
+        }
+
+        if (!response.ok || result.error || !result.data) {
+          clearAppliedCoupon();
+          pushToast({
+            title: t('Coupon removed'),
+            description:
+              result.error
+                ? localizeCouponError(result.error, t)
+                : t('This coupon no longer applies to your order.'),
+          });
+          return;
+        }
+
+        if (!appliedCoupon || !sameAppliedCoupon(appliedCoupon, result.data)) {
+          setAppliedCoupon(result.data);
+        }
+      } catch {
+        if (mounted) {
+          clearAppliedCoupon();
+        }
+      }
+    }
+
+    void revalidateCoupon();
+
+    return () => {
+      mounted = false;
+    };
+  }, [
+    appliedCoupon?.code,
+    appliedCoupon?.description,
+    appliedCoupon?.discountType,
+    appliedCoupon?.discountValue,
+    appliedCoupon?.minSubtotal,
+    clearAppliedCoupon,
+    lines.length,
+    pushToast,
+    setAppliedCoupon,
+    subtotal,
+    t,
+  ]);
+
+  async function applyCoupon() {
+    if (!couponCode.trim() || isApplyingCoupon) {
+      return;
+    }
+
+    setIsApplyingCoupon(true);
+
+    try {
+      const response = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: couponCode,
+          subtotal,
+        }),
+      });
+      const result = (await response.json()) as {
+        data?: NonNullable<typeof appliedCoupon>;
+        error?: string;
+      };
+
+      if (!response.ok || result.error || !result.data) {
+        throw new Error(result.error ?? 'Failed to apply coupon');
+      }
+
+      setAppliedCoupon(result.data);
+      pushToast({
+        title: t('Coupon applied'),
+        description: `${result.data.code} ${t('is active on this order.')}`,
+      });
+    } catch (error) {
+      pushToast({
+        title: t('Coupon failed'),
+        description:
+          error instanceof Error
+            ? localizeCouponError(error.message, t)
+            : t('Unable to apply that coupon right now.'),
+      });
+    } finally {
+      setIsApplyingCoupon(false);
+    }
+  }
+
   async function placeOrder() {
     if (!lines.length || isSubmitting) {
       return;
@@ -1099,6 +1451,7 @@ export function CheckoutPageView({
     if (
       !form.fullName.trim() ||
       !form.phone.trim() ||
+      !form.country.trim() ||
       !form.city.trim() ||
       !form.area.trim() ||
       !form.street.trim()
@@ -1106,6 +1459,14 @@ export function CheckoutPageView({
       pushToast({
         title: t('Missing details'),
         description: t('Please complete the delivery details before placing your order.'),
+      });
+      return;
+    }
+
+    if (!hasConfiguredDelivery) {
+      pushToast({
+        title: t('Delivery unavailable'),
+        description: t('No delivery fee is configured for the selected location.'),
       });
       return;
     }
@@ -1124,6 +1485,7 @@ export function CheckoutPageView({
           customerEmail: session.email,
           customerPhone: form.phone,
           shippingAddress: {
+            country: form.country,
             city: form.city,
             area: form.area,
             street: form.street,
@@ -1136,7 +1498,7 @@ export function CheckoutPageView({
           taxAmount: 0,
           totalAmount: total,
           currency: 'JOD',
-          couponCode: activeFlashSale?.title ?? null,
+          couponCode: appliedCoupon?.code ?? null,
           items: lines.map((line) => ({
             productId: line.product.id,
             variantId: line.variant.id,
@@ -1168,7 +1530,7 @@ export function CheckoutPageView({
         title: t('Order failed'),
         description:
           error instanceof Error
-            ? error.message
+            ? t(error.message)
             : t('Something went wrong while placing the order.'),
       });
     } finally {
@@ -1246,7 +1608,7 @@ export function CheckoutPageView({
                     onClick={() => setSelectedAddressId(address.id)}
                     className={`rounded-[22px] border px-4 py-4 text-left transition ${
                       selectedAddressId === address.id
-                        ? 'border-white bg-white text-black'
+                        ? 'border-[var(--text)] bg-[color:color-mix(in_srgb,var(--card)_88%,var(--text)_12%)] text-[var(--text)]'
                         : 'border-white/10 bg-transparent text-[var(--text)]'
                     }`}
                   >
@@ -1256,21 +1618,28 @@ export function CheckoutPageView({
                       </div>
                       {address.isDefault ? (
                         <span
-                          className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.2em] ${selectedAddressId === address.id ? 'bg-black text-white' : 'border border-white/10 text-[var(--muted)]'}`}
+                          className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.2em] ${selectedAddressId === address.id ? 'bg-[var(--text)] text-[var(--background)]' : 'border border-white/10 text-[var(--muted)]'}`}
                         >
                           {t('Default')}
                         </span>
                       ) : null}
                     </div>
                     <div
-                      className={`mt-2 text-sm ${selectedAddressId === address.id ? 'text-black/70' : 'text-[var(--text-secondary)]'}`}
+                      className={`mt-2 text-sm ${selectedAddressId === address.id ? 'text-[var(--text-secondary)]' : 'text-[var(--text-secondary)]'}`}
                     >
                       {address.fullName} · {address.phone}
                     </div>
                     <div
-                      className={`mt-1 text-sm ${selectedAddressId === address.id ? 'text-black/70' : 'text-[var(--text-secondary)]'}`}
+                      className={`mt-1 text-sm ${selectedAddressId === address.id ? 'text-[var(--text-secondary)]' : 'text-[var(--text-secondary)]'}`}
                     >
-                      {[address.city, address.area, address.street, address.building]
+                      {[address.country, address.city, address.area]
+                        .filter(Boolean)
+                        .join(', ')}
+                    </div>
+                    <div
+                      className={`mt-1 text-sm ${selectedAddressId === address.id ? 'text-[var(--text-secondary)]' : 'text-[var(--text-secondary)]'}`}
+                    >
+                      {[address.street, address.building]
                         .filter(Boolean)
                         .join(', ')}
                     </div>
@@ -1280,7 +1649,7 @@ export function CheckoutPageView({
               <div className="flex justify-end">
                 <Link
                   href="/addresses/new"
-                  className="rounded-full border border-white/10 px-4 py-2 text-xs tracking-[0.2em]"
+                className="rounded-[0.25rem] border border-white/10 px-4 py-2 text-xs tracking-[0.2em]"
                 >
                   {t('ADD ADDRESS')}
                 </Link>
@@ -1291,13 +1660,48 @@ export function CheckoutPageView({
               <div>{t('No saved addresses.')}</div>
               <Link
                 href="/addresses/new"
-                className="mt-4 inline-flex rounded-full border border-white/10 px-4 py-2 text-xs tracking-[0.2em] text-[var(--text)]"
+                className="mt-4 inline-flex rounded-[0.25rem] border border-white/10 px-4 py-2 text-xs tracking-[0.2em] text-[var(--text)]"
               >
                 {t('ADD ADDRESS')}
               </Link>
             </div>
           )}
           <div className="grid gap-4 md:grid-cols-2">
+            <select
+              value={form.country}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  country: event.target.value,
+                  city: '',
+                }))
+              }
+              className="h-12 rounded-[0.25rem] border border-white/10 bg-black/20 px-5 text-sm outline-none"
+            >
+              <option value="">{t('Select a country')}</option>
+              {countryOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <select
+              value={form.city}
+              onChange={(event) =>
+                setForm((current) => ({
+                  ...current,
+                  city: event.target.value,
+                }))
+              }
+              className="h-12 rounded-[0.25rem] border border-white/10 bg-black/20 px-5 text-sm outline-none"
+            >
+              <option value="">{t('Select a city')}</option>
+              {cityOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
             {checkoutFields.map((field) => (
               <input
                 key={field.key}
@@ -1309,7 +1713,7 @@ export function CheckoutPageView({
                   }))
                 }
                 placeholder={t(field.label)}
-                className="h-12 rounded-full border border-white/10 bg-black/20 px-5 text-sm outline-none"
+                className="h-12 rounded-[0.25rem] border border-white/10 bg-black/20 px-5 text-sm outline-none"
               />
             ))}
           </div>
@@ -1318,7 +1722,7 @@ export function CheckoutPageView({
             onChange={(event) =>
               setForm((current) => ({ ...current, paymentMethod: event.target.value }))
             }
-            className="h-12 rounded-full border border-white/10 bg-black/20 px-5 text-sm outline-none"
+            className="h-12 rounded-[0.25rem] border border-white/10 bg-black/20 px-5 text-sm outline-none"
           >
             <option value="cash_on_delivery">{t('Cash on Delivery')}</option>
             <option disabled>{t('Card (not configured)')}</option>
@@ -1396,11 +1800,61 @@ export function CheckoutPageView({
             ))}
           </div>
           <SummaryRow label={t('Subtotal')} value={formatCurrency(subtotal)} />
-          {discountAmount > 0 ? (
-            <SummaryRow label={t('Flash sale')} value={`-${formatCurrency(discountAmount)}`} />
+          {flashSaleDiscountAmount > 0 ? (
+            <SummaryRow
+              label={activeFlashSale ? `${t('Flash sale')} (${activeFlashSale.title})` : t('Flash sale')}
+              value={`-${formatCurrency(flashSaleDiscountAmount)}`}
+            />
           ) : null}
-          <SummaryRow label={t('Delivery')} value={formatCurrency(shippingAmount)} />
+          {couponDiscountAmount > 0 ? (
+            <SummaryRow
+              label={appliedCoupon ? `${t('Coupon')} (${appliedCoupon.code})` : t('Coupon')}
+              value={`-${formatCurrency(couponDiscountAmount)}`}
+            />
+          ) : null}
+          <div className="mt-5 grid gap-3">
+            <input
+              value={couponCode}
+              onChange={(event) => setCouponCode(event.target.value)}
+              placeholder={t('Enter promo code')}
+              className="h-12 rounded-[0.25rem] border border-white/10 bg-black/20 px-5 text-sm outline-none"
+            />
+            {appliedCoupon ? (
+              <button
+                type="button"
+                onClick={clearAppliedCoupon}
+                className="rounded-full border border-white/10 px-5 py-3 text-sm tracking-[0.2em]"
+              >
+                {t('REMOVE COUPON')}
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={!lines.length || isApplyingCoupon}
+                onClick={applyCoupon}
+                className="rounded-full border border-white/10 px-5 py-3 text-sm tracking-[0.2em] disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {isApplyingCoupon ? t('APPLYING') : t('Apply')}
+              </button>
+            )}
+            {appliedCoupon?.description ? (
+              <div className="text-xs text-[var(--text-secondary)]">{appliedCoupon.description}</div>
+            ) : null}
+          </div>
+          <SummaryRow
+            label={t('Delivery')}
+            value={
+              hasConfiguredDelivery
+                ? formatCurrency(shippingAmount)
+                : t('Select a supported country and city')
+            }
+          />
           <SummaryRow label={t('Total')} value={formatCurrency(total)} emphasis />
+          {!hasConfiguredDelivery && lines.length ? (
+            <p className="mt-4 text-sm leading-7 text-[var(--text-secondary)]">
+              {t('No delivery fee is configured for the selected location.')}
+            </p>
+          ) : null}
           <p className="mt-5 text-sm leading-7 text-[var(--text-secondary)]">
             {t(
               'Final pricing should be confirmed by a Supabase checkout RPC before production launch.'
@@ -1408,9 +1862,9 @@ export function CheckoutPageView({
           </p>
           <button
             type="button"
-            disabled={!lines.length || isSubmitting}
+            disabled={!lines.length || isSubmitting || !hasConfiguredDelivery}
             onClick={placeOrder}
-            className="mt-6 w-full rounded-full bg-[var(--text)] px-5 py-3 text-sm tracking-[0.2em] text-black disabled:cursor-not-allowed disabled:opacity-40"
+            className="mt-6 w-full rounded-full bg-[var(--text)] px-5 py-3 text-sm tracking-[0.2em] text-[var(--background)] disabled:cursor-not-allowed disabled:opacity-40"
           >
             {isSubmitting ? t('PLEASE WAIT') : t('PLACE ORDER')}
           </button>
@@ -1510,6 +1964,40 @@ export function AuthPageView({ mode }: { mode: 'login' | 'register' | 'forgot-pa
   );
 }
 
+export function OrderSuccessPageView({ orderId }: { orderId: string }) {
+  const { t } = useLocale();
+
+  return (
+    <Container className="py-12 md:py-20">
+      <div className="mx-auto max-w-3xl rounded-[36px] border border-white/8 bg-white/3 p-8 md:p-10">
+        <SectionHeading
+          title={t('ORDER RECEIVED.')}
+          description={`${t('Order number')} #${orderId}`}
+        />
+        <div className="space-y-4 text-sm leading-7 text-[var(--text-secondary)]">
+          <p>{t('Your order has been placed successfully.')}</p>
+          <p>{t('You can review delivery updates and order details from your account page.')}</p>
+        </div>
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <Link
+            href="/account"
+            className="rounded-full border border-white/10 px-5 py-3 text-center text-sm tracking-[0.2em]"
+          >
+            {t('TRACK ORDER')}
+          </Link>
+          <Link
+            href="/shop"
+            className="rounded-full bg-[var(--accent)] px-5 py-3 text-center text-sm tracking-[0.2em]"
+            style={{ color: 'var(--background)' }}
+          >
+            {t('CONTINUE SHOPPING')}
+          </Link>
+        </div>
+      </div>
+    </Container>
+  );
+}
+
 function CatalogHero({ title, description }: { title: string; description: string }) {
   const { t } = useLocale();
   return (
@@ -1573,11 +2061,50 @@ function SummaryRow({
 }) {
   return (
     <div
-      className={`flex items-center justify-between ${emphasis ? 'text-lg' : 'text-sm text-[var(--text-secondary)]'}`}
+      className={`flex items-center justify-between ${emphasis ? 'text-lg text-[var(--text)]' : 'text-sm text-[var(--text-secondary)]'}`}
     >
       <span>{label}</span>
-      <span className={emphasis ? 'text-white' : ''}>{value}</span>
+      <span className={emphasis ? 'text-[var(--text)]' : ''}>{value}</span>
     </div>
+  );
+}
+
+function localizeCouponError(message: string, t: (value: string) => string) {
+  const prefix = 'This coupon requires a minimum subtotal of ';
+
+  if (message.startsWith(prefix) && message.endsWith(' JOD.')) {
+    const amount = message.slice(prefix.length, -' JOD.'.length);
+    return `${t('This coupon requires a minimum subtotal of')} ${amount} ${t('JOD.')}`;
+  }
+
+  return t(message);
+}
+
+function sameAppliedCoupon(
+  left: {
+    code: string;
+    name: string;
+    description?: string;
+    discountType: 'percentage' | 'fixed';
+    discountValue: number;
+    minSubtotal?: number;
+  },
+  right: {
+    code: string;
+    name: string;
+    description?: string;
+    discountType: 'percentage' | 'fixed';
+    discountValue: number;
+    minSubtotal?: number;
+  }
+) {
+  return (
+    left.code === right.code &&
+    left.name === right.name &&
+    left.description === right.description &&
+    left.discountType === right.discountType &&
+    left.discountValue === right.discountValue &&
+    left.minSubtotal === right.minSubtotal
   );
 }
 

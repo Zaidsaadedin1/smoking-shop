@@ -156,6 +156,46 @@ type HeroSlideRow = {
   created_at?: string;
 };
 
+type CouponRow = {
+  id: string;
+  code: string;
+  name: string;
+  description: string | null;
+  discount_type: string;
+  discount_value: string | number;
+  min_subtotal: string | number | null;
+  starts_at: string | null;
+  ends_at: string | null;
+  is_active: boolean | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+type NavigationItemRow = {
+  id: string;
+  parent_id: string | null;
+  label: string;
+  label_ar: string | null;
+  path: string;
+  sort_order: number | null;
+  is_active: boolean | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+type DeliveryZoneRow = {
+  id: string;
+  country: string;
+  country_ar: string | null;
+  city: string | null;
+  city_ar: string | null;
+  fee: string | number;
+  sort_order: number | null;
+  is_active: boolean | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
 type ReviewRow = {
   id: string;
   product_id: string;
@@ -733,6 +773,136 @@ export async function updateFlashSale(
 
 export async function deleteFlashSale(id: string, auth?: SupabaseRequestAuth) {
   return deleteSupabaseRow<FlashSaleRow>('flash_sales', { id: `eq.${id}` }, true, auth);
+}
+
+export async function listCoupons(auth?: SupabaseRequestAuth) {
+  return fetchSupabaseRest<CouponRow[]>('coupons', {
+    query: {
+      select:
+        'id,code,name,description,discount_type,discount_value,min_subtotal,starts_at,ends_at,is_active,created_at,updated_at',
+      order: 'created_at.desc',
+    },
+    ...(auth?.headers ? { headers: auth.headers } : {}),
+    revalidate: 0,
+  });
+}
+
+export async function listActiveCoupons(auth?: SupabaseRequestAuth) {
+  return fetchSupabaseRest<CouponRow[]>('coupons', {
+    query: {
+      select:
+        'id,code,name,description,discount_type,discount_value,min_subtotal,starts_at,ends_at,is_active,created_at,updated_at',
+      is_active: 'eq.true',
+      order: 'created_at.desc',
+    },
+    ...(auth?.headers ? { headers: auth.headers } : {}),
+    revalidate: 0,
+  });
+}
+
+export async function createCoupon(payload: Record<string, unknown>, auth?: SupabaseRequestAuth) {
+  return insertSupabaseRow<CouponRow>('coupons', payload, true, auth);
+}
+
+export async function updateCoupon(
+  id: string,
+  payload: Record<string, unknown>,
+  auth?: SupabaseRequestAuth
+) {
+  return updateSupabaseRow<CouponRow>('coupons', payload, { id: `eq.${id}` }, true, auth);
+}
+
+export async function deleteCoupon(id: string, auth?: SupabaseRequestAuth) {
+  return deleteSupabaseRow<CouponRow>('coupons', { id: `eq.${id}` }, true, auth);
+}
+
+export async function listNavigationItems(auth?: SupabaseRequestAuth) {
+  return fetchSupabaseRest<NavigationItemRow[]>('navigation_items', {
+    query: {
+      select: 'id,parent_id,label,label_ar,path,sort_order,is_active,created_at,updated_at',
+      order: 'sort_order.asc',
+    },
+    ...(auth?.headers ? { headers: auth.headers } : {}),
+    revalidate: 0,
+  });
+}
+
+export async function listActiveNavigationItems(auth?: SupabaseRequestAuth) {
+  return fetchSupabaseRest<NavigationItemRow[]>('navigation_items', {
+    query: {
+      select: 'id,parent_id,label,label_ar,path,sort_order,is_active,created_at,updated_at',
+      is_active: 'eq.true',
+      order: 'sort_order.asc',
+    },
+    ...(auth?.headers ? { headers: auth.headers } : {}),
+    revalidate: 0,
+  });
+}
+
+export async function createNavigationItem(
+  payload: Record<string, unknown>,
+  auth?: SupabaseRequestAuth
+) {
+  return insertSupabaseRow<NavigationItemRow>('navigation_items', payload, true, auth);
+}
+
+export async function updateNavigationItem(
+  id: string,
+  payload: Record<string, unknown>,
+  auth?: SupabaseRequestAuth
+) {
+  return updateSupabaseRow<NavigationItemRow>(
+    'navigation_items',
+    payload,
+    { id: `eq.${id}` },
+    true,
+    auth
+  );
+}
+
+export async function deleteNavigationItem(id: string, auth?: SupabaseRequestAuth) {
+  return deleteSupabaseRow<NavigationItemRow>('navigation_items', { id: `eq.${id}` }, true, auth);
+}
+
+export async function listDeliveryZones(auth?: SupabaseRequestAuth) {
+  return fetchSupabaseRest<DeliveryZoneRow[]>('delivery_zones', {
+    query: {
+      select: 'id,country,country_ar,city,city_ar,fee,sort_order,is_active,created_at,updated_at',
+      order: 'sort_order.asc,country.asc,city.asc',
+    },
+    ...(auth?.headers ? { headers: auth.headers } : {}),
+    revalidate: 0,
+  });
+}
+
+export async function listActiveDeliveryZones() {
+  return fetchSupabaseRest<DeliveryZoneRow[]>('delivery_zones', {
+    query: {
+      select: 'id,country,country_ar,city,city_ar,fee,sort_order,is_active',
+      is_active: 'eq.true',
+      order: 'sort_order.asc,country.asc,city.asc',
+    },
+    revalidate: 60,
+  });
+}
+
+export async function createDeliveryZone(
+  payload: Record<string, unknown>,
+  auth?: SupabaseRequestAuth
+) {
+  return insertSupabaseRow<DeliveryZoneRow>('delivery_zones', payload, true, auth);
+}
+
+export async function updateDeliveryZone(
+  id: string,
+  payload: Record<string, unknown>,
+  auth?: SupabaseRequestAuth
+) {
+  return updateSupabaseRow<DeliveryZoneRow>('delivery_zones', payload, { id: `eq.${id}` }, true, auth);
+}
+
+export async function deleteDeliveryZone(id: string, auth?: SupabaseRequestAuth) {
+  return deleteSupabaseRow<DeliveryZoneRow>('delivery_zones', { id: `eq.${id}` }, true, auth);
 }
 
 export async function listHeroSlides(auth?: SupabaseRequestAuth) {

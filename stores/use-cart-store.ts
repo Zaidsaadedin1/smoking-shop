@@ -3,7 +3,7 @@
 import { persist } from 'zustand/middleware';
 import { create } from 'zustand';
 import { fallbackProducts } from '@/lib/commerce-data';
-import { StoreProduct } from '@/lib/commerce-types';
+import { AppliedCoupon, StoreProduct } from '@/lib/commerce-types';
 import { getPrimaryVariant } from '@/lib/commerce-utils';
 
 export type CartLine = {
@@ -41,10 +41,13 @@ function clampVariantQuantity(
 type CartState = {
   items: CartLine[];
   favorites: string[];
+  appliedCoupon: AppliedCoupon | null;
   addItem: (product: StoreProduct, variantId: string, quantity?: number) => void;
   removeItem: (variantId: string) => void;
   updateQuantity: (variantId: string, quantity: number) => void;
   toggleFavorite: (productId: string) => void;
+  setAppliedCoupon: (coupon: AppliedCoupon) => void;
+  clearAppliedCoupon: () => void;
   clearCart: () => void;
 };
 
@@ -53,6 +56,7 @@ export const useCartStore = create<CartState>()(
     (set) => ({
       items: [],
       favorites: [],
+      appliedCoupon: null,
       addItem: (product, variantId, quantity = 1) =>
         set((state) => {
           const existing = state.items.find((item) => item.variantId === variantId);
@@ -111,7 +115,9 @@ export const useCartStore = create<CartState>()(
             ? state.favorites.filter((item) => item !== productId)
             : [...state.favorites, productId],
         })),
-      clearCart: () => set({ items: [] }),
+      setAppliedCoupon: (coupon) => set({ appliedCoupon: coupon }),
+      clearAppliedCoupon: () => set({ appliedCoupon: null }),
+      clearCart: () => set({ items: [], appliedCoupon: null }),
     }),
     {
       name: 'tourmaline-coven-store',

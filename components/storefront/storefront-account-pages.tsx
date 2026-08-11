@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ReactNode, useState, useTransition } from 'react';
+import { ReactNode, useEffect, useMemo, useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useLocale } from '@/components/storefront/locale-provider';
@@ -27,7 +27,7 @@ import {
   ProductGrid,
   SectionHeading,
 } from '@/components/storefront/storefront-sections';
-import { StoreProduct } from '@/lib/commerce-types';
+import { DeliveryZone, StoreProduct } from '@/lib/commerce-types';
 
 type CustomerSessionView = {
   fullName: string;
@@ -68,6 +68,7 @@ type AddressView = {
   label: string;
   fullName: string;
   phone: string;
+  country: string;
   city: string;
   area: string;
   street?: string;
@@ -738,11 +739,13 @@ export function ReviewsPageView({ reviews }: { reviews: ReviewView[] }) {
 export function CreateAddressPageView({
   initialAddress,
   addressId,
+  deliveryZones,
 }: {
   initialAddress?: Partial<AddressView>;
   addressId?: string;
+  deliveryZones: DeliveryZone[];
 }) {
-  const { t } = useLocale();
+  const { t, localize } = useLocale();
   const { isDark } = useThemeMode();
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
@@ -752,6 +755,7 @@ export function CreateAddressPageView({
     label: z.string().min(2, 'This field is required'),
     fullName: z.string().min(2, 'This field is required'),
     phone: z.string().min(6, 'This field is required'),
+    country: z.string().min(2, 'This field is required'),
     city: z.string().min(2, 'This field is required'),
     area: z.string().min(2, 'This field is required'),
     street: z.string().optional(),
@@ -764,6 +768,8 @@ export function CreateAddressPageView({
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -771,6 +777,7 @@ export function CreateAddressPageView({
       label: initialAddress?.label ?? '',
       fullName: initialAddress?.fullName ?? '',
       phone: initialAddress?.phone ?? '',
+      country: initialAddress?.country ?? '',
       city: initialAddress?.city ?? '',
       area: initialAddress?.area ?? '',
       street: initialAddress?.street ?? '',
@@ -778,6 +785,52 @@ export function CreateAddressPageView({
       isDefault: initialAddress?.isDefault ?? false,
     },
   });
+  const selectedCountry = watch('country');
+  const selectedCity = watch('city');
+  const countryOptions = useMemo(
+    () =>
+      deliveryZones.reduce<Array<{ value: string; label: string }>>((acc, zone) => {
+        if (acc.some((item) => item.value === zone.country)) {
+          return acc;
+        }
+
+        acc.push({
+          value: zone.country,
+          label: localize(zone.country, zone.countryAr),
+        });
+        return acc;
+      }, []),
+    [deliveryZones, localize]
+  );
+  const cityOptions = useMemo(
+    () =>
+      deliveryZones
+        .filter((zone) => zone.country === selectedCountry && zone.city)
+        .reduce<Array<{ value: string; label: string }>>((acc, zone) => {
+          if (!zone.city || acc.some((item) => item.value === zone.city)) {
+            return acc;
+          }
+
+          acc.push({
+            value: zone.city,
+            label: localize(zone.city, zone.cityAr),
+          });
+          return acc;
+        }, []),
+    [deliveryZones, localize, selectedCountry]
+  );
+
+  useEffect(() => {
+    if (!selectedCountry || cityOptions.length === 0) {
+      return;
+    }
+
+    if (cityOptions.some((option) => option.value === selectedCity)) {
+      return;
+    }
+
+    setValue('city', cityOptions[0]?.value ?? '', { shouldValidate: true });
+  }, [cityOptions, selectedCity, selectedCountry, setValue]);
 
   return (
     <Container className="py-8 md:py-14">
@@ -893,13 +946,40 @@ export function CreateAddressPageView({
                 />
               </Field>
               <Field
-                label={t('City')}
-                error={errors.city?.message ? t(errors.city.message) : undefined}
+                label={t('Country')}
+                error={errors.country?.message ? t(errors.country.message) : undefined}
               >
-                <input {...register('city')} className={inputClassName} placeholder={t('City')} />
+                <select
+                  {...register('country')}
+                  className={inputClassName}
+                  onChange={(event) => {
+                    setValue('country', event.target.value, { shouldValidate: true, shouldDirty: true });
+                    setValue('city', '', { shouldValidate: true, shouldDirty: true });
+                  }}
+                >
+                  <option value="">{t('Select a country')}</option>
+                  {countryOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
               </Field>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
+              <Field
+                label={t('City')}
+                error={errors.city?.message ? t(errors.city.message) : undefined}
+              >
+                <select {...register('city')} className={inputClassName}>
+                  <option value="">{t('Select a city')}</option>
+                  {cityOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </Field>
               <Field
                 label={t('Area')}
                 error={errors.area?.message ? t(errors.area.message) : undefined}
@@ -1124,7 +1204,7 @@ function formatMoney(amount: number, currency = 'JOD') {
 }
 
 const inputClassName =
-  'h-12 w-full rounded-full border border-white/10 bg-black/20 px-5 text-sm text-[var(--text)] outline-none';
+  'h-12 w-full rounded-[0.25rem] border border-white/10 bg-black/20 px-5 text-sm text-[var(--text)] outline-none';
 
 const primaryButtonClassName =
   'inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-medium tracking-[0.2em] disabled:opacity-50';

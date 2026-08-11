@@ -4,7 +4,7 @@ import React from 'react';
 import '@/app/globals.css';
 import { Providers } from '@/components/storefront/providers';
 import { StorefrontShell } from '@/components/storefront/storefront-shell';
-import { getFlashSale, getStoreSettings } from '@/lib/commerce-server';
+import { getFlashSale, getNavigationItems, getStoreSettings } from '@/lib/commerce-server';
 
 export const metadata: Metadata = {
   title: {
@@ -20,7 +20,11 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [settings, flashSale] = await Promise.all([getStoreSettings(), getFlashSale()]);
+  const [settings, flashSale, navigationItems] = await Promise.all([
+    getStoreSettings(),
+    getFlashSale(),
+    getNavigationItems(),
+  ]);
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -29,7 +33,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body suppressHydrationWarning>
         <Providers>
-          <StorefrontShell settings={settings} flashSale={flashSale}>
+          <StorefrontShell settings={settings} flashSale={flashSale} navigationItems={navigationItems}>
             {children}
           </StorefrontShell>
         </Providers>

@@ -34,10 +34,13 @@ import { useThemeMode } from '@/components/storefront/theme-provider';
 import {
   AdminBrandRecord,
   AdminCategoryRecord,
+  AdminCouponRecord,
   AdminColorRecord,
   AdminCustomerRecord,
+  AdminDeliveryZoneRecord,
   AdminFlashSaleRecord,
   AdminHeroSlideRecord,
+  AdminNavigationItemRecord,
   AdminOrderRecord,
   AdminProductRecord,
   AdminProductVariantRecord,
@@ -354,6 +357,8 @@ function ErrorModal({
   error: ModalErrorState | null;
   onClose: () => void;
 }) {
+  const { t } = useLocale();
+
   return (
     <Modal
       opened={Boolean(error)}
@@ -380,7 +385,7 @@ function ErrorModal({
       <Stack gap="sm">
         {(error?.messages ?? []).map((message, index) => (
           <Text key={`${message}-${index}`} size="sm">
-            {message}
+            {t(message)}
           </Text>
         ))}
       </Stack>
@@ -625,10 +630,10 @@ function AdminOrderDetailPanel({ orderId }: { orderId: string }) {
   );
 }
 
-function inventoryBadge(quantity: number) {
+function inventoryBadge(quantity: number, t: (value: string) => string) {
   const tone = quantity <= 0 ? 'red' : quantity <= 5 ? 'yellow' : 'teal';
   const label =
-    quantity <= 0 ? 'Out of stock' : quantity <= 5 ? `Low: ${quantity}` : `${quantity} in stock`;
+    quantity <= 0 ? t('Out of stock') : quantity <= 5 ? `${t('Low')}: ${quantity}` : `${quantity} ${t('in stock')}`;
 
   return (
     <Badge color={tone} variant="light" radius="sm">
@@ -637,11 +642,11 @@ function inventoryBadge(quantity: number) {
   );
 }
 
-function rowValue(row: Record<string, unknown>, field: CrudField) {
+function rowValue(row: Record<string, unknown>, field: CrudField, t: (value: string) => string) {
   const value = getRowFieldValue(row, field.name);
 
   if (field.type === 'switch') {
-    return value ? 'Yes' : 'No';
+    return value ? t('Yes') : t('No');
   }
 
   if (field.type === 'datetime') {
@@ -1017,7 +1022,7 @@ function CrudManager<T extends { id: string }>({
                 <Text size="xs" tt="uppercase" c="dimmed" mb={4}>
                   {t(field.label)}
                 </Text>
-                <Text>{rowValue(selected as Record<string, unknown>, field)}</Text>
+                <Text>{rowValue(selected as Record<string, unknown>, field, t)}</Text>
               </Box>
             ))}
           </Stack>
@@ -2072,7 +2077,7 @@ function ProductCrudManager({
                     <Badge variant="light" radius="sm" color="gray">
                       {formatCurrency(selected.base_price)}
                     </Badge>
-                    {inventoryBadge(selected.total_stock)}
+                    {inventoryBadge(selected.total_stock, t)}
                     <Badge variant="light" radius="sm" color="gray">
                       {selected.variant_count} variants
                     </Badge>
@@ -2184,7 +2189,7 @@ function ProductCrudManager({
                           </Group>
                         </Stack>
                         <Stack gap={6} align="end">
-                          {inventoryBadge(variant.stock_quantity)}
+                          {inventoryBadge(variant.stock_quantity, t)}
                           <Text size="xs" c="dimmed">
                             {variant.track_inventory ? t('Track inventory') : t('Inventory off')}
                           </Text>
@@ -2965,7 +2970,7 @@ export function AdminCustomersScreen({
   customers: AdminCustomerRecord[];
   enumLabels: AdminEnumLabels;
 }) {
-  const { locale } = useLocale();
+  const { locale, t } = useLocale();
 
   return (
     <AdminShell
@@ -3022,7 +3027,7 @@ export function AdminCustomersScreen({
           {
             key: 'is_blocked',
             label: 'Blocked',
-            render: (row) => (row.is_blocked ? statusBadge('blocked') : 'No'),
+            render: (row) => (row.is_blocked ? statusBadge('blocked') : t('No')),
           },
           { key: 'created_at', label: 'Created', render: (row) => formatDate(row.created_at) },
         ]}
@@ -3042,8 +3047,11 @@ export function AdminSettingsScreen({
   brands,
   sizes,
   colors,
+  coupons,
   flashSales,
   heroSlides,
+  navigationItems,
+  deliveryZones,
   enumLabels,
 }: {
   session: AdminSessionInfo;
@@ -3051,11 +3059,20 @@ export function AdminSettingsScreen({
   brands: AdminBrandRecord[];
   sizes: AdminSizeRecord[];
   colors: AdminColorRecord[];
+  coupons: AdminCouponRecord[];
   flashSales: AdminFlashSaleRecord[];
   heroSlides: AdminHeroSlideRecord[];
+  navigationItems: AdminNavigationItemRecord[];
+  deliveryZones: AdminDeliveryZoneRecord[];
   enumLabels: AdminEnumLabels;
 }) {
   const { t, locale } = useLocale();
+  const navigationParentOptions = [{ label: 'Top level', value: '' }].concat(
+    navigationItems.map((item) => ({
+      label: `${item.label}${item.parent_id ? ' / child' : ''}`,
+      value: item.id,
+    }))
+  );
 
   return (
     <AdminShell
@@ -3120,6 +3137,9 @@ export function AdminSettingsScreen({
       >
         <Tabs.List mb="lg">
           <Tabs.Tab value="categories">{t('Categories')}</Tabs.Tab>
+          <Tabs.Tab value="coupons">{t('Coupons')}</Tabs.Tab>
+          <Tabs.Tab value="delivery-zones">{t('Delivery zones')}</Tabs.Tab>
+          <Tabs.Tab value="navigation">{t('Navigation')}</Tabs.Tab>
           <Tabs.Tab value="hero-slides">{t('Hero slides')}</Tabs.Tab>
           <Tabs.Tab value="flash-sales">{t('Flash sales')}</Tabs.Tab>
           <Tabs.Tab value="enums">{t('Enums')}</Tabs.Tab>
@@ -3202,7 +3222,7 @@ export function AdminSettingsScreen({
               {
                 key: 'is_active',
                 label: 'Active',
-                render: (row) => (row.is_active ? 'Yes' : 'No'),
+                render: (row) => (row.is_active ? t('Yes') : t('No')),
               },
             ]}
             drawerExtras={({ mode, selected }) =>
@@ -3231,6 +3251,182 @@ export function AdminSettingsScreen({
             createRequest={{ url: '/api/admin/categories', method: 'POST' }}
             updateRequest={(id) => ({ url: `/api/admin/categories/${id}`, method: 'PATCH' })}
             deleteRequest={(id) => ({ url: `/api/admin/categories/${id}`, method: 'DELETE' })}
+          />
+        </Tabs.Panel>
+
+        <Tabs.Panel value="coupons">
+          <CrudManager
+            title="Coupons"
+            description="Create promo codes with percentage or fixed discounts, optional minimum basket values, and activation windows."
+            records={coupons}
+            defaults={{
+              code: '',
+              name: '',
+              description: '',
+              discountType: 'percentage',
+              discountValue: 0,
+              minSubtotal: '',
+              startsAt: '',
+              endsAt: '',
+              isActive: true,
+            }}
+            fields={[
+              { name: 'code', label: 'Code', type: 'text', required: true, editableOn: ['create', 'edit'] },
+              { name: 'name', label: 'Name', type: 'text', required: true, editableOn: ['create', 'edit'] },
+              { name: 'description', label: 'Description', type: 'textarea', editableOn: ['create', 'edit'] },
+              {
+                name: 'discountType',
+                label: 'Discount type',
+                type: 'select',
+                required: true,
+                editableOn: ['create', 'edit'],
+                options: ['percentage', 'fixed'].map((value) => ({
+                  label: getEnumLabel(enumLabels, 'discount_type', value, locale),
+                  value,
+                })),
+              },
+              {
+                name: 'discountValue',
+                label: 'Discount value',
+                type: 'number',
+                required: true,
+                min: 0,
+                step: 0.01,
+                editableOn: ['create', 'edit'],
+              },
+              {
+                name: 'minSubtotal',
+                label: 'Minimum subtotal',
+                type: 'number',
+                min: 0,
+                step: 0.01,
+                editableOn: ['create', 'edit'],
+              },
+              { name: 'startsAt', label: 'Starts at', type: 'datetime', editableOn: ['create', 'edit'] },
+              { name: 'endsAt', label: 'Ends at', type: 'datetime', editableOn: ['create', 'edit'] },
+              { name: 'isActive', label: 'Active', type: 'switch', editableOn: ['create', 'edit'] },
+            ]}
+            columns={[
+              { key: 'code', label: 'Code', render: (row) => row.code },
+              { key: 'name', label: 'Name', render: (row) => row.name },
+              {
+                key: 'discount_type',
+                label: 'Discount',
+                render: (row) =>
+                  `${row.discount_value}${row.discount_type === 'percentage' ? '%' : ''} ${getEnumLabel(enumLabels, 'discount_type', row.discount_type, locale)}`,
+              },
+              {
+                key: 'min_subtotal',
+                label: 'Minimum subtotal',
+                render: (row) => (row.min_subtotal === null ? '—' : formatCurrency(row.min_subtotal)),
+              },
+              {
+                key: 'starts_at',
+                label: 'Starts',
+                render: (row) => (row.starts_at ? formatDateTime(row.starts_at) : '—'),
+              },
+              {
+                key: 'ends_at',
+                label: 'Ends',
+                render: (row) => (row.ends_at ? formatDateTime(row.ends_at) : '—'),
+              },
+              {
+                key: 'is_active',
+                label: 'Active',
+                render: (row) => (row.is_active ? statusBadge('active') : statusBadge('inactive')),
+              },
+            ]}
+            createRequest={{ url: '/api/admin/coupons', method: 'POST' }}
+            updateRequest={(id) => ({ url: `/api/admin/coupons/${id}`, method: 'PATCH' })}
+            deleteRequest={(id) => ({ url: `/api/admin/coupons/${id}`, method: 'DELETE' })}
+          />
+        </Tabs.Panel>
+
+        <Tabs.Panel value="navigation">
+          <CrudManager
+            title="Navigation"
+            description="Control storefront menu items, nested sub-navigation, and explicit paths."
+            records={navigationItems}
+            defaults={{
+              parentId: '',
+              label: '',
+              labelAr: '',
+              path: '',
+              sortOrder: 0,
+              isActive: true,
+            }}
+            fields={[
+              {
+                name: 'parentId',
+                label: 'Parent item',
+                type: 'select',
+                editableOn: ['create', 'edit'],
+                options: navigationParentOptions,
+              },
+              { name: 'label', label: 'Label', type: 'text', required: true, editableOn: ['create', 'edit'] },
+              { name: 'labelAr', label: 'Arabic label', type: 'text', editableOn: ['create', 'edit'] },
+              { name: 'path', label: 'Path', type: 'text', required: true, editableOn: ['create', 'edit'] },
+              { name: 'sortOrder', label: 'Sort order', type: 'number', min: 0, step: 1, editableOn: ['create', 'edit'] },
+              { name: 'isActive', label: 'Active', type: 'switch', editableOn: ['create', 'edit'] },
+            ]}
+            columns={[
+              {
+                key: 'label',
+                label: 'Label',
+                render: (row) => `${row.parent_id ? '↳ ' : ''}${row.label}`,
+              },
+              { key: 'label_ar', label: 'Arabic label', render: (row) => row.label_ar || '—' },
+              {
+                key: 'parent_id',
+                label: 'Parent item',
+                render: (row) =>
+                  navigationItems.find((item) => item.id === row.parent_id)?.label || '—',
+              },
+              { key: 'path', label: 'Path', render: (row) => row.path },
+              { key: 'sort_order', label: 'Sort order', render: (row) => row.sort_order },
+              { key: 'is_active', label: 'Active', render: (row) => (row.is_active ? t('Yes') : t('No')) },
+            ]}
+            createRequest={{ url: '/api/admin/navigation', method: 'POST' }}
+            updateRequest={(id) => ({ url: `/api/admin/navigation/${id}`, method: 'PATCH' })}
+            deleteRequest={(id) => ({ url: `/api/admin/navigation/${id}`, method: 'DELETE' })}
+          />
+        </Tabs.Panel>
+
+        <Tabs.Panel value="delivery-zones">
+          <CrudManager
+            title="Delivery zones"
+            description="Control delivery fees by country and city. Leave city empty to create a country-wide fallback fee."
+            records={deliveryZones}
+            defaults={{
+              country: '',
+              countryAr: '',
+              city: '',
+              cityAr: '',
+              fee: 0,
+              sortOrder: 0,
+              isActive: true,
+            }}
+            fields={[
+              { name: 'country', label: 'Country', type: 'text', required: true, editableOn: ['create', 'edit'] },
+              { name: 'countryAr', label: 'Arabic country', type: 'text', editableOn: ['create', 'edit'] },
+              { name: 'city', label: 'City', type: 'text', editableOn: ['create', 'edit'] },
+              { name: 'cityAr', label: 'Arabic city', type: 'text', editableOn: ['create', 'edit'] },
+              { name: 'fee', label: 'Delivery fee', type: 'number', required: true, min: 0, step: 0.01, editableOn: ['create', 'edit'] },
+              { name: 'sortOrder', label: 'Sort order', type: 'number', min: 0, step: 1, editableOn: ['create', 'edit'] },
+              { name: 'isActive', label: 'Active', type: 'switch', editableOn: ['create', 'edit'] },
+            ]}
+            columns={[
+              { key: 'country', label: 'Country', render: (row) => row.country },
+              { key: 'country_ar', label: 'Arabic country', render: (row) => row.country_ar || '—' },
+              { key: 'city', label: 'City', render: (row) => row.city || '—' },
+              { key: 'city_ar', label: 'Arabic city', render: (row) => row.city_ar || '—' },
+              { key: 'fee', label: 'Delivery fee', render: (row) => formatCurrency(row.fee) },
+              { key: 'sort_order', label: 'Sort order', render: (row) => row.sort_order },
+              { key: 'is_active', label: 'Active', render: (row) => (row.is_active ? t('Yes') : t('No')) },
+            ]}
+            createRequest={{ url: '/api/admin/delivery-zones', method: 'POST' }}
+            updateRequest={(id) => ({ url: `/api/admin/delivery-zones/${id}`, method: 'PATCH' })}
+            deleteRequest={(id) => ({ url: `/api/admin/delivery-zones/${id}`, method: 'DELETE' })}
           />
         </Tabs.Panel>
 
@@ -3284,7 +3480,7 @@ export function AdminSettingsScreen({
               { key: 'title_ar', label: 'Arabic title', render: (row) => row.title_ar || '—' },
               { key: 'display_seconds', label: 'Seconds', render: (row) => row.display_seconds },
               { key: 'sort_order', label: 'Sort order', render: (row) => row.sort_order },
-              { key: 'is_active', label: 'Active', render: (row) => (row.is_active ? 'Yes' : 'No') },
+              { key: 'is_active', label: 'Active', render: (row) => (row.is_active ? t('Yes') : t('No')) },
             ]}
             drawerExtras={({ mode, selected }) =>
               mode === 'view' && selected ? (
@@ -3446,7 +3642,7 @@ export function AdminSettingsScreen({
               {
                 key: 'show_as_modal',
                 label: 'Modal',
-                render: (row) => (row.show_as_modal ? 'Yes' : 'No'),
+                render: (row) => (row.show_as_modal ? t('Yes') : t('No')),
               },
               {
                 key: 'is_active',
@@ -3546,7 +3742,7 @@ export function AdminSettingsScreen({
               {
                 key: 'is_active',
                 label: 'Active',
-                render: (row) => (row.is_active ? 'Yes' : 'No'),
+                render: (row) => (row.is_active ? t('Yes') : t('No')),
               },
             ]}
             createRequest={{ url: '/api/admin/lookups/brands', method: 'POST' }}
@@ -3597,7 +3793,7 @@ export function AdminSettingsScreen({
               {
                 key: 'is_active',
                 label: 'Active',
-                render: (row) => (row.is_active ? 'Yes' : 'No'),
+                render: (row) => (row.is_active ? t('Yes') : t('No')),
               },
             ]}
             createRequest={{ url: '/api/admin/lookups/sizes', method: 'POST' }}
@@ -3646,7 +3842,7 @@ export function AdminSettingsScreen({
               {
                 key: 'is_active',
                 label: 'Active',
-                render: (row) => (row.is_active ? 'Yes' : 'No'),
+                render: (row) => (row.is_active ? t('Yes') : t('No')),
               },
             ]}
             createRequest={{ url: '/api/admin/lookups/colors', method: 'POST' }}

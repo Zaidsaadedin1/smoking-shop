@@ -16,6 +16,17 @@ export function calculateDiscount(price: number, compareAtPrice?: number | null)
   return Math.round(((compareAtPrice - price) / compareAtPrice) * 100);
 }
 
+export function calculateDiscountAmount(
+  subtotal: number,
+  discountType: 'percentage' | 'fixed',
+  discountValue: number
+) {
+  const rawDiscount =
+    discountType === 'percentage' ? (subtotal * discountValue) / 100 : discountValue;
+
+  return Math.min(subtotal, Number(rawDiscount.toFixed(2)));
+}
+
 export function getPrimaryVariant(product: StoreProduct) {
   return product.variants[0];
 }

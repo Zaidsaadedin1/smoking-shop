@@ -129,7 +129,7 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
                       {session.email}
                     </Text>
                     <Text size="xs" tt="uppercase" c="var(--muted)">
-                      {session.role}
+                      {t(session.role)}
                     </Text>
                   </Stack>
                 ) : null}

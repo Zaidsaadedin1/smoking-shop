@@ -1,5 +1,4 @@
 import {
-  fallbackFlashSale,
   fallbackProducts,
   storeCategories,
   storeSettings,
@@ -8,6 +7,7 @@ import {
   CatalogFilters,
   FlashSale,
   HeroSlide,
+  NavigationItem,
   StoreCategory,
   StoreProduct,
   StoreSettings,
@@ -118,6 +118,16 @@ type SupabaseHeroSlide = {
   is_active?: boolean | null;
 };
 
+type SupabaseNavigationItem = {
+  id: string;
+  parent_id: string | null;
+  label: string;
+  label_ar?: string | null;
+  path: string;
+  sort_order?: number | null;
+  is_active?: boolean | null;
+};
+
 function formatFlashSaleDiscountLabel(discountType: string, discountValue: string | number) {
   return discountType === 'fixed' ? `Save ${discountValue}` : `${discountValue}% OFF`;
 }
@@ -132,6 +142,52 @@ function groupBy<TItem>(items: TItem[], getKey: (item: TItem) => string) {
 
 export async function getStoreSettings(): Promise<StoreSettings> {
   return storeSettings;
+}
+
+function buildNavigationTree(items: NavigationItem[]) {
+  const byParent = items.reduce<Record<string, NavigationItem[]>>((acc, item) => {
+    const key = item.parentId ?? 'root';
+    acc[key] = [...(acc[key] ?? []), item];
+    return acc;
+  }, {});
+
+  function attach(parentId: string | null): NavigationItem[] {
+    const key = parentId ?? 'root';
+    return (byParent[key] ?? [])
+      .sort((left, right) => left.sortOrder - right.sortOrder)
+      .map((item) => ({
+        ...item,
+        children: attach(item.id),
+      }));
+  }
+
+  return attach(null);
+}
+
+export async function getNavigationItems(): Promise<NavigationItem[]> {
+  const rows = await fetchSupabaseRest<SupabaseNavigationItem[]>('navigation_items', {
+    query: {
+      select: 'id,parent_id,label,label_ar,path,sort_order,is_active',
+      is_active: 'eq.true',
+      order: 'sort_order.asc',
+    },
+    revalidate: 60,
+  });
+
+  if (!rows?.length) {
+    return [];
+  }
+
+  return buildNavigationTree(
+    rows.map((row) => ({
+      id: row.id,
+      parentId: row.parent_id,
+      label: row.label,
+      labelAr: row.label_ar ?? '',
+      path: row.path,
+      sortOrder: Number(row.sort_order ?? 0),
+    }))
+  );
 }
 
 export async function getCategories(): Promise<StoreCategory[]> {
@@ -315,7 +371,7 @@ export async function getFlashSale(nowIso = new Date().toISOString()): Promise<F
   const sale = sales?.[0];
 
   if (!sale) {
-    return fallbackFlashSale;
+    return null;
   }
 
   return {
@@ -365,12 +421,13 @@ export async function getHeroSlides(): Promise<HeroSlide[]> {
 }
 
 export async function getStorefrontData(filters: CatalogFilters = {}) {
-  const [settings, categories, products, flashSale, heroSlides] = await Promise.all([
+  const [settings, categories, products, flashSale, heroSlides, navigationItems] = await Promise.all([
     getStoreSettings(),
     getCategories(),
     getProducts(),
     getFlashSale(),
     getHeroSlides(),
+    getNavigationItems(),
   ]);
 
   return {
@@ -380,6 +437,7 @@ export async function getStorefrontData(filters: CatalogFilters = {}) {
     filteredProducts: filterProducts(products, filters),
     flashSale,
     heroSlides,
+    navigationItems,
   };
 }
 
