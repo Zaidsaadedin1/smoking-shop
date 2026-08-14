@@ -906,7 +906,7 @@ function CrudManager<T extends { id: string }>({
         border: '1px solid var(--surface-border)',
       }}
     >
-      <Group justify="space-between" align="end" mb="md">
+      <Group justify="space-between" align="end" mb="md" wrap="wrap" gap="md">
         <Stack gap={4}>
           <Text size="xs" tt="uppercase" c="dimmed" style={{ letterSpacing: 2.2 }}>
             {t('Control center')}
@@ -925,14 +925,21 @@ function CrudManager<T extends { id: string }>({
             variant="default"
             styles={adminPrimaryButtonStyles}
             onClick={() => setMode('create')}
+            style={{ width: '100%', maxWidth: 220 }}
           >
             {t(createLabel ?? 'Add new')}
           </Button>
         ) : null}
       </Group>
 
-      <ScrollArea>
-        <Table verticalSpacing="md" striped highlightOnHover withTableBorder>
+      <ScrollArea type="auto" offsetScrollbars>
+        <Table
+          verticalSpacing="md"
+          striped
+          highlightOnHover
+          withTableBorder
+          miw={720}
+        >
           <Table.Thead>
             <Table.Tr>
               {columns.map((column) => (
@@ -989,7 +996,7 @@ function CrudManager<T extends { id: string }>({
           setSelected(null);
         }}
         position="right"
-        size="lg"
+        size="min(100vw, 42rem)"
         title={
           mode === 'view'
             ? t('View record')
@@ -1136,14 +1143,14 @@ function CrudManager<T extends { id: string }>({
                                 border: '1px solid var(--border)',
                               }}
                             >
-                              <Group justify="space-between" align="start" wrap="nowrap">
+                              <Group justify="space-between" align="start" wrap="wrap">
                                 <Group align="start" wrap="nowrap">
                                   <Image src={item.url} alt={item.name} w={72} h={92} fit="cover" />
-                                  <Stack gap={2}>
+                                  <Stack gap={2} style={{ minWidth: 0 }}>
                                     <Text size="sm" fw={600}>
                                       {item.isExisting ? t('Current image') : t('Selected image')}
                                     </Text>
-                                    <Text size="xs" c="dimmed">
+                                    <Text size="xs" c="dimmed" style={{ wordBreak: 'break-word' }}>
                                       {item.name}
                                     </Text>
                                   </Stack>
@@ -1189,7 +1196,7 @@ function CrudManager<T extends { id: string }>({
                 );
               })}
 
-              <Group justify="flex-end" mt="md">
+              <Group justify="flex-end" mt="md" wrap="wrap">
                 <Button
                   type="button"
                   variant="default"
@@ -1330,31 +1337,33 @@ export function AdminDashboardScreen({
           <Text fw={700} mb="md">
             {t('Recent orders')}
           </Text>
-          <Table striped>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>{t('Order')}</Table.Th>
-                <Table.Th>{t('Customer')}</Table.Th>
-                <Table.Th>{t('Status')}</Table.Th>
-                <Table.Th>{t('Total')}</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {orders.slice(0, 6).map((order) => (
-                <Table.Tr key={order.id}>
-                  <Table.Td>{order.order_number}</Table.Td>
-                  <Table.Td>{order.customer_name || '—'}</Table.Td>
-                  <Table.Td>
-                    {statusBadge(
-                      order.status,
-                      getEnumLabel(enumLabels, 'order_status', order.status, locale)
-                    )}
-                  </Table.Td>
-                  <Table.Td>{formatCurrency(order.total_amount)}</Table.Td>
+          <ScrollArea type="auto" offsetScrollbars>
+            <Table striped miw={520}>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>{t('Order')}</Table.Th>
+                  <Table.Th>{t('Customer')}</Table.Th>
+                  <Table.Th>{t('Status')}</Table.Th>
+                  <Table.Th>{t('Total')}</Table.Th>
                 </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </Table>
+              </Table.Thead>
+              <Table.Tbody>
+                {orders.slice(0, 6).map((order) => (
+                  <Table.Tr key={order.id}>
+                    <Table.Td>{order.order_number}</Table.Td>
+                    <Table.Td>{order.customer_name || '—'}</Table.Td>
+                    <Table.Td>
+                      {statusBadge(
+                        order.status,
+                        getEnumLabel(enumLabels, 'order_status', order.status, locale)
+                      )}
+                    </Table.Td>
+                    <Table.Td>{formatCurrency(order.total_amount)}</Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+          </ScrollArea>
         </Paper>
 
         <Paper
@@ -1365,31 +1374,33 @@ export function AdminDashboardScreen({
           <Text fw={700} mb="md">
             {t('Recent products')}
           </Text>
-          <Table striped>
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>{t('Name')}</Table.Th>
-                <Table.Th>{t('Slug')}</Table.Th>
-                <Table.Th>{t('Status')}</Table.Th>
-                <Table.Th>{t('Price')}</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {products.slice(0, 6).map((product) => (
-                <Table.Tr key={product.id}>
-                  <Table.Td>{product.name}</Table.Td>
-                  <Table.Td>{product.slug}</Table.Td>
-                  <Table.Td>
-                    {statusBadge(
-                      product.status,
-                      getEnumLabel(enumLabels, 'product_status', product.status, locale)
-                    )}
-                  </Table.Td>
-                  <Table.Td>{formatCurrency(product.base_price)}</Table.Td>
+          <ScrollArea type="auto" offsetScrollbars>
+            <Table striped miw={520}>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>{t('Name')}</Table.Th>
+                  <Table.Th>{t('Slug')}</Table.Th>
+                  <Table.Th>{t('Status')}</Table.Th>
+                  <Table.Th>{t('Price')}</Table.Th>
                 </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </Table>
+              </Table.Thead>
+              <Table.Tbody>
+                {products.slice(0, 6).map((product) => (
+                  <Table.Tr key={product.id}>
+                    <Table.Td>{product.name}</Table.Td>
+                    <Table.Td>{product.slug}</Table.Td>
+                    <Table.Td>
+                      {statusBadge(
+                        product.status,
+                        getEnumLabel(enumLabels, 'product_status', product.status, locale)
+                      )}
+                    </Table.Td>
+                    <Table.Td>{formatCurrency(product.base_price)}</Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+          </ScrollArea>
         </Paper>
       </SimpleGrid>
     </AdminShell>
@@ -3129,6 +3140,8 @@ export function AdminSettingsScreen({
           },
           list: {
             borderColor: 'var(--border)',
+            flexWrap: 'wrap',
+            gap: '0.5rem',
           },
           panel: {
             paddingTop: 20,
