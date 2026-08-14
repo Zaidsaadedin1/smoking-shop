@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { CUSTOMER_ACCESS_TOKEN_COOKIE } from '@/lib/customer/auth';
+import { CUSTOMER_ACCESS_TOKEN_COOKIE, CUSTOMER_SESSION_MAX_AGE_SECONDS } from '@/lib/customer/auth';
 import { jsonError, jsonOk, requireString } from '@/lib/api/http';
 import { invokeSupabaseAuth } from '@/lib/supabase/rest';
 
@@ -17,7 +17,7 @@ function buildCookieOptions() {
     sameSite: 'lax' as const,
     secure: process.env.NODE_ENV === 'production',
     path: '/',
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: CUSTOMER_SESSION_MAX_AGE_SECONDS,
   };
 }
 

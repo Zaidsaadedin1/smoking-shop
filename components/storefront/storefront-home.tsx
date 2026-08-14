@@ -166,24 +166,24 @@ function Hero({ product, slides }: { product: StoreProduct | null; slides: HeroS
               transition={{ duration: 0.82, ease: [0.22, 1, 0.36, 1] }}
               className="max-w-[620px] px-6 text-center"
             >
-              <div className="text-[10px] tracking-[0.34em] text-white/72">
+              <div className="text-[9px] tracking-[0.28em] text-white/72 sm:text-[10px] sm:tracking-[0.34em]">
                 {localize(activeSlide.eyebrow, activeSlide.eyebrowAr)}
               </div>
               <h1
-                className="mt-6 font-display text-[3.2rem] uppercase leading-[0.86] tracking-[-0.04em] text-[#efe0c3] md:text-[5.4rem]"
+                className="mt-4 font-display text-[2.2rem] uppercase leading-[0.9] tracking-[-0.03em] text-[#efe0c3] sm:mt-5 sm:text-[2.8rem] md:mt-6 md:text-[5.4rem] md:leading-[0.86] md:tracking-[-0.04em]"
                 style={{ textShadow: '0 10px 30px rgba(0,0,0,0.45)' }}
               >
                 {localize(activeSlide.title, activeSlide.titleAr)}
               </h1>
               {activeSlide.description ? (
-                <p className="mt-5 text-sm leading-7 text-white/78">
+                <p className="mt-4 text-xs leading-6 text-white/78 sm:mt-5 sm:text-sm sm:leading-7">
                   {localize(activeSlide.description, activeSlide.descriptionAr)}
                 </p>
               ) : null}
               <div className="mt-6 flex items-center justify-center gap-3">
                 <Link
                   href={activeSlide.buttonUrl || '/shop'}
-                  className="border border-white/30 bg-black/35 px-5 py-2 text-[11px] tracking-[0.28em] backdrop-blur-sm"
+                  className="border border-white/30 bg-black/35 px-4 py-2 text-[10px] tracking-[0.2em] backdrop-blur-sm sm:px-5 sm:text-[11px] sm:tracking-[0.28em]"
                   style={{ color: '#f7efe3' }}
                 >
                   {localize(activeSlide.buttonText, activeSlide.buttonTextAr)}
@@ -216,13 +216,13 @@ function Hero({ product, slides }: { product: StoreProduct | null; slides: HeroS
       <section className="relative min-h-[58vh] overflow-hidden border-b border-[var(--border)]">
         <div className="relative flex min-h-[58vh] items-end justify-center pb-14">
           <div className="max-w-[700px] px-6 text-center">
-            <div className="text-[10px] tracking-[0.34em] text-[var(--text-secondary)]">
+            <div className="text-[9px] tracking-[0.28em] text-[var(--text-secondary)] sm:text-[10px] sm:tracking-[0.34em]">
               {t('STORE')}
             </div>
-            <h1 className="mt-6 font-display text-[3rem] uppercase leading-[0.86] tracking-[-0.04em] md:text-[4.6rem]">
+            <h1 className="mt-4 font-display text-[2.2rem] uppercase leading-[0.9] tracking-[-0.03em] sm:mt-5 sm:text-[2.8rem] md:mt-6 md:text-[4.6rem] md:leading-[0.86] md:tracking-[-0.04em]">
               {t('YOUR CATALOG IS READY FOR ITS FIRST DROP.')}
             </h1>
-            <p className="mt-5 text-sm leading-7 text-[var(--text-secondary)]">
+            <p className="mt-4 text-xs leading-6 text-[var(--text-secondary)] sm:mt-5 sm:text-sm sm:leading-7">
               {t(
                 'Add active products and categories in admin to populate the storefront home automatically.'
               )}
@@ -230,7 +230,7 @@ function Hero({ product, slides }: { product: StoreProduct | null; slides: HeroS
             <div className="mt-6 flex items-center justify-center gap-3">
               <Link
                 href="/shop"
-                className="border border-[var(--border)] bg-[var(--surface)] px-5 py-2 text-[11px] tracking-[0.28em]"
+                className="border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-[10px] tracking-[0.2em] sm:px-5 sm:text-[11px] sm:tracking-[0.28em]"
               >
                 {t('VIEW SHOP')}
               </Link>

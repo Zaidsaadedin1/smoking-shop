@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { requestSupabaseRest } from '@/lib/supabase/rest';
 
 export const CUSTOMER_ACCESS_TOKEN_COOKIE = 'tc-customer-access-token';
+export const CUSTOMER_SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 60;
 
 type JwtClaims = {
   sub?: string;

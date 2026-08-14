@@ -895,7 +895,7 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
     <Container className="py-8 md:py-14">
       <div className="mb-8">
         <div className="text-xs tracking-[0.3em] text-[var(--muted)]">{t('BAG')}</div>
-        <h1 className="font-display text-5xl uppercase">{t('YOUR BAG')}</h1>
+        <h1 className="font-display text-4xl uppercase sm:text-5xl">{t('YOUR BAG')}</h1>
       </div>
       {lines.length ? (
         <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
@@ -903,22 +903,24 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
             {lines.map((line) => (
               <div
                 key={line.variant.id}
-                className="flex flex-col gap-4 rounded-[28px] border border-white/8 bg-white/3 p-4 md:flex-row"
+                className="flex flex-col gap-4 rounded-[24px] border border-white/8 bg-white/3 p-3 sm:p-4 md:flex-row"
               >
                 <img
                   src={line.product.images[0]?.url}
                   alt={localize(line.product.name, line.product.nameAr)}
-                  className="h-40 w-full rounded-[22px] object-cover md:w-32"
+                  className="h-32 w-full rounded-[20px] object-cover sm:h-40 md:h-36 md:w-32 md:flex-none"
                 />
-                <div className="flex-1">
-                  <div className="text-lg">{localize(line.product.name, line.product.nameAr)}</div>
-                  <div className="mt-2 text-sm text-[var(--text-secondary)]">
+                <div className="flex flex-1 flex-col">
+                  <div className="text-base sm:text-lg">
+                    {localize(line.product.name, line.product.nameAr)}
+                  </div>
+                  <div className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
                     {localize(line.variant.color, line.variant.colorAr)} /{' '}
                     {localize(line.variant.size, line.variant.sizeAr)}
                   </div>
-                  <div className="mt-3 flex items-center justify-between">
-                    <div>{formatCurrency(line.variant.price)}</div>
-                    <div className="flex items-center gap-2 rounded-full border border-white/10 px-3 py-2">
+                  <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="text-sm sm:text-base">{formatCurrency(line.variant.price)}</div>
+                    <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 px-3 py-2">
                       <button
                         type="button"
                         onClick={() => updateQuantity(line.variant.id, line.quantity - 1)}
@@ -937,7 +939,7 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
                   <button
                     type="button"
                     onClick={() => removeItem(line.variant.id)}
-                    className="mt-4 text-xs tracking-[0.2em] text-[var(--muted)]"
+                    className="mt-4 self-start text-xs tracking-[0.2em] text-[var(--muted)]"
                   >
                     {t('REMOVE')}
                   </button>
