@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ChefHat,
   Clock,
@@ -14,23 +14,29 @@ import {
   Utensils,
   User,
   X,
-} from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { ReactNode, useEffect, useMemo, useState } from 'react';
-import { LocaleSwitcher, useLocale } from '@/components/storefront/locale-provider';
-import { ThemeSwitcher, useThemeMode } from '@/components/storefront/theme-provider';
-import { FlashSale, NavigationItem, StoreSettings } from '@/lib/commerce-types';
-import { formatCurrency } from '@/lib/commerce-utils';
-import { getCartProducts, useCartStore } from '@/stores/use-cart-store';
-import { useUiStore } from '@/stores/use-ui-store';
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { ReactNode, useEffect, useMemo, useState } from "react";
+import {
+  LocaleSwitcher,
+  useLocale,
+} from "@/components/storefront/locale-provider";
+import {
+  ThemeSwitcher,
+  useThemeMode,
+} from "@/components/storefront/theme-provider";
+import { FlashSale, NavigationItem, StoreSettings } from "@/lib/commerce-types";
+import { formatCurrency } from "@/lib/commerce-utils";
+import { getCartProducts, useCartStore } from "@/stores/use-cart-store";
+import { useUiStore } from "@/stores/use-ui-store";
 
 const mobileNav = [
-  { label: 'HOME', href: '/', icon: Home },
-  { label: 'MENU', href: '/shop', icon: Utensils },
-  { label: '♡', href: '/favorites', icon: Heart },
-  { label: 'CART', href: '/cart', icon: ShoppingBag },
-  { label: 'YOU', href: '/account', icon: User },
+  { label: "HOME", href: "/", icon: Home },
+  { label: "MENU", href: "/shop", icon: Utensils },
+  { label: "♡", href: "/favorites", icon: Heart },
+  { label: "CART", href: "/cart", icon: ShoppingBag },
+  { label: "YOU", href: "/account", icon: User },
 ];
 
 export function StorefrontShell({
@@ -49,16 +55,17 @@ export function StorefrontShell({
   useThemeMode();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { isCartOpen, openCart, closeCart, toasts, dismissToast, pushToast } = useUiStore();
+  const { isCartOpen, openCart, closeCart, toasts, dismissToast, pushToast } =
+    useUiStore();
   const items = useCartStore((state) => state.items);
-  const isCheckout = pathname.startsWith('/checkout');
-  const isAdmin = pathname.startsWith('/admin');
+  const isCheckout = pathname.startsWith("/checkout");
+  const isAdmin = pathname.startsWith("/admin");
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 24);
     handleScroll();
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   useEffect(() => {
@@ -91,7 +98,7 @@ export function StorefrontShell({
       <Header
         brandName={settings.brandName}
         cartCount={items.reduce((sum, item) => sum + item.quantity, 0)}
-        scrolled={scrolled || pathname !== '/'}
+        scrolled={scrolled || pathname !== "/"}
         onMenu={() => setMenuOpen(true)}
         onCart={openCart}
         navigationItems={navigationItems}
@@ -117,8 +124,9 @@ function AnnouncementBar({ text }: { text: string }) {
     <div
       className="border-b px-4 py-2 text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-white md:text-xs"
       style={{
-        borderColor: 'rgba(0,0,0,0.08)',
-        background: 'linear-gradient(90deg, #111111 0%, #c7202f 48%, #111111 100%)',
+        borderColor: "rgba(0,0,0,0.08)",
+        background:
+          "linear-gradient(90deg, #111111 0%, #c7202f 48%, #111111 100%)",
       }}
     >
       {text}
@@ -141,24 +149,30 @@ function Header({
   onCart: () => void;
   navigationItems: NavigationItem[];
 }) {
-  const { localize } = useLocale();
+  const { localize, t } = useLocale();
   const { isDark } = useThemeMode();
-  const navHoverClassName = isDark ? 'hover:text-white' : 'hover:text-[#c7202f]';
-  const badgeTextColor = '#ffffff';
-  const controlBorderColor = isDark ? 'rgba(255,255,255,0.14)' : 'rgba(199,32,47,0.16)';
-  const controlBackground = isDark ? 'rgba(255,255,255,0.06)' : '#fff8f2';
-  const headerBackground = isDark ? 'rgba(8,8,8,0.9)' : 'rgba(255,252,248,0.94)';
-  const headerTextColor = isDark ? 'var(--text)' : '#181211';
-  const secondaryTextColor = isDark ? 'var(--text-secondary)' : '#5f514b';
-  const badgeBackground = 'var(--accent)';
+  const navHoverClassName = isDark
+    ? "hover:text-white"
+    : "hover:text-[#c7202f]";
+  const badgeTextColor = "#ffffff";
+  const controlBorderColor = isDark
+    ? "rgba(255,255,255,0.14)"
+    : "rgba(199,32,47,0.16)";
+  const controlBackground = isDark ? "rgba(255,255,255,0.06)" : "#fff8f2";
+  const headerBackground = isDark
+    ? "rgba(8,8,8,0.9)"
+    : "rgba(255,252,248,0.94)";
+  const headerTextColor = isDark ? "var(--text)" : "#181211";
+  const secondaryTextColor = isDark ? "var(--text-secondary)" : "#5f514b";
+  const badgeBackground = "var(--accent)";
   return (
     <header
       className={`sticky top-0 z-40 transition duration-300 ${
-        scrolled ? 'border-b backdrop-blur-xl' : 'backdrop-blur-xl'
+        scrolled ? "border-b backdrop-blur-xl" : "backdrop-blur-xl"
       }`}
       style={{
-        borderColor: scrolled ? 'var(--border)' : 'transparent',
-        background: isDark && !scrolled ? 'transparent' : headerBackground,
+        borderColor: scrolled ? "var(--border)" : "transparent",
+        background: isDark && !scrolled ? "transparent" : headerBackground,
         color: headerTextColor,
       }}
     >
@@ -180,10 +194,18 @@ function Header({
           <Link
             href="/"
             className="inline-flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border bg-white p-1.5 shadow-[0_12px_30px_rgba(199,32,47,0.12)] transition hover:-translate-y-0.5 md:h-16 md:w-16"
-            style={{ borderColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(199,32,47,0.16)' }}
+            style={{
+              borderColor: isDark
+                ? "rgba(255,255,255,0.12)"
+                : "rgba(199,32,47,0.16)",
+            }}
             aria-label={brandName}
           >
-            <img src="/shawerma-3a-saj-logo.jpg" alt="" className="h-full w-full object-contain" />
+            <img
+              src="/shawerma-3a-saj-logo.jpg"
+              alt=""
+              className="h-full w-full object-contain"
+            />
             <span className="sr-only">{brandName}</span>
           </Link>
         </div>
@@ -230,7 +252,10 @@ function Header({
           ))}
         </nav>
 
-        <div className="flex items-center gap-2 md:gap-3" style={{ color: secondaryTextColor }}>
+        <div
+          className="flex items-center gap-2 md:gap-3"
+          style={{ color: secondaryTextColor }}
+        >
           <div className="hidden md:block">
             <LocaleSwitcher />
           </div>
@@ -287,10 +312,12 @@ function Header({
           </button>
           <Link
             href="/shop"
-            className="hidden items-center gap-2 rounded-full bg-[#c7202f] px-5 py-2.5 text-xs font-black uppercase tracking-[0.16em] text-white shadow-[0_14px_32px_rgba(199,32,47,0.28)] transition hover:-translate-y-0.5 hover:bg-[#a91624] lg:inline-flex"
+            className={`hidden items-center gap-2 rounded-full bg-[#c7202f] px-5 py-2.5 text-xs font-black uppercase tracking-[0.16em] shadow-[0_14px_32px_rgba(199,32,47,0.28)] transition hover:-translate-y-0.5 hover:bg-[#a91624] lg:inline-flex ${
+              isDark ? "text-white" : "text-[#fffcfa]"
+            }`}
           >
             <ChefHat className="h-4 w-4" />
-            <span>Order Now</span>
+            {t("ORDER NOW")}
           </Link>
         </div>
       </div>
@@ -311,6 +338,17 @@ function MobileMenu({
 }) {
   const { t, localize } = useLocale();
   const { isDark } = useThemeMode();
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(
+    {},
+  );
+
+  const toggleItem = (id: string) => {
+    setExpandedItems((current) => ({
+      ...current,
+      [id]: !current[id],
+    }));
+  };
+
   return (
     <AnimatePresence>
       {open ? (
@@ -324,21 +362,27 @@ function MobileMenu({
             exit={{ opacity: 0 }}
           />
           <motion.aside
-            initial={{ x: '-100%' }}
+            initial={{ x: "-100%" }}
             animate={{ x: 0 }}
-            exit={{ x: '-100%' }}
+            exit={{ x: "-100%" }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-y-0 left-0 z-50 flex w-[86%] max-w-sm flex-col px-6 py-6"
-            style={{ background: isDark ? '#0c0c0d' : '#fffaf7' }}
+            className="fixed inset-y-0 left-0 z-50 flex w-[86%] max-w-sm flex-col border-r border-[var(--border)] px-5 py-5 shadow-[0_25px_60px_rgba(0,0,0,0.28)]"
+            style={{ background: isDark ? "#0d0d0f" : "#fffaf7" }}
           >
-            <div className="mb-10 flex items-center justify-between gap-4">
+            <div className="mb-6 flex items-center justify-between gap-4 border-b border-[var(--border)] pb-4">
               <div className="flex min-w-0 items-center gap-3">
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#f2d7cd] bg-white">
-                  <img src="/shawerma-3a-saj-logo.jpg" alt="" className="h-full w-full object-contain" />
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--border)] bg-[var(--card)] p-1.5 shadow-[0_12px_28px_rgba(199,32,47,0.15)]">
+                  <img
+                    src="/shawerma-3a-saj-logo.jpg"
+                    alt=""
+                    className="h-full w-full object-contain"
+                  />
                 </span>
                 <div className="min-w-0">
-                  <div className="truncate text-base font-black uppercase">{brandName}</div>
-                  <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#c7202f]">
+                  <div className="truncate text-base font-black uppercase text-[var(--text)]">
+                    {brandName}
+                  </div>
+                  <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--accent)]">
                     Saj & Shawerma
                   </div>
                 </div>
@@ -346,49 +390,86 @@ function MobileMenu({
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-full border border-black/10 p-2"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--card)] text-[var(--text)] transition hover:border-[var(--accent)] hover:text-[var(--accent)]"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="mb-6">
+
+            <div className="mb-5 flex items-center justify-between gap-3 rounded-[18px] border border-[var(--border)] bg-[var(--card)] px-3 py-2.5">
               <LocaleSwitcher />
-            </div>
-            <div className="mb-6">
               <ThemeSwitcher />
             </div>
-            <div className="space-y-3 text-base font-bold uppercase tracking-[0.12em] text-[var(--text-secondary)]">
-              {navigationItems.map((item) => (
-                <div key={item.id}>
-                  <Link
-                    href={item.path}
-                    onClick={onClose}
-                    className="block rounded-[16px] px-4 py-3 transition hover:bg-[#c7202f] hover:text-white"
+
+            <div className="space-y-2 text-base font-bold uppercase tracking-[0.12em]">
+              {navigationItems.map((item) => {
+                const isExpanded = Boolean(expandedItems[item.id]);
+
+                return (
+                  <div
+                    key={item.id}
+                    className="overflow-hidden rounded-[18px] border border-[var(--border)] bg-[var(--card)]"
                   >
-                    {localize(item.label, item.labelAr)}
-                  </Link>
-                  {item.children?.length ? (
-                    <div className="ms-4 mt-2 space-y-2 border-s border-black/10 ps-4 text-sm tracking-[0.12em]">
-                      {item.children.map((child) => (
-                        <Link
-                          key={child.id}
-                          href={child.path}
-                          onClick={onClose}
-                          className="block rounded-[12px] px-3 py-2 transition hover:bg-[#c7202f] hover:text-white"
+                    {item.children?.length ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => toggleItem(item.id)}
+                          className="flex w-full items-center justify-between px-4 py-3 text-left text-[var(--text)] transition hover:bg-[color:color-mix(in_srgb,var(--accent)_12%,var(--card))] hover:text-[var(--accent)]"
                         >
-                          {localize(child.label, child.labelAr)}
-                        </Link>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-              ))}
+                          <span>{localize(item.label, item.labelAr)}</span>
+                          <span
+                            className={`text-[10px] transition-transform duration-200 ${
+                              isExpanded ? "rotate-180" : ""
+                            }`}
+                          >
+                            ▾
+                          </span>
+                        </button>
+                        <AnimatePresence initial={false}>
+                          {isExpanded ? (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="space-y-1 border-t border-[var(--border)] bg-[color:color-mix(in_srgb,var(--background)_92%,transparent)] px-3 py-2 text-sm tracking-[0.12em] text-[var(--text-secondary)]">
+                                {item.children.map((child) => (
+                                  <Link
+                                    key={child.id}
+                                    href={child.path}
+                                    onClick={onClose}
+                                    className="block rounded-[12px] px-3 py-2 transition hover:bg-[color:color-mix(in_srgb,var(--accent)_10%,var(--card))] hover:text-[var(--text)]"
+                                  >
+                                    {localize(child.label, child.labelAr)}
+                                  </Link>
+                                ))}
+                              </div>
+                            </motion.div>
+                          ) : null}
+                        </AnimatePresence>
+                      </>
+                    ) : (
+                      <Link
+                        href={item.path}
+                        onClick={onClose}
+                        className="flex items-center justify-between px-4 py-3 text-[var(--text)] transition hover:bg-[color:color-mix(in_srgb,var(--accent)_12%,var(--card))] hover:text-[var(--accent)]"
+                      >
+                        <span>{localize(item.label, item.labelAr)}</span>
+                      </Link>
+                    )}
+                  </div>
+                );
+              })}
+
               <Link
                 href="/account"
                 onClick={onClose}
-                className="block rounded-[16px] px-4 py-3 transition hover:bg-[#c7202f] hover:text-white"
+                className="mt-2 block rounded-[18px] border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-[var(--text)] transition hover:border-[var(--accent)] hover:bg-[color:color-mix(in_srgb,var(--accent)_12%,var(--card))] hover:text-[var(--accent)]"
               >
-                {t('ACCOUNT')}
+                {t("ACCOUNT")}
               </Link>
             </div>
           </motion.aside>
@@ -406,8 +487,8 @@ function MobileBottomNav() {
     <div
       className="fixed inset-x-4 bottom-4 z-30 rounded-full border px-3 py-2 backdrop-blur-xl md:hidden"
       style={{
-        borderColor: 'var(--border)',
-        background: 'color-mix(in srgb, var(--background) 78%, transparent)',
+        borderColor: "var(--border)",
+        background: "color-mix(in srgb, var(--background) 78%, transparent)",
       }}
     >
       <div className="grid grid-cols-5 gap-2">
@@ -420,7 +501,7 @@ function MobileBottomNav() {
               key={item.href}
               href={item.href}
               className={`flex flex-col items-center gap-1 rounded-full py-1 text-[10px] tracking-[0.18em] transition ${
-                active ? 'scale-105 text-white' : 'text-[var(--muted)]'
+                active ? "scale-105 text-white" : "text-[var(--muted)]"
               }`}
             >
               <Icon className="h-4 w-4" />
@@ -445,66 +526,88 @@ function Footer({
     <footer
       className="border-t bg-[var(--background)] text-[var(--text)]"
       style={{
-        borderColor: 'var(--border)',
-        boxShadow: 'inset 0 1px 0 color-mix(in srgb, var(--text) 6%, transparent)',
+        borderColor: "var(--border)",
+        boxShadow:
+          "inset 0 1px 0 color-mix(in srgb, var(--text) 6%, transparent)",
       }}
     >
-      <div className="mx-auto max-w-[1440px] px-4 py-12 md:px-8 lg:px-12">
-        <div className="grid gap-10 lg:grid-cols-[1.25fr_1fr_1fr_1fr]">
-          <div>
-            <Link href="/" className="inline-flex items-center gap-4">
-              <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--border)] bg-white p-1 shadow-[0_14px_34px_rgba(199,32,47,0.12)]">
-                <img src="/shawerma-3a-saj-logo.jpg" alt="" className="h-full w-full object-contain" />
+      <div className="mx-auto max-w-[1440px] px-4 py-7 sm:py-10 md:px-8 md:py-12 lg:px-12">
+        <div className="grid gap-6 sm:gap-8 lg:grid-cols-[1.25fr_1fr_1fr_1fr]">
+          <div className="max-w-md text-center sm:text-left">
+            <Link href="/" className="inline-flex items-center gap-3 sm:gap-4">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--border)] bg-white p-1 shadow-[0_14px_34px_rgba(199,32,47,0.12)] sm:h-14 sm:w-14 md:h-16 md:w-16">
+                <img
+                  src="/shawerma-3a-saj-logo.jpg"
+                  alt=""
+                  className="h-full w-full object-contain"
+                />
               </span>
               <span>
-                <span className="block text-xl font-black uppercase leading-tight">
+                <span className="block text-base font-black uppercase leading-tight sm:text-lg md:text-xl">
                   {settings.brandName}
                 </span>
-                <span className="mt-1 block text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--accent)]">
-                  Saj wraps since lunch
+                <span className="mt-1 block text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--accent)] sm:text-[10px] md:text-[11px]">
+                  {t("Saj wraps since lunch")}
                 </span>
               </span>
             </Link>
-            <p className="mt-6 max-w-md text-sm leading-7 text-[var(--text-secondary)]">
-              {t('Fresh shawerma, saj meals, pickup, and delivery across Jordan.')}
+            <p className="mt-4 max-w-md text-sm leading-6 text-[var(--text-secondary)] sm:mt-5 sm:leading-7">
+              {t(
+                "Fresh shawerma, saj meals, pickup, and delivery across Jordan.",
+              )}
             </p>
-            <div className="mt-7 flex flex-wrap gap-3">
+            <div className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:flex lg:flex-wrap">
               <FooterInfo icon={Clock} label="Hours" value="12 PM - 2 AM" />
-              <FooterInfo icon={Phone} label="Phone" value={settings.supportPhone} />
-              <FooterInfo icon={MapPin} label="Delivery" value="Jordan branches" />
+              <FooterInfo
+                icon={Phone}
+                label="Phone"
+                value={settings.supportPhone}
+              />
+              <FooterInfo
+                icon={MapPin}
+                label="Delivery"
+                value="Jordan branches"
+              />
             </div>
           </div>
 
-          <FooterColumn
-            title="MENU"
-            links={navigationItems.map((item) => ({
-              label: localize(item.label, item.labelAr),
-              href: item.path,
-            }))}
-          />
-          <FooterColumn
-            title="HELP"
-            links={[
-              { label: 'CONTACT', href: '/contact-us' },
-              { label: 'DELIVERY', href: '/shipping' },
-              { label: 'ORDER HELP', href: '/returns' },
-              { label: 'FAQ', href: '/faq' },
-            ]}
-          />
-          <FooterColumn
-            title="FOLLOW"
-            links={[
-              { label: 'INSTAGRAM', href: settings.socials.instagram },
-              { label: 'FACEBOOK', href: settings.socials.facebook },
-              { label: 'PRIVACY POLICY', href: '/privacy-policy' },
-              { label: 'TERMS', href: '/terms' },
-            ]}
-          />
+          <div className="grid grid-cols-2 gap-6 sm:gap-8 lg:block lg:space-y-0">
+            <FooterColumn
+              title="MENU"
+              links={navigationItems.map((item) => ({
+                label: localize(item.label, item.labelAr),
+                href: item.path,
+              }))}
+            />
+            <FooterColumn
+              title="HELP"
+              links={[
+                { label: "CONTACT", href: "/contact-us" },
+                { label: "DELIVERY", href: "/shipping" },
+                { label: "ORDER HELP", href: "/returns" },
+                { label: "FAQ", href: "/faq" },
+              ]}
+            />
+          </div>
+
+          <div className="lg:pt-0">
+            <FooterColumn
+              title="FOLLOW"
+              links={[
+                { label: "INSTAGRAM", href: settings.socials.instagram },
+                { label: "FACEBOOK", href: settings.socials.facebook },
+                { label: "PRIVACY POLICY", href: "/privacy-policy" },
+                { label: "TERMS", href: "/terms" },
+              ]}
+            />
+          </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-3 border-t border-[var(--border)] pt-6 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)] md:flex-row md:items-center md:justify-between">
+        <div className="mt-8 flex flex-col gap-2 border-t border-[var(--border)] pt-4 text-center text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)] sm:text-xs md:mt-12 md:flex-row md:items-center md:justify-between md:pt-6">
           <span>© 2026 {settings.brandName}</span>
-          <span className="text-[var(--accent)]">{t('HOT SAJ, FAST DELIVERY, AND PICKUP FROM JORDAN BRANCHES')}</span>
+          <span className="text-[var(--accent)]">
+            {t("HOT SAJ, FAST DELIVERY, AND PICKUP FROM JORDAN BRANCHES")}
+          </span>
         </div>
       </div>
     </footer>
@@ -522,13 +625,15 @@ function FooterInfo({
 }) {
   const { t } = useLocale();
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--card)] px-3 py-2">
+    <div className="inline-flex w-full items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 shadow-[0_10px_28px_rgba(24,18,17,0.04)] lg:w-auto">
       <Icon className="h-4 w-4 shrink-0 text-[var(--accent)]" />
       <div className="min-w-0">
-        <div className="text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+        <div className="text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--muted)] sm:text-[9px]">
           {t(label)}
         </div>
-        <div className="mt-0.5 text-[11px] font-black uppercase leading-4 text-[var(--text)]">{t(value)}</div>
+        <div className="mt-0.5 text-[10px] font-black uppercase leading-4 text-[var(--text)] sm:text-[11px]">
+          {t(value)}
+        </div>
       </div>
     </div>
   );
@@ -544,15 +649,15 @@ function FooterColumn({
   const { t } = useLocale();
   return (
     <div>
-      <div className="mb-5 text-xs font-black uppercase tracking-[0.24em] text-[var(--accent)]">
+      <div className="mb-3 text-[10px] font-black uppercase tracking-[0.22em] text-[var(--accent)] sm:mb-5 sm:text-xs">
         {t(title)}
       </div>
-      <div className="space-y-3 text-sm font-semibold text-[var(--text-secondary)]">
+      <div className="grid gap-2.5 text-sm font-semibold text-[var(--text-secondary)] sm:space-y-3 sm:gap-0">
         {links.map((link) => (
           <Link
             key={link.label}
             href={link.href}
-            className="block transition hover:translate-x-1 hover:text-[var(--accent)]"
+            className="block text-xs transition hover:translate-x-1 hover:text-[var(--accent)] sm:text-sm"
           >
             {t(link.label)}
           </Link>
@@ -569,7 +674,10 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const lines = useMemo(() => getCartProducts(items), [items]);
   const { t, localize } = useLocale();
   const { isDark } = useThemeMode();
-  const subtotal = lines.reduce((sum, line) => sum + line.variant.price * line.quantity, 0);
+  const subtotal = lines.reduce(
+    (sum, line) => sum + line.variant.price * line.quantity,
+    0,
+  );
 
   return (
     <AnimatePresence>
@@ -584,19 +692,21 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
             exit={{ opacity: 0 }}
           />
           <motion.aside
-            initial={{ x: '100%' }}
+            initial={{ x: "100%" }}
             animate={{ x: 0 }}
-            exit={{ x: '100%' }}
+            exit={{ x: "100%" }}
             transition={{ duration: 0.3 }}
             className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col p-6"
-            style={{ background: isDark ? '#0d0d0f' : '#fffaf7' }}
+            style={{ background: isDark ? "#0d0d0f" : "#fffaf7" }}
           >
             <div className="mb-8 flex items-center justify-between">
               <div>
                 <div className="text-xs tracking-[0.25em] text-[var(--muted)]">
-                  {t('YOUR CART')}
+                  {t("YOUR CART")}
                 </div>
-                <div className="mt-1 font-display text-2xl uppercase">{t('ORDER')}</div>
+                <div className="mt-1 font-display text-2xl uppercase">
+                  {t("ORDER")}
+                </div>
               </div>
               <button
                 type="button"
@@ -636,35 +746,47 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                               className="rounded-[14px] border border-white/8 bg-white/4 px-3 py-2"
                             >
                               <div className="text-[10px] uppercase tracking-[0.18em] text-[var(--muted)]">
-                                {localize(selection.groupName, selection.groupNameAr)}
+                                {localize(
+                                  selection.groupName,
+                                  selection.groupNameAr,
+                                )}
                               </div>
                               <div className="mt-1 text-xs leading-5 text-[var(--text-secondary)]">
                                 {selection.items
                                   .map((item) => {
-                                    const label = localize(item.name, item.nameAr);
+                                    const label = localize(
+                                      item.name,
+                                      item.nameAr,
+                                    );
                                     return item.priceDelta > 0
                                       ? `${label} +${formatCurrency(item.priceDelta)}`
                                       : label;
                                   })
-                                  .join(', ')}
+                                  .join(", ")}
                               </div>
                             </div>
                           ))}
                         </div>
                       ) : null}
                       <div className="mt-3 flex items-center justify-between">
-                        <div className="text-sm">{formatCurrency(line.variant.price)}</div>
+                        <div className="text-sm">
+                          {formatCurrency(line.variant.price)}
+                        </div>
                         <div className="flex items-center gap-2 rounded-full border border-white/10 px-3 py-1">
                           <button
                             type="button"
-                            onClick={() => updateQuantity(line.lineId, line.quantity - 1)}
+                            onClick={() =>
+                              updateQuantity(line.lineId, line.quantity - 1)
+                            }
                           >
                             -
                           </button>
                           <span>{line.quantity}</span>
                           <button
                             type="button"
-                            onClick={() => updateQuantity(line.lineId, line.quantity + 1)}
+                            onClick={() =>
+                              updateQuantity(line.lineId, line.quantity + 1)
+                            }
                           >
                             +
                           </button>
@@ -675,31 +797,35 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                         onClick={() => removeItem(line.lineId)}
                         className="mt-3 text-xs tracking-[0.2em] text-[var(--muted)]"
                       >
-                        {t('REMOVE')}
+                        {t("REMOVE")}
                       </button>
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="rounded-[32px] border border-white/8 bg-white/3 p-8 text-center">
-                  <div className="font-display text-3xl uppercase">{t('YOUR CART IS EMPTY.')}</div>
+                  <div className="font-display text-3xl uppercase">
+                    {t("YOUR CART IS EMPTY.")}
+                  </div>
                   <p className="mt-3 text-sm text-[var(--text-secondary)]">
-                    {t('Start with a saj sandwich or a full arabi meal.')}
+                    {t("Start with a saj sandwich or a full arabi meal.")}
                   </p>
                   <Link
                     href="/shop"
                     onClick={onClose}
                     className="mt-6 inline-flex rounded-full bg-[var(--accent)] px-5 py-3 text-sm tracking-[0.2em]"
-                    style={{ color: 'var(--background)' }}
+                    style={{ color: "var(--background)" }}
                   >
-                    {t('VIEW MENU')}
+                    {t("VIEW MENU")}
                   </Link>
                 </div>
               )}
             </div>
             <div className="mt-6 border-t border-white/8 pt-5">
               <div className="mb-4 flex items-center justify-between text-sm">
-                <span className="text-[var(--text-secondary)]">{t('Subtotal')}</span>
+                <span className="text-[var(--text-secondary)]">
+                  {t("Subtotal")}
+                </span>
                 <span>{formatCurrency(subtotal)}</span>
               </div>
               <div className="grid gap-3">
@@ -708,15 +834,15 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                   onClick={onClose}
                   className="rounded-full border border-white/10 px-5 py-3 text-center text-sm tracking-[0.2em]"
                 >
-                  {t('VIEW CART')}
+                  {t("VIEW CART")}
                 </Link>
                 <Link
                   href="/checkout"
                   onClick={onClose}
                   className="rounded-full bg-[var(--accent)] px-5 py-3 text-center text-sm tracking-[0.2em]"
-                  style={{ color: 'var(--background)' }}
+                  style={{ color: "var(--background)" }}
                 >
-                  {t('CHECKOUT')}
+                  {t("CHECKOUT")}
                 </Link>
               </div>
             </div>
@@ -751,16 +877,16 @@ function FlashSaleModal({ sale }: { sale: FlashSale | null }) {
   }
 
   const dismiss = () => {
-    sessionStorage.setItem(`flash-sale-dismissed:${sale.id}`, 'true');
+    sessionStorage.setItem(`flash-sale-dismissed:${sale.id}`, "true");
     setVisible(false);
   };
 
-  const modalKicker = t('HOT DEAL');
+  const modalKicker = t("HOT DEAL");
   const modalTitle = sale.modalTitle?.trim() || sale.title;
   const modalDescription = sale.modalDescription?.trim() || sale.description;
-  const ctaText = sale.ctaText?.trim() || t('ORDER THE DEAL');
-  const imageSrc = sale.image || '/products/product-placeholder.svg';
-  const ctaTextColor = isDark ? '#3a1d08' : '#fff7e8';
+  const ctaText = sale.ctaText?.trim() || t("ORDER THE DEAL");
+  const imageSrc = sale.image || "/products/product-placeholder.svg";
+  const ctaTextColor = isDark ? "#3a1d08" : "#fff7e8";
 
   return (
     <AnimatePresence>
@@ -781,8 +907,8 @@ function FlashSaleModal({ sale }: { sale: FlashSale | null }) {
             transition={{ duration: 0.35 }}
             className="fixed left-1/2 top-1/2 z-[60] w-[92vw] max-w-4xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[36px] border"
             style={{
-              borderColor: 'var(--border)',
-              background: isDark ? '#111112' : '#fffaf7',
+              borderColor: "var(--border)",
+              background: isDark ? "#111112" : "#fffaf7",
             }}
           >
             <div className="grid md:grid-cols-[1.05fr_0.95fr]">
@@ -799,7 +925,9 @@ function FlashSaleModal({ sale }: { sale: FlashSale | null }) {
                 >
                   <X className="h-4 w-4" />
                 </button>
-                <div className="text-xs tracking-[0.28em] text-[var(--muted)]">{modalKicker}</div>
+                <div className="text-xs tracking-[0.28em] text-[var(--muted)]">
+                  {modalKicker}
+                </div>
                 <div className="mt-4 font-display text-5xl uppercase leading-none">
                   {sale.discountLabel}
                 </div>
@@ -833,7 +961,9 @@ function ToastViewport({
   dismissToast: (id: string) => void;
 }) {
   useEffect(() => {
-    const timeouts = toasts.map((toast) => window.setTimeout(() => dismissToast(toast.id), 3200));
+    const timeouts = toasts.map((toast) =>
+      window.setTimeout(() => dismissToast(toast.id), 3200),
+    );
 
     return () => {
       timeouts.forEach((timeout) => window.clearTimeout(timeout));
@@ -851,8 +981,8 @@ function ToastViewport({
             exit={{ opacity: 0, y: 12 }}
             className="pointer-events-auto rounded-[24px] border p-4 shadow-2xl"
             style={{
-              borderColor: 'var(--border)',
-              background: 'var(--elevated)',
+              borderColor: "var(--border)",
+              background: "var(--elevated)",
             }}
           >
             <div className="text-sm">{toast.title}</div>

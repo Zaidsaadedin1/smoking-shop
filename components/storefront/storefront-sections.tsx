@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import { ArrowRight, Heart, Star } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { FormEvent, ReactNode, useState } from 'react';
-import { useLocale } from '@/components/storefront/locale-provider';
-import { StoreCategory, StoreProduct } from '@/lib/commerce-types';
+import { motion } from "framer-motion";
+import { ArrowLeft, ArrowRight, Heart, Star } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { FormEvent, ReactNode, useState } from "react";
+import { useLocale } from "@/components/storefront/locale-provider";
+import { StoreCategory, StoreProduct } from "@/lib/commerce-types";
 import {
   calculateDiscount,
   formatCurrency,
@@ -14,18 +14,22 @@ import {
   getPrimaryPrice,
   getProductColors,
   getProductInventory,
-} from '@/lib/commerce-utils';
-import { useCartStore } from '@/stores/use-cart-store';
-import { useUiStore } from '@/stores/use-ui-store';
+} from "@/lib/commerce-utils";
+import { useCartStore } from "@/stores/use-cart-store";
+import { useUiStore } from "@/stores/use-ui-store";
 
 export function Container({
   children,
-  className = '',
+  className = "",
 }: {
   children: ReactNode;
   className?: string;
 }) {
-  return <div className={`w-full px-4 md:px-8 lg:px-12 ${className}`}>{children}</div>;
+  return (
+    <div className={`w-full px-4 md:px-8 lg:px-12 ${className}`}>
+      {children}
+    </div>
+  );
 }
 
 export function SectionHeading({
@@ -65,6 +69,7 @@ export function SectionHeading({
 
 export function CategoryMoodCard({ category }: { category: StoreCategory }) {
   const { dir, localize } = useLocale();
+  const isRtl = dir === "rtl";
 
   return (
     <Link
@@ -86,9 +91,11 @@ export function CategoryMoodCard({ category }: { category: StoreCategory }) {
             {localize(category.name, category.nameAr)}
           </div>
         </div>
-        <ArrowRight
-          className={`h-5 w-5 transition duration-500 ${dir === 'rtl' ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`}
-        />
+        {isRtl ? (
+          <ArrowLeft className="h-5 w-5 transition duration-500 group-hover:-translate-x-1" />
+        ) : (
+          <ArrowRight className="h-5 w-5 transition duration-500 group-hover:translate-x-1" />
+        )}
       </div>
     </Link>
   );
@@ -107,13 +114,13 @@ export function ProductCard({ product }: { product: StoreProduct }) {
   const inventory = getProductInventory(product);
 
   return (
-    <div className="group rounded-lg border border-[var(--border)] bg-[var(--card)] p-3 shadow-[0_16px_42px_rgba(0,0,0,0.06)] transition duration-300 hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[0_22px_52px_rgba(0,0,0,0.1)]">
+    <div className="group rounded-xl border border-[var(--border)] bg-[var(--card)] p-2.5 shadow-[0_12px_26px_rgba(0,0,0,0.05)] transition duration-300 hover:-translate-y-0.5 hover:border-[var(--accent)] hover:shadow-[0_18px_38px_rgba(0,0,0,0.08)] md:rounded-lg md:p-3 md:shadow-[0_16px_42px_rgba(0,0,0,0.06)]">
       <Link href={`/product/${product.slug}`} className="block">
-        <div className="relative overflow-hidden rounded-lg bg-[#fff8f2]">
+        <div className="relative overflow-hidden rounded-md bg-[#fff8f2] md:rounded-lg">
           <img
             src={product.images[0]?.url}
             alt={localize(product.name, product.nameAr)}
-            className="aspect-square w-full object-contain p-2 transition duration-500 group-hover:scale-[1.03]"
+            className="aspect-square w-full object-contain p-1.5 transition duration-500 group-hover:scale-[1.03] md:p-2"
           />
           {product.images[1] ? (
             <img
@@ -138,73 +145,79 @@ export function ProductCard({ product }: { product: StoreProduct }) {
                   const response = await fetch(
                     favorite
                       ? `/api/favorites?productId=${encodeURIComponent(product.id)}`
-                      : '/api/favorites',
+                      : "/api/favorites",
                     favorite
-                      ? { method: 'DELETE' }
+                      ? { method: "DELETE" }
                       : {
-                          method: 'POST',
+                          method: "POST",
                           headers: {
-                            'Content-Type': 'application/json',
+                            "Content-Type": "application/json",
                           },
                           body: JSON.stringify({ productId: product.id }),
-                        }
+                        },
                   );
 
                   if (response.status === 401) {
                     pushToast({
-                      title: t('Sign in required'),
-                      description: t('Sign in to save menu items to your favorites.'),
+                      title: t("Sign in required"),
+                      description: t(
+                        "Sign in to save menu items to your favorites.",
+                      ),
                     });
-                    router.push('/login');
+                    router.push("/login");
                     return;
                   }
 
                   if (!response.ok) {
                     pushToast({
-                      title: t('Something went wrong'),
-                      description: t('Try again in a moment.'),
+                      title: t("Something went wrong"),
+                      description: t("Try again in a moment."),
                     });
                     return;
                   }
                 } catch {
                   pushToast({
-                    title: t('Something went wrong'),
-                    description: t('Try again in a moment.'),
+                    title: t("Something went wrong"),
+                    description: t("Try again in a moment."),
                   });
                   return;
                 }
 
                 toggleFavorite(product.id);
                 pushToast({
-                  title: favorite ? t('REMOVED FROM FAVORITES') : t('SAVED TO FAVORITES'),
+                  title: favorite
+                    ? t("REMOVED FROM FAVORITES")
+                    : t("SAVED TO FAVORITES"),
                   description: localize(product.name, product.nameAr),
                 });
               }}
               className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-[#9a9a9a] shadow-[0_8px_20px_rgba(0,0,0,0.12)] transition hover:text-[#c7202f]"
               aria-label="Toggle favorite"
             >
-              <Heart className={`h-4 w-4 ${favorite ? 'fill-current text-[#c7202f]' : ''}`} />
+              <Heart
+                className={`h-4 w-4 ${favorite ? "fill-current text-[#c7202f]" : ""}`}
+              />
             </motion.button>
           </div>
         </div>
       </Link>
-      <div className="px-1 pt-4">
-        <div className="text-[9px] uppercase tracking-[0.22em] text-[var(--muted)]">
+      <div className="px-1 pt-3 md:px-1 md:pt-4">
+        <div className="text-[8px] uppercase tracking-[0.2em] text-[var(--muted)] md:text-[9px]">
           {localize(product.brand, product.brandAr)}
         </div>
         <Link
           href={`/product/${product.slug}`}
-          className="mt-1 block text-base font-bold text-[var(--text)]"
+          className="mt-1 block text-sm font-bold text-[var(--text)] md:text-base"
         >
           {localize(product.name, product.nameAr)}
         </Link>
         {product.shortDescription ? (
-          <p className="mt-2 line-clamp-2 min-h-12 text-sm leading-6 text-[var(--text-secondary)]">
+          <p className="mt-1.5 line-clamp-2 min-h-10 text-xs leading-5 text-[var(--text-secondary)] md:mt-2 md:min-h-12 md:text-sm md:leading-6">
             {localize(product.shortDescription, product.shortDescriptionAr)}
           </p>
         ) : null}
-        <div className="mt-4 flex items-center justify-between gap-3 text-sm">
-          <div className="flex items-center gap-2 font-bold text-[var(--text)]">
+        <div className="mt-3 flex items-center justify-between gap-2 text-xs md:mt-4 md:text-sm">
+          <div className="flex items-center gap-1.5 font-bold text-[var(--text)] md:gap-2">
             <span>{formatCurrency(price)}</span>
             {compareAtPrice ? (
               <span className="text-[var(--muted)] line-through">
@@ -212,23 +225,25 @@ export function ProductCard({ product }: { product: StoreProduct }) {
               </span>
             ) : null}
           </div>
-          <span className="rounded-full bg-[var(--accent)] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white">
-            {t('ADD')}
+          <span className="rounded-full bg-[var(--accent)] px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-white md:px-3 md:py-1.5 md:text-[10px]">
+            {t("ADD")}
           </span>
         </div>
-        <div className="mt-4 flex items-center justify-between gap-3">
+        <div className="mt-3 flex items-center justify-between gap-2 md:mt-4">
           <div className="flex items-center gap-1.5">
             {getProductColors(product).map((color) => (
               <span
                 key={color.name}
                 title={localize(color.name, color.nameAr)}
-                className="h-2.5 w-2.5 rounded-full border border-black/10"
+                className="h-2.5 w-2.5 rounded-full border border-black/10 md:h-2.5 md:w-2.5"
                 style={{ background: color.hex }}
               />
             ))}
           </div>
-          <div className="text-[9px] font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
-            {inventory > 0 && inventory <= 2 ? `${t('ONLY')} ${inventory}` : t('HOT NOW')}
+          <div className="text-[7px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)] md:text-[9px]">
+            {inventory > 0 && inventory <= 2
+              ? `${t("ONLY")} ${inventory}`
+              : t("HOT NOW")}
           </div>
         </div>
       </div>
@@ -238,7 +253,7 @@ export function ProductCard({ product }: { product: StoreProduct }) {
 
 export function ProductGrid({ products }: { products: StoreProduct[] }) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 md:gap-4 xl:grid-cols-4">
       {products.map((product) => (
         <ProductCard key={product.id} product={product} />
       ))}
@@ -260,20 +275,26 @@ export function EditorialBanner() {
       <div className="absolute inset-0 flex items-end p-6 md:p-12">
         <div className="max-w-xl">
           <div className="text-xs tracking-[0.3em] text-[var(--text-secondary)]">
-            {t('FROM THE GRILL')}
+            {t("FROM THE GRILL")}
           </div>
           <div className="mt-4 text-4xl font-semibold uppercase tracking-[0.18em] leading-none md:text-6xl">
-            {t('SAJ, FIRE, GARLIC.')}
+            {t("SAJ, FIRE, GARLIC.")}
           </div>
           <p className="mt-4 max-w-lg text-sm leading-7 text-[var(--text-secondary)]">
-            {t('Thin bread, hot shawerma, sharp pickles, and sauce packed for the road.')}
+            {t(
+              "Thin bread, hot shawerma, sharp pickles, and sauce packed for the road.",
+            )}
           </p>
           <Link
             href="/shop"
             className="mt-6 inline-flex items-center gap-2 text-sm tracking-[0.2em] text-white"
           >
-            {t('ORDER FROM MENU')}{' '}
-            <ArrowRight className={`h-4 w-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
+            {t("ORDER FROM MENU")}{" "}
+            {dir === "rtl" ? (
+              <ArrowLeft className="h-4 w-4" />
+            ) : (
+              <ArrowRight className="h-4 w-4" />
+            )}
           </Link>
         </div>
       </div>
@@ -283,15 +304,18 @@ export function EditorialBanner() {
 
 export function NewsletterSection() {
   const { t } = useLocale();
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
+  const [message, setMessage] = useState<{
+    type: "error" | "success";
+    text: string;
+  } | null>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!email.trim()) {
-      setMessage({ type: 'error', text: t('Email address is required') });
+      setMessage({ type: "error", text: t("Email address is required") });
       return;
     }
 
@@ -299,10 +323,10 @@ export function NewsletterSection() {
     setMessage(null);
 
     try {
-      const response = await fetch('/api/newsletter', {
-        method: 'POST',
+      const response = await fetch("/api/newsletter", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ email }),
       });
@@ -310,14 +334,17 @@ export function NewsletterSection() {
       const payload = (await response.json()) as { error?: string };
 
       if (!response.ok) {
-        setMessage({ type: 'error', text: t(payload.error ?? 'Something went wrong') });
+        setMessage({
+          type: "error",
+          text: t(payload.error ?? "Something went wrong"),
+        });
         return;
       }
 
-      setEmail('');
-      setMessage({ type: 'success', text: t('You are on the list.') });
+      setEmail("");
+      setMessage({ type: "success", text: t("You are on the list.") });
     } catch {
-      setMessage({ type: 'error', text: t('Try again in a moment.') });
+      setMessage({ type: "error", text: t("Try again in a moment.") });
     } finally {
       setIsSubmitting(false);
     }
@@ -326,34 +353,41 @@ export function NewsletterSection() {
   return (
     <section className="border border-[var(--border)] bg-[var(--card)] p-8 md:p-10">
       <div className="max-w-xl">
-        <div className="text-xs tracking-[0.28em] text-[var(--muted)]">{t('OFFERS')}</div>
+        <div className="text-xs tracking-[0.28em] text-[var(--muted)]">
+          {t("OFFERS")}
+        </div>
         <div className="mt-4 font-display text-4xl uppercase md:text-5xl">
-          {t('GET THE SAJ DEALS.')}
+          {t("GET THE SAJ DEALS.")}
         </div>
         <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
-          {t('Branch updates, meal offers, and late-night cravings in your inbox.')}
+          {t(
+            "Branch updates, meal offers, and late-night cravings in your inbox.",
+          )}
         </p>
       </div>
-      <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-3 md:flex-row">
+      <form
+        onSubmit={handleSubmit}
+        className="mt-8 flex flex-col gap-3 md:flex-row"
+      >
         <input
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          placeholder={t('Email address')}
+          placeholder={t("Email address")}
           className="h-14 flex-1 rounded-full border border-white/10 bg-black/20 px-6 text-sm outline-none placeholder:text-[var(--muted)]"
         />
         <button
           type="submit"
           disabled={isSubmitting}
           className="h-14 rounded-full bg-[var(--accent)] px-8 text-sm tracking-[0.2em] disabled:opacity-40"
-          style={{ color: 'var(--background)' }}
+          style={{ color: "var(--background)" }}
         >
-          {isSubmitting ? t('PLEASE WAIT') : t('JOIN')}
+          {isSubmitting ? t("PLEASE WAIT") : t("JOIN")}
         </button>
       </form>
       {message ? (
         <p
-          className={`mt-4 text-sm ${message.type === 'success' ? 'text-[var(--text)]' : 'text-[var(--blush)]'}`}
+          className={`mt-4 text-sm ${message.type === "success" ? "text-[var(--text)]" : "text-[var(--blush)]"}`}
         >
           {message.text}
         </p>
@@ -364,18 +398,21 @@ export function NewsletterSection() {
 
 export function SocialGallery() {
   const images = [
-    'https://images.unsplash.com/photo-1662116765994-1e4200c43589?auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1577805947697-89e18249d767?auto=format&fit=crop&w=1200&q=80',
+    "https://images.unsplash.com/photo-1662116765994-1e4200c43589?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1577805947697-89e18249d767?auto=format&fit=crop&w=1200&q=80",
   ];
 
   return (
     <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
       {images.map((image) => (
-        <div key={image} className="overflow-hidden rounded-[28px] border border-white/8">
+        <div
+          key={image}
+          className="overflow-hidden rounded-[28px] border border-white/8"
+        >
           <img
             src={image}
             alt="Fresh menu item"
@@ -387,7 +424,13 @@ export function SocialGallery() {
   );
 }
 
-export function Rating({ rating, reviewCount }: { rating: number; reviewCount: number }) {
+export function Rating({
+  rating,
+  reviewCount,
+}: {
+  rating: number;
+  reviewCount: number;
+}) {
   return (
     <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
       <Star className="h-4 w-4 fill-current text-[var(--blush)]" />
