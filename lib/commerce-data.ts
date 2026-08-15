@@ -9,10 +9,10 @@ import {
 export const storeSettings: StoreSettings = {
   announcement: 'HOT SAJ, FAST DELIVERY, AND PICKUP FROM JORDAN BRANCHES',
   brandName: 'Shawerma 3a Saj',
-  supportEmail: 'orders@shawerma3asaj.jo',
-  supportPhone: '+962 7 9000 3333',
+  supportEmail: 'shawerma3asaj@gmail.com',
+  supportPhone: '(06) 566 0880',
   socials: {
-    instagram: 'https://www.instagram.com/shawerma3asaj/',
+    instagram: 'https://www.instagram.com/shawerma_3a_saj/',
     facebook: 'https://www.facebook.com/shawerma3aSaj/?locale=ar_AR',
   },
 };

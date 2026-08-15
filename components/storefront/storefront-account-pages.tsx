@@ -461,7 +461,7 @@ export function OrderDetailPageView({ order }: { order: OrderView | null }) {
                   <img
                     src={item.imageUrl || '/products/product-placeholder.svg'}
                     alt={item.productName}
-                    className="h-32 w-full rounded-[18px] object-cover md:w-24"
+                    className="h-32 w-full rounded-[18px] bg-[#fff8f2] object-contain p-2 md:w-24"
                   />
                   <div className="flex-1">
                     <div className="text-lg font-medium">{t(item.productName)}</div>

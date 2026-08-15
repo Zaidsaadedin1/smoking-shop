@@ -178,7 +178,7 @@ function Hero({
           <img
             src={imageUrl}
             alt={product ? localize(product.name, product.nameAr) : 'Shawerma 3a Saj meal'}
-            className="relative mx-auto aspect-square w-full max-w-[540px] rounded-full border-[18px] border-white object-cover shadow-[0_28px_70px_rgba(24,18,17,0.18)]"
+            className="relative mx-auto aspect-square w-full max-w-[540px] rounded-full border-[18px] border-white bg-[#fff8f2] object-contain p-3 shadow-[0_28px_70px_rgba(24,18,17,0.18)]"
           />
           {previewProducts.length ? (
             <div className="absolute bottom-0 left-0 right-0 mx-auto grid max-w-xl gap-3 rounded-lg border border-[#181211]/10 bg-white/95 p-3 shadow-[0_20px_50px_rgba(24,18,17,0.14)] backdrop-blur md:grid-cols-3">
@@ -191,7 +191,7 @@ function Hero({
                   <img
                     src={item.images[0]?.url}
                     alt={localize(item.name, item.nameAr)}
-                    className="h-12 w-12 rounded-full object-cover"
+                    className="h-12 w-12 rounded-full bg-white object-contain p-1"
                   />
                   <span className="line-clamp-2 text-xs font-semibold text-[#181211]">
                     {localize(item.name, item.nameAr)}
@@ -246,7 +246,7 @@ function PopularCategories({ categories }: { categories: StoreCategory[] }) {
               <img
                 src={category.image}
                 alt={localize(category.name, category.nameAr)}
-                className="aspect-square w-full rounded-full object-cover"
+                className="aspect-square w-full rounded-full bg-[#fff8f2] object-contain p-2"
               />
               <div className="mt-4 text-center text-lg font-bold text-[var(--text)]">
                 {localize(category.name, category.nameAr)}
@@ -272,7 +272,7 @@ function FeatureBand() {
           <img
             src="https://wowjordan.com/wp-content/uploads/2025/08/import-170-520x397.jpg"
             alt="Wrapped Shawerma 3a Saj sandwich"
-            className="aspect-[4/3] w-full rounded-lg object-cover shadow-[0_24px_60px_rgba(24,18,17,0.14)]"
+            className="aspect-[4/3] w-full rounded-lg bg-[#fff8f2] object-contain shadow-[0_24px_60px_rgba(24,18,17,0.14)]"
           />
           <div>
             <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[#c7202f]">

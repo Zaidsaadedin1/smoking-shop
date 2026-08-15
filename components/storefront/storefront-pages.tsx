@@ -25,7 +25,7 @@ import {
 } from '@/lib/commerce-utils';
 import { calculateCouponDiscount } from '@/lib/coupon-utils';
 import { resolveDeliveryFee } from '@/lib/delivery-zones';
-import { getCartProducts, useCartStore } from '@/stores/use-cart-store';
+import { CartLineSelection, getCartProducts, useCartStore } from '@/stores/use-cart-store';
 import { useUiStore } from '@/stores/use-ui-store';
 
 export function ShopPageView({
@@ -242,15 +242,49 @@ export function ProductPageView({
     const ids = selectedOptions[group.id] ?? [];
     return group.items.filter((item) => ids.includes(item.id));
   });
+  const cartSelections: CartLineSelection[] = optionGroups
+    .map((group) => {
+      const ids = selectedOptions[group.id] ?? [];
+      const items = group.items
+        .filter((item) => ids.includes(item.id))
+        .map((item) => ({
+          id: item.id,
+          name: item.name,
+          nameAr: item.nameAr,
+          priceDelta: item.priceDelta,
+        }));
+
+      return {
+        groupId: group.id,
+        groupName: group.name,
+        groupNameAr: group.nameAr,
+        selectionType: group.selectionType,
+        items,
+      };
+    })
+    .filter((group) => group.items.length > 0);
   const optionsTotal = selectedOptionItems.reduce((sum, item) => sum + item.priceDelta, 0);
   const displayPrice = selectedVariant.price + optionsTotal;
   const discount = calculateDiscount(selectedVariant.price, selectedVariant.compareAtPrice);
   const maxQuantity = selectedVariant.allowBackorder
     ? 99
     : Math.max(1, selectedVariant.stockQuantity);
+  const selectedOptionKey = optionGroups
+    .map((group) => `${group.id}:${[...(selectedOptions[group.id] ?? [])].sort().join(',')}`)
+    .sort()
+    .join('|');
+  const cartLineId = [product.id, selectedVariant.id, selectedSize, selectedOptionKey]
+    .filter(Boolean)
+    .join('::');
 
   function handleBuyNow() {
-    addItem(buildConfiguredProduct(), selectedVariant.id, Math.min(quantity, maxQuantity));
+    addItem(
+      buildConfiguredProduct(),
+      selectedVariant.id,
+      Math.min(quantity, maxQuantity),
+      cartLineId,
+      cartSelections
+    );
 
     if (!customer) {
       router.push('/login?next=%2Fcheckout');
@@ -438,7 +472,7 @@ export function ProductPageView({
                     key={image.id}
                     type="button"
                     onClick={() => setSelectedImageIndex(index)}
-                    className={`group relative shrink-0 overflow-hidden rounded-lg border bg-white transition ${
+                    className={`group relative shrink-0 overflow-hidden rounded-lg border bg-white p-1 transition ${
                       isActive
                         ? 'border-[#c7202f] shadow-[0_0_0_1px_#c7202f]'
                         : 'border-[#181211]/10 hover:border-[#c7202f]/40'
@@ -447,29 +481,20 @@ export function ProductPageView({
                     <img
                       src={image.url}
                       alt={image.alt}
-                      className="h-24 w-24 object-cover transition duration-500 group-hover:scale-[1.04] lg:h-24 lg:w-full lg:min-w-[96px]"
+                      className="h-24 w-24 rounded-md bg-[#fff8f2] object-contain transition duration-500 group-hover:scale-[1.03] lg:h-24 lg:w-full lg:min-w-[96px]"
                     />
                   </button>
                 );
               })}
             </div>
 
-            <div className="order-1 overflow-hidden rounded-lg border border-[#181211]/10 bg-[#f8f4f1] p-4 shadow-[0_24px_70px_rgba(24,18,17,0.12)] lg:order-2">
-              <div className="relative overflow-hidden rounded-lg bg-[#fff0f1]">
-                <div className="absolute left-1/2 top-1/2 h-[78%] w-[78%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/80" />
+            <div className="order-1 overflow-hidden rounded-lg border border-[#181211]/10 bg-white shadow-[0_24px_70px_rgba(24,18,17,0.12)] lg:order-2">
+              <div className="relative bg-white">
                 <img
                   src={galleryImages[selectedImageIndex]?.url ?? galleryImages[0].url}
                   alt={galleryImages[selectedImageIndex]?.alt ?? galleryImages[0].alt}
-                  className="relative aspect-square w-full rounded-full border-[18px] border-white object-cover shadow-[0_26px_60px_rgba(24,18,17,0.12)]"
+                  className="block h-auto w-full object-contain"
                 />
-                <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between p-4">
-                  <div className="rounded-full bg-[#c7202f] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white shadow-[0_12px_26px_rgba(199,32,47,0.22)]">
-                    {localize(product.brand, product.brandAr)}
-                  </div>
-                  <div className="rounded-full border border-[#181211]/10 bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#181211]">
-                    {selectedImageIndex + 1} / {galleryImages.length}
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -521,29 +546,6 @@ export function ProductPageView({
                     ? `${t('ONLY')} ${selectedVariant.stockQuantity} ${t('LEFT')}`
                     : t('HOT NOW')
                   : t('SOLD OUT')}
-              </div>
-            </div>
-
-            <div className="mt-7 rounded-lg border border-[#181211]/10 bg-[#f8f4f1] p-4">
-              <div className="mb-4 flex flex-wrap items-center gap-2">
-                {statusPill(
-                  selectedVariant.stockQuantity > 0 || selectedVariant.allowBackorder
-                    ? 'HOT NOW'
-                    : 'SOLD OUT'
-                )}
-                {discount > 0 ? statusPill(`${discount}% OFF`) : null}
-                {selectedVariant.allowBackorder ? statusPill('BACKORDER AVAILABLE') : null}
-              </div>
-              <div className="grid gap-3 sm:grid-cols-3">
-                <VariantMetric label="SKU" value={selectedVariant.sku} />
-                <VariantMetric
-                  label="SIZE"
-                  value={localize(selectedVariant.size, selectedVariant.sizeAr)}
-                />
-                <VariantMetric
-                  label="OPTIONS"
-                  value={selectedOptionItems.length ? String(selectedOptionItems.length) : t('None')}
-                />
               </div>
             </div>
 
@@ -628,7 +630,7 @@ export function ProductPageView({
                                 <img
                                   src={item.imageUrl}
                                   alt={localize(item.name, item.nameAr)}
-                                  className="h-11 w-11 rounded-md object-cover"
+                                  className="h-11 w-11 rounded-md bg-[#fff8f2] object-contain p-1"
                                 />
                               ) : null}
                               <span>
@@ -683,7 +685,13 @@ export function ProductPageView({
                 type="button"
                 disabled={selectedVariant.stockQuantity <= 0 && !selectedVariant.allowBackorder}
                 onClick={() => {
-                  addItem(buildConfiguredProduct(), selectedVariant.id, Math.min(quantity, maxQuantity));
+                  addItem(
+                    buildConfiguredProduct(),
+                    selectedVariant.id,
+                    Math.min(quantity, maxQuantity),
+                    cartLineId,
+                    cartSelections
+                  );
                   openCart();
                   pushToast({
                     title: t('Added to your cart'),
@@ -837,7 +845,13 @@ export function ProductPageView({
             type="button"
             disabled={selectedVariant.stockQuantity <= 0 && !selectedVariant.allowBackorder}
             onClick={() => {
-              addItem(product, selectedVariant.id, Math.min(quantity, maxQuantity));
+              addItem(
+                buildConfiguredProduct(),
+                selectedVariant.id,
+                Math.min(quantity, maxQuantity),
+                cartLineId,
+                cartSelections
+              );
               openCart();
             }}
             className="rounded-full bg-[#c7202f] px-6 py-4 text-sm font-semibold uppercase tracking-[0.14em] text-white"
@@ -850,23 +864,66 @@ export function ProductPageView({
   );
 }
 
-function statusPill(label: string) {
+function CartSelectionList({
+  selections,
+  compact = false,
+}: {
+  selections: CartLineSelection[];
+  compact?: boolean;
+}) {
+  const { localize } = useLocale();
+
+  if (!selections.length) {
+    return null;
+  }
+
   return (
-    <div className="rounded-full border border-[#c7202f]/15 bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#c7202f]">
-      {label}
+    <div className={compact ? 'mt-2 space-y-1.5' : 'mt-3 space-y-2'}>
+      {selections.map((selection) => (
+        <div
+          key={selection.groupId}
+          className={
+            compact
+              ? 'rounded-[14px] border border-white/8 bg-white/4 px-3 py-2'
+              : 'rounded-[16px] border border-white/8 bg-black/10 px-4 py-3'
+          }
+        >
+          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
+            {localize(selection.groupName, selection.groupNameAr)}
+          </div>
+          <div className="mt-1 text-xs leading-5 text-[var(--text-secondary)]">
+            {selection.items
+              .map((item) => {
+                const label = localize(item.name, item.nameAr);
+                return item.priceDelta > 0
+                  ? `${label} +${formatCurrency(item.priceDelta)}`
+                  : label;
+              })
+              .join(', ')}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
 
-function VariantMetric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-[#181211]/10 bg-white p-3">
-      <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#80716d]">
-        {label}
-      </div>
-      <div className="mt-2 text-sm font-semibold text-[#181211]">{value}</div>
-    </div>
-  );
+function getCartSelectionSummary(
+  selections: CartLineSelection[],
+  localize: (english?: string | null, arabic?: string | null) => string
+) {
+  return selections
+    .map((selection) => {
+      const items = selection.items
+        .map((item) => {
+          const label = localize(item.name, item.nameAr);
+          return item.priceDelta > 0 ? `${label} +${formatCurrency(item.priceDelta)}` : label;
+        })
+        .join(', ');
+
+      return items ? `${localize(selection.groupName, selection.groupNameAr)}: ${items}` : null;
+    })
+    .filter(Boolean)
+    .join(' | ');
 }
 
 export function CartPageView({ products }: { products: StoreProduct[] }) {
@@ -882,12 +939,18 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const lines = items
     .map((item) => {
-      const product = products.find((entry) => entry.id === item.productId);
+      const product = item.product ?? products.find((entry) => entry.id === item.productId);
       const variant = product?.variants.find((entry) => entry.id === item.variantId);
       if (!product || !variant) {
         return null;
       }
-      return { product, variant, quantity: item.quantity };
+      return {
+        lineId: item.lineId ?? item.variantId,
+        product,
+        variant,
+        quantity: item.quantity,
+        selections: item.selections ?? [],
+      };
     })
     .filter((line): line is NonNullable<typeof line> => Boolean(line));
   const subtotal = lines.reduce((sum, line) => sum + line.variant.price * line.quantity, 0);
@@ -1026,13 +1089,13 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
           <div className="space-y-4">
             {lines.map((line) => (
               <div
-                key={line.variant.id}
+                key={line.lineId}
                 className="flex flex-col gap-4 rounded-[24px] border border-white/8 bg-white/3 p-3 sm:p-4 md:flex-row"
               >
                 <img
                   src={line.product.images[0]?.url}
                   alt={localize(line.product.name, line.product.nameAr)}
-                  className="h-32 w-full rounded-[20px] object-cover sm:h-40 md:h-36 md:w-32 md:flex-none"
+                  className="h-32 w-full rounded-[20px] bg-[#fff8f2] object-contain p-2 sm:h-40 md:h-36 md:w-32 md:flex-none"
                 />
                 <div className="flex flex-1 flex-col">
                   <div className="text-base sm:text-lg">
@@ -1041,19 +1104,20 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
                   <div className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
                     {localize(line.variant.size, line.variant.sizeAr)}
                   </div>
+                  <CartSelectionList selections={line.selections} />
                   <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="text-sm sm:text-base">{formatCurrency(line.variant.price)}</div>
                     <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 px-3 py-2">
                       <button
                         type="button"
-                        onClick={() => updateQuantity(line.variant.id, line.quantity - 1)}
+                        onClick={() => updateQuantity(line.lineId, line.quantity - 1)}
                       >
                         <Minus className="h-4 w-4" />
                       </button>
                       <span>{line.quantity}</span>
                       <button
                         type="button"
-                        onClick={() => updateQuantity(line.variant.id, line.quantity + 1)}
+                        onClick={() => updateQuantity(line.lineId, line.quantity + 1)}
                       >
                         <Plus className="h-4 w-4" />
                       </button>
@@ -1061,7 +1125,7 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
                   </div>
                   <button
                     type="button"
-                    onClick={() => removeItem(line.variant.id)}
+                    onClick={() => removeItem(line.lineId)}
                     className="mt-4 self-start text-xs tracking-[0.2em] text-[var(--muted)]"
                   >
                     {t('REMOVE')}
@@ -1634,18 +1698,24 @@ export function CheckoutPageView({
           currency: 'JOD',
           couponCode: appliedCoupon?.code ?? null,
           notes: form.notes,
-          items: lines.map((line) => ({
-            productId: line.product.id,
-            variantId: line.variant.id,
-            productName: localize(line.product.name, line.product.nameAr),
-            sku: line.variant.sku,
-            sizeName: localize(line.variant.size, line.variant.sizeAr),
-            colorName: null,
-            imageUrl: line.product.images[0]?.url ?? null,
-            unitPrice: line.variant.price,
-            quantity: line.quantity,
-            lineTotal: line.variant.price * line.quantity,
-          })),
+          items: lines.map((line) => {
+            const selectionSummary = getCartSelectionSummary(line.selections, localize);
+
+            return {
+              productId: line.product.id,
+              variantId: line.variant.id,
+              productName: localize(line.product.name, line.product.nameAr),
+              sku: line.variant.sku,
+              sizeName: [localize(line.variant.size, line.variant.sizeAr), selectionSummary]
+                .filter(Boolean)
+                .join(' | '),
+              colorName: null,
+              imageUrl: line.product.images[0]?.url ?? null,
+              unitPrice: line.variant.price,
+              quantity: line.quantity,
+              lineTotal: line.variant.price * line.quantity,
+            };
+          }),
         }),
       });
 
@@ -1884,14 +1954,14 @@ export function CheckoutPageView({
           <div className="mb-5 space-y-3">
             {lines.map((line) => (
               <div
-                key={line.variant.id}
+                key={line.lineId}
                 className="rounded-[24px] border border-white/8 bg-black/10 p-3"
               >
                 <div className="flex items-center gap-3">
                   <img
                     src={line.product.images[0]?.url ?? '/products/product-placeholder.svg'}
                     alt={localize(line.product.name, line.product.nameAr)}
-                    className="h-16 w-14 rounded-[14px] object-cover"
+                    className="h-16 w-14 rounded-[14px] bg-[#fff8f2] object-contain p-1"
                   />
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm">
@@ -1900,11 +1970,12 @@ export function CheckoutPageView({
                     <div className="mt-1 text-xs text-[var(--text-secondary)]">
                       {localize(line.variant.size, line.variant.sizeAr)}
                     </div>
+                    <CartSelectionList selections={line.selections} compact />
                     <div className="mt-3 inline-flex items-center gap-3 rounded-full border border-white/10 px-3 py-2">
                       <button
                         type="button"
                         onClick={() =>
-                          updateQuantity(line.variant.id, Math.max(1, line.quantity - 1))
+                          updateQuantity(line.lineId, Math.max(1, line.quantity - 1))
                         }
                         className="text-[var(--text-secondary)] transition hover:text-[var(--text)]"
                         aria-label={`Decrease quantity for ${localize(line.product.name, line.product.nameAr)}`}
@@ -1918,7 +1989,7 @@ export function CheckoutPageView({
                           !line.variant.allowBackorder &&
                           line.quantity >= Math.max(1, line.variant.stockQuantity)
                         }
-                        onClick={() => updateQuantity(line.variant.id, line.quantity + 1)}
+                        onClick={() => updateQuantity(line.lineId, line.quantity + 1)}
                         className="text-[var(--text-secondary)] transition hover:text-[var(--text)] disabled:cursor-not-allowed disabled:opacity-40"
                         aria-label={`Increase quantity for ${localize(line.product.name, line.product.nameAr)}`}
                       >
@@ -1937,7 +2008,7 @@ export function CheckoutPageView({
                     </div>
                     <button
                       type="button"
-                      onClick={() => removeItem(line.variant.id)}
+                      onClick={() => removeItem(line.lineId)}
                       className="mt-3 text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] transition hover:text-[var(--text)]"
                     >
                       {t('REMOVE')}

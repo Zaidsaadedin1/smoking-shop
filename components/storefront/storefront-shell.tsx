@@ -470,7 +470,7 @@ function Footer({
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <FooterInfo icon={Clock} label="Hours" value="12 PM - 2 AM" />
-              <FooterInfo icon={Phone} label="Phone" value="Order hotline" />
+              <FooterInfo icon={Phone} label="Phone" value={settings.supportPhone} />
               <FooterInfo icon={MapPin} label="Delivery" value="Jordan branches" />
             </div>
           </div>
@@ -610,13 +610,13 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
               {lines.length ? (
                 lines.map((line) => (
                   <div
-                    key={line.variant.id}
+                    key={line.lineId}
                     className="flex gap-4 rounded-[24px] border border-white/8 bg-white/3 p-3"
                   >
                     <img
                       src={line.product.images[0]?.url}
                       alt={localize(line.product.name, line.product.nameAr)}
-                      className="h-28 w-24 rounded-[18px] object-cover"
+                      className="h-28 w-24 rounded-[18px] bg-[#fff8f2] object-contain p-1"
                     />
                     <div className="flex-1">
                       <div className="text-sm uppercase tracking-[0.2em] text-[var(--muted)]">
@@ -628,19 +628,43 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                       <div className="mt-2 text-sm text-[var(--text-secondary)]">
                         {localize(line.variant.size, line.variant.sizeAr)}
                       </div>
+                      {line.selections.length ? (
+                        <div className="mt-3 space-y-1.5">
+                          {line.selections.map((selection) => (
+                            <div
+                              key={selection.groupId}
+                              className="rounded-[14px] border border-white/8 bg-white/4 px-3 py-2"
+                            >
+                              <div className="text-[10px] uppercase tracking-[0.18em] text-[var(--muted)]">
+                                {localize(selection.groupName, selection.groupNameAr)}
+                              </div>
+                              <div className="mt-1 text-xs leading-5 text-[var(--text-secondary)]">
+                                {selection.items
+                                  .map((item) => {
+                                    const label = localize(item.name, item.nameAr);
+                                    return item.priceDelta > 0
+                                      ? `${label} +${formatCurrency(item.priceDelta)}`
+                                      : label;
+                                  })
+                                  .join(', ')}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
                       <div className="mt-3 flex items-center justify-between">
                         <div className="text-sm">{formatCurrency(line.variant.price)}</div>
                         <div className="flex items-center gap-2 rounded-full border border-white/10 px-3 py-1">
                           <button
                             type="button"
-                            onClick={() => updateQuantity(line.variant.id, line.quantity - 1)}
+                            onClick={() => updateQuantity(line.lineId, line.quantity - 1)}
                           >
                             -
                           </button>
                           <span>{line.quantity}</span>
                           <button
                             type="button"
-                            onClick={() => updateQuantity(line.variant.id, line.quantity + 1)}
+                            onClick={() => updateQuantity(line.lineId, line.quantity + 1)}
                           >
                             +
                           </button>
@@ -648,7 +672,7 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                       </div>
                       <button
                         type="button"
-                        onClick={() => removeItem(line.variant.id)}
+                        onClick={() => removeItem(line.lineId)}
                         className="mt-3 text-xs tracking-[0.2em] text-[var(--muted)]"
                       >
                         {t('REMOVE')}
@@ -765,7 +789,7 @@ function FlashSaleModal({ sale }: { sale: FlashSale | null }) {
               <img
                 src={imageSrc}
                 alt={sale.title}
-                className="h-[260px] w-full object-cover md:h-full"
+                className="h-[260px] w-full bg-[#fff8f2] object-contain md:h-full"
               />
               <div className="relative flex min-h-[420px] flex-col justify-center p-8 md:p-10">
                 <button

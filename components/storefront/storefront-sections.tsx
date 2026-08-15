@@ -74,7 +74,7 @@ export function CategoryMoodCard({ category }: { category: StoreCategory }) {
       <img
         src={category.image}
         alt={localize(category.name, category.nameAr)}
-        className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+        className="absolute inset-0 h-full w-full bg-[#fff8f2] object-contain transition duration-500 group-hover:scale-[1.03]"
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
       <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between p-5">
@@ -109,17 +109,17 @@ export function ProductCard({ product }: { product: StoreProduct }) {
   return (
     <div className="group rounded-lg border border-[var(--border)] bg-[var(--card)] p-3 shadow-[0_16px_42px_rgba(0,0,0,0.06)] transition duration-300 hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[0_22px_52px_rgba(0,0,0,0.1)]">
       <Link href={`/product/${product.slug}`} className="block">
-        <div className="relative overflow-hidden rounded-lg bg-[#f8f4f1]">
+        <div className="relative overflow-hidden rounded-lg bg-[#fff8f2]">
           <img
             src={product.images[0]?.url}
             alt={localize(product.name, product.nameAr)}
-            className="aspect-square w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+            className="aspect-square w-full object-contain p-2 transition duration-500 group-hover:scale-[1.03]"
           />
           {product.images[1] ? (
             <img
               src={product.images[1].url}
               alt={localize(product.name, product.nameAr)}
-              className="absolute inset-0 aspect-square w-full object-cover opacity-0 transition duration-500 group-hover:opacity-100"
+              className="absolute inset-0 aspect-square w-full bg-[#fff8f2] object-contain p-2 opacity-0 transition duration-500 group-hover:opacity-100"
             />
           ) : null}
           <div className="absolute left-2 top-2 flex gap-1">
@@ -254,7 +254,7 @@ export function EditorialBanner() {
       <img
         src="https://images.unsplash.com/photo-1529006557810-274b9b2fc783?auto=format&fit=crop&w=1600&q=80"
         alt="Shawerma saj preparation"
-        className="h-[440px] w-full object-cover md:h-[560px]"
+        className="h-[440px] w-full bg-[#181211] object-contain md:h-[560px]"
       />
       <div className="absolute inset-0 bg-gradient-to-r from-black via-black/60 to-transparent" />
       <div className="absolute inset-0 flex items-end p-6 md:p-12">
@@ -379,7 +379,7 @@ export function SocialGallery() {
           <img
             src={image}
             alt="Fresh menu item"
-            className="aspect-square w-full object-cover transition duration-500 hover:scale-[1.03]"
+            className="aspect-square w-full bg-[#fff8f2] object-contain transition duration-500 hover:scale-[1.03]"
           />
         </div>
       ))}

@@ -605,29 +605,83 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'Yes. Signed-in customers can submit reviews directly from the product page.',
     ar: 'نعم. يمكن للعملاء المسجلين إرسال التقييمات مباشرة من صفحة المنتج.',
   },
-  'Account information': { en: 'Account information', ar: 'معلومات الحساب' },
-  'We store the customer profile details required to support sign-in, account management, and order history.':
+  'Last updated: August 15, 2026. This policy explains how Shawerma 3a Saj handles customer data for online ordering, delivery, pickup, accounts, and support.':
     {
-      en: 'We store the customer profile details required to support sign-in, account management, and order history.',
-      ar: 'نحفظ تفاصيل ملف العميل المطلوبة لدعم تسجيل الدخول وإدارة الحساب وسجل الطلبات.',
+      en: 'Last updated: August 15, 2026. This policy explains how Shawerma 3a Saj handles customer data for online ordering, delivery, pickup, accounts, and support.',
+      ar: 'آخر تحديث: 15 آب 2026. توضّح هذه السياسة كيف يتعامل شاورما عَ ساج مع بيانات العملاء للطلبات الإلكترونية والتوصيل والاستلام والحسابات والدعم.',
     },
-  'Order and delivery data': { en: 'Order and delivery data', ar: 'بيانات الطلب والتوصيل' },
-  'Shipping details, contact information, and order records are used to process and deliver purchases.':
+  'Information we collect': { en: 'Information we collect', ar: 'المعلومات التي نجمعها' },
+  'When you use this website, we may collect your name, email address, phone number, saved addresses, delivery area, order items, selected add-ons, payment method, coupon use, support messages, and basic account activity such as login and order history.':
     {
-      en: 'Shipping details, contact information, and order records are used to process and deliver purchases.',
-      ar: 'تُستخدم تفاصيل الشحن ومعلومات التواصل وسجلات الطلبات لمعالجة المشتريات وتسليمها.',
+      en: 'When you use this website, we may collect your name, email address, phone number, saved addresses, delivery area, order items, selected add-ons, payment method, coupon use, support messages, and basic account activity such as login and order history.',
+      ar: 'عند استخدام هذا الموقع، قد نجمع الاسم والبريد الإلكتروني ورقم الهاتف والعناوين المحفوظة ومنطقة التوصيل وعناصر الطلب والإضافات المختارة وطريقة الدفع واستخدام الكوبونات ورسائل الدعم ونشاط الحساب الأساسي مثل تسجيل الدخول وسجل الطلبات.',
     },
-  'Admin access': { en: 'Admin access', ar: 'وصول الإدارة' },
-  'Authorized store administrators can access operational order, customer, and catalog data inside the admin panel.':
-    {
-      en: 'Authorized store administrators can access operational order, customer, and catalog data inside the admin panel.',
-      ar: 'يمكن للمسؤولين المصرح لهم الوصول إلى بيانات الطلبات والعملاء والكتالوج داخل لوحة الإدارة.',
-    },
-  'Support requests': { en: 'Support requests', ar: 'طلبات الدعم' },
-  'Messages sent to support may be retained to resolve account, delivery, and order issues.': {
-    en: 'Messages sent to support may be retained to resolve account, delivery, and order issues.',
-    ar: 'قد يتم الاحتفاظ بالرسائل المرسلة إلى الدعم لمعالجة مشكلات الحساب والتوصيل والطلبات.',
+  'How we use your information': {
+    en: 'How we use your information',
+    ar: 'كيف نستخدم معلوماتك',
   },
+  'We use customer information to create and secure accounts, confirm orders, prepare food, calculate delivery fees, contact you about an order, deliver to the correct address, provide support, prevent misuse, and improve the ordering experience.':
+    {
+      en: 'We use customer information to create and secure accounts, confirm orders, prepare food, calculate delivery fees, contact you about an order, deliver to the correct address, provide support, prevent misuse, and improve the ordering experience.',
+      ar: 'نستخدم معلومات العملاء لإنشاء الحسابات وتأمينها، وتأكيد الطلبات، وتجهيز الطعام، واحتساب رسوم التوصيل، والتواصل بخصوص الطلب، والتوصيل إلى العنوان الصحيح، وتقديم الدعم، ومنع سوء الاستخدام، وتحسين تجربة الطلب.',
+    },
+  'Accounts and authentication': {
+    en: 'Accounts and authentication',
+    ar: 'الحسابات وتسجيل الدخول',
+  },
+  'Account registration and login are handled through Supabase authentication. Email verification, session management, and account identifiers are used so orders, saved addresses, and profile data stay connected to the correct customer.':
+    {
+      en: 'Account registration and login are handled through Supabase authentication. Email verification, session management, and account identifiers are used so orders, saved addresses, and profile data stay connected to the correct customer.',
+      ar: 'تتم معالجة التسجيل وتسجيل الدخول عبر مصادقة Supabase. تُستخدم عملية تأكيد البريد الإلكتروني وإدارة الجلسات ومعرّفات الحساب حتى تبقى الطلبات والعناوين المحفوظة وبيانات الملف مرتبطة بالعميل الصحيح.',
+    },
+  'Orders, delivery, and branch operations': {
+    en: 'Orders, delivery, and branch operations',
+    ar: 'الطلبات والتوصيل وعمليات الفروع',
+  },
+  'Order and delivery details may be visible to authorized Shawerma 3a Saj team members who need them for kitchen preparation, dispatch, branch coordination, customer service, refunds, complaints, or operational reporting.':
+    {
+      en: 'Order and delivery details may be visible to authorized Shawerma 3a Saj team members who need them for kitchen preparation, dispatch, branch coordination, customer service, refunds, complaints, or operational reporting.',
+      ar: 'قد تكون تفاصيل الطلب والتوصيل متاحة لأعضاء فريق شاورما عَ ساج المصرح لهم ممن يحتاجونها لتحضير الطلبات، والإرسال، وتنسيق الفروع، وخدمة العملاء، والاسترداد، والشكاوى، أو التقارير التشغيلية.',
+    },
+  Payments: { en: 'Payments', ar: 'المدفوعات' },
+  'Available payment methods are shown at checkout. If online card or wallet payments are enabled, payment details should be processed by the payment provider and not stored as full card numbers on this website.':
+    {
+      en: 'Available payment methods are shown at checkout. If online card or wallet payments are enabled, payment details should be processed by the payment provider and not stored as full card numbers on this website.',
+      ar: 'تظهر طرق الدفع المتاحة عند إتمام الطلب. إذا تم تفعيل الدفع الإلكتروني بالبطاقات أو المحافظ، فيجب أن تتم معالجة تفاصيل الدفع من مزود خدمة الدفع وألا يتم تخزين أرقام البطاقات الكاملة على هذا الموقع.',
+    },
+  'Cookies and technical data': {
+    en: 'Cookies and technical data',
+    ar: 'ملفات تعريف الارتباط والبيانات التقنية',
+  },
+  'The website may use cookies or local storage to keep you signed in, remember cart contents, save language/theme preferences, protect the service, and measure basic website performance.':
+    {
+      en: 'The website may use cookies or local storage to keep you signed in, remember cart contents, save language/theme preferences, protect the service, and measure basic website performance.',
+      ar: 'قد يستخدم الموقع ملفات تعريف الارتباط أو التخزين المحلي لإبقائك مسجلاً، وتذكر محتويات السلة، وحفظ تفضيلات اللغة والمظهر، وحماية الخدمة، وقياس الأداء الأساسي للموقع.',
+    },
+  'Data sharing': { en: 'Data sharing', ar: 'مشاركة البيانات' },
+  'We do not sell customer personal information. Data may be shared only with service providers needed to run the website, authentication, storage, delivery, payment, analytics, communications, or legal compliance.':
+    {
+      en: 'We do not sell customer personal information. Data may be shared only with service providers needed to run the website, authentication, storage, delivery, payment, analytics, communications, or legal compliance.',
+      ar: 'لا نبيع المعلومات الشخصية للعملاء. قد تتم مشاركة البيانات فقط مع مزودي الخدمات اللازمين لتشغيل الموقع أو المصادقة أو التخزين أو التوصيل أو الدفع أو التحليلات أو الاتصالات أو الالتزام القانوني.',
+    },
+  'Retention and deletion': { en: 'Retention and deletion', ar: 'الاحتفاظ والحذف' },
+  'We keep account, address, order, and support records for as long as needed to provide service, meet legal or accounting obligations, resolve disputes, and protect the business. You can request correction or deletion of your account data when deletion is legally and operationally possible.':
+    {
+      en: 'We keep account, address, order, and support records for as long as needed to provide service, meet legal or accounting obligations, resolve disputes, and protect the business. You can request correction or deletion of your account data when deletion is legally and operationally possible.',
+      ar: 'نحتفظ بسجلات الحساب والعناوين والطلبات والدعم ما دامت مطلوبة لتقديم الخدمة أو تلبية الالتزامات القانونية أو المحاسبية أو حل النزاعات أو حماية العمل. يمكنك طلب تصحيح بيانات حسابك أو حذفها عندما يكون الحذف ممكناً قانونياً وتشغيلياً.',
+    },
+  'Your choices': { en: 'Your choices', ar: 'خياراتك' },
+  'You can update saved addresses and profile details from your account. You can also contact support to ask about your data, correct inaccurate information, request deletion, or stop non-essential communications.':
+    {
+      en: 'You can update saved addresses and profile details from your account. You can also contact support to ask about your data, correct inaccurate information, request deletion, or stop non-essential communications.',
+      ar: 'يمكنك تحديث العناوين المحفوظة وتفاصيل الملف من حسابك. يمكنك أيضاً التواصل مع الدعم للاستفسار عن بياناتك، أو تصحيح معلومات غير دقيقة، أو طلب الحذف، أو إيقاف الرسائل غير الأساسية.',
+    },
+  'Privacy contact': { en: 'Privacy contact', ar: 'التواصل بخصوص الخصوصية' },
+  'For privacy questions, contact Shawerma 3a Saj at shawerma3asaj@gmail.com or call (06) 566 0880.':
+    {
+      en: 'For privacy questions, contact Shawerma 3a Saj at shawerma3asaj@gmail.com or call (06) 566 0880.',
+      ar: 'لأسئلة الخصوصية، تواصل مع شاورما عَ ساج عبر shawerma3asaj@gmail.com أو اتصل على (06) 566 0880.',
+    },
   'Orders and pricing': { en: 'Orders and pricing', ar: 'الطلبات والأسعار' },
   'Published prices, availability, and catalog content may change before an order is confirmed.': {
     en: 'Published prices, availability, and catalog content may change before an order is confirmed.',
