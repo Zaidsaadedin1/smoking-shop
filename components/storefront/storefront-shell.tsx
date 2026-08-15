@@ -1,7 +1,20 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { Heart, Menu, Search, ShoppingBag, User, X } from 'lucide-react';
+import {
+  ChefHat,
+  Clock,
+  Heart,
+  Home,
+  MapPin,
+  Menu,
+  Phone,
+  Search,
+  ShoppingBag,
+  Utensils,
+  User,
+  X,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ReactNode, useEffect, useMemo, useState } from 'react';
@@ -13,10 +26,10 @@ import { getCartProducts, useCartStore } from '@/stores/use-cart-store';
 import { useUiStore } from '@/stores/use-ui-store';
 
 const mobileNav = [
-  { label: 'HOME', href: '/', icon: Search },
-  { label: 'SHOP', href: '/shop', icon: Search },
+  { label: 'HOME', href: '/', icon: Home },
+  { label: 'MENU', href: '/shop', icon: Utensils },
   { label: '♡', href: '/favorites', icon: Heart },
-  { label: 'BAG', href: '/cart', icon: ShoppingBag },
+  { label: 'CART', href: '/cart', icon: ShoppingBag },
   { label: 'YOU', href: '/account', icon: User },
 ];
 
@@ -32,13 +45,12 @@ export function StorefrontShell({
   navigationItems: NavigationItem[];
 }) {
   const pathname = usePathname();
-  const { t, localize } = useLocale();
+  const { t } = useLocale();
   useThemeMode();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { isCartOpen, openCart, closeCart, toasts, dismissToast, pushToast } = useUiStore();
   const items = useCartStore((state) => state.items);
-  const cartLines = useMemo(() => getCartProducts(items), [items]);
   const isCheckout = pathname.startsWith('/checkout');
   const isAdmin = pathname.startsWith('/admin');
 
@@ -103,10 +115,10 @@ export function StorefrontShell({
 function AnnouncementBar({ text }: { text: string }) {
   return (
     <div
-      className="border-b px-4 py-2 text-center text-[10px] tracking-[0.3em] text-[var(--text-secondary)] md:text-xs"
+      className="border-b px-4 py-2 text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-white md:text-xs"
       style={{
-        borderColor: 'var(--border)',
-        background: 'color-mix(in srgb, var(--background) 82%, transparent)',
+        borderColor: 'rgba(0,0,0,0.08)',
+        background: 'linear-gradient(90deg, #111111 0%, #c7202f 48%, #111111 100%)',
       }}
     >
       {text}
@@ -129,16 +141,16 @@ function Header({
   onCart: () => void;
   navigationItems: NavigationItem[];
 }) {
-  const { t, localize } = useLocale();
+  const { localize } = useLocale();
   const { isDark } = useThemeMode();
-  const navHoverClassName = isDark ? 'hover:text-white' : 'hover:text-[var(--text)]';
-  const badgeTextColor = isDark ? '#000000' : '#fffaf7';
-  const controlBorderColor = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(23,23,23,0.16)';
-  const controlBackground = isDark ? 'transparent' : 'rgba(255,250,247,0.92)';
-  const headerBackground = isDark ? 'rgba(0,0,0,0.60)' : 'rgba(248,243,238,0.88)';
-  const headerTextColor = isDark ? 'var(--text)' : '#201715';
-  const secondaryTextColor = isDark ? 'var(--text-secondary)' : '#5a433d';
-  const badgeBackground = isDark ? 'var(--text)' : '#201715';
+  const navHoverClassName = isDark ? 'hover:text-white' : 'hover:text-[#c7202f]';
+  const badgeTextColor = '#ffffff';
+  const controlBorderColor = isDark ? 'rgba(255,255,255,0.14)' : 'rgba(199,32,47,0.16)';
+  const controlBackground = isDark ? 'rgba(255,255,255,0.06)' : '#fff8f2';
+  const headerBackground = isDark ? 'rgba(8,8,8,0.9)' : 'rgba(255,252,248,0.94)';
+  const headerTextColor = isDark ? 'var(--text)' : '#181211';
+  const secondaryTextColor = isDark ? 'var(--text-secondary)' : '#5f514b';
+  const badgeBackground = 'var(--accent)';
   return (
     <header
       className={`sticky top-0 z-40 transition duration-300 ${
@@ -150,12 +162,12 @@ function Header({
         color: headerTextColor,
       }}
     >
-      <div className="relative mx-auto flex max-w-[1440px] items-center justify-between px-4 py-4 md:px-8 lg:px-12">
-        <div className="flex items-center gap-3 md:hidden">
+      <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-3 px-4 py-3 md:px-8 lg:px-12">
+        <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={onMenu}
-            className="rounded-full border p-2 text-[var(--text)]"
+            className="rounded-full border p-2 text-[var(--text)] md:hidden"
             style={{
               borderColor: controlBorderColor,
               background: controlBackground,
@@ -164,17 +176,31 @@ function Header({
           >
             <Menu className="h-5 w-5" />
           </button>
+
+          <Link
+            href="/"
+            className="inline-flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border bg-white p-1.5 shadow-[0_12px_30px_rgba(199,32,47,0.12)] transition hover:-translate-y-0.5 md:h-16 md:w-16"
+            style={{ borderColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(199,32,47,0.16)' }}
+            aria-label={brandName}
+          >
+            <img src="/shawerma-3a-saj-logo.jpg" alt="" className="h-full w-full object-contain" />
+            <span className="sr-only">{brandName}</span>
+          </Link>
         </div>
 
         <nav
-          className="hidden items-center gap-6 text-xs tracking-[0.32em] md:flex"
-          style={{ color: secondaryTextColor }}
+          className="hidden max-w-[46rem] items-center justify-center gap-1 rounded-full border px-2 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] shadow-[0_18px_45px_rgba(24,18,17,0.06)] md:flex"
+          style={{
+            color: secondaryTextColor,
+            borderColor: controlBorderColor,
+            background: controlBackground,
+          }}
         >
           {navigationItems.map((item) => (
             <div key={item.id} className="group relative">
               <Link
                 href={item.path}
-                className={`inline-flex items-center gap-2 border-b border-transparent py-2 transition ${navHoverClassName} group-hover:border-current`}
+                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 transition ${navHoverClassName} hover:bg-white`}
               >
                 <span>{localize(item.label, item.labelAr)}</span>
                 {item.children?.length ? (
@@ -185,17 +211,17 @@ function Header({
               </Link>
               {item.children?.length ? (
                 <div className="invisible absolute left-0 top-full z-50 min-w-64 pt-3 opacity-0 transition duration-200 group-hover:visible group-hover:opacity-100">
-                  <div className="overflow-hidden border border-[var(--border)] bg-[var(--background)] shadow-[0_18px_40px_rgba(0,0,0,0.16)]">
+                  <div className="overflow-hidden rounded-[18px] border border-[var(--border)] bg-[var(--background)] shadow-[0_18px_40px_rgba(0,0,0,0.16)]">
                     <div className="space-y-0.5 p-2">
-                    {item.children.map((child) => (
-                      <Link
-                        key={child.id}
-                        href={child.path}
-                        className="block border border-transparent px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-[var(--text-secondary)] transition hover:border-[var(--border)] hover:bg-[var(--card)] hover:text-[var(--text)]"
-                      >
-                        {localize(child.label, child.labelAr)}
-                      </Link>
-                    ))}
+                      {item.children.map((child) => (
+                        <Link
+                          key={child.id}
+                          href={child.path}
+                          className="block rounded-[12px] border border-transparent px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-[var(--text-secondary)] transition hover:border-[var(--border)] hover:bg-[var(--card)] hover:text-[var(--text)]"
+                        >
+                          {localize(child.label, child.labelAr)}
+                        </Link>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -203,14 +229,6 @@ function Header({
             </div>
           ))}
         </nav>
-
-        <Link
-          href="/"
-          className="absolute left-1/2 -translate-x-1/2 text-center font-display text-[0.82rem] uppercase tracking-[0.18em] sm:text-[1rem] sm:tracking-[0.22em] md:text-3xl md:tracking-[0.35em]"
-          style={{ color: headerTextColor }}
-        >
-          {brandName}
-        </Link>
 
         <div className="flex items-center gap-2 md:gap-3" style={{ color: secondaryTextColor }}>
           <div className="hidden md:block">
@@ -267,6 +285,13 @@ function Header({
               </span>
             ) : null}
           </button>
+          <Link
+            href="/shop"
+            className="hidden items-center gap-2 rounded-full bg-[#c7202f] px-5 py-2.5 text-xs font-black uppercase tracking-[0.16em] text-white shadow-[0_14px_32px_rgba(199,32,47,0.28)] transition hover:-translate-y-0.5 hover:bg-[#a91624] lg:inline-flex"
+          >
+            <ChefHat className="h-4 w-4" />
+            <span>Order Now</span>
+          </Link>
         </div>
       </div>
     </header>
@@ -306,12 +331,22 @@ function MobileMenu({
             className="fixed inset-y-0 left-0 z-50 flex w-[86%] max-w-sm flex-col px-6 py-6"
             style={{ background: isDark ? '#0c0c0d' : '#fffaf7' }}
           >
-            <div className="mb-10 flex items-center justify-between">
-              <div className="font-display text-xl uppercase tracking-[0.3em]">{brandName}</div>
+            <div className="mb-10 flex items-center justify-between gap-4">
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#f2d7cd] bg-white">
+                  <img src="/shawerma-3a-saj-logo.jpg" alt="" className="h-full w-full object-contain" />
+                </span>
+                <div className="min-w-0">
+                  <div className="truncate text-base font-black uppercase">{brandName}</div>
+                  <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#c7202f]">
+                    Saj & Shawerma
+                  </div>
+                </div>
+              </div>
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-full border border-white/10 p-2"
+                className="rounded-full border border-black/10 p-2"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -322,20 +357,24 @@ function MobileMenu({
             <div className="mb-6">
               <ThemeSwitcher />
             </div>
-            <div className="space-y-5 text-lg uppercase tracking-[0.2em] text-[var(--text-secondary)]">
+            <div className="space-y-3 text-base font-bold uppercase tracking-[0.12em] text-[var(--text-secondary)]">
               {navigationItems.map((item) => (
                 <div key={item.id}>
-                  <Link href={item.path} onClick={onClose} className="block transition hover:text-white">
+                  <Link
+                    href={item.path}
+                    onClick={onClose}
+                    className="block rounded-[16px] px-4 py-3 transition hover:bg-[#c7202f] hover:text-white"
+                  >
                     {localize(item.label, item.labelAr)}
                   </Link>
                   {item.children?.length ? (
-                    <div className="mt-3 space-y-3 border-s border-white/10 ps-4 text-sm tracking-[0.16em]">
+                    <div className="ms-4 mt-2 space-y-2 border-s border-black/10 ps-4 text-sm tracking-[0.12em]">
                       {item.children.map((child) => (
                         <Link
                           key={child.id}
                           href={child.path}
                           onClick={onClose}
-                          className="block transition hover:text-white"
+                          className="block rounded-[12px] px-3 py-2 transition hover:bg-[#c7202f] hover:text-white"
                         >
                           {localize(child.label, child.labelAr)}
                         </Link>
@@ -344,7 +383,11 @@ function MobileMenu({
                   ) : null}
                 </div>
               ))}
-              <Link href="/account" onClick={onClose} className="block transition hover:text-white">
+              <Link
+                href="/account"
+                onClick={onClose}
+                className="block rounded-[16px] px-4 py-3 transition hover:bg-[#c7202f] hover:text-white"
+              >
                 {t('ACCOUNT')}
               </Link>
             </div>
@@ -357,7 +400,7 @@ function MobileMenu({
 
 function MobileBottomNav() {
   const pathname = usePathname();
-  const { t, localize } = useLocale();
+  const { t } = useLocale();
 
   return (
     <div
@@ -400,55 +443,94 @@ function Footer({
   const { t, localize } = useLocale();
   return (
     <footer
-      className="border-t px-4 py-16 md:px-8 lg:px-12"
+      className="border-t bg-[var(--background)] text-[var(--text)]"
       style={{
         borderColor: 'var(--border)',
-        background: 'color-mix(in srgb, var(--background) 72%, transparent)',
+        boxShadow: 'inset 0 1px 0 color-mix(in srgb, var(--text) 6%, transparent)',
       }}
     >
-      <div className="mx-auto grid max-w-[1440px] gap-10 md:grid-cols-5">
-        <div className="md:col-span-2">
-          <div className="font-display text-3xl uppercase tracking-[0.3em]">
-            {settings.brandName}
+      <div className="mx-auto max-w-[1440px] px-4 py-12 md:px-8 lg:px-12">
+        <div className="grid gap-10 lg:grid-cols-[1.25fr_1fr_1fr_1fr]">
+          <div>
+            <Link href="/" className="inline-flex items-center gap-4">
+              <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--border)] bg-white p-1 shadow-[0_14px_34px_rgba(199,32,47,0.12)]">
+                <img src="/shawerma-3a-saj-logo.jpg" alt="" className="h-full w-full object-contain" />
+              </span>
+              <span>
+                <span className="block text-xl font-black uppercase leading-tight">
+                  {settings.brandName}
+                </span>
+                <span className="mt-1 block text-[11px] font-bold uppercase tracking-[0.22em] text-[var(--accent)]">
+                  Saj wraps since lunch
+                </span>
+              </span>
+            </Link>
+            <p className="mt-6 max-w-md text-sm leading-7 text-[var(--text-secondary)]">
+              {t('Fresh shawerma, saj meals, pickup, and delivery across Jordan.')}
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <FooterInfo icon={Clock} label="Hours" value="12 PM - 2 AM" />
+              <FooterInfo icon={Phone} label="Phone" value="Order hotline" />
+              <FooterInfo icon={MapPin} label="Delivery" value="Jordan branches" />
+            </div>
           </div>
-          <p className="mt-4 max-w-md text-sm leading-7 text-[var(--text-secondary)]">
-            {t('Dark feminine pieces, nails, and finishing touches.')}
-          </p>
+
+          <FooterColumn
+            title="MENU"
+            links={navigationItems.map((item) => ({
+              label: localize(item.label, item.labelAr),
+              href: item.path,
+            }))}
+          />
+          <FooterColumn
+            title="HELP"
+            links={[
+              { label: 'CONTACT', href: '/contact-us' },
+              { label: 'DELIVERY', href: '/shipping' },
+              { label: 'ORDER HELP', href: '/returns' },
+              { label: 'FAQ', href: '/faq' },
+            ]}
+          />
+          <FooterColumn
+            title="FOLLOW"
+            links={[
+              { label: 'INSTAGRAM', href: settings.socials.instagram },
+              { label: 'FACEBOOK', href: settings.socials.facebook },
+              { label: 'PRIVACY POLICY', href: '/privacy-policy' },
+              { label: 'TERMS', href: '/terms' },
+            ]}
+          />
         </div>
-        <FooterColumn
-          title="SHOP"
-          links={navigationItems.map((item) => ({
-            label: localize(item.label, item.labelAr),
-            href: item.path,
-          }))}
-        />
-        <FooterColumn
-          title="HELP"
-          links={[
-            { label: 'CONTACT', href: '/contact-us' },
-            { label: 'SHIPPING', href: '/shipping' },
-            { label: 'RETURNS', href: '/returns' },
-            { label: 'FAQ', href: '/faq' },
-          ]}
-        />
-        <FooterColumn
-          title="LEGAL"
-          links={[
-            { label: 'PRIVACY POLICY', href: '/privacy-policy' },
-            { label: 'TERMS', href: '/terms' },
-            { label: 'INSTAGRAM', href: settings.socials.instagram },
-            { label: 'FACEBOOK', href: settings.socials.facebook },
-          ]}
-        />
-      </div>
-      <div
-        className="mx-auto mt-12 flex max-w-[1440px] flex-col gap-2 border-t pt-6 text-xs tracking-[0.22em] text-[var(--muted)] md:flex-row md:items-center md:justify-between"
-        style={{ borderColor: 'var(--border)' }}
-      >
-        <span>© 2026 {settings.brandName}</span>
-        <span>{t('DELIVERY ACROSS JORDAN 🇯🇴  •  NEW DROP AVAILABLE NOW').split('  •  ')[0]}</span>
+
+        <div className="mt-12 flex flex-col gap-3 border-t border-[var(--border)] pt-6 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--muted)] md:flex-row md:items-center md:justify-between">
+          <span>© 2026 {settings.brandName}</span>
+          <span className="text-[var(--accent)]">{t('HOT SAJ, FAST DELIVERY, AND PICKUP FROM JORDAN BRANCHES')}</span>
+        </div>
       </div>
     </footer>
+  );
+}
+
+function FooterInfo({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof Clock;
+  label: string;
+  value: string;
+}) {
+  const { t } = useLocale();
+  return (
+    <div className="inline-flex items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--card)] px-3 py-2">
+      <Icon className="h-4 w-4 shrink-0 text-[var(--accent)]" />
+      <div className="min-w-0">
+        <div className="text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
+          {t(label)}
+        </div>
+        <div className="mt-0.5 text-[11px] font-black uppercase leading-4 text-[var(--text)]">{t(value)}</div>
+      </div>
+    </div>
   );
 }
 
@@ -462,10 +544,16 @@ function FooterColumn({
   const { t } = useLocale();
   return (
     <div>
-      <div className="mb-4 text-xs tracking-[0.3em] text-[var(--text-secondary)]">{t(title)}</div>
-      <div className="space-y-3 text-sm text-[var(--muted)]">
+      <div className="mb-5 text-xs font-black uppercase tracking-[0.24em] text-[var(--accent)]">
+        {t(title)}
+      </div>
+      <div className="space-y-3 text-sm font-semibold text-[var(--text-secondary)]">
         {links.map((link) => (
-          <Link key={link.label} href={link.href} className="block transition hover:text-white">
+          <Link
+            key={link.label}
+            href={link.href}
+            className="block transition hover:translate-x-1 hover:text-[var(--accent)]"
+          >
             {t(link.label)}
           </Link>
         ))}
@@ -505,8 +593,10 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
           >
             <div className="mb-8 flex items-center justify-between">
               <div>
-                <div className="text-xs tracking-[0.25em] text-[var(--muted)]">{t('YOUR BAG')}</div>
-                <div className="mt-1 font-display text-2xl uppercase">{t('HOLD')}</div>
+                <div className="text-xs tracking-[0.25em] text-[var(--muted)]">
+                  {t('YOUR CART')}
+                </div>
+                <div className="mt-1 font-display text-2xl uppercase">{t('ORDER')}</div>
               </div>
               <button
                 type="button"
@@ -536,7 +626,6 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                         {localize(line.product.name, line.product.nameAr)}
                       </div>
                       <div className="mt-2 text-sm text-[var(--text-secondary)]">
-                        {localize(line.variant.color, line.variant.colorAr)} /{' '}
                         {localize(line.variant.size, line.variant.sizeAr)}
                       </div>
                       <div className="mt-3 flex items-center justify-between">
@@ -569,9 +658,9 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                 ))
               ) : (
                 <div className="rounded-[32px] border border-white/8 bg-white/3 p-8 text-center">
-                  <div className="font-display text-3xl uppercase">{t('YOUR BAG IS EMPTY.')}</div>
+                  <div className="font-display text-3xl uppercase">{t('YOUR CART IS EMPTY.')}</div>
                   <p className="mt-3 text-sm text-[var(--text-secondary)]">
-                    {t('But that can be fixed.')}
+                    {t('Start with a saj sandwich or a full arabi meal.')}
                   </p>
                   <Link
                     href="/shop"
@@ -579,7 +668,7 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                     className="mt-6 inline-flex rounded-full bg-[var(--accent)] px-5 py-3 text-sm tracking-[0.2em]"
                     style={{ color: 'var(--background)' }}
                   >
-                    {t('SHOP THE DROP')}
+                    {t('VIEW MENU')}
                   </Link>
                 </div>
               )}
@@ -595,7 +684,7 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                   onClick={onClose}
                   className="rounded-full border border-white/10 px-5 py-3 text-center text-sm tracking-[0.2em]"
                 >
-                  {t('VIEW BAG')}
+                  {t('VIEW CART')}
                 </Link>
                 <Link
                   href="/checkout"
@@ -642,12 +731,12 @@ function FlashSaleModal({ sale }: { sale: FlashSale | null }) {
     setVisible(false);
   };
 
-  const modalKicker = t('AFTER DARK');
+  const modalKicker = t('HOT DEAL');
   const modalTitle = sale.modalTitle?.trim() || sale.title;
   const modalDescription = sale.modalDescription?.trim() || sale.description;
-  const ctaText = sale.ctaText?.trim() || t('SHOP THE SALE');
+  const ctaText = sale.ctaText?.trim() || t('ORDER THE DEAL');
   const imageSrc = sale.image || '/products/product-placeholder.svg';
-  const ctaTextColor = isDark ? '#8a304f' : '#f7efe3';
+  const ctaTextColor = isDark ? '#3a1d08' : '#fff7e8';
 
   return (
     <AnimatePresence>

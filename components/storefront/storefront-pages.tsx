@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowRight, Check, Heart, Minus, Plus, SlidersHorizontal, Star } from 'lucide-react';
+import { ArrowRight, Heart, Minus, Plus, SlidersHorizontal, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ReactNode, useEffect, useMemo, useState } from 'react';
@@ -21,10 +21,6 @@ import {
   calculateDiscountAmount,
   filterProducts,
   formatCurrency,
-  getCompareAtPrice,
-  getPrimaryPrice,
-  getProductColors,
-  getProductInventory,
   getProductSizes,
 } from '@/lib/commerce-utils';
 import { calculateCouponDiscount } from '@/lib/coupon-utils';
@@ -35,8 +31,8 @@ import { useUiStore } from '@/stores/use-ui-store';
 export function ShopPageView({
   products,
   categories,
-  title = 'SHOP',
-  description = 'Dark feminine pieces, nails, and finishing touches.',
+  title = 'MENU',
+  description = 'Fresh shawerma, saj rolls, complete meals, sides, and dips.',
   initialCategory,
   initialSort,
   initialSale = false,
@@ -107,7 +103,7 @@ export function ShopPageView({
       <Container>
         <div className="mb-4 flex items-center justify-between border-b border-[var(--border)] py-3 text-[10px] uppercase tracking-[0.22em] text-[var(--muted)]">
           <div>
-            {filtered.length} {t('PIECES')}
+            {filtered.length} {t('ITEMS')}
           </div>
           <div className="flex items-center gap-3">
             <button type="button" className="inline-flex items-center gap-2">
@@ -193,8 +189,8 @@ export function ProductPageView({
   const toggleFavorite = useCartStore((state) => state.toggleFavorite);
   const openCart = useUiStore((state) => state.openCart);
   const pushToast = useUiStore((state) => state.pushToast);
-  const colors = getProductColors(product);
   const sizes = getProductSizes(product);
+  const optionGroups = product.optionGroups ?? [];
   const galleryImages = product.images.length
     ? product.images
     : [
@@ -204,10 +200,33 @@ export function ProductPageView({
           alt: product.name,
         },
       ];
-  const [selectedColor, setSelectedColor] = useState(
-    colors.find((color) => color.name !== 'Default')?.name ?? colors[0]?.name ?? ''
-  );
   const [selectedSize, setSelectedSize] = useState(sizes[0]?.name ?? '');
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string[]>>(() =>
+    Object.fromEntries(
+      optionGroups.map((group) => [
+        group.id,
+        group.selectionType === 'radio'
+          ? [
+              group.items.find(
+                (item) =>
+                  item.isDefault &&
+                  (!item.trackInventory || item.stockQuantity > 0 || item.allowBackorder)
+              )?.id ??
+                group.items.find(
+                  (item) => !item.trackInventory || item.stockQuantity > 0 || item.allowBackorder
+                )?.id ??
+                '',
+            ].filter(Boolean)
+          : group.items
+              .filter(
+                (item) =>
+                  item.isDefault &&
+                  (!item.trackInventory || item.stockQuantity > 0 || item.allowBackorder)
+              )
+              .map((item) => item.id),
+      ])
+    )
+  );
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
@@ -216,23 +235,22 @@ export function ProductPageView({
   const [reviewTitle, setReviewTitle] = useState('');
   const [reviewComment, setReviewComment] = useState('');
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
-  const variantMatchesColor = (variant: StoreProduct['variants'][number], color: string) =>
-    variant.color === color || variant.color === 'Default';
-
   const selectedVariant =
-    product.variants.find(
-      (variant) => variantMatchesColor(variant, selectedColor) && variant.size === selectedSize
-    ) ??
-    product.variants.find((variant) => variantMatchesColor(variant, selectedColor)) ??
-    product.variants[0];
+    product.variants.find((variant) => variant.size === selectedSize) ?? product.variants[0];
 
+  const selectedOptionItems = optionGroups.flatMap((group) => {
+    const ids = selectedOptions[group.id] ?? [];
+    return group.items.filter((item) => ids.includes(item.id));
+  });
+  const optionsTotal = selectedOptionItems.reduce((sum, item) => sum + item.priceDelta, 0);
+  const displayPrice = selectedVariant.price + optionsTotal;
   const discount = calculateDiscount(selectedVariant.price, selectedVariant.compareAtPrice);
   const maxQuantity = selectedVariant.allowBackorder
     ? 99
     : Math.max(1, selectedVariant.stockQuantity);
 
   function handleBuyNow() {
-    addItem(product, selectedVariant.id, Math.min(quantity, maxQuantity));
+    addItem(buildConfiguredProduct(), selectedVariant.id, Math.min(quantity, maxQuantity));
 
     if (!customer) {
       router.push('/login?next=%2Fcheckout');
@@ -242,11 +260,47 @@ export function ProductPageView({
     router.push('/checkout');
   }
 
+  function buildConfiguredProduct() {
+    if (optionsTotal <= 0) {
+      return product;
+    }
+
+    return {
+      ...product,
+      variants: product.variants.map((variant) =>
+        variant.id === selectedVariant.id ? { ...variant, price: displayPrice } : variant
+      ),
+    };
+  }
+
+  function handleOptionChange(groupId: string, itemId: string, selectionType: 'radio' | 'checkbox') {
+    const group = optionGroups.find((entry) => entry.id === groupId);
+    const item = group?.items.find((entry) => entry.id === itemId);
+    const itemAvailable = item ? !item.trackInventory || item.stockQuantity > 0 || item.allowBackorder : false;
+
+    if (!itemAvailable) {
+      return;
+    }
+
+    setSelectedOptions((current) => {
+      if (selectionType === 'radio') {
+        return { ...current, [groupId]: [itemId] };
+      }
+
+      const currentIds = current[groupId] ?? [];
+      const nextIds = currentIds.includes(itemId)
+        ? currentIds.filter((id) => id !== itemId)
+        : [...currentIds, itemId];
+
+      return { ...current, [groupId]: nextIds };
+    });
+  }
+
   async function handleFavoriteToggle() {
     if (!customer) {
       pushToast({
         title: t('Sign in required'),
-        description: t('Sign in to save products to your wishlist.'),
+        description: t('Sign in to save menu items to your favorites.'),
       });
       router.push('/login');
       return;
@@ -279,7 +333,7 @@ export function ProductPageView({
     setIsFavorite(nextFavorite);
     toggleFavorite(product.id);
     pushToast({
-      title: nextFavorite ? t('SAVE TO YOUR WISHLIST') : t('REMOVED FROM WISHLIST'),
+      title: nextFavorite ? t('SAVED TO FAVORITES') : t('REMOVED FROM FAVORITES'),
       description: localize(product.name, product.nameAr),
     });
   }
@@ -361,11 +415,22 @@ export function ProductPageView({
   }
 
   return (
-    <div className="pb-20 pt-6 md:pb-24">
+    <div className="bg-[#fffefe] pb-20 pt-8 text-[#181211] md:pb-24 md:pt-12">
       <Container>
-        <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="grid gap-4 lg:grid-cols-[108px_minmax(0,1fr)] lg:items-start">
-            <div className="order-2 flex gap-3 overflow-x-auto pb-2 lg:order-1 lg:grid lg:max-h-[760px] lg:auto-rows-max lg:overflow-visible lg:pb-0">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#80716d]">
+          <Link
+            href="/shop"
+            className="inline-flex items-center gap-2 transition hover:text-[#c7202f]"
+          >
+            <ArrowRight className="h-4 w-4 rotate-180" />
+            {t('BACK TO MENU')}
+          </Link>
+          <span>{localize(product.categorySlug, product.categorySlug)}</span>
+        </div>
+
+        <div className="grid gap-10 lg:grid-cols-[1.04fr_0.96fr] lg:items-start">
+          <div className="grid gap-4 lg:grid-cols-[96px_minmax(0,1fr)] lg:items-start">
+            <div className="order-2 flex gap-3 overflow-x-auto pb-2 lg:order-1 lg:grid lg:max-h-[720px] lg:auto-rows-max lg:overflow-visible lg:pb-0">
               {galleryImages.map((image, index) => {
                 const isActive = index === selectedImageIndex;
                 return (
@@ -373,43 +438,44 @@ export function ProductPageView({
                     key={image.id}
                     type="button"
                     onClick={() => setSelectedImageIndex(index)}
-                    className={`group relative shrink-0 overflow-hidden rounded-[22px] border bg-[var(--card)] transition ${
+                    className={`group relative shrink-0 overflow-hidden rounded-lg border bg-white transition ${
                       isActive
-                        ? 'border-[var(--text)] shadow-[0_0_0_1px_var(--text)]'
-                        : 'border-[var(--border)] hover:border-[var(--text-secondary)]'
+                        ? 'border-[#c7202f] shadow-[0_0_0_1px_#c7202f]'
+                        : 'border-[#181211]/10 hover:border-[#c7202f]/40'
                     }`}
                   >
                     <img
                       src={image.url}
                       alt={image.alt}
-                      className="h-24 w-20 object-cover transition duration-500 group-hover:scale-[1.04] lg:h-28 lg:w-full lg:min-w-[108px]"
+                      className="h-24 w-24 object-cover transition duration-500 group-hover:scale-[1.04] lg:h-24 lg:w-full lg:min-w-[96px]"
                     />
                   </button>
                 );
               })}
             </div>
 
-            <div className="order-1 overflow-hidden rounded-[32px] border border-[var(--border)] bg-[var(--card)] lg:order-2">
-              <div className="relative">
+            <div className="order-1 overflow-hidden rounded-lg border border-[#181211]/10 bg-[#f8f4f1] p-4 shadow-[0_24px_70px_rgba(24,18,17,0.12)] lg:order-2">
+              <div className="relative overflow-hidden rounded-lg bg-[#fff0f1]">
+                <div className="absolute left-1/2 top-1/2 h-[78%] w-[78%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/80" />
                 <img
                   src={galleryImages[selectedImageIndex]?.url ?? galleryImages[0].url}
                   alt={galleryImages[selectedImageIndex]?.alt ?? galleryImages[0].alt}
-                  className="aspect-[4/5] w-full object-cover"
+                  className="relative aspect-square w-full rounded-full border-[18px] border-white object-cover shadow-[0_26px_60px_rgba(24,18,17,0.12)]"
                 />
                 <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between p-4">
-                  <div className="rounded-full border border-white/10 bg-black/45 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white backdrop-blur-md">
+                  <div className="rounded-full bg-[#c7202f] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white shadow-[0_12px_26px_rgba(199,32,47,0.22)]">
                     {localize(product.brand, product.brandAr)}
                   </div>
-                  <div className="rounded-full border border-white/10 bg-black/45 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-white backdrop-blur-md">
+                  <div className="rounded-full border border-[#181211]/10 bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#181211]">
                     {selectedImageIndex + 1} / {galleryImages.length}
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <div className="lg:sticky lg:top-28 lg:h-fit">
+          <div className="rounded-lg border border-[#181211]/10 bg-white p-5 shadow-[0_20px_60px_rgba(24,18,17,0.08)] md:p-7 lg:sticky lg:top-28 lg:h-fit">
             <div className="flex items-start justify-between gap-4">
-              <div className="text-xs tracking-[0.26em] text-[var(--muted)]">
+              <div className="rounded-full bg-[#fff0f1] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#c7202f]">
                 {localize(product.brand, product.brandAr)}
               </div>
               <button
@@ -417,95 +483,79 @@ export function ProductPageView({
                 onClick={handleFavoriteToggle}
                 className={`inline-flex h-11 w-11 items-center justify-center rounded-full border transition ${
                   isFavorite
-                    ? 'border-white bg-white text-black'
-                    : 'border-white/10 text-[var(--text-secondary)]'
+                    ? 'border-[#c7202f] bg-[#c7202f] text-white'
+                    : 'border-[#181211]/10 text-[#80716d] hover:border-[#c7202f] hover:text-[#c7202f]'
                 }`}
                 aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
               >
                 <Heart className={`h-4 w-4 ${isFavorite ? 'fill-current' : ''}`} />
               </button>
             </div>
-            <h1 className="mt-3 font-display text-4xl uppercase md:text-6xl">
+            <h1 className="mt-5 text-4xl font-bold leading-tight text-[#181211] md:text-6xl">
               {localize(product.name, product.nameAr)}
             </h1>
-            <div className="mt-4 flex items-center gap-4">
-              <div className="text-2xl">{formatCurrency(selectedVariant.price)}</div>
+            <p className="mt-4 text-base leading-8 text-[#5d504d]">
+              {localize(product.shortDescription, product.shortDescriptionAr)}
+            </p>
+
+            <div className="mt-6 flex flex-wrap items-center gap-4">
+              <div className="text-4xl font-bold text-[#c7202f]">
+                {formatCurrency(displayPrice)}
+              </div>
               {selectedVariant.compareAtPrice ? (
-                <div className="text-lg text-[var(--muted)] line-through">
+                <div className="text-lg text-[#80716d] line-through">
                   {formatCurrency(selectedVariant.compareAtPrice)}
                 </div>
               ) : null}
               {discount > 0 ? (
-                <div
-                  className="rounded-full bg-[var(--accent)] px-3 py-1 text-xs tracking-[0.2em]"
-                  style={{ color: 'var(--background)' }}
-                >
+                <div className="rounded-full bg-[#181211] px-3 py-1 text-xs font-semibold tracking-[0.14em] text-white">
                   {discount}% OFF
                 </div>
               ) : null}
             </div>
-            <div className="mt-4">
+            <div className="mt-4 flex items-center gap-4">
               <Rating rating={product.rating} reviewCount={product.reviewCount} />
+              <div className="text-sm text-[#80716d]">
+                {selectedVariant.stockQuantity > 0
+                  ? selectedVariant.stockQuantity <= 2
+                    ? `${t('ONLY')} ${selectedVariant.stockQuantity} ${t('LEFT')}`
+                    : t('HOT NOW')
+                  : t('SOLD OUT')}
+              </div>
             </div>
-            <p className="mt-5 text-sm leading-7 text-[var(--text-secondary)]">
-              {localize(product.shortDescription, product.shortDescriptionAr)}
-            </p>
 
-            <div className="mt-8 rounded-[28px] border border-white/8 bg-white/3 p-5">
-              <div className="flex flex-wrap items-center gap-2">
+            <div className="mt-7 rounded-lg border border-[#181211]/10 bg-[#f8f4f1] p-4">
+              <div className="mb-4 flex flex-wrap items-center gap-2">
                 {statusPill(
                   selectedVariant.stockQuantity > 0 || selectedVariant.allowBackorder
-                    ? 'READY TO SHIP'
+                    ? 'HOT NOW'
                     : 'SOLD OUT'
                 )}
                 {discount > 0 ? statusPill(`${discount}% OFF`) : null}
                 {selectedVariant.allowBackorder ? statusPill('BACKORDER AVAILABLE') : null}
               </div>
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-3">
                 <VariantMetric label="SKU" value={selectedVariant.sku} />
-                <VariantMetric
-                  label="COLOR"
-                  value={localize(selectedVariant.color, selectedVariant.colorAr)}
-                />
                 <VariantMetric
                   label="SIZE"
                   value={localize(selectedVariant.size, selectedVariant.sizeAr)}
                 />
+                <VariantMetric
+                  label="OPTIONS"
+                  value={selectedOptionItems.length ? String(selectedOptionItems.length) : t('None')}
+                />
               </div>
             </div>
 
-            <div className="mt-8">
-              <div className="mb-3 text-xs tracking-[0.24em] text-[var(--muted)]">{t('COLOR')}</div>
-              <div className="flex flex-wrap gap-3">
-                {colors.map((color) => (
-                  <button
-                    key={color.name}
-                    type="button"
-                    onClick={() => setSelectedColor(color.name)}
-                    className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm ${
-                      selectedColor === color.name
-                        ? 'border-white bg-white text-black'
-                        : 'border-white/10'
-                    }`}
-                  >
-                    <span
-                      className="h-3 w-3 rounded-full border border-black/10"
-                      style={{ background: color.hex }}
-                    />
-                    {localize(color.name, color.nameAr)}
-                  </button>
-                ))}
+            <div className="mt-7">
+              <div className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[#80716d]">
+                {t('SIZE')}
               </div>
-            </div>
-
-            <div className="mt-8">
-              <div className="mb-3 text-xs tracking-[0.24em] text-[var(--muted)]">{t('SIZE')}</div>
               <div className="flex flex-wrap gap-3">
                 {sizes.map((sizeOption) => {
                   const available = product.variants.some(
                     (variant) =>
                       variant.size === sizeOption.name &&
-                      variantMatchesColor(variant, selectedColor) &&
                       (variant.stockQuantity > 0 || variant.allowBackorder)
                   );
 
@@ -515,10 +565,10 @@ export function ProductPageView({
                       type="button"
                       onClick={() => setSelectedSize(sizeOption.name)}
                       disabled={!available}
-                      className={`rounded-full border px-4 py-2 text-sm ${
+                      className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
                         selectedSize === sizeOption.name
-                          ? 'border-white bg-white text-black'
-                          : 'border-white/10'
+                          ? 'border-[#c7202f] bg-[#c7202f] text-white'
+                          : 'border-[#181211]/10 text-[#5d504d] hover:border-[#c7202f]/40'
                       } disabled:cursor-not-allowed disabled:opacity-40`}
                     >
                       {localize(sizeOption.name, sizeOption.nameAr)}
@@ -528,47 +578,119 @@ export function ProductPageView({
               </div>
             </div>
 
-            <div className="mt-8 flex items-center gap-4">
-              <div className="flex items-center gap-3 rounded-full border border-white/10 px-4 py-3">
+            {optionGroups.length ? (
+              <div className="mt-7 space-y-5">
+                {optionGroups.map((group) => (
+                  <div key={group.id}>
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[#80716d]">
+                          {localize(group.name, group.nameAr)}
+                        </div>
+                        {group.description || group.descriptionAr ? (
+                          <div className="mt-1 text-xs text-[#5d504d]">
+                            {localize(group.description ?? '', group.descriptionAr)}
+                          </div>
+                        ) : null}
+                      </div>
+                      <span className="rounded-full bg-[#fff0f1] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#c7202f]">
+                        {group.selectionType === 'radio' ? t('Choose one') : t('Add-ons')}
+                      </span>
+                    </div>
+                    <div className="grid gap-2">
+                      {group.items.map((item) => {
+                        const selected = (selectedOptions[group.id] ?? []).includes(item.id);
+                        const inputType = group.selectionType === 'radio' ? 'radio' : 'checkbox';
+                        const available =
+                          !item.trackInventory || item.stockQuantity > 0 || item.allowBackorder;
+
+                        return (
+                          <label
+                            key={item.id}
+                            className={`flex items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm font-semibold transition ${
+                              selected
+                                ? 'border-[#c7202f] bg-[#fff0f1] text-[#181211]'
+                                : 'border-[#181211]/10 text-[#5d504d] hover:border-[#c7202f]/40'
+                            } ${available ? 'cursor-pointer' : 'cursor-not-allowed opacity-45'}`}
+                          >
+                            <span className="flex items-center gap-3">
+                              <input
+                                type={inputType}
+                                name={`option-${group.id}`}
+                                checked={selected}
+                                disabled={!available}
+                                onChange={() =>
+                                  handleOptionChange(group.id, item.id, group.selectionType)
+                                }
+                                className="h-4 w-4 accent-[#c7202f]"
+                              />
+                              {item.imageUrl ? (
+                                <img
+                                  src={item.imageUrl}
+                                  alt={localize(item.name, item.nameAr)}
+                                  className="h-11 w-11 rounded-md object-cover"
+                                />
+                              ) : null}
+                              <span>
+                                <span className="block">{localize(item.name, item.nameAr)}</span>
+                                {item.trackInventory ? (
+                                  <span className="mt-1 block text-[10px] uppercase tracking-[0.14em] text-[#80716d]">
+                                    {available
+                                      ? `${t('Stock')}: ${item.stockQuantity}`
+                                      : t('SOLD OUT')}
+                                  </span>
+                                ) : null}
+                              </span>
+                            </span>
+                            {item.priceDelta > 0 ? (
+                              <span className="text-xs text-[#c7202f]">
+                                +{formatCurrency(item.priceDelta)}
+                              </span>
+                            ) : null}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+
+            <div className="mt-7 flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-4 rounded-full border border-[#181211]/10 bg-[#f8f4f1] px-4 py-3">
                 <button
                   type="button"
                   onClick={() => setQuantity((value) => Math.max(1, value - 1))}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#181211]"
                 >
                   <Minus className="h-4 w-4" />
                 </button>
-                <span>{quantity}</span>
+                <span className="min-w-6 text-center text-lg font-bold">{quantity}</span>
                 <button
                   type="button"
                   disabled={quantity >= maxQuantity}
                   onClick={() => setQuantity((value) => Math.min(maxQuantity, value + 1))}
-                  className="disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#181211] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <Plus className="h-4 w-4" />
                 </button>
               </div>
-              <div className="text-sm text-[var(--text-secondary)]">
-                {selectedVariant.stockQuantity > 0
-                  ? selectedVariant.stockQuantity <= 2
-                    ? `${t('ONLY')} ${selectedVariant.stockQuantity} ${t('LEFT')}`
-                    : t('IN STOCK')
-                  : t('SOLD OUT')}
-              </div>
+              <div className="text-sm font-semibold text-[#5d504d]">{t('Choose quantity')}</div>
             </div>
 
-            <div className="mt-8 grid gap-3 sm:grid-cols-2">
+            <div className="mt-7 grid gap-3 sm:grid-cols-2">
               <button
                 type="button"
                 disabled={selectedVariant.stockQuantity <= 0 && !selectedVariant.allowBackorder}
                 onClick={() => {
-                  addItem(product, selectedVariant.id, Math.min(quantity, maxQuantity));
+                  addItem(buildConfiguredProduct(), selectedVariant.id, Math.min(quantity, maxQuantity));
                   openCart();
                   pushToast({
-                    title: t('Added to your bag'),
-                    description: `${localize(product.name, product.nameAr)} • ${localize(selectedVariant.color, selectedVariant.colorAr)} / ${localize(selectedVariant.size, selectedVariant.sizeAr)}`,
+                    title: t('Added to your cart'),
+                    description: `${localize(product.name, product.nameAr)} • ${localize(selectedVariant.size, selectedVariant.sizeAr)}`,
                   });
                 }}
-                className="rounded-full bg-[var(--text)] px-6 py-4 text-sm tracking-[0.2em] text-black disabled:cursor-not-allowed disabled:opacity-40"
-                style={{ color: 'var(--background)' }}
+                className="rounded-full bg-[#c7202f] px-6 py-4 text-sm font-semibold uppercase tracking-[0.14em] text-white shadow-[0_18px_34px_rgba(199,32,47,0.22)] disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {t('AddToCartButton')}
               </button>
@@ -578,34 +700,34 @@ export function ProductPageView({
                   event.preventDefault();
                   handleBuyNow();
                 }}
-                className="rounded-full border border-white/10 px-6 py-4 text-center text-sm tracking-[0.2em]"
+                className="rounded-full border border-[#181211]/10 px-6 py-4 text-center text-sm font-semibold uppercase tracking-[0.14em] text-[#181211] transition hover:border-[#c7202f] hover:text-[#c7202f]"
               >
-                {t('BUY NOW')}
+                {t('ORDER NOW')}
               </Link>
             </div>
 
-            <div className="mt-8 space-y-4 rounded-[28px] border border-white/8 bg-white/3 p-5">
-              <Accordion title="PRODUCT DETAILS" defaultOpen>
+            <div className="mt-8 space-y-4 rounded-lg border border-[#181211]/10 bg-[#fffefe] p-5">
+              <Accordion title="ITEM DETAILS" defaultOpen>
                 {localize(product.description, product.descriptionAr)}
               </Accordion>
-              <Accordion title="SHIPPING">
+              <Accordion title="DELIVERY">
                 {t(
-                  'Delivery across Jordan. Orders in Amman usually arrive within 1-3 business days.'
+                  'Delivery and pickup are available from Jordan branches. Hot-food timing depends on branch coverage and order volume.'
                 )}
               </Accordion>
-              <Accordion title="RETURNS">
+              <Accordion title="ORDER NOTES">
                 {t(
-                  'Return eligibility depends on item type. Nail sets and intimate items remain final sale unless faulty.'
+                  'Please add allergy notes, sauce preferences, and pickup instructions before checkout.'
                 )}
               </Accordion>
             </div>
 
-            <div className="mt-8 rounded-[28px] border border-white/8 bg-white/3 p-5">
-              <div className="text-xs tracking-[0.24em] text-[var(--muted)]">
-                {t('PRODUCT REVIEWS')}
+            <div className="mt-8 rounded-lg border border-[#181211]/10 bg-[#fffefe] p-5">
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[#80716d]">
+                {t('ITEM REVIEWS')}
               </div>
               {customer ? (
-                <div className="mt-4 space-y-4 border-b border-white/8 pb-5">
+                <div className="mt-4 space-y-4 border-b border-[#181211]/10 pb-5">
                   <div className="flex flex-wrap gap-2">
                     {[1, 2, 3, 4, 5].map((value) => (
                       <button
@@ -614,8 +736,8 @@ export function ProductPageView({
                         onClick={() => setReviewRating(value)}
                         className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm ${
                           reviewRating === value
-                            ? 'border-white bg-white text-black'
-                            : 'border-white/10'
+                            ? 'border-[#c7202f] bg-[#c7202f] text-white'
+                            : 'border-[#181211]/10 text-[#5d504d]'
                         }`}
                       >
                         <Star
@@ -629,31 +751,30 @@ export function ProductPageView({
                     value={reviewTitle}
                     onChange={(event) => setReviewTitle(event.target.value)}
                     placeholder={t('Review title')}
-                    className="h-12 w-full rounded-full border border-white/10 bg-black/20 px-5 text-sm text-[var(--text)] outline-none"
+                    className="h-12 w-full rounded-full border border-[#181211]/10 bg-[#f8f4f1] px-5 text-sm text-[#181211] outline-none"
                   />
                   <textarea
                     value={reviewComment}
                     onChange={(event) => setReviewComment(event.target.value)}
                     placeholder={t('Write your review')}
                     rows={4}
-                    className="w-full rounded-[24px] border border-white/10 bg-black/20 px-5 py-4 text-sm text-[var(--text)] outline-none"
+                    className="w-full rounded-lg border border-[#181211]/10 bg-[#f8f4f1] px-5 py-4 text-sm text-[#181211] outline-none"
                   />
                   <button
                     type="button"
                     onClick={handleReviewSubmit}
                     disabled={isSubmittingReview}
-                    className="rounded-full bg-[var(--accent)] px-5 py-3 text-sm tracking-[0.2em] disabled:opacity-40"
-                    style={{ color: 'var(--background)' }}
+                    className="rounded-full bg-[#c7202f] px-5 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-white disabled:opacity-40"
                   >
                     {isSubmittingReview ? t('PLEASE WAIT') : t('SUBMIT REVIEW')}
                   </button>
                 </div>
               ) : (
-                <div className="mt-4 rounded-[22px] border border-white/8 bg-black/10 p-4 text-sm text-[var(--text-secondary)]">
+                <div className="mt-4 rounded-lg border border-[#181211]/10 bg-[#f8f4f1] p-4 text-sm text-[#5d504d]">
                   <div>{t('Sign in to review products.')}</div>
                   <Link
                     href="/login"
-                    className="mt-3 inline-flex rounded-full border border-white/10 px-4 py-2 text-xs tracking-[0.2em] text-[var(--text)]"
+                    className="mt-3 inline-flex rounded-full border border-[#181211]/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#181211]"
                   >
                     {t('LOG IN')}
                   </Link>
@@ -665,12 +786,12 @@ export function ProductPageView({
                   reviews.map((review) => (
                     <div
                       key={review.id}
-                      className="rounded-[22px] border border-white/8 bg-black/10 p-4"
+                      className="rounded-lg border border-[#181211]/10 bg-[#f8f4f1] p-4"
                     >
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div>
                           <div className="text-sm font-medium">{review.authorName}</div>
-                          <div className="mt-1 text-xs tracking-[0.2em] text-[var(--muted)]">
+                          <div className="mt-1 text-xs tracking-[0.16em] text-[#80716d]">
                             {review.createdAt}
                           </div>
                         </div>
@@ -685,13 +806,11 @@ export function ProductPageView({
                           {review.title}
                         </div>
                       ) : null}
-                      <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">
-                        {review.comment}
-                      </p>
+                      <p className="mt-2 text-sm leading-7 text-[#5d504d]">{review.comment}</p>
                     </div>
                   ))
                 ) : (
-                  <div className="text-sm text-[var(--text-secondary)]">{t('No reviews yet.')}</div>
+                  <div className="text-sm text-[#5d504d]">{t('No reviews yet.')}</div>
                 )}
               </div>
             </div>
@@ -700,15 +819,19 @@ export function ProductPageView({
       </Container>
 
       <Container className="mt-16">
-        <SectionHeading title="YOU MAY ALSO WANT" />
+        <SectionHeading title="You may also want" />
         <ProductGrid products={relatedProducts} />
       </Container>
 
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-white/8 bg-black/80 p-4 backdrop-blur-xl md:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-[#181211]/10 bg-white/95 p-4 text-[#181211] backdrop-blur-xl md:hidden">
         <div className="mx-auto flex max-w-[1440px] items-center gap-3">
           <div className="flex-1">
-            <div className="text-xs tracking-[0.2em] text-[var(--muted)]">{t('PRICE')}</div>
-            <div>{formatCurrency(selectedVariant.price)}</div>
+            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[#80716d]">
+              {t('PRICE')}
+            </div>
+            <div className="text-lg font-bold text-[#c7202f]">
+              {formatCurrency(selectedVariant.price)}
+            </div>
           </div>
           <button
             type="button"
@@ -717,7 +840,7 @@ export function ProductPageView({
               addItem(product, selectedVariant.id, Math.min(quantity, maxQuantity));
               openCart();
             }}
-            className="rounded-full bg-[var(--text)] px-6 py-4 text-sm tracking-[0.2em] text-black"
+            className="rounded-full bg-[#c7202f] px-6 py-4 text-sm font-semibold uppercase tracking-[0.14em] text-white"
           >
             {t('AddToCartButton')}
           </button>
@@ -729,7 +852,7 @@ export function ProductPageView({
 
 function statusPill(label: string) {
   return (
-    <div className="rounded-full border border-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-[var(--text-secondary)]">
+    <div className="rounded-full border border-[#c7202f]/15 bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-[#c7202f]">
       {label}
     </div>
   );
@@ -737,9 +860,11 @@ function statusPill(label: string) {
 
 function VariantMetric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[20px] border border-white/8 bg-black/15 p-3">
-      <div className="text-[10px] uppercase tracking-[0.22em] text-[var(--muted)]">{label}</div>
-      <div className="mt-2 text-sm">{value}</div>
+    <div className="rounded-lg border border-[#181211]/10 bg-white p-3">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#80716d]">
+        {label}
+      </div>
+      <div className="mt-2 text-sm font-semibold text-[#181211]">{value}</div>
     </div>
   );
 }
@@ -809,10 +934,9 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
           clearAppliedCoupon();
           pushToast({
             title: t('Coupon removed'),
-            description:
-              result.error
-                ? localizeCouponError(result.error, t)
-                : t('This coupon no longer applies to your bag.'),
+            description: result.error
+              ? localizeCouponError(result.error, t)
+              : t('This coupon no longer applies to your bag.'),
           });
           return;
         }
@@ -894,8 +1018,8 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
   return (
     <Container className="py-8 md:py-14">
       <div className="mb-8">
-        <div className="text-xs tracking-[0.3em] text-[var(--muted)]">{t('BAG')}</div>
-        <h1 className="font-display text-4xl uppercase sm:text-5xl">{t('YOUR BAG')}</h1>
+        <div className="text-xs tracking-[0.3em] text-[var(--muted)]">{t('CART')}</div>
+        <h1 className="font-display text-4xl uppercase sm:text-5xl">{t('YOUR CART')}</h1>
       </div>
       {lines.length ? (
         <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
@@ -915,7 +1039,6 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
                     {localize(line.product.name, line.product.nameAr)}
                   </div>
                   <div className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
-                    {localize(line.variant.color, line.variant.colorAr)} /{' '}
                     {localize(line.variant.size, line.variant.sizeAr)}
                   </div>
                   <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -958,7 +1081,10 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
                 value={`-${formatCurrency(couponDiscountAmount)}`}
               />
             ) : null}
-            <SummaryRow label={t('Delivery')} value={lines.length ? t('Calculated at checkout') : formatCurrency(0)} />
+            <SummaryRow
+              label={t('Delivery')}
+              value={lines.length ? t('Calculated at checkout') : formatCurrency(0)}
+            />
             <SummaryRow label={t('Tax')} value={formatCurrency(0)} />
             <div className="mt-4 border-t border-white/8 pt-4">
               <SummaryRow label={t('Total')} value={formatCurrency(total)} emphasis />
@@ -989,7 +1115,9 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
                 </button>
               )}
               {appliedCoupon?.description ? (
-                <div className="text-xs text-[var(--text-secondary)]">{appliedCoupon.description}</div>
+                <div className="text-xs text-[var(--text-secondary)]">
+                  {appliedCoupon.description}
+                </div>
               ) : null}
               <Link
                 href="/checkout"
@@ -1003,14 +1131,16 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
         </div>
       ) : (
         <div className="rounded-[32px] border border-white/8 bg-white/3 p-10 text-center">
-          <div className="font-display text-4xl uppercase">{t('YOUR BAG IS EMPTY.')}</div>
-          <p className="mt-3 text-sm text-[var(--text-secondary)]">{t('But that can be fixed.')}</p>
+          <div className="font-display text-4xl uppercase">{t('YOUR CART IS EMPTY.')}</div>
+          <p className="mt-3 text-sm text-[var(--text-secondary)]">
+            {t('Start with a saj sandwich or a full arabi meal.')}
+          </p>
           <Link
             href="/shop"
             className="mt-6 inline-flex rounded-full bg-[var(--accent)] px-5 py-3 text-sm tracking-[0.2em]"
             style={{ color: 'var(--background)' }}
           >
-            {t('SHOP THE DROP')}
+            {t('VIEW MENU')}
           </Link>
         </div>
       )}
@@ -1025,8 +1155,8 @@ export function FavoritesPageView({ products }: { products: StoreProduct[] }) {
   return (
     <Container className="py-8 md:py-14">
       <SectionHeading
-        title="YOUR WISHLIST IS TOO QUIET."
-        description="Save the pieces worth circling back for."
+        title="YOUR FAVORITES ARE EMPTY."
+        description="Save the meals worth ordering again."
       />
       {favoriteProducts.length ? (
         <ProductGrid products={favoriteProducts} />
@@ -1037,7 +1167,7 @@ export function FavoritesPageView({ products }: { products: StoreProduct[] }) {
             href="/shop"
             className="mt-6 inline-flex rounded-full bg-[var(--text)] px-5 py-3 text-sm tracking-[0.2em] text-black"
           >
-            VIEW PRODUCTS
+            VIEW MENU
           </Link>
         </div>
       )}
@@ -1224,7 +1354,8 @@ export function CheckoutPageView({
   const shippingAmount = lines.length
     ? (resolveDeliveryFee(deliveryZones, form.country, form.city) ?? 0)
     : 0;
-  const hasConfiguredDelivery = !lines.length || resolveDeliveryFee(deliveryZones, form.country, form.city) !== null;
+  const hasConfiguredDelivery =
+    !lines.length || resolveDeliveryFee(deliveryZones, form.country, form.city) !== null;
   const discountAmount = flashSaleDiscountAmount + couponDiscountAmount;
   const total = Math.max(0, subtotal - discountAmount + shippingAmount);
   const checkoutFields: Array<{ label: string; key: keyof CheckoutFormState }> = [
@@ -1365,10 +1496,9 @@ export function CheckoutPageView({
           clearAppliedCoupon();
           pushToast({
             title: t('Coupon removed'),
-            description:
-              result.error
-                ? localizeCouponError(result.error, t)
-                : t('This coupon no longer applies to your order.'),
+            description: result.error
+              ? localizeCouponError(result.error, t)
+              : t('This coupon no longer applies to your order.'),
           });
           return;
         }
@@ -1510,7 +1640,7 @@ export function CheckoutPageView({
             productName: localize(line.product.name, line.product.nameAr),
             sku: line.variant.sku,
             sizeName: localize(line.variant.size, line.variant.sizeAr),
-            colorName: localize(line.variant.color, line.variant.colorAr),
+            colorName: null,
             imageUrl: line.product.images[0]?.url ?? null,
             unitPrice: line.variant.price,
             quantity: line.quantity,
@@ -1597,7 +1727,7 @@ export function CheckoutPageView({
           </div>
           {!lines.length ? (
             <div className="rounded-[24px] border border-white/8 bg-black/10 p-5 text-sm text-[var(--text-secondary)]">
-              {t('YOUR BAG IS EMPTY.')}
+              {t('YOUR CART IS EMPTY.')}
             </div>
           ) : null}
           {addresses.length ? (
@@ -1637,16 +1767,12 @@ export function CheckoutPageView({
                     <div
                       className={`mt-1 text-sm ${selectedAddressId === address.id ? 'text-[var(--text-secondary)]' : 'text-[var(--text-secondary)]'}`}
                     >
-                      {[address.country, address.city, address.area]
-                        .filter(Boolean)
-                        .join(', ')}
+                      {[address.country, address.city, address.area].filter(Boolean).join(', ')}
                     </div>
                     <div
                       className={`mt-1 text-sm ${selectedAddressId === address.id ? 'text-[var(--text-secondary)]' : 'text-[var(--text-secondary)]'}`}
                     >
-                      {[address.street, address.building]
-                        .filter(Boolean)
-                        .join(', ')}
+                      {[address.street, address.building].filter(Boolean).join(', ')}
                     </div>
                   </button>
                 ))}
@@ -1654,7 +1780,7 @@ export function CheckoutPageView({
               <div className="flex justify-end">
                 <Link
                   href="/addresses/new"
-                className="rounded-[0.25rem] border border-white/10 px-4 py-2 text-xs tracking-[0.2em]"
+                  className="rounded-[0.25rem] border border-white/10 px-4 py-2 text-xs tracking-[0.2em]"
                 >
                   {t('ADD ADDRESS')}
                 </Link>
@@ -1772,7 +1898,6 @@ export function CheckoutPageView({
                       {localize(line.product.name, line.product.nameAr)}
                     </div>
                     <div className="mt-1 text-xs text-[var(--text-secondary)]">
-                      {localize(line.variant.color, line.variant.colorAr)} /{' '}
                       {localize(line.variant.size, line.variant.sizeAr)}
                     </div>
                     <div className="mt-3 inline-flex items-center gap-3 rounded-full border border-white/10 px-3 py-2">
@@ -1825,7 +1950,9 @@ export function CheckoutPageView({
           <SummaryRow label={t('Subtotal')} value={formatCurrency(subtotal)} />
           {flashSaleDiscountAmount > 0 ? (
             <SummaryRow
-              label={activeFlashSale ? `${t('Flash sale')} (${activeFlashSale.title})` : t('Flash sale')}
+              label={
+                activeFlashSale ? `${t('Flash sale')} (${activeFlashSale.title})` : t('Flash sale')
+              }
               value={`-${formatCurrency(flashSaleDiscountAmount)}`}
             />
           ) : null}
@@ -1861,7 +1988,9 @@ export function CheckoutPageView({
               </button>
             )}
             {appliedCoupon?.description ? (
-              <div className="text-xs text-[var(--text-secondary)]">{appliedCoupon.description}</div>
+              <div className="text-xs text-[var(--text-secondary)]">
+                {appliedCoupon.description}
+              </div>
             ) : null}
           </div>
           <SummaryRow
@@ -2038,41 +2167,6 @@ function CatalogHero({ title, description }: { title: string; description: strin
   );
 }
 
-function FilterGroup({
-  title,
-  items,
-  value,
-  onChange,
-}: {
-  title: string;
-  items: string[];
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  const { t } = useLocale();
-  return (
-    <div className="mb-5">
-      <div className="mb-3 text-xs tracking-[0.25em] text-[var(--muted)]">{t(title)}</div>
-      <div className="flex flex-wrap gap-2">
-        {items.map((item) => (
-          <button
-            key={item}
-            type="button"
-            onClick={() => onChange(item)}
-            className={`rounded-full border px-3 py-2 text-xs tracking-[0.18em] uppercase ${
-              value === item
-                ? 'border-white bg-white text-black'
-                : 'border-white/10 text-[var(--text-secondary)]'
-            }`}
-          >
-            {t(item.replace('-', ' '))}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function SummaryRow({
   label,
   value,
@@ -2131,21 +2225,6 @@ function sameAppliedCoupon(
   );
 }
 
-function Step({ title, active = false }: { title: string; active?: boolean }) {
-  return (
-    <div
-      className={`flex items-center gap-3 rounded-full border px-4 py-3 text-sm tracking-[0.2em] ${active ? 'border-white bg-white text-black' : 'border-white/10 text-[var(--text-secondary)]'}`}
-    >
-      {active ? (
-        <Check className="h-4 w-4" />
-      ) : (
-        <span className="h-2 w-2 rounded-full bg-current" />
-      )}
-      {title}
-    </div>
-  );
-}
-
 function Field({ label, error, children }: { label: string; error?: string; children: ReactNode }) {
   return (
     <label className="block">
@@ -2169,18 +2248,16 @@ function Accordion({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className="border-b border-white/8 pb-4 last:border-b-0">
+    <div className="border-b border-[#181211]/10 pb-4 last:border-b-0">
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="flex w-full items-center justify-between py-2 text-left text-sm tracking-[0.2em]"
+        className="flex w-full items-center justify-between py-2 text-left text-sm font-semibold uppercase tracking-[0.14em] text-[#181211]"
       >
         <span>{t(title)}</span>
         <ArrowRight className={`h-4 w-4 transition ${open ? 'rotate-90' : ''}`} />
       </button>
-      {open ? (
-        <div className="pt-2 text-sm leading-7 text-[var(--text-secondary)]">{children}</div>
-      ) : null}
+      {open ? <div className="pt-2 text-sm leading-7 text-[#5d504d]">{children}</div> : null}
     </div>
   );
 }

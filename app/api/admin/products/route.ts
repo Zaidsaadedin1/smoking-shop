@@ -5,6 +5,7 @@ import {
   getProductById,
   listProductVariants,
   replaceProductImages,
+  replaceProductOptionGroupLinks,
   replaceProductVariants,
 } from '@/lib/api/store-api';
 import { jsonError, jsonOk, optionalString, requireNumber, requireString } from '@/lib/api/http';
@@ -69,6 +70,24 @@ function parseVariants(value: unknown) {
     weight_grams: parseOptionalNumber(variant.weightGrams),
     is_active: variant.isActive === undefined ? true : parseBoolean(variant.isActive),
   }));
+}
+
+function parseOptionGroupLinks(value: unknown) {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return [];
+  }
+
+  const parsed = JSON.parse(value) as Array<Record<string, unknown>>;
+
+  return parsed
+    .map((link, index) => ({
+      option_group_id: optionalString(link.optionGroupId),
+      is_required: parseBoolean(link.isRequired),
+      min_selections: parseOptionalNumber(link.minSelections),
+      max_selections: parseOptionalNumber(link.maxSelections),
+      sort_order: index,
+    }))
+    .filter((link) => Boolean(link.option_group_id));
 }
 
 function findDuplicateSkus(variants: Array<{ sku: string }>) {
@@ -175,6 +194,7 @@ export async function POST(request: Request) {
     const basePrice = Number(body.basePrice);
     const compareAtPrice = parseOptionalNumber(body.compareAtPrice);
     const variants = parseVariants(body.variantsJson);
+    const optionGroupLinks = parseOptionGroupLinks(body.optionGroupLinksJson);
     const slug = requireString(body.slug, 'slug');
     const slugConflict = await ensureProductSlugAvailable(slug, accessToken);
 
@@ -234,6 +254,16 @@ export async function POST(request: Request) {
 
     if (variantsResult.error) {
       return jsonError(variantsResult.error, variantsResult.status);
+    }
+
+    const optionLinksResult = await replaceProductOptionGroupLinks(
+      result.data.id,
+      optionGroupLinks,
+      auth
+    );
+
+    if (optionLinksResult.error) {
+      return jsonError(optionLinksResult.error, optionLinksResult.status);
     }
 
     return jsonOk(result.data, { status: 201 });

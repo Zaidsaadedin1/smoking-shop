@@ -1,8 +1,4 @@
-import {
-  fallbackProducts,
-  storeCategories,
-  storeSettings,
-} from '@/lib/commerce-data';
+import { fallbackProducts, storeCategories, storeSettings } from '@/lib/commerce-data';
 import {
   CatalogFilters,
   FlashSale,
@@ -54,7 +50,6 @@ type SupabaseVariant = {
   id: string;
   product_id: string;
   sku: string | null;
-  color_id?: string | null;
   size_id?: string | null;
   price: string | number | null;
   compare_at_price?: string | number | null;
@@ -68,19 +63,49 @@ type SupabaseSize = {
   name_ar?: string | null;
 };
 
-type SupabaseColor = {
-  id: string;
-  name: string;
-  name_ar?: string | null;
-  hex_code?: string | null;
-};
-
 type SupabaseImage = {
   id?: string;
   product_id: string;
   image_url: string;
   alt_text?: string | null;
   is_primary?: boolean | null;
+};
+
+type SupabaseProductOptionGroup = {
+  id: string;
+  code: string;
+  name: string;
+  name_ar?: string | null;
+  description?: string | null;
+  description_ar?: string | null;
+  selection_type: 'radio' | 'checkbox';
+  is_active?: boolean | null;
+  sort_order?: number | null;
+};
+
+type SupabaseProductOptionItem = {
+  id: string;
+  group_id: string;
+  code: string;
+  name: string;
+  name_ar?: string | null;
+  image_url?: string | null;
+  price_delta: string | number;
+  stock_quantity: number;
+  track_inventory?: boolean | null;
+  allow_backorder?: boolean | null;
+  is_default?: boolean | null;
+  is_active?: boolean | null;
+  sort_order?: number | null;
+};
+
+type SupabaseProductOptionGroupLink = {
+  product_id: string;
+  option_group_id: string;
+  is_required?: boolean | null;
+  min_selections?: number | null;
+  max_selections?: number | null;
+  sort_order?: number | null;
 };
 
 type SupabaseFlashSale = {
@@ -219,7 +244,17 @@ export async function getCategories(): Promise<StoreCategory[]> {
 }
 
 export async function getProducts(): Promise<StoreProduct[]> {
-  const [products, categories, brands, sizes, colors, variants, images] = await Promise.all([
+  const [
+    products,
+    categories,
+    brands,
+    sizes,
+    variants,
+    images,
+    optionGroups,
+    optionItems,
+    optionGroupLinks,
+  ] = await Promise.all([
     fetchSupabaseRest<SupabaseProduct[]>('products', {
       query: {
         select:
@@ -249,17 +284,10 @@ export async function getProducts(): Promise<StoreProduct[]> {
       },
       revalidate: 60,
     }),
-    fetchSupabaseRest<SupabaseColor[]>('colors', {
-      query: {
-        select: 'id,name,name_ar,hex_code',
-        is_active: 'eq.true',
-      },
-      revalidate: 60,
-    }),
     fetchSupabaseRest<SupabaseVariant[]>('product_variants', {
       query: {
         select:
-          'id,product_id,sku,color_id,size_id,price,compare_at_price,stock_quantity,allow_backorder',
+          'id,product_id,sku,size_id,price,compare_at_price,stock_quantity,allow_backorder',
         is_active: 'eq.true',
       },
       revalidate: 60,
@@ -267,6 +295,32 @@ export async function getProducts(): Promise<StoreProduct[]> {
     fetchSupabaseRest<SupabaseImage[]>('product_images', {
       query: {
         select: 'id,product_id,image_url,alt_text,is_primary',
+        order: 'sort_order.asc',
+      },
+      revalidate: 60,
+    }),
+    fetchSupabaseRest<SupabaseProductOptionGroup[]>('product_option_groups', {
+      query: {
+        select:
+          'id,code,name,name_ar,description,description_ar,selection_type,is_active,sort_order',
+        is_active: 'eq.true',
+        order: 'sort_order.asc',
+      },
+      revalidate: 60,
+    }),
+    fetchSupabaseRest<SupabaseProductOptionItem[]>('product_option_items', {
+      query: {
+        select:
+          'id,group_id,code,name,name_ar,image_url,price_delta,stock_quantity,track_inventory,allow_backorder,is_default,is_active,sort_order',
+        is_active: 'eq.true',
+        order: 'sort_order.asc',
+      },
+      revalidate: 60,
+    }),
+    fetchSupabaseRest<SupabaseProductOptionGroupLink[]>('product_option_group_links', {
+      query: {
+        select:
+          'product_id,option_group_id,is_required,min_selections,max_selections,sort_order',
         order: 'sort_order.asc',
       },
       revalidate: 60,
@@ -280,9 +334,11 @@ export async function getProducts(): Promise<StoreProduct[]> {
   const categoriesById = new Map((categories ?? []).map((category) => [category.id, category]));
   const brandsById = new Map((brands ?? []).map((brand) => [brand.id, brand]));
   const sizesById = new Map((sizes ?? []).map((size) => [size.id, size]));
-  const colorsById = new Map((colors ?? []).map((color) => [color.id, color]));
   const variantsByProduct = groupBy(variants ?? [], (variant) => variant.product_id);
   const imagesByProduct = groupBy(images ?? [], (image) => image.product_id);
+  const optionGroupsById = new Map((optionGroups ?? []).map((group) => [group.id, group]));
+  const optionItemsByGroup = groupBy(optionItems ?? [], (item) => item.group_id);
+  const optionLinksByProduct = groupBy(optionGroupLinks ?? [], (link) => link.product_id);
 
   return products.reduce<StoreProduct[]>((acc, product) => {
     const productVariants = variantsByProduct[product.id] ?? [];
@@ -309,19 +365,18 @@ export async function getProducts(): Promise<StoreProduct[]> {
       descriptionAr: product.description_ar ?? product.short_description_ar ?? '',
       categorySlug: category?.slug ?? 'uncategorized',
       brand:
-        (product.brand_id ? brandsById.get(product.brand_id)?.name : null) ?? 'Tourmaline Coven',
+        (product.brand_id ? brandsById.get(product.brand_id)?.name : null) ?? 'Shawerma 3a Saj',
       brandAr: (product.brand_id ? brandsById.get(product.brand_id)?.name_ar : null) ?? '',
-      tags: [category?.name ?? 'fashion', 'dark feminine', 'gothic'],
+      tags: [category?.name ?? 'shawerma', 'saj', 'restaurant'],
       images: productImages,
       variants: productVariants.length
         ? productVariants.map((variant) => ({
             id: variant.id,
             sku: variant.sku ?? `${product.slug}-${variant.id}`,
-            color: (variant.color_id ? colorsById.get(variant.color_id)?.name : null) ?? 'Default',
-            colorAr: (variant.color_id ? colorsById.get(variant.color_id)?.name_ar : null) ?? '',
-            colorHex:
-              (variant.color_id ? colorsById.get(variant.color_id)?.hex_code : null) ?? '#111111',
-            size: (variant.size_id ? sizesById.get(variant.size_id)?.name : null) ?? 'ONE SIZE',
+            color: 'Default',
+            colorAr: 'افتراضي',
+            colorHex: '#c7202f',
+            size: (variant.size_id ? sizesById.get(variant.size_id)?.name : null) ?? 'Regular',
             sizeAr: (variant.size_id ? sizesById.get(variant.size_id)?.name_ar : null) ?? '',
             price: Number(variant.price ?? 0),
             compareAtPrice: variant.compare_at_price ? Number(variant.compare_at_price) : null,
@@ -334,15 +389,50 @@ export async function getProducts(): Promise<StoreProduct[]> {
               sku: `${product.slug}-base`,
               color: 'Default',
               colorAr: 'افتراضي',
-              colorHex: '#111111',
-              size: 'ONE SIZE',
-              sizeAr: 'مقاس واحد',
+              colorHex: '#c7202f',
+              size: 'Regular',
+              sizeAr: 'عادي',
               price: Number(product.base_price ?? 0),
               compareAtPrice: product.compare_at_price ? Number(product.compare_at_price) : null,
               stockQuantity: 1,
               allowBackorder: true,
             },
           ],
+      optionGroups: (optionLinksByProduct[product.id] ?? [])
+        .map((link) => {
+          const group = optionGroupsById.get(link.option_group_id);
+
+          if (!group) {
+            return null;
+          }
+
+          return {
+            id: group.id,
+            name: group.name,
+            nameAr: group.name_ar ?? '',
+            description: group.description ?? '',
+            descriptionAr: group.description_ar ?? '',
+            selectionType: group.selection_type,
+            isRequired: Boolean(link.is_required),
+            minSelections: link.min_selections,
+            maxSelections: link.max_selections,
+            sortOrder: Number(link.sort_order ?? group.sort_order ?? 0),
+            items: (optionItemsByGroup[group.id] ?? []).map((item) => ({
+              id: item.id,
+              name: item.name,
+              nameAr: item.name_ar ?? '',
+              imageUrl: item.image_url ?? '',
+              priceDelta: Number(item.price_delta ?? 0),
+              stockQuantity: Number(item.stock_quantity ?? 0),
+              trackInventory: Boolean(item.track_inventory),
+              allowBackorder: Boolean(item.allow_backorder),
+              sortOrder: Number(item.sort_order ?? 0),
+              isDefault: Boolean(item.is_default),
+            })),
+          };
+        })
+        .filter((group): group is NonNullable<typeof group> => Boolean(group))
+        .sort((left, right) => left.sortOrder - right.sortOrder),
       status: product.status === 'active' ? 'active' : 'inactive',
       isFeatured: Boolean(product.is_featured),
       isNew: false,
@@ -381,7 +471,7 @@ export async function getFlashSale(nowIso = new Date().toISOString()): Promise<F
     discountLabel: formatFlashSaleDiscountLabel(sale.discount_type, sale.discount_value),
     startsAt: sale.starts_at,
     endsAt: sale.ends_at,
-    ctaText: sale.button_text?.trim() || 'SHOP THE SALE',
+    ctaText: sale.button_text?.trim() || 'ORDER THE DEAL',
     ctaUrl: sale.button_url ?? '/shop?sale=true',
     showAsModal: Boolean(sale.show_as_modal),
     image: sale.image_url ?? '',
@@ -405,13 +495,13 @@ export async function getHeroSlides(): Promise<HeroSlide[]> {
     .filter((slide) => Boolean(slide.image_en_url || slide.image_ar_url))
     .map((slide) => ({
       id: slide.id,
-      eyebrow: slide.eyebrow ?? 'Tourmaline Coven',
+      eyebrow: slide.eyebrow ?? 'Shawerma 3a Saj',
       eyebrowAr: slide.eyebrow_ar ?? '',
       title: slide.title,
       titleAr: slide.title_ar ?? '',
       description: slide.description ?? '',
       descriptionAr: slide.description_ar ?? '',
-      buttonText: slide.button_text ?? 'SHOP THIS PIECE',
+      buttonText: slide.button_text ?? 'ORDER THIS',
       buttonTextAr: slide.button_text_ar ?? '',
       buttonUrl: slide.button_url ?? '/shop',
       imageEnUrl: slide.image_en_url ?? slide.image_ar_url ?? '',
@@ -421,14 +511,15 @@ export async function getHeroSlides(): Promise<HeroSlide[]> {
 }
 
 export async function getStorefrontData(filters: CatalogFilters = {}) {
-  const [settings, categories, products, flashSale, heroSlides, navigationItems] = await Promise.all([
-    getStoreSettings(),
-    getCategories(),
-    getProducts(),
-    getFlashSale(),
-    getHeroSlides(),
-    getNavigationItems(),
-  ]);
+  const [settings, categories, products, flashSale, heroSlides, navigationItems] =
+    await Promise.all([
+      getStoreSettings(),
+      getCategories(),
+      getProducts(),
+      getFlashSale(),
+      getHeroSlides(),
+      getNavigationItems(),
+    ]);
 
   return {
     settings,

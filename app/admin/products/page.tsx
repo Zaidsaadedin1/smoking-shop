@@ -3,8 +3,10 @@ import { requireAdminSession } from '@/lib/admin/auth';
 import {
   getAdminBrands,
   getAdminCategories,
-  getAdminColors,
   getAdminEnumLabels,
+  getAdminProductOptionGroupLinks,
+  getAdminProductOptionGroups,
+  getAdminProductOptionItems,
   getAdminProducts,
   getAdminProductVariants,
   getAdminSizes,
@@ -12,13 +14,25 @@ import {
 
 export default async function AdminProductsPage() {
   const session = await requireAdminSession();
-  const [products, categories, brands, sizes, colors, variants, enumLabels] = await Promise.all([
+  const [
+    products,
+    categories,
+    brands,
+    sizes,
+    variants,
+    optionGroups,
+    optionItems,
+    optionGroupLinks,
+    enumLabels,
+  ] = await Promise.all([
     getAdminProducts(),
     getAdminCategories(),
     getAdminBrands(),
     getAdminSizes(),
-    getAdminColors(),
     getAdminProductVariants(),
+    getAdminProductOptionGroups(),
+    getAdminProductOptionItems(),
+    getAdminProductOptionGroupLinks(),
     getAdminEnumLabels(),
   ]);
 
@@ -29,8 +43,10 @@ export default async function AdminProductsPage() {
       categories={categories}
       brands={brands}
       sizes={sizes}
-      colors={colors}
       variants={variants}
+      optionGroups={optionGroups}
+      optionItems={optionItems}
+      optionGroupLinks={optionGroupLinks}
       enumLabels={enumLabels}
     />
   );

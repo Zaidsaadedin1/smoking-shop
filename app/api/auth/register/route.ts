@@ -1,8 +1,8 @@
 import { cookies } from 'next/headers';
-import { jsonError, jsonOk, optionalString, requireString } from '@/lib/api/http';
-import { createProfile } from '@/lib/api/store-api';
+import { jsonError, jsonOk, requireString } from '@/lib/api/http';
+import { upsertProfile } from '@/lib/api/store-api';
 import { CUSTOMER_ACCESS_TOKEN_COOKIE, CUSTOMER_SESSION_MAX_AGE_SECONDS } from '@/lib/customer/auth';
-import { invokeSupabaseAuth } from '@/lib/supabase/rest';
+import { getSupabaseServiceRoleHeaders, invokeSupabaseAuth } from '@/lib/supabase/rest';
 
 type SignupResponse = {
   access_token?: string;
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     const email = requireString(body.email, 'email');
     const password = requireString(body.password, 'password');
     const fullName = requireString(body.fullName, 'fullName');
-    const phone = optionalString(body.phone);
+    const phone = requireString(body.phone, 'phone');
 
     const result = await invokeSupabaseAuth<SignupResponse>('signup', {
       email,
@@ -43,28 +43,59 @@ export async function POST(request: Request) {
       return jsonError(result.error ?? 'Unable to create account', result.status || 400);
     }
 
+    const profilePayload = {
+      id: result.data.user.id,
+      full_name: fullName,
+      phone,
+      role: 'customer',
+      is_blocked: false,
+    };
+
+    let profileCreated = false;
+    let profileWarning: string | null = null;
+
     if (result.data.access_token) {
       const cookieStore = await cookies();
       cookieStore.set(CUSTOMER_ACCESS_TOKEN_COOKIE, result.data.access_token, buildCookieOptions());
 
-      await createProfile(
-        {
-          id: result.data.user.id,
-          full_name: fullName,
-          phone,
-          role: 'customer',
-          is_blocked: false,
+      const profileResult = await upsertProfile(profilePayload, {
+        headers: {
+          Authorization: `Bearer ${result.data.access_token}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${result.data.access_token}`,
-          },
+      });
+      profileCreated = !profileResult.error;
+      profileWarning = profileResult.error;
+
+      if (profileResult.error) {
+        const serviceRoleHeaders = getSupabaseServiceRoleHeaders();
+
+        if (serviceRoleHeaders) {
+          const serviceRoleProfileResult = await upsertProfile(profilePayload, {
+            headers: serviceRoleHeaders,
+          });
+          profileCreated = !serviceRoleProfileResult.error;
+          profileWarning = serviceRoleProfileResult.error;
         }
-      );
+      }
+    } else {
+      const serviceRoleHeaders = getSupabaseServiceRoleHeaders();
+
+      if (serviceRoleHeaders) {
+        const profileResult = await upsertProfile(profilePayload, {
+          headers: serviceRoleHeaders,
+        });
+        profileCreated = !profileResult.error;
+        profileWarning = profileResult.error;
+      } else {
+        profileWarning =
+          'Email confirmation is enabled, so no customer session was returned. Configure SUPABASE_SERVICE_ROLE_KEY or the auth user trigger to create profiles before verification.';
+      }
     }
 
     return jsonOk({
       requiresEmailConfirmation: !result.data.access_token,
+      profileCreated,
+      profileWarning,
       user: result.data.user,
     });
   } catch (error) {

@@ -9,6 +9,9 @@ import {
   listCategories,
   listColors,
   listOrders,
+  listProductOptionGroupLinks,
+  listProductOptionGroups,
+  listProductOptionItems,
   listProductVariants,
   listProducts,
   listProfiles,
@@ -101,6 +104,43 @@ export type AdminProductVariantRecord = {
   weight_grams: number | null;
   is_active: boolean;
   created_at: string;
+};
+
+export type AdminProductOptionGroupRecord = {
+  id: string;
+  code: string;
+  name: string;
+  name_ar: string;
+  description: string;
+  description_ar: string;
+  selection_type: 'radio' | 'checkbox';
+  is_active: boolean;
+  sort_order: number;
+};
+
+export type AdminProductOptionItemRecord = {
+  id: string;
+  group_id: string;
+  code: string;
+  name: string;
+  name_ar: string;
+  image_url: string;
+  price_delta: number;
+  stock_quantity: number;
+  track_inventory: boolean;
+  allow_backorder: boolean;
+  is_default: boolean;
+  is_active: boolean;
+  sort_order: number;
+};
+
+export type AdminProductOptionGroupLinkRecord = {
+  product_id: string;
+  option_group_id: string;
+  is_required: boolean;
+  min_selections: number | null;
+  max_selections: number | null;
+  sort_order: number;
 };
 
 export type AdminOrderRecord = {
@@ -281,6 +321,55 @@ export async function getAdminProductVariants(): Promise<AdminProductVariantReco
     weight_grams: toNumber(row.weight_grams),
     is_active: Boolean(row.is_active),
     created_at: row.created_at ?? '',
+  }));
+}
+
+export async function getAdminProductOptionGroups(): Promise<AdminProductOptionGroupRecord[]> {
+  const auth = await getAdminSupabaseAuth();
+  const rows = await listProductOptionGroups(auth);
+  return (rows ?? []).map((row) => ({
+    id: row.id,
+    code: row.code,
+    name: row.name,
+    name_ar: row.name_ar ?? '',
+    description: row.description ?? '',
+    description_ar: row.description_ar ?? '',
+    selection_type: row.selection_type,
+    is_active: Boolean(row.is_active),
+    sort_order: Number(row.sort_order ?? 0),
+  }));
+}
+
+export async function getAdminProductOptionItems(): Promise<AdminProductOptionItemRecord[]> {
+  const auth = await getAdminSupabaseAuth();
+  const rows = await listProductOptionItems(auth);
+  return (rows ?? []).map((row) => ({
+    id: row.id,
+    group_id: row.group_id,
+    code: row.code,
+    name: row.name,
+    name_ar: row.name_ar ?? '',
+    image_url: row.image_url ?? '',
+    price_delta: Number(row.price_delta ?? 0),
+    stock_quantity: Number(row.stock_quantity ?? 0),
+    track_inventory: Boolean(row.track_inventory),
+    allow_backorder: Boolean(row.allow_backorder),
+    is_default: Boolean(row.is_default),
+    is_active: Boolean(row.is_active),
+    sort_order: Number(row.sort_order ?? 0),
+  }));
+}
+
+export async function getAdminProductOptionGroupLinks(): Promise<AdminProductOptionGroupLinkRecord[]> {
+  const auth = await getAdminSupabaseAuth();
+  const rows = await listProductOptionGroupLinks(auth);
+  return (rows ?? []).map((row) => ({
+    product_id: row.product_id,
+    option_group_id: row.option_group_id,
+    is_required: Boolean(row.is_required),
+    min_selections: row.min_selections,
+    max_selections: row.max_selections,
+    sort_order: Number(row.sort_order ?? 0),
   }));
 }
 

@@ -32,6 +32,33 @@ export type ProductVariant = {
   allowBackorder?: boolean;
 };
 
+export type ProductOptionItem = {
+  id: string;
+  name: string;
+  nameAr?: string;
+  imageUrl?: string;
+  priceDelta: number;
+  stockQuantity: number;
+  trackInventory: boolean;
+  allowBackorder: boolean;
+  sortOrder: number;
+  isDefault?: boolean;
+};
+
+export type ProductOptionGroup = {
+  id: string;
+  name: string;
+  nameAr?: string;
+  description?: string;
+  descriptionAr?: string;
+  selectionType: 'radio' | 'checkbox';
+  isRequired: boolean;
+  minSelections?: number | null;
+  maxSelections?: number | null;
+  sortOrder: number;
+  items: ProductOptionItem[];
+};
+
 export type StoreProduct = {
   id: string;
   slug: string;
@@ -48,6 +75,7 @@ export type StoreProduct = {
   tags: string[];
   images: ProductImage[];
   variants: ProductVariant[];
+  optionGroups?: ProductOptionGroup[];
   status: 'active' | 'draft' | 'inactive' | 'archived';
   isFeatured?: boolean;
   isNew?: boolean;

@@ -37,10 +37,11 @@ export const messages: Record<string, LocaleMessages> = {
   'Tourmaline Coven': { en: 'Tourmaline Coven', ar: 'تورمالين كوفن' },
   Tourmaline: { en: 'Tourmaline', ar: 'تورمالين' },
   Coven: { en: 'Coven', ar: 'كوفن' },
-  'Dark feminine fashion, gothic jewelry, and ritual-inspired pieces built as a premium storefront.': {
-    en: 'Dark feminine fashion, gothic jewelry, and ritual-inspired pieces built as a premium storefront.',
-    ar: 'أزياء أنثوية داكنة وإكسسوارات قوطية وقطع مستوحاة من الطقوس ضمن متجر فاخر.',
-  },
+  'Dark feminine fashion, gothic jewelry, and ritual-inspired pieces built as a premium storefront.':
+    {
+      en: 'Dark feminine fashion, gothic jewelry, and ritual-inspired pieces built as a premium storefront.',
+      ar: 'أزياء أنثوية داكنة وإكسسوارات قوطية وقطع مستوحاة من الطقوس ضمن متجر فاخر.',
+    },
   'Secure checkout': { en: 'Secure checkout', ar: 'دفع آمن' },
   'Delivery instructions (optional)': {
     en: 'Delivery instructions (optional)',
@@ -64,10 +65,11 @@ export const messages: Record<string, LocaleMessages> = {
   FACEBOOK: { en: 'FACEBOOK', ar: 'فيسبوك' },
   'Admin panel': { en: 'Admin panel', ar: 'لوحة الإدارة' },
   'Operations dashboard': { en: 'Operations dashboard', ar: 'لوحة العمليات' },
-  'Admin is split from the customer app and has its own navigation, metrics, and management screens.': {
-    en: 'Admin is split from the customer app and has its own navigation, metrics, and management screens.',
-    ar: 'واجهة الإدارة منفصلة عن واجهة العميل ولها تنقّلها ومؤشراتها وشاشاتها الخاصة.',
-  },
+  'Admin is split from the customer app and has its own navigation, metrics, and management screens.':
+    {
+      en: 'Admin is split from the customer app and has its own navigation, metrics, and management screens.',
+      ar: 'واجهة الإدارة منفصلة عن واجهة العميل ولها تنقّلها ومؤشراتها وشاشاتها الخاصة.',
+    },
   'Product management': { en: 'Product management', ar: 'إدارة المنتجات' },
   'Order management': { en: 'Order management', ar: 'إدارة الطلبات' },
   'Customer management': { en: 'Customer management', ar: 'إدارة العملاء' },
@@ -79,7 +81,7 @@ export const messages: Record<string, LocaleMessages> = {
     ar: 'لوحة إدارة متصلة مع تحكم مباشر في الكتالوج والعملاء والطلبات والإعدادات.',
   },
   'Control center': { en: 'Control center', ar: 'مركز التحكم' },
-  'Actions': { en: 'Actions', ar: 'الإجراءات' },
+  Actions: { en: 'Actions', ar: 'الإجراءات' },
   'Add new': { en: 'Add new', ar: 'إضافة جديد' },
   'View record': { en: 'View record', ar: 'عرض السجل' },
   'Edit record': { en: 'Edit record', ar: 'تعديل السجل' },
@@ -90,12 +92,12 @@ export const messages: Record<string, LocaleMessages> = {
   'Something went wrong': { en: 'Something went wrong', ar: 'حدث خطأ ما' },
   'Sign in required': { en: 'Sign in required', ar: 'تسجيل الدخول مطلوب' },
   'Sign in to save products to your wishlist.': {
-    en: 'Sign in to save products to your wishlist.',
-    ar: 'سجّلي الدخول لحفظ المنتجات في المفضلة.',
+    en: 'Sign in to save menu items to your favorites.',
+    ar: 'سجل الدخول لحفظ الأصناف في المفضلة.',
   },
   'Sign in to review products.': {
-    en: 'Sign in to review products.',
-    ar: 'سجّلي الدخول لكتابة تقييمات المنتجات.',
+    en: 'Sign in to review menu items.',
+    ar: 'سجل الدخول لتقييم الأصناف.',
   },
   'Review comment is required': { en: 'Review comment is required', ar: 'نص التقييم مطلوب' },
   'Write a short review before submitting.': {
@@ -111,9 +113,9 @@ export const messages: Record<string, LocaleMessages> = {
   'Write your review': { en: 'Write your review', ar: 'اكتبي تقييمك' },
   'SUBMIT REVIEW': { en: 'SUBMIT REVIEW', ar: 'إرسال التقييم' },
   'PRODUCT REVIEWS': { en: 'PRODUCT REVIEWS', ar: 'تقييمات المنتج' },
-  'Color': { en: 'Color', ar: 'اللون' },
-  'Size': { en: 'Size', ar: 'المقاس' },
-  'Quantity': { en: 'Quantity', ar: 'الكمية' },
+  Color: { en: 'Color', ar: 'اللون' },
+  Size: { en: 'Size', ar: 'المقاس' },
+  Quantity: { en: 'Quantity', ar: 'الكمية' },
   'Unit price': { en: 'Unit price', ar: 'سعر القطعة' },
   'Line total': { en: 'Line total', ar: 'إجمالي السطر' },
   'No order items found.': { en: 'No order items found.', ar: 'لم يتم العثور على عناصر الطلب.' },
@@ -176,10 +178,11 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'Control storefront categories, Arabic names, sorting, and active state here.',
     ar: 'تحكم في فئات المتجر والأسماء العربية والترتيب وحالة التفعيل من هنا.',
   },
-  'Control English and Arabic labels for statuses, roles, payment methods, and other enum values here.': {
-    en: 'Control English and Arabic labels for statuses, roles, payment methods, and other enum values here.',
-    ar: 'تحكم في الأسماء الإنجليزية والعربية للحالات والأدوار وطرق الدفع وباقي قيم التعداد من هنا.',
-  },
+  'Control English and Arabic labels for statuses, roles, payment methods, and other enum values here.':
+    {
+      en: 'Control English and Arabic labels for statuses, roles, payment methods, and other enum values here.',
+      ar: 'تحكم في الأسماء الإنجليزية والعربية للحالات والأدوار وطرق الدفع وباقي قيم التعداد من هنا.',
+    },
   'Customer orders': { en: 'Customer orders', ar: 'طلبات العملاء' },
   'View and update operational order data with editable statuses and delivery details.': {
     en: 'View and update operational order data with editable statuses and delivery details.',
@@ -239,8 +242,14 @@ export const messages: Record<string, LocaleMessages> = {
   'Shipping settings': { en: 'Shipping settings', ar: 'إعدادات الشحن' },
   'Payment settings': { en: 'Payment settings', ar: 'إعدادات الدفع' },
   'Notification settings': { en: 'Notification settings', ar: 'إعدادات الإشعارات' },
-  'Search products, collections, brands': { en: 'Search products, collections, brands', ar: 'ابحثي عن المنتجات والمجموعات والعلامات' },
-  'Search by product, category, or brand': { en: 'Search by product, category, or brand', ar: 'ابحثي حسب المنتج أو الفئة أو العلامة' },
+  'Search products, collections, brands': {
+    en: 'Search products, collections, brands',
+    ar: 'ابحثي عن المنتجات والمجموعات والعلامات',
+  },
+  'Search by product, category, or brand': {
+    en: 'Search by product, category, or brand',
+    ar: 'ابحثي حسب المنتج أو الفئة أو العلامة',
+  },
   'YOUR CATALOG IS READY FOR ITS FIRST DROP.': {
     en: 'YOUR CATALOG IS READY FOR ITS FIRST DROP.',
     ar: 'الكتالوج جاهز لأول إطلاق له.',
@@ -256,10 +265,11 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'NO LIVE HOME CONTENT YET.',
     ar: 'لا يوجد محتوى مباشر للصفحة الرئيسية بعد.',
   },
-  'Publish categories, images, and active products in the database to populate the storefront home.': {
-    en: 'Publish categories, images, and active products in the database to populate the storefront home.',
-    ar: 'انشري الفئات والصور والمنتجات المفعلة في قاعدة البيانات لملء الصفحة الرئيسية.',
-  },
+  'Publish categories, images, and active products in the database to populate the storefront home.':
+    {
+      en: 'Publish categories, images, and active products in the database to populate the storefront home.',
+      ar: 'انشري الفئات والصور والمنتجات المفعلة في قاعدة البيانات لملء الصفحة الرئيسية.',
+    },
   'Address details': { en: 'Address details', ar: 'تفاصيل العنوان' },
   'Edit address details': { en: 'Edit address details', ar: 'تعديل تفاصيل العنوان' },
   'Save a complete delivery location so future checkout feels instant and accurate.': {
@@ -292,31 +302,37 @@ export const messages: Record<string, LocaleMessages> = {
   'Password strength': { en: 'Password strength', ar: 'قوة كلمة المرور' },
   'name@example.com': { en: 'name@example.com', ar: 'name@example.com' },
   '+962...': { en: '+962...', ar: '+962...' },
-  'CartHeader': { en: 'Your bag', ar: 'سلتك' },
+  CartHeader: { en: 'Your bag', ar: 'سلتك' },
   'Your selected pieces': { en: 'Your selected pieces', ar: 'القطع التي اخترتها' },
   '2 items': { en: '2 items', ar: 'قطعتان' },
-  'CartItemInfo': { en: 'Product details', ar: 'تفاصيل المنتج' },
-  'RemoveCartItem': { en: 'Remove', ar: 'إزالة' },
-  'CouponInput': { en: 'Promo code', ar: 'رمز الخصم' },
+  CartItemInfo: { en: 'Product details', ar: 'تفاصيل المنتج' },
+  RemoveCartItem: { en: 'Remove', ar: 'إزالة' },
+  CouponInput: { en: 'Promo code', ar: 'رمز الخصم' },
   'Enter promo code': { en: 'Enter promo code', ar: 'أدخلي رمز الخصم' },
-  'SubtotalRow': { en: 'Subtotal', ar: 'المجموع الفرعي' },
-  'DiscountRow': { en: 'Discount', ar: 'الخصم' },
-  'ShippingRow': { en: 'Shipping', ar: 'الشحن' },
-  'TotalRow': { en: 'Total', ar: 'الإجمالي' },
-  'CartSummary': { en: 'Order summary', ar: 'ملخص الطلب' },
+  SubtotalRow: { en: 'Subtotal', ar: 'المجموع الفرعي' },
+  DiscountRow: { en: 'Discount', ar: 'الخصم' },
+  ShippingRow: { en: 'Shipping', ar: 'الشحن' },
+  TotalRow: { en: 'Total', ar: 'الإجمالي' },
+  CartSummary: { en: 'Order summary', ar: 'ملخص الطلب' },
   'Products / Category Page': { en: 'Products / Category Page', ar: 'المنتجات / صفحة الفئة' },
-  'View': { en: 'View', ar: 'عرض' },
+  View: { en: 'View', ar: 'عرض' },
   'Loading product...': { en: 'Loading product...', ar: 'جاري تحميل المنتج...' },
   Loading: { en: 'Loading', ar: 'جارٍ التحميل' },
-  'EmptyProducts': { en: 'No products found', ar: 'لا توجد منتجات' },
-  'No products matched the current filters.': { en: 'No products matched the current filters.', ar: 'لا توجد منتجات مطابقة للفلاتر الحالية.' },
-  'Pagination / InfiniteScroll': { en: 'Pagination / InfiniteScroll', ar: 'الترقيم / التحميل المستمر' },
-  'PriceRangeFilter': { en: 'Price range', ar: 'نطاق السعر' },
-  'SizeFilter': { en: 'Size', ar: 'المقاس' },
-  'ColorFilter': { en: 'Color', ar: 'اللون' },
-  'CategoryFilter': { en: 'Category', ar: 'الفئة' },
-  'BrandFilter': { en: 'Brand', ar: 'العلامة' },
-  'AvailabilityFilter': { en: 'Availability', ar: 'التوفر' },
+  EmptyProducts: { en: 'No products found', ar: 'لا توجد منتجات' },
+  'No products matched the current filters.': {
+    en: 'No products matched the current filters.',
+    ar: 'لا توجد منتجات مطابقة للفلاتر الحالية.',
+  },
+  'Pagination / InfiniteScroll': {
+    en: 'Pagination / InfiniteScroll',
+    ar: 'الترقيم / التحميل المستمر',
+  },
+  PriceRangeFilter: { en: 'Price range', ar: 'نطاق السعر' },
+  SizeFilter: { en: 'Size', ar: 'المقاس' },
+  ColorFilter: { en: 'Color', ar: 'اللون' },
+  CategoryFilter: { en: 'Category', ar: 'الفئة' },
+  BrandFilter: { en: 'Brand', ar: 'العلامة' },
+  AvailabilityFilter: { en: 'Availability', ar: 'التوفر' },
   Any: { en: 'Any', ar: 'الكل' },
   'All categories': { en: 'All categories', ar: 'كل الفئات' },
   'All brands': { en: 'All brands', ar: 'كل العلامات' },
@@ -360,23 +376,38 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'Saved addresses are isolated from checkout and profile.',
     ar: 'العناوين المحفوظة منفصلة عن الدفع والملف الشخصي.',
   },
-  'Secure entry for returning customers.': { en: 'Secure entry for returning customers.', ar: 'دخول آمن للعملاء العائدين.' },
-  'Create a customer profile with address and order history.': { en: 'Create a customer profile with address and order history.', ar: 'أنشئي حساباً مع العناوين وسجل الطلبات.' },
-  'Start the reset flow with email or phone.': { en: 'Start the reset flow with email or phone.', ar: 'ابدئي استعادة الحساب عبر البريد أو الهاتف.' },
-  'Confirm the reset or account verification code.': { en: 'Confirm the reset or account verification code.', ar: 'أكدي رمز الاستعادة أو التحقق.' },
+  'Secure entry for returning customers.': {
+    en: 'Secure entry for returning customers.',
+    ar: 'دخول آمن للعملاء العائدين.',
+  },
+  'Create a customer profile with address and order history.': {
+    en: 'Create a customer profile with address and order history.',
+    ar: 'أنشئي حساباً مع العناوين وسجل الطلبات.',
+  },
+  'Start the reset flow with email or phone.': {
+    en: 'Start the reset flow with email or phone.',
+    ar: 'ابدئي استعادة الحساب عبر البريد أو الهاتف.',
+  },
+  'Confirm the reset or account verification code.': {
+    en: 'Confirm the reset or account verification code.',
+    ar: 'أكدي رمز الاستعادة أو التحقق.',
+  },
   'Request a verification code.': { en: 'Request a verification code.', ar: 'اطلبي رمز التحقق.' },
   'Verification code': { en: 'Verification code', ar: 'رمز التحقق' },
-  'Confirm code and set password.': { en: 'Confirm code and set password.', ar: 'أكدي الرمز وحددي كلمة المرور.' },
+  'Confirm code and set password.': {
+    en: 'Confirm code and set password.',
+    ar: 'أكدي الرمز وحددي كلمة المرور.',
+  },
   'Send code': { en: 'Send code', ar: 'إرسال الرمز' },
   Confirm: { en: 'Confirm', ar: 'تأكيد' },
   Login: { en: 'Login', ar: 'تسجيل الدخول' },
   Register: { en: 'Register', ar: 'إنشاء حساب' },
   'Continue as guest': { en: 'Continue as guest', ar: 'المتابعة كزائرة' },
   SocialLoginButton: { en: 'Social login', ar: 'دخول اجتماعي' },
-  'ForgotPasswordScreen': { en: 'Forgot password', ar: 'نسيت كلمة المرور' },
-  'VerifyCodeScreen': { en: 'Verify code', ar: 'التحقق من الرمز' },
-  'LoginScreen': { en: 'Login', ar: 'تسجيل الدخول' },
-  'RegisterScreen': { en: 'Register', ar: 'إنشاء حساب' },
+  ForgotPasswordScreen: { en: 'Forgot password', ar: 'نسيت كلمة المرور' },
+  VerifyCodeScreen: { en: 'Verify code', ar: 'التحقق من الرمز' },
+  LoginScreen: { en: 'Login', ar: 'تسجيل الدخول' },
+  RegisterScreen: { en: 'Register', ar: 'إنشاء حساب' },
   'Orders are separated into their own listing view with status tabs and order cards.': {
     en: 'Orders are separated into their own listing view with status tabs and order cards.',
     ar: 'الطلبات في صفحة منفصلة مع تبويبات الحالة وبطاقات الطلبات.',
@@ -479,25 +510,29 @@ export const messages: Record<string, LocaleMessages> = {
     ar: 'يتم الرد على معظم طلبات الدعم والطلبات خلال يوم عمل واحد.',
   },
   'Brand point of view': { en: 'Brand point of view', ar: 'رؤية العلامة' },
-  'Tourmaline Coven is built around dark feminine styling, sharp silhouettes, and a mood-first storefront.': {
-    en: 'Tourmaline Coven is built around dark feminine styling, sharp silhouettes, and a mood-first storefront.',
-    ar: 'تورمالين كوفن مبني حول أسلوب أنثوي داكن وخطوط حادة ومتجر يقوده المزاج البصري أولاً.',
-  },
+  'Tourmaline Coven is built around dark feminine styling, sharp silhouettes, and a mood-first storefront.':
+    {
+      en: 'Tourmaline Coven is built around dark feminine styling, sharp silhouettes, and a mood-first storefront.',
+      ar: 'تورمالين كوفن مبني حول أسلوب أنثوي داكن وخطوط حادة ومتجر يقوده المزاج البصري أولاً.',
+    },
   'Product direction': { en: 'Product direction', ar: 'اتجاه المنتجات' },
-  'The catalog focuses on statement apparel, accessories, and detail pieces with a gothic and editorial tone.': {
-    en: 'The catalog focuses on statement apparel, accessories, and detail pieces with a gothic and editorial tone.',
-    ar: 'يركز الكتالوج على الملابس الملفتة والإكسسوارات والقطع التفصيلية بطابع قوطي وتحريري.',
-  },
+  'The catalog focuses on statement apparel, accessories, and detail pieces with a gothic and editorial tone.':
+    {
+      en: 'The catalog focuses on statement apparel, accessories, and detail pieces with a gothic and editorial tone.',
+      ar: 'يركز الكتالوج على الملابس الملفتة والإكسسوارات والقطع التفصيلية بطابع قوطي وتحريري.',
+    },
   'Store experience': { en: 'Store experience', ar: 'تجربة المتجر' },
-  'The storefront is designed to feel dramatic, direct, and premium across both Arabic and English.': {
-    en: 'The storefront is designed to feel dramatic, direct, and premium across both Arabic and English.',
-    ar: 'تم تصميم واجهة المتجر لتبدو درامية وواضحة وفاخرة باللغتين العربية والإنجليزية.',
-  },
+  'The storefront is designed to feel dramatic, direct, and premium across both Arabic and English.':
+    {
+      en: 'The storefront is designed to feel dramatic, direct, and premium across both Arabic and English.',
+      ar: 'تم تصميم واجهة المتجر لتبدو درامية وواضحة وفاخرة باللغتين العربية والإنجليزية.',
+    },
   'Customer focus': { en: 'Customer focus', ar: 'تركيز العميل' },
-  'Orders, saved addresses, favorites, and account history stay connected through a single signed-in customer flow.': {
-    en: 'Orders, saved addresses, favorites, and account history stay connected through a single signed-in customer flow.',
-    ar: 'تبقى الطلبات والعناوين المحفوظة والمفضلة وسجل الحساب مترابطة عبر تجربة عميل واحدة بعد تسجيل الدخول.',
-  },
+  'Orders, saved addresses, favorites, and account history stay connected through a single signed-in customer flow.':
+    {
+      en: 'Orders, saved addresses, favorites, and account history stay connected through a single signed-in customer flow.',
+      ar: 'تبقى الطلبات والعناوين المحفوظة والمفضلة وسجل الحساب مترابطة عبر تجربة عميل واحدة بعد تسجيل الدخول.',
+    },
   'Processing time': { en: 'Processing time', ar: 'مدة المعالجة' },
   'Orders usually move into processing within one business day after confirmation.': {
     en: 'Orders usually move into processing within one business day after confirmation.',
@@ -514,10 +549,11 @@ export const messages: Record<string, LocaleMessages> = {
     ar: 'تصل الطلبات خارج عمّان عادة خلال 2 إلى 5 أيام عمل حسب الموقع.',
   },
   'Tracking updates': { en: 'Tracking updates', ar: 'تحديثات التتبع' },
-  'Tracking number and carrier details appear in your account once the order is packed or shipped.': {
-    en: 'Tracking number and carrier details appear in your account once the order is packed or shipped.',
-    ar: 'يظهر رقم التتبع وتفاصيل شركة الشحن في حسابك بمجرد تجهيز الطلب أو شحنه.',
-  },
+  'Tracking number and carrier details appear in your account once the order is packed or shipped.':
+    {
+      en: 'Tracking number and carrier details appear in your account once the order is packed or shipped.',
+      ar: 'يظهر رقم التتبع وتفاصيل شركة الشحن في حسابك بمجرد تجهيز الطلب أو شحنه.',
+    },
   'Return eligibility': { en: 'Return eligibility', ar: 'أهلية الاسترجاع' },
   'Eligible items must be unused, unworn, and returned in their original condition.': {
     en: 'Eligible items must be unused, unworn, and returned in their original condition.',
@@ -533,46 +569,60 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'Contact support as soon as possible after delivery if you need a return or exchange review.',
     ar: 'تواصلي مع الدعم بأسرع وقت بعد الاستلام إذا كنت بحاجة إلى مراجعة طلب استرجاع أو استبدال.',
   },
-  'Damaged or incorrect orders': { en: 'Damaged or incorrect orders', ar: 'الطلبات التالفة أو الخاطئة' },
-  'If your order arrives damaged or incorrect, contact support with your order number and photos.': {
-    en: 'If your order arrives damaged or incorrect, contact support with your order number and photos.',
-    ar: 'إذا وصل طلبك تالفاً أو غير صحيح، تواصلي مع الدعم وأرسلي رقم الطلب والصور.',
+  'Damaged or incorrect orders': {
+    en: 'Damaged or incorrect orders',
+    ar: 'الطلبات التالفة أو الخاطئة',
   },
+  'If your order arrives damaged or incorrect, contact support with your order number and photos.':
+    {
+      en: 'If your order arrives damaged or incorrect, contact support with your order number and photos.',
+      ar: 'إذا وصل طلبك تالفاً أو غير صحيح، تواصلي مع الدعم وأرسلي رقم الطلب والصور.',
+    },
   'How do I track my order?': { en: 'How do I track my order?', ar: 'كيف أتتبع طلبي؟' },
   'Open your account orders page to see order status, tracking number, and delivery updates.': {
     en: 'Open your account orders page to see order status, tracking number, and delivery updates.',
     ar: 'افتحي صفحة الطلبات في حسابك لرؤية حالة الطلب ورقم التتبع وتحديثات التوصيل.',
   },
-  'Can I save multiple addresses?': { en: 'Can I save multiple addresses?', ar: 'هل يمكنني حفظ عدة عناوين؟' },
+  'Can I save multiple addresses?': {
+    en: 'Can I save multiple addresses?',
+    ar: 'هل يمكنني حفظ عدة عناوين؟',
+  },
   'Yes. Signed-in customers can save multiple delivery addresses and choose one during checkout.': {
     en: 'Yes. Signed-in customers can save multiple delivery addresses and choose one during checkout.',
     ar: 'نعم. يمكن للعملاء المسجلين حفظ عدة عناوين توصيل واختيار أحدها أثناء الدفع.',
   },
-  'Do I need an account to check out?': { en: 'Do I need an account to check out?', ar: 'هل أحتاج إلى حساب لإتمام الشراء؟' },
-  'Yes. Checkout is restricted to registered customers so orders, addresses, and account history stay connected.': {
-    en: 'Yes. Checkout is restricted to registered customers so orders, addresses, and account history stay connected.',
-    ar: 'نعم. إتمام الشراء مخصص للعملاء المسجلين حتى تبقى الطلبات والعناوين وسجل الحساب مترابطة.',
+  'Do I need an account to check out?': {
+    en: 'Do I need an account to check out?',
+    ar: 'هل أحتاج إلى حساب لإتمام الشراء؟',
   },
+  'Yes. Checkout is restricted to registered customers so orders, addresses, and account history stay connected.':
+    {
+      en: 'Yes. Checkout is restricted to registered customers so orders, addresses, and account history stay connected.',
+      ar: 'نعم. إتمام الشراء مخصص للعملاء المسجلين حتى تبقى الطلبات والعناوين وسجل الحساب مترابطة.',
+    },
   'Can I review a product?': { en: 'Can I review a product?', ar: 'هل يمكنني تقييم منتج؟' },
   'Yes. Signed-in customers can submit reviews directly from the product page.': {
     en: 'Yes. Signed-in customers can submit reviews directly from the product page.',
     ar: 'نعم. يمكن للعملاء المسجلين إرسال التقييمات مباشرة من صفحة المنتج.',
   },
   'Account information': { en: 'Account information', ar: 'معلومات الحساب' },
-  'We store the customer profile details required to support sign-in, account management, and order history.': {
-    en: 'We store the customer profile details required to support sign-in, account management, and order history.',
-    ar: 'نحفظ تفاصيل ملف العميل المطلوبة لدعم تسجيل الدخول وإدارة الحساب وسجل الطلبات.',
-  },
+  'We store the customer profile details required to support sign-in, account management, and order history.':
+    {
+      en: 'We store the customer profile details required to support sign-in, account management, and order history.',
+      ar: 'نحفظ تفاصيل ملف العميل المطلوبة لدعم تسجيل الدخول وإدارة الحساب وسجل الطلبات.',
+    },
   'Order and delivery data': { en: 'Order and delivery data', ar: 'بيانات الطلب والتوصيل' },
-  'Shipping details, contact information, and order records are used to process and deliver purchases.': {
-    en: 'Shipping details, contact information, and order records are used to process and deliver purchases.',
-    ar: 'تُستخدم تفاصيل الشحن ومعلومات التواصل وسجلات الطلبات لمعالجة المشتريات وتسليمها.',
-  },
+  'Shipping details, contact information, and order records are used to process and deliver purchases.':
+    {
+      en: 'Shipping details, contact information, and order records are used to process and deliver purchases.',
+      ar: 'تُستخدم تفاصيل الشحن ومعلومات التواصل وسجلات الطلبات لمعالجة المشتريات وتسليمها.',
+    },
   'Admin access': { en: 'Admin access', ar: 'وصول الإدارة' },
-  'Authorized store administrators can access operational order, customer, and catalog data inside the admin panel.': {
-    en: 'Authorized store administrators can access operational order, customer, and catalog data inside the admin panel.',
-    ar: 'يمكن للمسؤولين المصرح لهم الوصول إلى بيانات الطلبات والعملاء والكتالوج داخل لوحة الإدارة.',
-  },
+  'Authorized store administrators can access operational order, customer, and catalog data inside the admin panel.':
+    {
+      en: 'Authorized store administrators can access operational order, customer, and catalog data inside the admin panel.',
+      ar: 'يمكن للمسؤولين المصرح لهم الوصول إلى بيانات الطلبات والعملاء والكتالوج داخل لوحة الإدارة.',
+    },
   'Support requests': { en: 'Support requests', ar: 'طلبات الدعم' },
   'Messages sent to support may be retained to resolve account, delivery, and order issues.': {
     en: 'Messages sent to support may be retained to resolve account, delivery, and order issues.',
@@ -584,20 +634,23 @@ export const messages: Record<string, LocaleMessages> = {
     ar: 'قد تتغير الأسعار المنشورة والتوفر ومحتوى الكتالوج قبل تأكيد الطلب.',
   },
   'Payment methods': { en: 'Payment methods', ar: 'طرق الدفع' },
-  'Available payment methods are shown during checkout and may vary based on store configuration.': {
-    en: 'Available payment methods are shown during checkout and may vary based on store configuration.',
-    ar: 'تظهر طرق الدفع المتاحة أثناء الدفع وقد تختلف بحسب إعدادات المتجر.',
-  },
+  'Available payment methods are shown during checkout and may vary based on store configuration.':
+    {
+      en: 'Available payment methods are shown during checkout and may vary based on store configuration.',
+      ar: 'تظهر طرق الدفع المتاحة أثناء الدفع وقد تختلف بحسب إعدادات المتجر.',
+    },
   'Shipping and delivery': { en: 'Shipping and delivery', ar: 'الشحن والتوصيل' },
-  'Delivery windows are estimates and may vary based on address, courier capacity, and order volume.': {
-    en: 'Delivery windows are estimates and may vary based on address, courier capacity, and order volume.',
-    ar: 'مواعيد التوصيل تقديرية وقد تختلف حسب العنوان وقدرة شركة الشحن وحجم الطلبات.',
-  },
+  'Delivery windows are estimates and may vary based on address, courier capacity, and order volume.':
+    {
+      en: 'Delivery windows are estimates and may vary based on address, courier capacity, and order volume.',
+      ar: 'مواعيد التوصيل تقديرية وقد تختلف حسب العنوان وقدرة شركة الشحن وحجم الطلبات.',
+    },
   'Returns and support': { en: 'Returns and support', ar: 'الاسترجاع والدعم' },
-  'Return eligibility depends on item type, condition, and the support review process described on the returns page.': {
-    en: 'Return eligibility depends on item type, condition, and the support review process described on the returns page.',
-    ar: 'تعتمد أهلية الاسترجاع على نوع القطعة وحالتها وآلية مراجعة الدعم الموضحة في صفحة الاسترجاع.',
-  },
+  'Return eligibility depends on item type, condition, and the support review process described on the returns page.':
+    {
+      en: 'Return eligibility depends on item type, condition, and the support review process described on the returns page.',
+      ar: 'تعتمد أهلية الاسترجاع على نوع القطعة وحالتها وآلية مراجعة الدعم الموضحة في صفحة الاسترجاع.',
+    },
   Logout: { en: 'Logout', ar: 'تسجيل الخروج' },
   'Push notifications': { en: 'Push notifications', ar: 'إشعارات الدفع' },
   'Marketing emails': { en: 'Marketing emails', ar: 'رسائل تسويقية' },
@@ -625,9 +678,9 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'Terms placeholder content for ordering, payment, shipping, and returns.',
     ar: 'محتوى تجريبي للشروط المتعلقة بالطلبات والدفع والشحن والاسترجاع.',
   },
-  'ProfileHeader': { en: 'Your profile', ar: 'حسابك' },
+  ProfileHeader: { en: 'Your profile', ar: 'حسابك' },
   'Customer profile hub': { en: 'Customer profile hub', ar: 'مركز حساب العميل' },
-  'ProfileInfo': { en: 'Profile details', ar: 'تفاصيل الحساب' },
+  ProfileInfo: { en: 'Profile details', ar: 'تفاصيل الحساب' },
   Label: { en: 'Label', ar: 'الاسم' },
   'Home, Studio': { en: 'Home, Studio', ar: 'المنزل، الاستوديو' },
   CitySelector: { en: 'City', ar: 'المدينة' },
@@ -644,19 +697,34 @@ export const messages: Record<string, LocaleMessages> = {
   Delivered: { en: 'Delivered', ar: 'تم التسليم' },
   Cancelled: { en: 'Cancelled', ar: 'تم الإلغاء' },
   EmptyOrders: { en: 'No orders yet.', ar: 'لا توجد طلبات بعد.' },
-  'No orders found for this account.': { en: 'No orders found for this account.', ar: 'لا توجد طلبات لهذا الحساب.' },
+  'No orders found for this account.': {
+    en: 'No orders found for this account.',
+    ar: 'لا توجد طلبات لهذا الحساب.',
+  },
   OrderDetailsHeader: { en: 'Order details', ar: 'تفاصيل الطلب' },
   OrderStatusTimeline: { en: 'Order timeline', ar: 'الخط الزمني للطلب' },
   'Current stage:': { en: 'Current stage:', ar: 'المرحلة الحالية:' },
   OrderProductItem: { en: 'Order items', ar: 'منتجات الطلب' },
-  'Product snapshot, quantity, and line total.': { en: 'Product snapshot, quantity, and line total.', ar: 'ملخص المنتج والكمية والإجمالي.' },
+  'Product snapshot, quantity, and line total.': {
+    en: 'Product snapshot, quantity, and line total.',
+    ar: 'ملخص المنتج والكمية والإجمالي.',
+  },
   ShippingAddressCard: { en: 'Shipping address', ar: 'عنوان الشحن' },
-  'Shipping snapshot from order JSONB.': { en: 'Shipping snapshot from order JSONB.', ar: 'ملخص الشحن من بيانات الطلب.' },
+  'Shipping snapshot from order JSONB.': {
+    en: 'Shipping snapshot from order JSONB.',
+    ar: 'ملخص الشحن من بيانات الطلب.',
+  },
   PaymentDetails: { en: 'Payment details', ar: 'تفاصيل الدفع' },
-  'Payment status, method, and billing details.': { en: 'Payment status, method, and billing details.', ar: 'حالة الدفع والطريقة وبيانات الفوترة.' },
+  'Payment status, method, and billing details.': {
+    en: 'Payment status, method, and billing details.',
+    ar: 'حالة الدفع والطريقة وبيانات الفوترة.',
+  },
   OrderPriceSummary: { en: 'Price summary', ar: 'ملخص السعر' },
   TrackingInfo: { en: 'Tracking information', ar: 'معلومات التتبع' },
-  'Tracking number and carrier details.': { en: 'Tracking number and carrier details.', ar: 'رقم التتبع وتفاصيل شركة الشحن.' },
+  'Tracking number and carrier details.': {
+    en: 'Tracking number and carrier details.',
+    ar: 'رقم التتبع وتفاصيل شركة الشحن.',
+  },
   CancelOrderButton: { en: 'Cancel order', ar: 'إلغاء الطلب' },
   ReorderButton: { en: 'Reorder', ar: 'إعادة الطلب' },
   'New season edit': { en: 'New season edit', ar: 'تحرير الموسم الجديد' },
@@ -668,11 +736,14 @@ export const messages: Record<string, LocaleMessages> = {
   'Live catalog': { en: 'Live catalog', ar: 'كتالوج مباشر' },
   'Limited drop': { en: 'Limited drop', ar: 'إصدار محدود' },
   'Not for everyone': { en: 'Not for everyone', ar: 'ليس للجميع' },
-  'Dark feminine pieces for girls who don\'t dress to disappear.': {
-    en: 'Dark feminine pieces for girls who don\'t dress to disappear.',
+  "Dark feminine pieces for girls who don't dress to disappear.": {
+    en: "Dark feminine pieces for girls who don't dress to disappear.",
     ar: 'قطع أنثوية داكنة لمن لا يلبسن كي يختفين.',
   },
-  'Free delivery over 120 JOD': { en: 'Free delivery over 120 JOD', ar: 'توصيل مجاني فوق 120 دينار' },
+  'Free delivery over 120 JOD': {
+    en: 'Free delivery over 120 JOD',
+    ar: 'توصيل مجاني فوق 120 دينار',
+  },
   'Curated coven picks': { en: 'Curated coven picks', ar: 'اختيارات كوفن منتقاة' },
   'Shop the drop': { en: 'Shop the drop', ar: 'تسوقي التشكيلة' },
   'Browse categories': { en: 'Browse categories', ar: 'تصفحي الفئات' },
@@ -686,7 +757,10 @@ export const messages: Record<string, LocaleMessages> = {
   },
   'Shop sale now': { en: 'Shop sale now', ar: 'تسوقي التخفيض الآن' },
   'Shop by category': { en: 'Shop by category', ar: 'تسوقي حسب الفئة' },
-  'Start with the collection that fits the mood': { en: 'Start with the collection that fits the mood', ar: 'ابدئي بالمجموعة التي تناسب المزاج' },
+  'Start with the collection that fits the mood': {
+    en: 'Start with the collection that fits the mood',
+    ar: 'ابدئي بالمجموعة التي تناسب المزاج',
+  },
   'View all': { en: 'View all', ar: 'عرض الكل' },
   Explore: { en: 'Explore', ar: 'استكشفي' },
   ProductImageSlider: { en: 'Image slider', ar: 'معرض الصور' },
@@ -700,12 +774,18 @@ export const messages: Record<string, LocaleMessages> = {
   'SizeSelector:': { en: 'Size:', ar: 'المقاس:' },
   VariantSelector: { en: 'Variant', ar: 'النسخة' },
   StockStatus: { en: 'Stock status', ar: 'حالة المخزون' },
-  AddToCartButton: { en: 'Add to cart', ar: 'أضيفي للسلة' },
-  BuyNowButton: { en: 'Buy now', ar: 'اشترِ الآن' },
+  AddToCartButton: { en: 'Add to cart', ar: 'أضف للسلة' },
+  BuyNowButton: { en: 'Order now', ar: 'اطلب الآن' },
   ProductReviews: { en: 'Reviews', ar: 'التقييمات' },
-  RelatedProducts: { en: 'Related products', ar: 'منتجات مشابهة' },
-  'Structured beautifully and feels premium in hand.': { en: 'Structured beautifully and feels premium in hand.', ar: 'مصمم بإتقان ويشعر بالفخامة.' },
-  'Heavy, dark, and exactly on-brand.': { en: 'Heavy, dark, and exactly on-brand.', ar: 'ثقيل وداكن ومطابق للهوية.' },
+  RelatedProducts: { en: 'Related items', ar: 'أصناف مشابهة' },
+  'Structured beautifully and feels premium in hand.': {
+    en: 'Structured beautifully and feels premium in hand.',
+    ar: 'مصمم بإتقان ويشعر بالفخامة.',
+  },
+  'Heavy, dark, and exactly on-brand.': {
+    en: 'Heavy, dark, and exactly on-brand.',
+    ar: 'ثقيل وداكن ومطابق للهوية.',
+  },
   'DELIVERY ACROSS JORDAN 🇯🇴  •  NEW DROP AVAILABLE NOW': {
     en: 'DELIVERY ACROSS JORDAN 🇯🇴  •  NEW DROP AVAILABLE NOW',
     ar: 'توصيل إلى جميع أنحاء الأردن 🇯🇴  •  التشكيلة الجديدة متاحة الآن',
@@ -715,37 +795,75 @@ export const messages: Record<string, LocaleMessages> = {
   NAILS: { en: 'NAILS', ar: 'أظافر' },
   SALE: { en: 'SALE', ar: 'تخفيضات' },
   HOME: { en: 'HOME', ar: 'الرئيسية' },
-  BAG: { en: 'BAG', ar: 'الحقيبة' },
+  BAG: { en: 'CART', ar: 'السلة' },
+  CART: { en: 'CART', ar: 'السلة' },
+  MENU: { en: 'MENU', ar: 'المنيو' },
+  SAJ: { en: 'SAJ', ar: 'الصاج' },
+  ARABI: { en: 'ARABI', ar: 'عربي' },
+  MEALS: { en: 'MEALS', ar: 'وجبات' },
+  SIDES: { en: 'SIDES', ar: 'إضافات' },
   YOU: { en: 'YOU', ar: 'حسابك' },
   HOLD: { en: 'Hold that thought.', ar: 'لحظة واحدة.' },
-  'YOUR BAG': { en: 'YOUR BAG', ar: 'حقيبتك' },
+  ORDER: { en: 'ORDER', ar: 'الطلب' },
+  'YOUR BAG': { en: 'YOUR CART', ar: 'سلتك' },
+  'YOUR CART': { en: 'YOUR CART', ar: 'سلتك' },
   REMOVE: { en: 'REMOVE', ar: 'إزالة' },
-  'VIEW BAG': { en: 'VIEW BAG', ar: 'عرض الحقيبة' },
+  'VIEW BAG': { en: 'VIEW CART', ar: 'عرض السلة' },
+  'VIEW CART': { en: 'VIEW CART', ar: 'عرض السلة' },
   CHECKOUT: { en: 'CHECKOUT', ar: 'الدفع' },
-  'YOUR BAG IS EMPTY.': { en: 'YOUR BAG IS EMPTY.', ar: 'حقيبتك فارغة.' },
-  'But that can be fixed.': { en: 'But that can be fixed.', ar: 'لكن يمكن إصلاح ذلك.' },
-  'SHOP THE DROP': { en: 'SHOP THE DROP', ar: 'تسوقي التشكيلة' },
+  'YOUR BAG IS EMPTY.': { en: 'YOUR CART IS EMPTY.', ar: 'سلتك فارغة.' },
+  'YOUR CART IS EMPTY.': { en: 'YOUR CART IS EMPTY.', ar: 'سلتك فارغة.' },
+  'But that can be fixed.': {
+    en: 'Start with a saj sandwich or a full arabi meal.',
+    ar: 'ابدأ بسندويشة صاج أو وجبة عربي كاملة.',
+  },
+  'Start with a saj sandwich or a full arabi meal.': {
+    en: 'Start with a saj sandwich or a full arabi meal.',
+    ar: 'ابدأ بسندويشة صاج أو وجبة عربي كاملة.',
+  },
+  'SHOP THE DROP': { en: 'VIEW MENU', ar: 'عرض المنيو' },
+  'VIEW MENU': { en: 'VIEW MENU', ar: 'عرض المنيو' },
   'AFTER DARK': { en: 'AFTER DARK', ar: 'بعد الغروب' },
-  'STORE': { en: 'STORE', ar: 'المتجر' },
-  'NEWSLETTER': { en: 'NEWSLETTER', ar: 'النشرة' },
-  'ENTER THE COVEN.': { en: 'ENTER THE COVEN.', ar: 'انضمي إلى الكوفن.' },
-  'Drops, secret sales and new pieces — before everyone else.': { en: 'Drops, secret sales and new pieces — before everyone else.', ar: 'إصدارات وعروض سرية وقطع جديدة قبل الجميع.' },
+  STORE: { en: 'STORE', ar: 'المتجر' },
+  NEWSLETTER: { en: 'OFFERS', ar: 'العروض' },
+  OFFERS: { en: 'OFFERS', ar: 'العروض' },
+  'ENTER THE COVEN.': { en: 'GET THE SAJ DEALS.', ar: 'احصل على عروض الصاج.' },
+  'GET THE SAJ DEALS.': { en: 'GET THE SAJ DEALS.', ar: 'احصل على عروض الصاج.' },
+  'Drops, secret sales and new pieces — before everyone else.': {
+    en: 'Branch updates, meal offers, and late-night cravings in your inbox.',
+    ar: 'تحديثات الفروع وعروض الوجبات في بريدك.',
+  },
+  'Branch updates, meal offers, and late-night cravings in your inbox.': {
+    en: 'Branch updates, meal offers, and late-night cravings in your inbox.',
+    ar: 'تحديثات الفروع وعروض الوجبات في بريدك.',
+  },
   'Email address': { en: 'Email address', ar: 'البريد الإلكتروني' },
   'Email address is required': { en: 'Email address is required', ar: 'البريد الإلكتروني مطلوب' },
-  'This email is already subscribed.': { en: 'This email is already subscribed.', ar: 'هذا البريد الإلكتروني مشترك بالفعل.' },
+  'This email is already subscribed.': {
+    en: 'This email is already subscribed.',
+    ar: 'هذا البريد الإلكتروني مشترك بالفعل.',
+  },
   'You are on the list.': { en: 'You are on the list.', ar: 'تمت إضافتك إلى القائمة.' },
   'Newsletter storage is not configured yet.': {
     en: 'Newsletter storage is not configured yet.',
     ar: 'تخزين النشرة غير مهيأ بعد.',
   },
   JOIN: { en: 'JOIN', ar: 'انضمي' },
-  'EDITORIAL': { en: 'EDITORIAL', ar: 'تحريري' },
-  'SOFT ISN\'T WEAK.': { en: 'SOFT ISN\'T WEAK.', ar: 'النعومة ليست ضعفاً.' },
-  'Dark femininity isn\'t about disappearing into the room. It\'s choosing exactly how you want to be seen.': {
-    en: 'Dark femininity isn\'t about disappearing into the room. It\'s choosing exactly how you want to be seen.',
-    ar: 'الأنوثة الداكنة ليست اختفاءً في الغرفة، بل اختياراً دقيقاً لكيفية ظهورك.',
+  EDITORIAL: { en: 'FROM THE GRILL', ar: 'من الشواية' },
+  'FROM THE GRILL': { en: 'FROM THE GRILL', ar: 'من الشواية' },
+  "SOFT ISN'T WEAK.": { en: 'SAJ, FIRE, GARLIC.', ar: 'صاج، نار، وثوم.' },
+  'SAJ, FIRE, GARLIC.': { en: 'SAJ, FIRE, GARLIC.', ar: 'صاج، نار، وثوم.' },
+  "Dark femininity isn't about disappearing into the room. It's choosing exactly how you want to be seen.":
+    {
+      en: "Dark femininity isn't about disappearing into the room. It's choosing exactly how you want to be seen.",
+      ar: 'الأنوثة الداكنة ليست اختفاءً في الغرفة، بل اختياراً دقيقاً لكيفية ظهورك.',
+    },
+  'Thin bread, hot shawerma, sharp pickles, and sauce packed for the road.': {
+    en: 'Thin bread, hot shawerma, sharp pickles, and sauce packed for the road.',
+    ar: 'خبز رقيق، شاورما ساخنة، مخلل وصوص جاهز للطريق.',
   },
-  'DISCOVER THE COLLECTION': { en: 'DISCOVER THE COLLECTION', ar: 'اكتشفي المجموعة' },
+  'DISCOVER THE COLLECTION': { en: 'ORDER FROM MENU', ar: 'اطلب من المنيو' },
+  'ORDER FROM MENU': { en: 'ORDER FROM MENU', ar: 'اطلب من المنيو' },
   'AMMAN AFTER DARK': { en: 'AMMAN AFTER DARK', ar: 'عَمّان بعد الغروب' },
   'NOT FOR EVERYONE.': { en: 'NOT FOR EVERYONE.', ar: 'ليس للجميع.' },
   'Dark feminine pieces for girls who were never made to blend in.': {
@@ -756,74 +874,165 @@ export const messages: Record<string, LocaleMessages> = {
   'SHOP YOUR MOOD': { en: 'SHOP YOUR MOOD', ar: 'تسوقي حسب مزاجك' },
   'NEW ARRIVALS': { en: 'NEW ARRIVALS', ar: 'وصل حديثاً' },
   'THE NEW DROP': { en: 'THE NEW DROP', ar: 'التشكيلة الجديدة' },
-  'Limited pieces. Once they\'re gone, they\'re gone.': { en: 'Limited pieces. Once they\'re gone, they\'re gone.', ar: 'قطع محدودة. ما إن تنفد حتى تنتهي.' },
-  'EXPLORE ALL': { en: 'EXPLORE ALL', ar: 'استكشفي الكل' },
+  "Limited pieces. Once they're gone, they're gone.": {
+    en: "Limited pieces. Once they're gone, they're gone.",
+    ar: 'قطع محدودة. ما إن تنفد حتى تنتهي.',
+  },
+  'ORDER FAST': { en: 'ORDER FAST', ar: 'اطلب بسرعة' },
+  'HOT FAVORITES': { en: 'HOT FAVORITES', ar: 'الأكثر طلباً' },
+  'The wraps, boxes, and sides customers add when hunger cannot wait.': {
+    en: 'The wraps, boxes, and sides customers add when hunger cannot wait.',
+    ar: 'السندويشات والعلب والإضافات عندما لا يحتمل الجوع الانتظار.',
+  },
+  'EXPLORE ALL': { en: 'VIEW MENU', ar: 'عرض المنيو' },
   'FLASH SALE': { en: 'FLASH SALE', ar: 'تخفيضات سريعة' },
   'ENDS IN': { en: 'ENDS IN', ar: 'ينتهي خلال' },
   HOURS: { en: 'HOURS', ar: 'ساعات' },
   MINUTES: { en: 'MINUTES', ar: 'دقائق' },
   SECONDS: { en: 'SECONDS', ar: 'ثوانٍ' },
-  'NAILS FOR BAD DECISIONS.': { en: 'NAILS FOR BAD DECISIONS.', ar: 'أظافر لقرارات سيئة.' },
-  'Small details. Dangerous energy.': { en: 'Small details. Dangerous energy.', ar: 'تفاصيل صغيرة. طاقة خطيرة.' },
+  'FULL MEALS': { en: 'FULL MEALS', ar: 'وجبات كاملة' },
+  'BOXES, BOWLS, AND PLATTERS': { en: 'BOXES, BOWLS, AND PLATTERS', ar: 'علب، أطباق، وبلاترات' },
+  'Complete orders with fries, dips, pickles, and enough sauce.': {
+    en: 'Complete orders with fries, dips, pickles, and enough sauce.',
+    ar: 'طلبات كاملة مع بطاطا وصوصات ومخلل.',
+  },
+  'NAILS FOR BAD DECISIONS.': { en: 'BOXES, BOWLS, AND PLATTERS', ar: 'علب، أطباق، وبلاترات' },
+  'Small details. Dangerous energy.': {
+    en: 'Complete orders with fries, dips, pickles, and enough sauce.',
+    ar: 'طلبات كاملة مع بطاطا وصوصات ومخلل.',
+  },
   'BEST SELLERS': { en: 'BEST SELLERS', ar: 'الأكثر مبيعاً' },
-  'SHE\'S OBSESSED.': { en: 'SHE\'S OBSESSED.', ar: 'هي مهووسة.' },
-  'The pieces everyone keeps coming back for.': { en: 'The pieces everyone keeps coming back for.', ar: 'القطع التي يعود إليها الجميع دائماً.' },
-  'SOCIAL': { en: 'SOCIAL', ar: 'اجتماعي' },
+  "SHE'S OBSESSED.": { en: 'MOST ORDERED', ar: 'الأكثر طلباً' },
+  'MOST ORDERED': { en: 'MOST ORDERED', ar: 'الأكثر طلباً' },
+  'The pieces everyone keeps coming back for.': {
+    en: 'Shawerma, saj rolls, and sides that keep coming back to the cart.',
+    ar: 'شاورما ورولات صاج وإضافات تعود دائماً إلى السلة.',
+  },
+  'Shawerma, saj rolls, and sides that keep coming back to the cart.': {
+    en: 'Shawerma, saj rolls, and sides that keep coming back to the cart.',
+    ar: 'شاورما ورولات صاج وإضافات تعود دائماً إلى السلة.',
+  },
+  SOCIAL: { en: 'SOCIAL', ar: 'اجتماعي' },
   'FOLLOW THE COVEN': { en: 'FOLLOW THE COVEN', ar: 'تابعي الكوفن' },
-  'SAVE TO YOUR WISHLIST': { en: 'Saved to your wishlist', ar: 'تمت الإضافة إلى المفضلة' },
-  'REMOVED FROM WISHLIST': { en: 'Removed from wishlist', ar: 'تمت الإزالة من المفضلة' },
-  'Added to your bag': { en: 'Added to your bag', ar: 'تمت الإضافة إلى الحقيبة' },
-  'SHOP NOW': { en: 'SHOP NOW', ar: 'تسوقي الآن' },
-  'piece': { en: 'piece', ar: 'قطعة' },
-  'pieces': { en: 'pieces', ar: 'قطع' },
-  'SHOP': { en: 'SHOP', ar: 'تسوقي' },
+  'SAVE TO YOUR WISHLIST': { en: 'Saved to favorites', ar: 'تمت الإضافة إلى المفضلة' },
+  'SAVED TO FAVORITES': { en: 'Saved to favorites', ar: 'تمت الإضافة إلى المفضلة' },
+  'REMOVED FROM WISHLIST': { en: 'Removed from favorites', ar: 'تمت الإزالة من المفضلة' },
+  'REMOVED FROM FAVORITES': { en: 'Removed from favorites', ar: 'تمت الإزالة من المفضلة' },
+  'Added to your bag': { en: 'Added to your cart', ar: 'تمت الإضافة إلى السلة' },
+  'Added to your cart': { en: 'Added to your cart', ar: 'تمت الإضافة إلى السلة' },
+  'SHOP NOW': { en: 'ORDER NOW', ar: 'اطلب الآن' },
+  piece: { en: 'item', ar: 'صنف' },
+  pieces: { en: 'items', ar: 'أصناف' },
+  SHOP: { en: 'MENU', ar: 'المنيو' },
   Delivery: { en: 'Delivery', ar: 'التوصيل' },
   Tax: { en: 'Tax', ar: 'الضريبة' },
   Apply: { en: 'Apply', ar: 'تطبيق' },
   'Dark feminine pieces, nails, and finishing touches.': {
-    en: 'Dark feminine pieces, nails, and finishing touches.',
-    ar: 'قطع أنثوية داكنة وأظافر ولمسات نهائية.',
+    en: 'Fresh shawerma, saj meals, pickup, and delivery across Jordan.',
+    ar: 'شاورما طازجة ووجبات صاج وتوصيل داخل الأردن.',
+  },
+  'Fresh shawerma, saj meals, pickup, and delivery across Jordan.': {
+    en: 'Fresh shawerma, saj meals, pickup, and delivery across Jordan.',
+    ar: 'شاورما طازجة ووجبات صاج وتوصيل داخل الأردن.',
   },
   FILTERS: { en: 'FILTERS', ar: 'الفلاتر' },
-  'Search pieces, tags, moods...': { en: 'Search pieces, tags, moods...', ar: 'ابحثي عن قطع أو وسوم أو مزاج...' },
-  'Newest': { en: 'Newest', ar: 'الأحدث' },
+  'Search pieces, tags, moods...': {
+    en: 'Search menu, meals, sauces...',
+    ar: 'ابحث عن المنيو والوجبات والصوصات...',
+  },
+  Newest: { en: 'Newest', ar: 'الأحدث' },
   'Price Low to High': { en: 'Price Low to High', ar: 'السعر من الأقل للأعلى' },
   'Price High to Low': { en: 'Price High to Low', ar: 'السعر من الأعلى للأقل' },
   Featured: { en: 'Featured', ar: 'مميز' },
-  'COLOR': { en: 'COLOR', ar: 'اللون' },
-  'SIZE': { en: 'SIZE', ar: 'المقاس' },
-  'ONLY': { en: 'ONLY', ar: 'فقط' },
+  COLOR: { en: 'COLOR', ar: 'اللون' },
+  SIZE: { en: 'SIZE', ar: 'المقاس' },
+  ONLY: { en: 'ONLY', ar: 'فقط' },
   LEFT: { en: 'LEFT', ar: 'متبقي' },
   'IN STOCK': { en: 'IN STOCK', ar: 'متوفر' },
   'SOLD OUT': { en: 'SOLD OUT', ar: 'نفد' },
-  'BUY NOW': { en: 'BUY NOW', ar: 'اشترِ الآن' },
-  'PRODUCT DETAILS': { en: 'PRODUCT DETAILS', ar: 'تفاصيل المنتج' },
-  SHIPPING: { en: 'SHIPPING', ar: 'الشحن' },
-  RETURNS: { en: 'RETURNS', ar: 'الإرجاع' },
+  'HOT NOW': { en: 'HOT NOW', ar: 'ساخن الآن' },
+  ITEMS: { en: 'ITEMS', ar: 'أصناف' },
+  ADD: { en: 'ADD', ar: 'أضف' },
+  'ADD TO CART': { en: 'ADD TO CART', ar: 'أضف للسلة' },
+  'ORDER NOW': { en: 'ORDER NOW', ar: 'اطلب الآن' },
+  'BACK TO MENU': { en: 'BACK TO MENU', ar: 'العودة إلى المنيو' },
+  SAUCE: { en: 'SAUCE', ar: 'الصوص' },
+  'Choose quantity': { en: 'Choose quantity', ar: 'اختر الكمية' },
+  'You may also want': { en: 'You may also want', ar: 'قد ترغب أيضاً في' },
+  'Kitchen control': { en: 'Kitchen control', ar: 'تحكم المطبخ' },
+  'Syncing admin updates': { en: 'Syncing admin updates', ar: 'مزامنة تحديثات الإدارة' },
+  'BUY NOW': { en: 'ORDER NOW', ar: 'اطلب الآن' },
+  'PRODUCT DETAILS': { en: 'ITEM DETAILS', ar: 'تفاصيل الصنف' },
+  'ITEM DETAILS': { en: 'ITEM DETAILS', ar: 'تفاصيل الصنف' },
+  SHIPPING: { en: 'DELIVERY', ar: 'التوصيل' },
+  RETURNS: { en: 'ORDER NOTES', ar: 'ملاحظات الطلب' },
+  'ORDER NOTES': { en: 'ORDER NOTES', ar: 'ملاحظات الطلب' },
+  'ITEM REVIEWS': { en: 'ITEM REVIEWS', ar: 'تقييمات الصنف' },
+  'Sign in to save menu items to your favorites.': {
+    en: 'Sign in to save menu items to your favorites.',
+    ar: 'سجل الدخول لحفظ الأصناف في المفضلة.',
+  },
+  'Delivery and pickup are available from Jordan branches. Hot-food timing depends on branch coverage and order volume.':
+    {
+      en: 'Delivery and pickup are available from Jordan branches. Hot-food timing depends on branch coverage and order volume.',
+      ar: 'التوصيل والاستلام متاحان من فروع الأردن، ويعتمد وقت الطلب على الفرع والضغط.',
+    },
+  'Please add allergy notes, sauce preferences, and pickup instructions before checkout.': {
+    en: 'Please add allergy notes, sauce preferences, and pickup instructions before checkout.',
+    ar: 'أضف ملاحظات الحساسية والصوص وتعليمات الاستلام قبل الدفع.',
+  },
   'Delivery across Jordan. Orders in Amman usually arrive within 1-3 business days.': {
     en: 'Delivery across Jordan. Orders in Amman usually arrive within 1-3 business days.',
     ar: 'التوصيل متاح في جميع أنحاء الأردن. طلبات عمّان تصل عادة خلال 1-3 أيام عمل.',
   },
-  'Return eligibility depends on item type. Nail sets and intimate items remain final sale unless faulty.': {
-    en: 'Return eligibility depends on item type. Nail sets and intimate items remain final sale unless faulty.',
-    ar: 'تعتمد أهلية الإرجاع على نوع القطعة. أطقم الأظافر والقطع الحساسة تعتبر نهائية ما لم تكن معيبة.',
-  },
+  'Return eligibility depends on item type. Nail sets and intimate items remain final sale unless faulty.':
+    {
+      en: 'Return eligibility depends on item type. Nail sets and intimate items remain final sale unless faulty.',
+      ar: 'تعتمد أهلية الإرجاع على نوع القطعة. أطقم الأظافر والقطع الحساسة تعتبر نهائية ما لم تكن معيبة.',
+    },
   'YOU MAY ALSO WANT': { en: 'YOU MAY ALSO WANT', ar: 'قد يعجبك أيضاً' },
   PRICE: { en: 'PRICE', ar: 'السعر' },
-  'YOUR WISHLIST IS TOO QUIET.': { en: 'YOUR WISHLIST IS TOO QUIET.', ar: 'قائمة أمنياتك هادئة جداً.' },
-  'Save the pieces worth circling back for.': { en: 'Save the pieces worth circling back for.', ar: 'احفظي القطع التي تستحق العودة إليها.' },
+  'YOUR WISHLIST IS TOO QUIET.': {
+    en: 'YOUR WISHLIST IS TOO QUIET.',
+    ar: 'قائمة أمنياتك هادئة جداً.',
+  },
+  'Save the pieces worth circling back for.': {
+    en: 'Save the pieces worth circling back for.',
+    ar: 'احفظي القطع التي تستحق العودة إليها.',
+  },
   'Nothing saved yet.': { en: 'Nothing saved yet.', ar: 'لا توجد عناصر محفوظة بعد.' },
   'VIEW PRODUCTS': { en: 'VIEW PRODUCTS', ar: 'عرض المنتجات' },
-  'SEARCH': { en: 'SEARCH', ar: 'البحث' },
-  'Search by name, mood, or product detail.': { en: 'Search by name, mood, or product detail.', ar: 'ابحثي بالاسم أو المزاج أو تفاصيل المنتج.' },
+  SEARCH: { en: 'SEARCH', ar: 'البحث' },
+  'Search by name, mood, or product detail.': {
+    en: 'Search by name, mood, or product detail.',
+    ar: 'ابحثي بالاسم أو المزاج أو تفاصيل المنتج.',
+  },
   'Search the coven...': { en: 'Search the coven...', ar: 'ابحثي في الكوفن...' },
   ACCOUNT: { en: 'ACCOUNT', ar: 'الحساب' },
-  'Everything you need, none of the clutter.': { en: 'Everything you need, none of the clutter.', ar: 'كل ما تحتاجينه بلا ازدحام.' },
-  'Update your details and stay on the list.': { en: 'Update your details and stay on the list.', ar: 'حدّثي بياناتك وابقَي ضمن القائمة.' },
-  'Track deliveries and status changes.': { en: 'Track deliveries and status changes.', ar: 'تابعي الشحنات وتغيّرات الحالة.' },
-  'Saved pieces you are not over yet.': { en: 'Saved pieces you are not over yet.', ar: 'قطع محفوظة لم تنتهي علاقتك بها بعد.' },
-  'Delivery details for checkout.': { en: 'Delivery details for checkout.', ar: 'تفاصيل التوصيل للدفع.' },
-  'Preferences, notifications, and sign out.': { en: 'Preferences, notifications, and sign out.', ar: 'التفضيلات والإشعارات وتسجيل الخروج.' },
+  'Everything you need, none of the clutter.': {
+    en: 'Everything you need, none of the clutter.',
+    ar: 'كل ما تحتاجينه بلا ازدحام.',
+  },
+  'Update your details and stay on the list.': {
+    en: 'Update your details and stay on the list.',
+    ar: 'حدّثي بياناتك وابقَي ضمن القائمة.',
+  },
+  'Track deliveries and status changes.': {
+    en: 'Track deliveries and status changes.',
+    ar: 'تابعي الشحنات وتغيّرات الحالة.',
+  },
+  'Saved pieces you are not over yet.': {
+    en: 'Saved pieces you are not over yet.',
+    ar: 'قطع محفوظة لم تنتهي علاقتك بها بعد.',
+  },
+  'Delivery details for checkout.': {
+    en: 'Delivery details for checkout.',
+    ar: 'تفاصيل التوصيل للدفع.',
+  },
+  'Preferences, notifications, and sign out.': {
+    en: 'Preferences, notifications, and sign out.',
+    ar: 'التفضيلات والإشعارات وتسجيل الخروج.',
+  },
   'Cash on Delivery is supported. Card checkout requires a configured payment provider.': {
     en: 'Cash on Delivery is supported. Card checkout requires a configured payment provider.',
     ar: 'الدفع عند الاستلام مدعوم. الدفع بالبطاقة يحتاج مزود دفع مهيأ.',
@@ -910,10 +1119,11 @@ export const messages: Record<string, LocaleMessages> = {
   },
   'Saved addresses': { en: 'Saved addresses', ar: 'العناوين المحفوظة' },
   'Delivery zones': { en: 'Delivery zones', ar: 'مناطق التوصيل' },
-  'Control delivery fees by country and city. Leave city empty to create a country-wide fallback fee.': {
-    en: 'Control delivery fees by country and city. Leave city empty to create a country-wide fallback fee.',
-    ar: 'تحكم برسوم التوصيل حسب الدولة والمدينة. اترك المدينة فارغة لإنشاء رسم افتراضي على مستوى الدولة.',
-  },
+  'Control delivery fees by country and city. Leave city empty to create a country-wide fallback fee.':
+    {
+      en: 'Control delivery fees by country and city. Leave city empty to create a country-wide fallback fee.',
+      ar: 'تحكم برسوم التوصيل حسب الدولة والمدينة. اترك المدينة فارغة لإنشاء رسم افتراضي على مستوى الدولة.',
+    },
   'Arabic country': { en: 'Arabic country', ar: 'اسم الدولة بالعربية' },
   'Arabic city': { en: 'Arabic city', ar: 'اسم المدينة بالعربية' },
   'Delivery fee': { en: 'Delivery fee', ar: 'رسوم التوصيل' },
@@ -941,10 +1151,11 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'Checkout totals are out of date. Please review your order and try again.',
     ar: 'إجماليات الدفع لم تعد محدثة. يرجى مراجعة طلبك والمحاولة مرة أخرى.',
   },
-  'Checkout is blocked by the current Supabase orders RLS policy. Update the orders insert policy to allow authenticated customers to create their own orders.': {
-    en: 'Checkout is blocked by the current Supabase orders RLS policy. Update the orders insert policy to allow authenticated customers to create their own orders.',
-    ar: 'تم حظر إتمام الطلب بسبب سياسة RLS الحالية لطلبات Supabase. حدّث سياسة إدخال الطلبات للسماح للعملاء المسجلين بإنشاء طلباتهم.',
-  },
+  'Checkout is blocked by the current Supabase orders RLS policy. Update the orders insert policy to allow authenticated customers to create their own orders.':
+    {
+      en: 'Checkout is blocked by the current Supabase orders RLS policy. Update the orders insert policy to allow authenticated customers to create their own orders.',
+      ar: 'تم حظر إتمام الطلب بسبب سياسة RLS الحالية لطلبات Supabase. حدّث سياسة إدخال الطلبات للسماح للعملاء المسجلين بإنشاء طلباتهم.',
+    },
   'Failed to place order': { en: 'Failed to place order', ar: 'تعذر تأكيد الطلب' },
   'SUPABASE AUTH': { en: 'SUPABASE AUTH', ar: 'مصادقة Supabase' },
   'JOIN THE COVEN': { en: 'JOIN THE COVEN', ar: 'انضمي إلى الكوفن' },
@@ -966,7 +1177,10 @@ export const messages: Record<string, LocaleMessages> = {
   'CREATE ACCOUNT': { en: 'CREATE ACCOUNT', ar: 'إنشاء حساب' },
   'SEND RESET LINK': { en: 'SEND RESET LINK', ar: 'إرسال رابط الاستعادة' },
   'SIGN OUT': { en: 'SIGN OUT', ar: 'تسجيل الخروج' },
-  'Already have an account? Sign in': { en: 'Already have an account? Sign in', ar: 'لديك حساب بالفعل؟ سجلي الدخول' },
+  'Already have an account? Sign in': {
+    en: 'Already have an account? Sign in',
+    ar: 'لديك حساب بالفعل؟ سجلي الدخول',
+  },
   'Create account': { en: 'Create account', ar: 'إنشاء حساب' },
   'Forgot password?': { en: 'Forgot password?', ar: 'هل نسيت كلمة المرور؟' },
   'Create a customer account for orders, favorites, addresses, and faster checkout.': {
@@ -996,7 +1210,10 @@ export const messages: Record<string, LocaleMessages> = {
   CANCEL: { en: 'CANCEL', ar: 'إلغاء' },
   'EDIT ADDRESS': { en: 'EDIT ADDRESS', ar: 'تعديل العنوان' },
   'SAVE CHANGES': { en: 'SAVE CHANGES', ar: 'حفظ التعديلات' },
-  'Password reset email sent.': { en: 'Password reset email sent.', ar: 'تم إرسال رسالة إعادة تعيين كلمة المرور.' },
+  'Password reset email sent.': {
+    en: 'Password reset email sent.',
+    ar: 'تم إرسال رسالة إعادة تعيين كلمة المرور.',
+  },
   'Account created. Confirm your email, then sign in.': {
     en: 'Account created. Confirm your email, then sign in.',
     ar: 'تم إنشاء الحساب. أكدي بريدك الإلكتروني ثم سجلي الدخول.',
@@ -1051,7 +1268,7 @@ export const messages: Record<string, LocaleMessages> = {
     ar: 'تفاصيل الطلب وحالة الدفع ومعلومات التوصيل.',
   },
   'Placed on': { en: 'Placed on', ar: 'تاريخ الطلب' },
-  'FAVORITES': { en: 'FAVORITES', ar: 'المفضلة' },
+  FAVORITES: { en: 'FAVORITES', ar: 'المفضلة' },
   'Saved products connected to your customer account.': {
     en: 'Saved products connected to your customer account.',
     ar: 'المنتجات المحفوظة المرتبطة بحساب العميل.',
@@ -1060,7 +1277,7 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'Tap the heart on any product to start building your wishlist.',
     ar: 'اضغطي على القلب في أي منتج لبدء بناء قائمة المفضلة.',
   },
-  'ADDRESSES': { en: 'ADDRESSES', ar: 'العناوين' },
+  ADDRESSES: { en: 'ADDRESSES', ar: 'العناوين' },
   'Review the shipping details saved to your customer account.': {
     en: 'Review the shipping details saved to your customer account.',
     ar: 'راجعي تفاصيل الشحن المحفوظة في حساب العميل.',
@@ -1133,7 +1350,10 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'Please review the highlighted fields.',
     ar: 'يرجى مراجعة الحقول المحددة.',
   },
-  'Please fix the form errors': { en: 'Please fix the form errors', ar: 'يرجى تصحيح أخطاء النموذج' },
+  'Please fix the form errors': {
+    en: 'Please fix the form errors',
+    ar: 'يرجى تصحيح أخطاء النموذج',
+  },
   'Loading order details...': { en: 'Loading order details...', ar: 'جارٍ تحميل تفاصيل الطلب...' },
   Billing: { en: 'Billing', ar: 'الفوترة' },
   'Same as shipping': { en: 'Same as shipping', ar: 'نفس عنوان الشحن' },
@@ -1160,10 +1380,11 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'Organize storefront navigation and category metadata.',
     ar: 'نظّمي تنقّل المتجر وبيانات الفئات.',
   },
-  'Create promo codes with percentage or fixed discounts, optional minimum basket values, and activation windows.': {
-    en: 'Create promo codes with percentage or fixed discounts, optional minimum basket values, and activation windows.',
-    ar: 'أنشئي رموزاً ترويجية بخصومات نسبية أو ثابتة مع حد أدنى اختياري للسلة وفترات تفعيل.',
-  },
+  'Create promo codes with percentage or fixed discounts, optional minimum basket values, and activation windows.':
+    {
+      en: 'Create promo codes with percentage or fixed discounts, optional minimum basket values, and activation windows.',
+      ar: 'أنشئي رموزاً ترويجية بخصومات نسبية أو ثابتة مع حد أدنى اختياري للسلة وفترات تفعيل.',
+    },
   'Minimum subtotal': { en: 'Minimum subtotal', ar: 'الحد الأدنى للمجموع الفرعي' },
   Starts: { en: 'Starts', ar: 'يبدأ' },
   Ends: { en: 'Ends', ar: 'ينتهي' },
@@ -1182,10 +1403,11 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'Use 2200 x 1400 px images. Keep the subject centered so mobile crops stay safe.',
     ar: 'استخدمي صوراً بمقاس 2200 × 1400 بكسل. أبقي العنصر الأساسي في المنتصف لتبقى قصّات الجوال آمنة.',
   },
-  'Control the home hero carousel with separate English and Arabic artwork, auto-slide timing, and CTA copy. Recommended size: 2200 x 1400 px for each image.': {
-    en: 'Control the home hero carousel with separate English and Arabic artwork, auto-slide timing, and CTA copy. Recommended size: 2200 x 1400 px for each image.',
-    ar: 'تحكمي في سلايدر الصفحة الرئيسية مع صور منفصلة للعربية والإنجليزية وتوقيت تلقائي ونصوص الدعوة للإجراء. المقاس الموصى به 2200 × 1400 لكل صورة.',
-  },
+  'Control the home hero carousel with separate English and Arabic artwork, auto-slide timing, and CTA copy. Recommended size: 2200 x 1400 px for each image.':
+    {
+      en: 'Control the home hero carousel with separate English and Arabic artwork, auto-slide timing, and CTA copy. Recommended size: 2200 x 1400 px for each image.',
+      ar: 'تحكمي في سلايدر الصفحة الرئيسية مع صور منفصلة للعربية والإنجليزية وتوقيت تلقائي ونصوص الدعوة للإجراء. المقاس الموصى به 2200 × 1400 لكل صورة.',
+    },
   'Schedule time-boxed discounts, promo copy, CTA links, and modal behavior from one place.': {
     en: 'Schedule time-boxed discounts, promo copy, CTA links, and modal behavior from one place.',
     ar: 'جدولي الخصومات المحددة بوقت ونصوص العروض وروابط الدعوة للإجراء وسلوك النافذة من مكان واحد.',
@@ -1219,14 +1441,16 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'Track payments, delivery state, totals, and customer contact details from one grid.',
     ar: 'تابعي المدفوعات وحالة التوصيل والإجماليات وبيانات تواصل العميل من جدول واحد.',
   },
-  'Manage profiles, roles, and account blocks from a single table. Customer creation stays in the auth flow.': {
-    en: 'Manage profiles, roles, and account blocks from a single table. Customer creation stays in the auth flow.',
-    ar: 'أديري الملفات والأدوار وحظر الحسابات من جدول واحد. إنشاء العملاء يبقى ضمن مسار التوثيق.',
-  },
-  'View and edit existing customer profiles. Create and delete are disabled here because profiles depend on authenticated users.': {
-    en: 'View and edit existing customer profiles. Create and delete are disabled here because profiles depend on authenticated users.',
-    ar: 'اعرضي وعدّلي ملفات العملاء الحالية. تم تعطيل الإنشاء والحذف هنا لأن الملفات تعتمد على مستخدمين موثّقين.',
-  },
+  'Manage profiles, roles, and account blocks from a single table. Customer creation stays in the auth flow.':
+    {
+      en: 'Manage profiles, roles, and account blocks from a single table. Customer creation stays in the auth flow.',
+      ar: 'أديري الملفات والأدوار وحظر الحسابات من جدول واحد. إنشاء العملاء يبقى ضمن مسار التوثيق.',
+    },
+  'View and edit existing customer profiles. Create and delete are disabled here because profiles depend on authenticated users.':
+    {
+      en: 'View and edit existing customer profiles. Create and delete are disabled here because profiles depend on authenticated users.',
+      ar: 'اعرضي وعدّلي ملفات العملاء الحالية. تم تعطيل الإنشاء والحذف هنا لأن الملفات تعتمد على مستخدمين موثّقين.',
+    },
   'Every product is editable in place with create, view, edit, and delete flows.': {
     en: 'Every product is editable in place with create, view, edit, and delete flows.',
     ar: 'يمكن تعديل كل منتج في مكانه مع مسارات للإنشاء والعرض والتعديل والحذف.',
@@ -1237,7 +1461,12 @@ export function translateText(text: string, locale: Locale) {
   return messages[text]?.[locale] ?? text;
 }
 
-export function localizeCount(count: number, locale: Locale, singularKey = 'piece', pluralKey = 'pieces') {
+export function localizeCount(
+  count: number,
+  locale: Locale,
+  singularKey = 'piece',
+  pluralKey = 'pieces'
+) {
   const key = count === 1 ? singularKey : pluralKey;
   return `${count} ${translateText(key, locale)}`;
 }

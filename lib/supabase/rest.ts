@@ -17,6 +17,7 @@ type RestRequestOptions = RestOptions & {
 function getSupabaseConfig() {
   const projectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SERVICE_KEY ?? null;
 
   if (!projectUrl || !anonKey) {
     return null;
@@ -25,6 +26,20 @@ function getSupabaseConfig() {
   return {
     restUrl: `${projectUrl.replace(/\/$/, '')}/rest/v1`,
     anonKey,
+    serviceRoleKey,
+  };
+}
+
+export function getSupabaseServiceRoleHeaders() {
+  const config = getSupabaseConfig();
+
+  if (!config?.serviceRoleKey) {
+    return null;
+  }
+
+  return {
+    apikey: config.serviceRoleKey,
+    Authorization: `Bearer ${config.serviceRoleKey}`,
   };
 }
 
@@ -161,11 +176,18 @@ export async function deleteSupabaseRow<T>(
   });
 }
 
-export async function upsertSupabaseRow<T>(path: string, body: unknown, resolution: string) {
+export async function upsertSupabaseRow<T>(
+  path: string,
+  body: unknown,
+  resolution: string,
+  extra?: { headers?: Record<string, string>; single?: boolean }
+) {
   return requestSupabaseRest<T>(path, {
     method: 'POST',
     body,
     prefer: ['return=representation', `resolution=${resolution}`],
+    single: extra?.single,
+    headers: extra?.headers,
   });
 }
 

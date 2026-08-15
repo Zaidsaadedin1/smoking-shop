@@ -1,16 +1,16 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { ArrowRight, Flame, MapPin, Star, Timer } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ReactNode } from 'react';
 import { useLocale } from '@/components/storefront/locale-provider';
-import { FlashSale, HeroSlide, StoreCategory, StoreProduct } from '@/lib/commerce-types';
 import {
   Container,
   ProductGrid,
   SectionHeading,
 } from '@/components/storefront/storefront-sections';
+import { FlashSale, HeroSlide, StoreCategory, StoreProduct } from '@/lib/commerce-types';
 
 export function StorefrontHome({
   categories,
@@ -28,429 +28,345 @@ export function StorefrontHome({
     products.find((product) => product.isFeatured && product.images[0]?.url) ??
     products.find((product) => product.images[0]?.url) ??
     null;
-  const newDrop = products.slice(0, 4);
-  const nails = products.filter((product) => product.categorySlug === 'nails').slice(0, 4);
+  const quickPicks = products.slice(0, 4);
+  const meals = products.filter((product) => product.categorySlug === 'meals').slice(0, 4);
   const featured = products.filter((product) => product.isFeatured).slice(0, 4);
-  const collectionCategories = categories.slice(0, 3);
   const bestSellers = featured.length ? featured : products.slice(0, 4);
 
   return (
-    <div className="space-y-10 pb-16 md:space-y-16 md:pb-24">
-      <Hero product={heroProduct} slides={heroSlides} />
+    <div className="bg-[var(--background)] pb-16 md:pb-24">
+      <Hero product={heroProduct} slides={heroSlides} previewProducts={quickPicks.slice(0, 3)} />
 
       {flashSale ? <PromoRibbon flashSale={flashSale} /> : null}
 
-      {collectionCategories.length ? (
-        <CollectionTriptych categories={collectionCategories} />
-      ) : null}
+      {categories.length ? <PopularCategories categories={categories.slice(0, 4)} /> : null}
 
-      {newDrop.length ? (
-        <Container>
+      {quickPicks.length ? (
+        <Container className="py-12 md:py-16">
           <section>
             <SectionHeading
-              eyebrow="NEW ARRIVALS"
-              title="THE NEW DROP"
-              description="Limited pieces. Once they're gone, they're gone."
+              eyebrow="SPECIAL DISHES"
+              title="Our most loved meals"
+              description="Fresh wraps, arabi boxes, sides, and sauces arranged for quick ordering."
               action={
                 <Link
-                  href="/shop?sort=newest"
-                  className="text-sm tracking-[0.2em] text-[var(--text-secondary)]"
+                  href="/shop"
+                  className="inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold text-white"
                 >
-                  {t('EXPLORE ALL')}
+                  {t('VIEW MENU')}
+                  <ArrowRight className="h-4 w-4" />
                 </Link>
               }
             />
-            <ProductGrid products={newDrop} />
+            <ProductGrid products={quickPicks} />
           </section>
         </Container>
       ) : null}
 
-      {heroProduct ? <FeaturedStory product={heroProduct} /> : null}
+      <FeatureBand />
 
-      {nails.length ? (
-        <Container>
+      {meals.length ? (
+        <Container className="py-12 md:py-16">
           <section>
             <SectionHeading
-              eyebrow="NAILS"
-              title="NAILS FOR BAD DECISIONS."
-              description="Small details. Dangerous energy."
+              eyebrow="FULL MEALS"
+              title="Boxes, bowls, and platters"
+              description="Complete orders with fries, dips, pickles, drinks, and enough sauce."
             />
-            <div className="scrollbar-hidden -mx-4 flex gap-4 overflow-x-auto px-4 md:mx-0 md:grid md:grid-cols-4 md:overflow-visible md:px-0">
-              {nails.map((product) => (
-                <div key={product.id} className="min-w-[68vw] md:min-w-0">
-                  <ProductGrid products={[product]} />
-                </div>
-              ))}
-            </div>
+            <ProductGrid products={meals} />
           </section>
         </Container>
       ) : null}
 
       {bestSellers.length ? (
-        <Container>
+        <Container className="py-12 md:py-16">
           <section>
             <SectionHeading
-              eyebrow="BEST SELLERS"
-              title="SHE'S OBSESSED."
-              description="The pieces everyone keeps coming back for."
+              eyebrow="POPULAR MENU"
+              title="Order again favorites"
+              description="The items customers keep coming back for."
             />
             <ProductGrid products={bestSellers} />
           </section>
         </Container>
       ) : null}
 
+      <WhySaj />
+
       {!products.length ? <HomeEmptyState /> : null}
     </div>
   );
 }
 
-function Hero({ product, slides }: { product: StoreProduct | null; slides: HeroSlide[] }) {
+function Hero({
+  product,
+  slides,
+  previewProducts,
+}: {
+  product: StoreProduct | null;
+  slides: HeroSlide[];
+  previewProducts: StoreProduct[];
+}) {
   const { t, localize, locale } = useLocale();
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [gemBurstKey, setGemBurstKey] = useState(0);
-
-  useEffect(() => {
-    setActiveIndex(0);
-    setGemBurstKey(0);
-  }, [slides.length]);
-
-  useEffect(() => {
-    if (slides.length <= 1) {
-      return;
-    }
-
-    const activeSlide = slides[activeIndex] ?? slides[0];
-    const timeout = window.setTimeout(() => {
-      setActiveIndex((current) => (current + 1) % slides.length);
-    }, Math.max(2, activeSlide.displaySeconds) * 1000);
-
-    return () => window.clearTimeout(timeout);
-  }, [activeIndex, slides]);
-
-  if (slides.length > 0) {
-    const activeSlide = slides[activeIndex] ?? slides[0];
-    const imageUrl = locale === 'ar' ? activeSlide.imageArUrl : activeSlide.imageEnUrl;
-    const triggerSlide = (nextIndex: number) => {
-      setGemBurstKey((current) => current + 1);
-      setActiveIndex(nextIndex);
-    };
-
-    return (
-      <section className="relative overflow-hidden border-b border-[var(--border)] bg-black">
-        <div className="relative">
-          <AnimatePresence mode="wait">
-            <motion.img
-              key={`${activeSlide.id}-${locale}`}
-              src={imageUrl}
-              alt={localize(activeSlide.title, activeSlide.titleAr)}
-              initial={{ opacity: 0, scale: 1.06, filter: 'blur(8px)' }}
-              animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, scale: 0.985, filter: 'blur(10px)' }}
-              transition={{ duration: 1.05, ease: [0.22, 1, 0.36, 1] }}
-              className="block h-auto w-full"
-            />
-          </AnimatePresence>
-          <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            <GemFallBurst burstKey={gemBurstKey || activeIndex + 1} />
-          </div>
-        </div>
-        <div className="noise-overlay absolute inset-0" />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.18),rgba(0,0,0,0.24)_20%,rgba(0,0,0,0.68)_100%)]" />
-        <div className="absolute inset-0 flex items-end justify-center pb-10 md:pb-16">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeSlide.id}
-              initial={{ opacity: 0, y: 38 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 18 }}
-              transition={{ duration: 0.82, ease: [0.22, 1, 0.36, 1] }}
-              className="max-w-[620px] px-6 text-center"
-            >
-              <div className="text-[9px] tracking-[0.28em] text-white/72 sm:text-[10px] sm:tracking-[0.34em]">
-                {localize(activeSlide.eyebrow, activeSlide.eyebrowAr)}
-              </div>
-              <h1
-                className="mt-4 font-display text-[2.2rem] uppercase leading-[0.9] tracking-[-0.03em] text-[#efe0c3] sm:mt-5 sm:text-[2.8rem] md:mt-6 md:text-[5.4rem] md:leading-[0.86] md:tracking-[-0.04em]"
-                style={{ textShadow: '0 10px 30px rgba(0,0,0,0.45)' }}
-              >
-                {localize(activeSlide.title, activeSlide.titleAr)}
-              </h1>
-              {activeSlide.description ? (
-                <p className="mt-4 text-xs leading-6 text-white/78 sm:mt-5 sm:text-sm sm:leading-7">
-                  {localize(activeSlide.description, activeSlide.descriptionAr)}
-                </p>
-              ) : null}
-              <div className="mt-6 flex items-center justify-center gap-3">
-                <Link
-                  href={activeSlide.buttonUrl || '/shop'}
-                  className="border border-white/30 bg-black/35 px-4 py-2 text-[10px] tracking-[0.2em] backdrop-blur-sm sm:px-5 sm:text-[11px] sm:tracking-[0.28em]"
-                  style={{ color: '#f7efe3' }}
-                >
-                  {localize(activeSlide.buttonText, activeSlide.buttonTextAr)}
-                </Link>
-              </div>
-              {slides.length > 1 ? (
-                <div className="mt-6 flex items-center justify-center gap-2">
-                  {slides.map((slide, index) => (
-                    <button
-                      key={slide.id}
-                      type="button"
-                      aria-label={`Go to slide ${index + 1}`}
-                      onClick={() => triggerSlide(index)}
-                      className={`h-2.5 rounded-full transition-all ${
-                        index === activeIndex ? 'w-8 bg-[#efe0c3]' : 'w-2.5 bg-white/40'
-                      }`}
-                    />
-                  ))}
-                </div>
-              ) : null}
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </section>
-    );
-  }
-
-  if (!product?.images[0]?.url) {
-    return (
-      <section className="relative min-h-[58vh] overflow-hidden border-b border-[var(--border)]">
-        <div className="relative flex min-h-[58vh] items-end justify-center pb-14">
-          <div className="max-w-[700px] px-6 text-center">
-            <div className="text-[9px] tracking-[0.28em] text-[var(--text-secondary)] sm:text-[10px] sm:tracking-[0.34em]">
-              {t('STORE')}
-            </div>
-            <h1 className="mt-4 font-display text-[2.2rem] uppercase leading-[0.9] tracking-[-0.03em] sm:mt-5 sm:text-[2.8rem] md:mt-6 md:text-[4.6rem] md:leading-[0.86] md:tracking-[-0.04em]">
-              {t('YOUR CATALOG IS READY FOR ITS FIRST DROP.')}
-            </h1>
-            <p className="mt-4 text-xs leading-6 text-[var(--text-secondary)] sm:mt-5 sm:text-sm sm:leading-7">
-              {t(
-                'Add active products and categories in admin to populate the storefront home automatically.'
-              )}
-            </p>
-            <div className="mt-6 flex items-center justify-center gap-3">
-              <Link
-                href="/shop"
-                className="border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-[10px] tracking-[0.2em] sm:px-5 sm:text-[11px] sm:tracking-[0.28em]"
-              >
-                {t('VIEW SHOP')}
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-    );
-  }
+  const slide = slides[0] ?? null;
+  const slideImage = slide ? (locale === 'ar' ? slide.imageArUrl : slide.imageEnUrl) : '';
+  const imageUrl =
+    slideImage ||
+    product?.images[0]?.url ||
+    'https://images.unsplash.com/photo-1662116765994-1e4200c43589?auto=format&fit=crop&w=1400&q=80';
+  const title = slide
+    ? localize(slide.title, slide.titleAr)
+    : t('We provide the best shawerma for you');
+  const description = slide?.description
+    ? localize(slide.description, slide.descriptionAr)
+    : t(
+        'Fresh saj wraps, arabi meals, crispy fries, and garlic sauce delivered hot from your nearest branch.'
+      );
 
   return (
-    <section className="relative min-h-[78vh] overflow-hidden border-b border-[var(--border)] md:min-h-[86vh]">
-      <motion.img
-        src={product.images[0].url}
-        alt={product.images[0].alt}
-        initial={{ scale: 1.06 }}
-        animate={{ scale: 1 }}
-        transition={{ duration: 1.8, ease: 'easeOut' }}
-        className="absolute inset-0 h-full w-full object-cover"
-      />
-      <div className="noise-overlay absolute inset-0" />
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.1),rgba(0,0,0,0.18)_20%,rgba(0,0,0,0.66)_100%)]" />
-      <div className="relative flex min-h-[78vh] items-end justify-center pb-14 md:min-h-[86vh] md:pb-20">
+    <section className="relative overflow-hidden border-b border-[var(--border)] bg-[#fffefe] text-[#181211]">
+      <div className="absolute inset-0 opacity-[0.06] [background-image:radial-gradient(circle_at_1px_1px,#c7202f_1px,transparent_0)] [background-size:28px_28px]" />
+      <Container className="relative grid min-h-[calc(100vh-88px)] items-center gap-10 py-10 md:grid-cols-[0.95fr_1.05fr] md:py-16">
         <motion.div
-          initial={{ opacity: 0, y: 25 }}
+          initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="max-w-[560px] px-6 text-center"
+          transition={{ duration: 0.65 }}
+          className="max-w-2xl"
         >
-          <div className="text-[10px] tracking-[0.34em] text-white/72">
-            {localize(product.brand, product.brandAr)}
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#c7202f]/15 bg-[#fff0f1] px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#c7202f]">
+            <Flame className="h-4 w-4" />
+            {t('WORLD BEST SHAWERMA')}
           </div>
-          <h1
-            className="mt-6 font-display text-[3.6rem] uppercase leading-[0.86] tracking-[-0.04em] text-[#d5c3a4] md:text-[5.6rem]"
-            style={{ textShadow: '0 10px 30px rgba(0,0,0,0.45)' }}
-          >
-            {localize(product.name, product.nameAr)}
+          <h1 className="mt-6 text-5xl font-bold leading-[0.95] tracking-normal text-[#181211] md:text-7xl">
+            {title}
           </h1>
-          {product.shortDescription ? (
-            <p className="mt-5 text-sm leading-7 text-white/78">
-              {localize(product.shortDescription, product.shortDescriptionAr)}
-            </p>
-          ) : null}
-          <div className="mt-6 flex items-center justify-center gap-3">
+          <p className="mt-6 max-w-xl text-base leading-8 text-[#5d504d] md:text-lg">
+            {description}
+          </p>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
             <Link
-              href={`/product/${product.slug}`}
-              className="border border-white/30 bg-black/35 px-5 py-2 text-[11px] tracking-[0.28em] backdrop-blur-sm"
-              style={{ color: '#f7efe3' }}
+              href={slide?.buttonUrl || '/shop'}
+              className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#c7202f] px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-white shadow-[0_18px_36px_rgba(199,32,47,0.22)]"
             >
-              {t('SHOP THIS PIECE')}
+              {slide ? localize(slide.buttonText, slide.buttonTextAr) : t('ORDER NOW')}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              href="/about"
+              className="inline-flex min-h-12 items-center rounded-full border border-[#181211]/12 bg-white px-6 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-[#181211]"
+            >
+              {t('ABOUT US')}
             </Link>
           </div>
-        </motion.div>
-      </div>
-    </section>
-  );
-}
-
-function GemFallBurst({ burstKey }: { burstKey: number }) {
-  const gems = [
-    { left: '12%', size: 16, delay: 0, duration: 1.9, rotate: -14 },
-    { left: '24%', size: 10, delay: 0.12, duration: 1.55, rotate: 18 },
-    { left: '33%', size: 12, delay: 0.08, duration: 1.7, rotate: -8 },
-    { left: '48%', size: 18, delay: 0.2, duration: 2.05, rotate: 12 },
-    { left: '57%', size: 11, delay: 0.06, duration: 1.65, rotate: -18 },
-    { left: '69%', size: 14, delay: 0.18, duration: 1.85, rotate: 22 },
-    { left: '81%', size: 9, delay: 0.1, duration: 1.48, rotate: -12 },
-  ];
-
-  return (
-    <AnimatePresence mode="wait">
-      <motion.div key={burstKey} className="absolute inset-0">
-        {gems.map((gem, index) => (
-          <motion.span
-            key={`${burstKey}-${index}`}
-            className="absolute top-[-12%] block bg-[linear-gradient(145deg,rgba(255,232,243,0.95)_0%,rgba(183,72,117,0.96)_34%,rgba(40,5,19,0.98)_100%)] shadow-[0_10px_24px_rgba(36,5,18,0.5)]"
-            style={{
-              left: gem.left,
-              width: gem.size,
-              height: gem.size * 1.18,
-              clipPath: 'polygon(50% 0%, 86% 22%, 100% 65%, 50% 100%, 0% 65%, 14% 22%)',
-            }}
-            initial={{ y: '-12%', opacity: 0, scale: 0.65, rotate: 0 }}
-            animate={{
-              y: ['-12%', '18%', '48%', '92%'],
-              opacity: [0, 0.95, 0.78, 0],
-              scale: [0.65, 1, 0.92, 0.78],
-              rotate: [0, gem.rotate, gem.rotate * 2.4, gem.rotate * 3.2],
-            }}
-            transition={{
-              duration: gem.duration,
-              delay: gem.delay,
-              ease: 'easeIn',
-            }}
-          />
-        ))}
-      </motion.div>
-    </AnimatePresence>
-  );
-}
-
-function PromoRibbon({ flashSale }: { flashSale: FlashSale }) {
-  const { dir } = useLocale();
-
-  return (
-    <section className="border-y border-[var(--border)] bg-[radial-gradient(circle_at_center,rgba(91,23,36,0.55),rgba(22,10,14,0.95)_58%,#0a0a0a_100%)] px-4 py-5 md:px-8">
-      <div className="mx-auto grid max-w-[1440px] items-center gap-4 md:grid-cols-[1fr_auto_1fr]">
-        <PromoPanel kicker={flashSale.title} headline={flashSale.discountLabel} />
-        <div className="text-center">
-          <div className="font-display text-5xl uppercase leading-[0.86] text-[#d4b4b4] md:text-6xl">
-            {flashSale.title}
+          <div className="mt-9 grid max-w-xl grid-cols-3 gap-3">
+            <HeroStat value="20+" label="Branches" />
+            <HeroStat value="4.9" label="Rating" />
+            <HeroStat value="15m" label="Pickup prep" />
           </div>
-          {flashSale.description ? (
-            <div className="mt-2 text-[10px] tracking-[0.28em] text-white/70">
-              {flashSale.description}
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.75, delay: 0.1 }}
+          className="relative min-h-[460px]"
+        >
+          <div className="absolute left-1/2 top-1/2 h-[78vw] max-h-[580px] w-[78vw] max-w-[580px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#fff0f1]" />
+          <div className="absolute right-0 top-7 rounded-full bg-[#c7202f] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_38px_rgba(199,32,47,0.24)]">
+            {t('Hot & fresh')}
+          </div>
+          <img
+            src={imageUrl}
+            alt={product ? localize(product.name, product.nameAr) : 'Shawerma 3a Saj meal'}
+            className="relative mx-auto aspect-square w-full max-w-[540px] rounded-full border-[18px] border-white object-cover shadow-[0_28px_70px_rgba(24,18,17,0.18)]"
+          />
+          {previewProducts.length ? (
+            <div className="absolute bottom-0 left-0 right-0 mx-auto grid max-w-xl gap-3 rounded-lg border border-[#181211]/10 bg-white/95 p-3 shadow-[0_20px_50px_rgba(24,18,17,0.14)] backdrop-blur md:grid-cols-3">
+              {previewProducts.map((item) => (
+                <Link
+                  key={item.id}
+                  href={`/product/${item.slug}`}
+                  className="flex items-center gap-3 rounded-lg bg-[#f8f4f1] p-2"
+                >
+                  <img
+                    src={item.images[0]?.url}
+                    alt={localize(item.name, item.nameAr)}
+                    className="h-12 w-12 rounded-full object-cover"
+                  />
+                  <span className="line-clamp-2 text-xs font-semibold text-[#181211]">
+                    {localize(item.name, item.nameAr)}
+                  </span>
+                </Link>
+              ))}
             </div>
           ) : null}
-        </div>
-        <div className="flex justify-center md:justify-end">
-          <Link
-            href={flashSale.ctaUrl || '/shop?sale=true'}
-            className="border border-white/10 bg-black/14 px-6 py-5 text-center"
-          >
-            <div className="text-[11px] tracking-[0.24em] text-[#f0a6b6]">
-              {flashSale.ctaText || 'SHOP SALE'}
-            </div>
-            <div className="mt-2 inline-flex items-center gap-2 font-display text-4xl text-[#d5c3c3] md:text-5xl">
-              {flashSale.discountLabel}
-              <ArrowRight className={`h-5 w-5 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
-            </div>
-          </Link>
-        </div>
-      </div>
+        </motion.div>
+      </Container>
     </section>
   );
 }
 
-function PromoPanel({ kicker, headline }: { kicker: string; headline: string }) {
+function HeroStat({ value, label }: { value: string; label: string }) {
+  const { t } = useLocale();
+
   return (
-    <div className="border border-white/10 bg-black/14 px-6 py-5 text-center">
-      <div className="text-[11px] tracking-[0.24em] text-white/68">{kicker}</div>
-      <div className="mt-2 font-display text-6xl text-[#d5c3c3] md:text-7xl">{headline}</div>
+    <div className="rounded-lg border border-[#181211]/10 bg-white p-4 shadow-[0_14px_34px_rgba(24,18,17,0.08)]">
+      <div className="text-2xl font-bold text-[#c7202f]">{value}</div>
+      <div className="mt-1 text-xs uppercase tracking-[0.14em] text-[#5d504d]">{t(label)}</div>
     </div>
   );
 }
 
-function CollectionTriptych({ categories }: { categories: StoreCategory[] }) {
-  const { localize } = useLocale();
+function PopularCategories({ categories }: { categories: StoreCategory[] }) {
+  const { t, localize } = useLocale();
 
   return (
-    <section className="grid gap-px bg-[var(--border)] md:grid-cols-3">
-      {categories.map((category) => (
-        <Link
-          key={category.id}
-          href={`/shop?category=${category.slug}`}
-          className="group relative block overflow-hidden bg-black"
-        >
-          {category.image ? (
-            <img
-              src={category.image}
-              alt={localize(category.name, category.nameAr)}
-              className="h-[440px] w-full object-cover transition duration-500 group-hover:scale-[1.03] md:h-[520px]"
-            />
-          ) : (
-            <div className="h-[440px] w-full bg-[radial-gradient(circle_at_top,rgba(126,34,64,0.36),transparent_34%),linear-gradient(180deg,#161113_0%,#0d0b0c_100%)] md:h-[520px]" />
-          )}
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.18),rgba(0,0,0,0.22)_30%,rgba(0,0,0,0.7)_100%)]" />
-          <div className="absolute inset-x-0 bottom-0 p-5 text-center">
-            <div className="text-[11px] tracking-[0.3em] text-white/60">
-              {localize(category.accent, category.accentAr)}
+    <Container className="py-12 md:py-16">
+      <section>
+        <div className="mb-7 flex items-end justify-between gap-4">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
+              {t('BEST CATEGORY')}
             </div>
-            <div className="mt-2 text-xl font-medium uppercase tracking-[0.18em] text-white md:text-2xl">
-              {localize(category.name, category.nameAr)}
+            <h2 className="mt-2 text-3xl font-bold text-[var(--text)] md:text-5xl">
+              {t('Choose your craving')}
+            </h2>
+          </div>
+          <Link href="/shop" className="hidden text-sm font-semibold text-[var(--accent)] md:block">
+            {t('VIEW MENU')}
+          </Link>
+        </div>
+        <div className="grid gap-4 md:grid-cols-4">
+          {categories.map((category) => (
+            <Link
+              key={category.id}
+              href={`/shop?category=${category.slug}`}
+              className="group rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 transition hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[0_20px_44px_rgba(0,0,0,0.08)]"
+            >
+              <img
+                src={category.image}
+                alt={localize(category.name, category.nameAr)}
+                className="aspect-square w-full rounded-full object-cover"
+              />
+              <div className="mt-4 text-center text-lg font-bold text-[var(--text)]">
+                {localize(category.name, category.nameAr)}
+              </div>
+              <p className="mt-2 line-clamp-2 text-center text-sm leading-6 text-[var(--text-secondary)]">
+                {localize(category.description, category.descriptionAr)}
+              </p>
+            </Link>
+          ))}
+        </div>
+      </section>
+    </Container>
+  );
+}
+
+function FeatureBand() {
+  const { t } = useLocale();
+
+  return (
+    <section className="bg-[#f8f4f1] py-12 md:py-16">
+      <Container>
+        <div className="grid items-center gap-8 md:grid-cols-[0.9fr_1.1fr]">
+          <img
+            src="https://wowjordan.com/wp-content/uploads/2025/08/import-170-520x397.jpg"
+            alt="Wrapped Shawerma 3a Saj sandwich"
+            className="aspect-[4/3] w-full rounded-lg object-cover shadow-[0_24px_60px_rgba(24,18,17,0.14)]"
+          />
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[#c7202f]">
+              {t('OUR EXPERIENCE')}
+            </div>
+            <h2 className="mt-3 text-4xl font-bold leading-tight text-[#181211] md:text-6xl">
+              {t('Fresh saj wraps made for delivery')}
+            </h2>
+            <p className="mt-5 max-w-2xl text-base leading-8 text-[#5d504d]">
+              {t(
+                'The flow is built around fast decisions: choose a category, pick your wrap or meal, add sauces and sides, then checkout for delivery or pickup.'
+              )}
+            </p>
+            <div className="mt-7 grid gap-3 sm:grid-cols-3">
+              <FeatureItem icon={<Timer className="h-5 w-5" />} title="Fast prep" />
+              <FeatureItem icon={<MapPin className="h-5 w-5" />} title="Jordan branches" />
+              <FeatureItem icon={<Star className="h-5 w-5" />} title="Top rated" />
             </div>
           </div>
-        </Link>
-      ))}
+        </div>
+      </Container>
     </section>
   );
 }
 
-function FeaturedStory({ product }: { product: StoreProduct }) {
-  const { t, dir, localize } = useLocale();
-
-  if (!product.images[1]?.url) {
-    return null;
-  }
+function FeatureItem({ icon, title }: { icon: ReactNode; title: string }) {
+  const { t } = useLocale();
 
   return (
-    <Container>
-      <section className="grid gap-0 overflow-hidden border border-[var(--border)] lg:grid-cols-[1.05fr_0.95fr]">
-        <img
-          src={product.images[1].url}
-          alt={product.images[1].alt}
-          className="h-full min-h-[360px] w-full object-cover md:min-h-[520px]"
-        />
-        <div className="flex items-end bg-[var(--card)] p-8 md:p-12">
-          <div className="max-w-xl">
-            <div className="text-xs tracking-[0.3em] text-[var(--muted)]">
-              {localize(product.brand, product.brandAr)}
-            </div>
-            <div className="mt-4 text-4xl font-semibold uppercase tracking-[0.18em] leading-none md:text-6xl">
-              {localize(product.name, product.nameAr)}
-            </div>
-            {product.description ? (
-              <p className="mt-4 max-w-lg text-sm leading-7 text-[var(--text-secondary)]">
-                {localize(product.description, product.descriptionAr)}
-              </p>
-            ) : null}
-            <Link
-              href={`/product/${product.slug}`}
-              className="mt-6 inline-flex items-center gap-2 text-sm tracking-[0.2em]"
-            >
-              {t('DISCOVER THIS PRODUCT')}{' '}
-              <ArrowRight className={`h-4 w-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
-            </Link>
+    <div className="rounded-lg border border-[#181211]/10 bg-white p-4 text-[#181211]">
+      <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#fff0f1] text-[#c7202f]">
+        {icon}
+      </div>
+      <div className="text-sm font-bold uppercase tracking-[0.12em]">{t(title)}</div>
+    </div>
+  );
+}
+
+function WhySaj() {
+  const { t } = useLocale();
+  const reasons = [
+    {
+      title: 'Authentic saj',
+      body: 'Thin bread, hot shawerma, garlic, pickles, and sauces in the center of the experience.',
+    },
+    {
+      title: 'Easy ordering',
+      body: 'Menu categories, favorites, cart, saved addresses, and checkout stay clear and quick.',
+    },
+    {
+      title: 'Delivery ready',
+      body: 'The interface is focused on branch pickup, delivery timing, and full meal orders.',
+    },
+  ];
+
+  return (
+    <Container className="py-12 md:py-16">
+      <section className="grid gap-4 md:grid-cols-3">
+        {reasons.map((reason) => (
+          <div
+            key={reason.title}
+            className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-6"
+          >
+            <div className="mb-4 h-1.5 w-12 rounded-full bg-[var(--accent)]" />
+            <h3 className="text-2xl font-bold text-[var(--text)]">{t(reason.title)}</h3>
+            <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">{t(reason.body)}</p>
           </div>
-        </div>
+        ))}
       </section>
     </Container>
+  );
+}
+
+function PromoRibbon({ flashSale }: { flashSale: FlashSale }) {
+  const { t, dir } = useLocale();
+
+  return (
+    <section className="bg-[#c7202f] px-4 py-5 text-white md:px-8">
+      <div className="mx-auto flex max-w-[1440px] flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
+            {flashSale.title}
+          </div>
+          <div className="mt-1 text-3xl font-bold">{flashSale.discountLabel}</div>
+        </div>
+        <Link
+          href={flashSale.ctaUrl || '/shop?sale=true'}
+          className="inline-flex w-fit items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-[#c7202f]"
+        >
+          {flashSale.ctaText || t('ORDER THE DEAL')}
+          <ArrowRight className={`h-4 w-4 ${dir === 'rtl' ? 'rotate-180' : ''}`} />
+        </Link>
+      </div>
+    </section>
   );
 }
 
@@ -458,12 +374,12 @@ function HomeEmptyState() {
   const { t } = useLocale();
 
   return (
-    <Container>
-      <div className="rounded-[32px] border border-[var(--border)] bg-[var(--card)] p-10 text-center">
-        <div className="font-display text-4xl uppercase">{t('NO LIVE HOME CONTENT YET.')}</div>
+    <Container className="py-12">
+      <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-10 text-center">
+        <div className="text-4xl font-bold">{t('NO LIVE MENU CONTENT YET.')}</div>
         <p className="mt-3 text-sm text-[var(--text-secondary)]">
           {t(
-            'Publish categories, images, and active products in the database to populate the storefront home.'
+            'Publish categories, images, and active menu items in the database to populate the storefront home.'
           )}
         </p>
       </div>

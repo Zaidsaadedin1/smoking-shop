@@ -34,7 +34,10 @@ function SupportLayout({
         description={description}
         action={
           ctaLabel && ctaHref ? (
-            <Link href={ctaHref} className="rounded-full border border-white/10 px-5 py-3 text-sm tracking-[0.2em]">
+            <Link
+              href={ctaHref}
+              className="rounded-full border border-white/10 px-5 py-3 text-sm tracking-[0.2em]"
+            >
               {t(ctaLabel)}
             </Link>
           ) : null
@@ -57,25 +60,25 @@ export function ContactSupportPage() {
     <SupportLayout
       eyebrow="SUPPORT"
       title="CONTACT US"
-      description="Talk to the store about orders, product questions, or delivery updates."
-      ctaLabel="SHOP"
+      description="Talk to the branch team about orders, menu questions, pickup, or delivery updates."
+      ctaLabel="MENU"
       ctaHref="/shop"
       sections={[
         {
           title: 'Customer support',
-          body: 'Email: orders@tourmalinecoven.com',
+          body: 'Email: orders@shawerma3asaj.jo',
         },
         {
           title: 'Phone and WhatsApp',
-          body: 'Phone: +962 7 9000 8888',
+          body: 'Phone: +962 7 9000 3333',
         },
         {
           title: 'Support hours',
-          body: 'Saturday to Thursday, 10 AM to 6 PM Amman time.',
+          body: 'Daily branch hours vary by location. Contact the nearest branch for pickup timing.',
         },
         {
           title: 'Response window',
-          body: 'Most order and support requests are answered within one business day.',
+          body: 'Most active order requests are handled as quickly as the branch queue allows.',
         },
       ]}
     />
@@ -87,21 +90,21 @@ export function AboutSupportPage() {
     <SupportLayout
       eyebrow="ABOUT"
       title="ABOUT"
-      description="Brand story, mood, and store positioning."
-      ctaLabel="SHOP"
+      description="Shawerma 3a Saj menu, branch ordering, and customer experience."
+      ctaLabel="MENU"
       ctaHref="/shop"
       sections={[
         {
           title: 'Brand point of view',
-          body: 'Tourmaline Coven is built around dark feminine styling, sharp silhouettes, and a mood-first storefront.',
+          body: 'Shawerma 3a Saj is built around hot saj wraps, arabi boxes, full meals, and fast Jordan branch service.',
         },
         {
           title: 'Product direction',
-          body: 'The catalog focuses on statement apparel, accessories, and detail pieces with a gothic and editorial tone.',
+          body: 'The menu focuses on chicken and beef shawerma, saj sandwiches, arabi rolls, rice bowls, sides, and dips.',
         },
         {
           title: 'Store experience',
-          body: 'The storefront is designed to feel dramatic, direct, and premium across both Arabic and English.',
+          body: 'The storefront is designed for quick ordering across Arabic and English with menu-first browsing.',
         },
         {
           title: 'Customer focus',
@@ -116,26 +119,26 @@ export function ShippingSupportPage() {
   return (
     <SupportLayout
       eyebrow="DELIVERY"
-      title="SHIPPING"
-      description="Shipping policy, dispatch timing, and delivery expectations."
+      title="DELIVERY"
+      description="Delivery, pickup timing, and branch coverage expectations."
       ctaLabel="GO TO CHECKOUT"
       ctaHref="/checkout"
       sections={[
         {
-          title: 'Processing time',
-          body: 'Orders usually move into processing within one business day after confirmation.',
+          title: 'Preparation time',
+          body: 'Hot-food preparation begins after branch confirmation and depends on order size.',
         },
         {
           title: 'Amman delivery',
-          body: 'Orders inside Amman usually arrive within 1 to 3 business days.',
+          body: 'Amman delivery timing depends on branch coverage, traffic, and live order volume.',
         },
         {
           title: 'Jordan delivery',
-          body: 'Orders outside Amman usually arrive within 2 to 5 business days depending on location.',
+          body: 'Jordan branch availability may vary by city and delivery zone.',
         },
         {
-          title: 'Tracking updates',
-          body: 'Tracking number and carrier details appear in your account once the order is packed or shipped.',
+          title: 'Pickup orders',
+          body: 'Choose pickup at checkout when you want the branch to prepare your order ahead of arrival.',
         },
       ]}
     />
@@ -146,22 +149,22 @@ export function ReturnsSupportPage() {
   return (
     <SupportLayout
       eyebrow="POLICY"
-      title="RETURNS"
-      description="Return and exchange guidance for eligible items."
+      title="ORDER HELP"
+      description="Guidance for incorrect, delayed, or changed food orders."
       ctaLabel="CONTACT US"
       ctaHref="/contact-us"
       sections={[
         {
-          title: 'Return eligibility',
-          body: 'Eligible items must be unused, unworn, and returned in their original condition.',
+          title: 'Order changes',
+          body: 'Contact the branch quickly if you need to adjust sauces, notes, or pickup timing.',
         },
         {
-          title: 'Final sale items',
-          body: 'Nail sets, intimate items, and clearly marked sale items may be final sale unless faulty.',
+          title: 'Food orders',
+          body: 'Prepared food cannot be returned after handoff unless the order is incorrect or has a quality issue.',
         },
         {
-          title: 'Return request window',
-          body: 'Contact support as soon as possible after delivery if you need a return or exchange review.',
+          title: 'Issue window',
+          body: 'Contact support as soon as possible after delivery if an item is missing, incorrect, or damaged.',
         },
         {
           title: 'Damaged or incorrect orders',

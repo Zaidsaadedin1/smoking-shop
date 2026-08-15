@@ -118,6 +118,46 @@ type ProductImageApiRow = {
   alt_text?: string | null;
 };
 
+type ProductOptionGroupRow = {
+  id: string;
+  code: string;
+  name: string;
+  name_ar?: string | null;
+  description?: string | null;
+  description_ar?: string | null;
+  selection_type: 'radio' | 'checkbox';
+  is_active: boolean;
+  sort_order: number;
+  created_at?: string;
+};
+
+type ProductOptionItemRow = {
+  id: string;
+  group_id: string;
+  code: string;
+  name: string;
+  name_ar?: string | null;
+  image_url?: string | null;
+  price_delta: string | number;
+  stock_quantity: number;
+  track_inventory: boolean;
+  allow_backorder: boolean;
+  is_default: boolean;
+  is_active: boolean;
+  sort_order: number;
+  created_at?: string;
+};
+
+type ProductOptionGroupLinkRow = {
+  product_id: string;
+  option_group_id: string;
+  is_required: boolean;
+  min_selections: number | null;
+  max_selections: number | null;
+  sort_order: number;
+  created_at?: string;
+};
+
 type FlashSaleRow = {
   id: string;
   title: string;
@@ -420,6 +460,13 @@ export async function createProfile(payload: Record<string, unknown>, auth?: Sup
   return insertSupabaseRow<ProfileApiRow>('profiles', payload, true, auth);
 }
 
+export async function upsertProfile(payload: Record<string, unknown>, auth?: SupabaseRequestAuth) {
+  return upsertSupabaseRow<ProfileApiRow>('profiles', payload, 'merge-duplicates', {
+    headers: auth?.headers,
+    single: true,
+  });
+}
+
 export async function updateProfile(
   id: string,
   payload: Record<string, unknown>,
@@ -636,6 +683,78 @@ export async function updateProductVariant(
 
 export async function deleteProductVariant(id: string, auth?: SupabaseRequestAuth) {
   return deleteSupabaseRow<VariantApiRow>('product_variants', { id: `eq.${id}` }, true, auth);
+}
+
+export async function listProductOptionGroups(auth?: SupabaseRequestAuth) {
+  return fetchSupabaseRest<ProductOptionGroupRow[]>('product_option_groups', {
+    query: {
+      select:
+        'id,code,name,name_ar,description,description_ar,selection_type,is_active,sort_order,created_at',
+      order: 'sort_order.asc',
+    },
+    ...(auth?.headers ? { headers: auth.headers } : {}),
+    revalidate: 0,
+  });
+}
+
+export async function listProductOptionItems(auth?: SupabaseRequestAuth) {
+  return fetchSupabaseRest<ProductOptionItemRow[]>('product_option_items', {
+    query: {
+      select:
+        'id,group_id,code,name,name_ar,image_url,price_delta,stock_quantity,track_inventory,allow_backorder,is_default,is_active,sort_order,created_at',
+      order: 'sort_order.asc',
+    },
+    ...(auth?.headers ? { headers: auth.headers } : {}),
+    revalidate: 0,
+  });
+}
+
+export async function listProductOptionGroupLinks(auth?: SupabaseRequestAuth) {
+  return fetchSupabaseRest<ProductOptionGroupLinkRow[]>('product_option_group_links', {
+    query: {
+      select:
+        'product_id,option_group_id,is_required,min_selections,max_selections,sort_order,created_at',
+      order: 'sort_order.asc',
+    },
+    ...(auth?.headers ? { headers: auth.headers } : {}),
+    revalidate: 0,
+  });
+}
+
+export async function replaceProductOptionGroupLinks(
+  productId: string,
+  links: Array<Record<string, unknown>>,
+  auth?: SupabaseRequestAuth
+) {
+  const removeResult = await deleteSupabaseRow<ProductOptionGroupLinkRow>(
+    'product_option_group_links',
+    { product_id: `eq.${productId}` },
+    false,
+    auth
+  );
+
+  if (removeResult.error) {
+    return removeResult;
+  }
+
+  if (links.length === 0) {
+    return {
+      data: [],
+      error: null,
+      status: 200,
+    };
+  }
+
+  return insertSupabaseRow<ProductOptionGroupLinkRow[]>(
+    'product_option_group_links',
+    links.map((link, index) => ({
+      ...link,
+      product_id: productId,
+      sort_order: link.sort_order ?? index,
+    })),
+    false,
+    auth
+  );
 }
 
 export async function updateProduct(

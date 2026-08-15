@@ -117,7 +117,7 @@ export function AuthPageView({
 
   return (
     <Container className="flex min-h-[70vh] items-center py-10">
-      <div className="mx-auto w-full max-w-xl rounded-[36px] border border-white/8 bg-white/3 p-8 md:p-10">
+      <div className="mx-auto w-full max-w-xl rounded-[36px] border border-[var(--border)] bg-[var(--card)] p-8 shadow-[0_18px_54px_rgba(24,18,17,0.08)] md:p-10">
         <div className="text-xs tracking-[0.25em] text-[var(--muted)]">{t('CUSTOMER ACCESS')}</div>
         <h1 className="mt-3 font-display text-5xl uppercase">
           {mode === 'login'
@@ -260,68 +260,98 @@ export function AccountDashboardPageView({
   const { t } = useLocale();
 
   return (
-    <Container className="py-8 md:py-14">
-      <SectionHeading
-        eyebrow="CUSTOMER DASHBOARD"
-        title="ACCOUNT"
-        description="Your profile, saved pieces, delivery details, and order history are all in one place."
-        action={<LogoutButton />}
-      />
-      <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-        <div className="rounded-[30px] border border-white/8 bg-white/3 p-6">
-          <div className="text-xs tracking-[0.24em] text-[var(--muted)]">{t('Signed in as')}</div>
-          <div className="mt-3 font-display text-4xl uppercase">{session.fullName}</div>
-          <div className="mt-2 text-sm text-[var(--text-secondary)]">{session.email}</div>
-          {session.phone ? (
-            <div className="mt-1 text-sm text-[var(--text-secondary)]">{session.phone}</div>
-          ) : null}
-          <div className="mt-6 grid gap-3 md:grid-cols-3">
-            <MetricCard
-              label="Orders"
-              value={String(orderCount)}
-              icon={<Package className="h-4 w-4" />}
-            />
-            <MetricCard
-              label="Favorites"
-              value={String(favoriteCount)}
-              icon={<Heart className="h-4 w-4" />}
-            />
-            <MetricCard
-              label="Addresses"
-              value={String(addressCount)}
-              icon={<MapPin className="h-4 w-4" />}
-            />
+    <div className="bg-[var(--background)] text-[var(--text)]">
+      <Container className="py-8 md:py-14">
+        <section className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--card)] shadow-[0_24px_70px_rgba(24,18,17,0.08)]">
+          <div className="grid gap-0 lg:grid-cols-[1.25fr_0.75fr]">
+            <div className="relative overflow-hidden bg-[#c7202f] p-6 text-white md:p-8">
+              <div className="absolute -right-20 -top-24 h-64 w-64 rounded-full border-[36px] border-white/10" />
+              <div className="absolute -bottom-28 left-1/2 h-72 w-72 rounded-full bg-black/10" />
+              <div className="relative">
+                <div className="inline-flex rounded-full bg-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/80">
+                  {t('CUSTOMER DASHBOARD')}
+                </div>
+                <h1 className="mt-5 text-4xl font-bold leading-tight md:text-6xl">
+                  {t('Welcome back')}, {session.fullName}
+                </h1>
+                <p className="mt-4 max-w-2xl text-base leading-8 text-white/78">
+                  {t(
+                    'Reorder your favorite saj meals, manage delivery addresses, and track every order from one place.'
+                  )}
+                </p>
+                <div className="mt-7 flex flex-wrap gap-3">
+                  <Link
+                    href="/shop"
+                    className="inline-flex items-center justify-center rounded-full border border-white bg-white px-5 py-3 text-sm font-semibold uppercase tracking-[0.14em] shadow-[0_12px_30px_rgba(0,0,0,0.14)] transition hover:-translate-y-0.5"
+                    style={{ color: '#c7202f' }}
+                  >
+                    {t('ORDER NOW')}
+                  </Link>
+                  <LogoutButton />
+                </div>
+              </div>
+            </div>
+            <div className="bg-[color:color-mix(in_srgb,var(--card)_86%,var(--accent)_8%)] p-6 md:p-8">
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
+                {t('Signed in as')}
+              </div>
+              <div className="mt-3 text-2xl font-bold text-[var(--text)]">{session.email}</div>
+              {session.phone ? (
+                <div className="mt-2 text-sm text-[var(--text-secondary)]">{session.phone}</div>
+              ) : null}
+              <div className="mt-7 rounded-lg border border-[var(--border)] bg-[var(--background)] p-4">
+                <div className="flex items-center gap-3 text-sm font-semibold text-[var(--text-secondary)]">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[color:color-mix(in_srgb,var(--accent)_12%,transparent)] text-[var(--accent)]">
+                    <ShieldCheck className="h-5 w-5" />
+                  </span>
+                  {t('Customer account is active and ready for orders.')}
+                </div>
+              </div>
+            </div>
           </div>
+        </section>
+
+        <div className="mt-6 grid gap-4 md:grid-cols-3">
+          <MetricCard
+            label="Orders"
+            value={String(orderCount)}
+            icon={<Package className="h-5 w-5" />}
+          />
+          <MetricCard
+            label="Favorites"
+            value={String(favoriteCount)}
+            icon={<Heart className="h-5 w-5" />}
+          />
+          <MetricCard
+            label="Addresses"
+            value={String(addressCount)}
+            icon={<MapPin className="h-5 w-5" />}
+          />
         </div>
-        <div className="rounded-[30px] border border-white/8 bg-white/3 p-6">
-          <div className="text-xs tracking-[0.24em] text-[var(--muted)]">{t('Account status')}</div>
-          <div className="mt-3 flex items-center gap-3 text-sm text-[var(--text-secondary)]">
-            <ShieldCheck className="h-4 w-4" />
-            {t('Customer account is active and ready for orders.')}
-          </div>
+
+        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <AccountLinkCard
+            href="/orders"
+            title="My Orders"
+            body="Track placed orders, payment state, and delivery progress."
+            icon={<Package className="h-5 w-5" />}
+          />
+          <AccountLinkCard
+            href="/favorites"
+            title="Favorites"
+            body="Open your saved favorites and reorder the menu items you marked."
+            icon={<Heart className="h-5 w-5" />}
+          />
+          <AccountLinkCard
+            href="/addresses"
+            title="Addresses"
+            body="Review your saved delivery addresses for faster checkout."
+            icon={<MapPin className="h-5 w-5" />}
+          />
         </div>
-      </div>
-      <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <AccountLinkCard
-          href="/orders"
-          title="My Orders"
-          body="Track placed orders, payment state, and delivery progress."
-          icon={<Package className="h-5 w-5" />}
-        />
-        <AccountLinkCard
-          href="/favorites"
-          title="Favorites"
-          body="Open your saved wishlist and revisit the products you marked."
-          icon={<Heart className="h-5 w-5" />}
-        />
-        <AccountLinkCard
-          href="/addresses"
-          title="Addresses"
-          body="Review your saved delivery addresses for faster checkout."
-          icon={<MapPin className="h-5 w-5" />}
-        />
-      </div>
-    </Container>
+
+      </Container>
+    </div>
   );
 }
 
@@ -341,7 +371,7 @@ export function OrdersPageView({ orders }: { orders: OrderView[] }) {
             <Link
               key={order.id}
               href={`/order/${order.id}`}
-              className="block rounded-[28px] border border-white/8 bg-white/3 p-5 transition hover:border-white/20"
+              className={accountPanelClassName}
             >
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
@@ -426,7 +456,7 @@ export function OrderDetailPageView({ order }: { order: OrderView | null }) {
               {order.items.map((item) => (
                 <div
                   key={item.id}
-                  className="flex flex-col gap-4 rounded-[24px] border border-white/8 bg-black/10 p-4 md:flex-row"
+                  className="flex flex-col gap-4 rounded-[24px] border border-[var(--border)] bg-[color:color-mix(in_srgb,var(--card)_84%,var(--background)_16%)] p-4 md:flex-row"
                 >
                   <img
                     src={item.imageUrl || '/products/product-placeholder.svg'}
@@ -437,9 +467,6 @@ export function OrderDetailPageView({ order }: { order: OrderView | null }) {
                     <div className="text-lg font-medium">{t(item.productName)}</div>
                     <div className="mt-2 grid gap-2 text-sm text-[var(--text-secondary)] md:grid-cols-2">
                       <div>
-                        {t('Color')}: {item.colorName ?? '-'}
-                      </div>
-                      <div>
                         {t('Size')}: {item.sizeName ?? '-'}
                       </div>
                       <div>
@@ -449,7 +476,7 @@ export function OrderDetailPageView({ order }: { order: OrderView | null }) {
                         {t('SKU')}: {item.sku ?? '-'}
                       </div>
                     </div>
-                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/8 pt-4 text-sm">
+                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border)] pt-4 text-sm">
                       <div>
                         {t('Unit price')}:{' '}
                         <span className="text-[var(--text)]">
@@ -481,7 +508,7 @@ export function FavoritesPageView({ products }: { products: StoreProduct[] }) {
     <Container className="py-8 md:py-14">
       <SectionHeading
         title="FAVORITES"
-        description="Saved products connected to your customer account."
+        description="Saved menu items connected to your customer account."
         action={<BackToAccountButton />}
       />
       {products.length ? (
@@ -489,9 +516,9 @@ export function FavoritesPageView({ products }: { products: StoreProduct[] }) {
       ) : (
         <EmptyState
           title="Nothing saved yet."
-          body="Tap the heart on any product to start building your wishlist."
+          body="Tap the heart on any menu item to start building your favorites."
           actionHref="/shop"
-          actionLabel="VIEW PRODUCTS"
+          actionLabel="VIEW MENU"
         />
       )}
     </Container>
@@ -502,18 +529,16 @@ export function AddressesPageView({ addresses }: { addresses: AddressView[] }) {
   const { t } = useLocale();
   const router = useRouter();
   const [deletingAddressId, startDeleteTransition] = useTransition();
+  const [deleteError, setDeleteError] = useState('');
 
   function handleDelete(addressId: string) {
-    if (!window.confirm(t('Are you sure you want to delete this address?'))) {
-      return;
-    }
-
+    setDeleteError('');
     startDeleteTransition(async () => {
       const response = await fetch(`/api/addresses/${addressId}`, { method: 'DELETE' });
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
 
       if (!response.ok) {
-        window.alert(t(payload?.error ?? 'Something went wrong'));
+        setDeleteError(t(payload?.error ?? 'Something went wrong'));
         return;
       }
 
@@ -525,7 +550,7 @@ export function AddressesPageView({ addresses }: { addresses: AddressView[] }) {
     <Container className="py-8 md:py-14">
       <SectionHeading
         title="ADDRESSES"
-        description="Review the shipping details saved to your customer account."
+        description="Review the delivery details saved to your customer account."
         action={
           <ActionRow>
             <BackToAccountButton />
@@ -533,14 +558,19 @@ export function AddressesPageView({ addresses }: { addresses: AddressView[] }) {
           </ActionRow>
         }
       />
+      {deleteError ? (
+        <div className="mb-4 rounded-[20px] border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-sm text-[var(--blush)]">
+          {deleteError}
+        </div>
+      ) : null}
       {addresses.length ? (
         <div className="grid gap-4 md:grid-cols-2">
           {addresses.map((address) => (
-            <div key={address.id} className="rounded-[28px] border border-white/8 bg-white/3 p-5">
+            <div key={address.id} className={accountPanelClassName}>
               <div className="flex items-center justify-between gap-3">
                 <div className="font-semibold uppercase">{address.label}</div>
                 {address.isDefault ? (
-                  <div className="rounded-full border border-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.2em]">
+                  <div className="rounded-full border border-[var(--border)] px-3 py-1 text-[10px] uppercase tracking-[0.2em]">
                     {t('Default')}
                   </div>
                 ) : null}
@@ -555,7 +585,7 @@ export function AddressesPageView({ addresses }: { addresses: AddressView[] }) {
                 {address.street ? <div>{address.street}</div> : null}
                 {address.building ? <div>{address.building}</div> : null}
               </div>
-              <div className="mt-5 flex flex-wrap gap-3 border-t border-white/8 pt-4">
+              <div className="mt-5 flex flex-wrap gap-3 border-t border-[var(--border)] pt-4">
                 <Link href={`/address/${address.id}/edit`} className={secondaryButtonClassName}>
                   <span className="inline-flex items-center gap-2">
                     <Pencil className="h-4 w-4" />
@@ -665,7 +695,7 @@ export function NotificationsPageView() {
         {notifications.map((item) => (
           <div
             key={item}
-            className="rounded-[28px] border border-white/8 bg-white/3 p-5 text-sm text-[var(--text-secondary)]"
+            className={`${accountPanelClassName} text-sm text-[var(--text-secondary)]`}
           >
             {t(item)}
           </div>
@@ -688,7 +718,7 @@ export function ReviewsPageView({ reviews }: { reviews: ReviewView[] }) {
       {reviews.length ? (
         <div className="space-y-4">
           {reviews.map((review) => (
-            <div key={review.id} className="rounded-[28px] border border-white/8 bg-white/3 p-5">
+            <div key={review.id} className={accountPanelClassName}>
               <div className="flex items-center justify-between gap-3">
                 <div className="font-semibold uppercase">{review.productName}</div>
                 <div className="flex items-center gap-1 text-[var(--muted)]">
@@ -823,7 +853,7 @@ export function CreateAddressPageView({
         action={<BackButton href="/addresses" label="BACK TO ADDRESSES" />}
       />
       <div className="grid gap-5 xl:grid-cols-[0.85fr_1.15fr]">
-        <div className="relative overflow-hidden rounded-[34px] border border-white/8 bg-[linear-gradient(160deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02))] p-6 md:p-8">
+        <div className="relative overflow-hidden rounded-[34px] border border-[var(--border)] bg-[color:color-mix(in_srgb,var(--card)_88%,var(--accent)_5%)] p-6 md:p-8">
           <div
             className="absolute inset-0 opacity-40"
             style={{
@@ -854,7 +884,7 @@ export function CreateAddressPageView({
               ].map((item) => (
                 <div
                   key={item}
-                  className="rounded-[22px] border border-white/8 bg-black/15 px-4 py-3 text-sm text-[var(--text-secondary)]"
+                  className="rounded-[22px] border border-[var(--border)] bg-[var(--background)] px-4 py-3 text-sm text-[var(--text-secondary)]"
                 >
                   {t(item)}
                 </div>
@@ -862,7 +892,7 @@ export function CreateAddressPageView({
             </div>
           </div>
         </div>
-        <div className="rounded-[34px] border border-white/8 bg-white/3 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.12)] md:p-8">
+        <div className="rounded-[34px] border border-[var(--border)] bg-[var(--card)] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.12)] md:p-8">
           <form
             onSubmit={handleSubmit((values) =>
               startTransition(async () => {
@@ -932,7 +962,10 @@ export function CreateAddressPageView({
                   {...register('country')}
                   className={inputClassName}
                   onChange={(event) => {
-                    setValue('country', event.target.value, { shouldValidate: true, shouldDirty: true });
+                    setValue('country', event.target.value, {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    });
                     setValue('city', '', { shouldValidate: true, shouldDirty: true });
                   }}
                 >
@@ -986,16 +1019,16 @@ export function CreateAddressPageView({
                 placeholder={t('Building, floor, apartment')}
               />
             </Field>
-            <label className="flex items-center gap-3 rounded-[24px] border border-white/8 bg-[color:color-mix(in_srgb,var(--background)_80%,transparent)] px-4 py-4 text-sm text-[var(--text)]">
+            <label className="flex items-center gap-3 rounded-[24px] border border-[var(--border)] bg-[color:color-mix(in_srgb,var(--background)_80%,transparent)] px-4 py-4 text-sm text-[var(--text)]">
               <input
                 type="checkbox"
                 {...register('isDefault')}
-                className="h-4 w-4 accent-[var(--text)]"
+                className="h-4 w-4 accent-[var(--accent)]"
               />
               <span>{t('DefaultAddressSwitch')}</span>
             </label>
             {serverError ? <p className="text-sm text-[var(--blush)]">{t(serverError)}</p> : null}
-            <div className="flex flex-wrap gap-3 border-t border-white/8 pt-2">
+            <div className="flex flex-wrap gap-3 border-t border-[var(--border)] pt-2">
               <BackButton href="/addresses" label="CANCEL" />
               <button
                 type="submit"
@@ -1015,7 +1048,6 @@ export function CreateAddressPageView({
 
 function LogoutButton() {
   const { t } = useLocale();
-  const { isDark } = useThemeMode();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -1029,8 +1061,7 @@ function LogoutButton() {
           router.refresh();
         })
       }
-      className={`${secondaryButtonClassName} text-xs`}
-      style={getSecondaryButtonStyle(isDark)}
+      className="inline-flex items-center justify-center gap-2 rounded-full border border-white/30 bg-white/15 px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-white disabled:opacity-50"
       disabled={isPending}
     >
       <span className="flex items-center justify-center gap-2 leading-none">
@@ -1088,11 +1119,13 @@ function AccountLinkCard({
   return (
     <Link
       href={href}
-      className="rounded-[28px] border border-white/8 bg-white/3 p-6 transition hover:border-white/20"
+      className="group rounded-lg border border-[var(--border)] bg-[var(--card)] p-6 shadow-[0_16px_42px_rgba(24,18,17,0.06)] transition hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[0_24px_56px_rgba(24,18,17,0.1)]"
     >
       <div className="flex items-center justify-between gap-3">
-        <div className="font-display text-3xl uppercase">{t(title)}</div>
-        <div className="text-[var(--muted)]">{icon}</div>
+        <div className="text-2xl font-bold text-[var(--text)]">{t(title)}</div>
+        <div className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[color:color-mix(in_srgb,var(--accent)_12%,transparent)] text-[var(--accent)] transition group-hover:bg-[var(--accent)] group-hover:text-white">
+          {icon}
+        </div>
       </div>
       <p className="mt-4 text-sm leading-7 text-[var(--text-secondary)]">{t(body)}</p>
     </Link>
@@ -1103,12 +1136,12 @@ function MetricCard({ label, value, icon }: { label: string; value: string; icon
   const { t } = useLocale();
 
   return (
-    <div className="rounded-[22px] border border-white/8 bg-black/20 p-4">
+    <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-5 shadow-[0_16px_42px_rgba(24,18,17,0.06)]">
       <div className="flex items-center justify-between gap-3 text-[var(--muted)]">
-        <div className="text-[10px] uppercase tracking-[0.2em]">{t(label)}</div>
-        {icon}
+        <div className="text-[10px] font-semibold uppercase tracking-[0.18em]">{t(label)}</div>
+        <div className="text-[var(--accent)]">{icon}</div>
       </div>
-      <div className="mt-3 text-3xl font-semibold">{value}</div>
+      <div className="mt-4 text-4xl font-bold text-[var(--text)]">{value}</div>
     </div>
   );
 }
@@ -1117,8 +1150,10 @@ function SurfacePanel({ title, children }: { title: string; children: ReactNode 
   const { t } = useLocale();
 
   return (
-    <div className="rounded-[28px] border border-white/8 bg-white/3 p-5">
-      <div className="mb-4 text-xs tracking-[0.24em] text-[var(--muted)]">{t(title)}</div>
+    <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-5 shadow-[0_16px_42px_rgba(24,18,17,0.06)]">
+      <div className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
+        {t(title)}
+      </div>
       {children}
     </div>
   );
@@ -1128,9 +1163,9 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   const { t } = useLocale();
 
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-white/8 py-3 text-sm last:border-b-0">
+    <div className="flex items-center justify-between gap-4 border-b border-[var(--border)] py-3 text-sm last:border-b-0">
       <span className="text-[var(--text-secondary)]">{t(label)}</span>
-      <span className="text-right">{value}</span>
+      <span className="text-right font-semibold text-[var(--text)]">{value}</span>
     </div>
   );
 }
@@ -1147,17 +1182,12 @@ function EmptyState({
   actionLabel: string;
 }) {
   const { t } = useLocale();
-  const { isDark } = useThemeMode();
 
   return (
-    <div className="rounded-[32px] border border-white/8 bg-white/3 p-10 text-center">
-      <div className="font-display text-4xl uppercase">{t(title)}</div>
+    <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-10 text-center shadow-[0_18px_48px_rgba(24,18,17,0.06)]">
+      <div className="text-4xl font-bold text-[var(--text)]">{t(title)}</div>
       <p className="mt-3 text-sm text-[var(--text-secondary)]">{t(body)}</p>
-      <Link
-        href={actionHref}
-        className={`mt-6 inline-flex ${primaryButtonClassName}`}
-        style={getPrimaryButtonStyle(isDark)}
-      >
+      <Link href={actionHref} className={`mt-6 inline-flex ${primaryButtonClassName}`}>
         {t(actionLabel)}
       </Link>
     </div>
@@ -1183,24 +1213,27 @@ function formatMoney(amount: number, currency = 'JOD') {
 }
 
 const inputClassName =
-  'h-12 w-full rounded-[0.25rem] border border-white/10 bg-black/20 px-5 text-sm text-[var(--text)] outline-none';
+  'h-12 w-full rounded-lg border border-[var(--border)] bg-[var(--card)] px-5 text-sm text-[var(--text)] outline-none transition placeholder:text-[var(--muted)] focus:border-[var(--accent)]';
 
 const primaryButtonClassName =
-  'inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-medium tracking-[0.2em] disabled:opacity-50';
+  'inline-flex items-center justify-center rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-white disabled:opacity-50';
 
 const secondaryButtonClassName =
-  'inline-flex items-center justify-center gap-2 rounded-full border border-white/10 px-5 py-3 text-sm font-medium tracking-[0.2em]';
+  'inline-flex items-center justify-center gap-2 rounded-full border border-[var(--border)] bg-[var(--card)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-[var(--text)] transition hover:border-[var(--accent)] hover:text-[var(--accent)]';
 
 function getPrimaryButtonStyle(isDark: boolean) {
   return {
-    backgroundColor: isDark ? '#f4f4f4' : '#171717',
-    color: isDark ? '#080808' : '#f6f4f1',
+    backgroundColor: isDark ? '#c7202f' : '#c7202f',
+    color: '#ffffff',
   };
 }
 
 function getSecondaryButtonStyle(isDark: boolean) {
   return {
-    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(23,23,23,0.08)',
-    color: isDark ? '#f4f4f4' : '#171717',
+    backgroundColor: isDark ? 'var(--card)' : 'var(--card)',
+    color: isDark ? 'var(--text)' : 'var(--text)',
   };
 }
+
+const accountPanelClassName =
+  'rounded-[28px] border border-[var(--border)] bg-[var(--card)] p-5 shadow-[0_16px_42px_rgba(24,18,17,0.06)] transition hover:border-[var(--accent)]';

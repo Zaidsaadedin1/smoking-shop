@@ -85,14 +85,15 @@ export function ApiActivityProvider({ children }: { children: ReactNode }) {
         className={`tc-api-overlay${activeRequests > 0 ? ' tc-api-overlay--visible' : ''}`}
       >
         <div className="tc-api-overlay__panel" role="status" aria-live="polite">
-          <div className="tc-api-overlay__gems" aria-hidden="true">
-            <span className="tc-api-overlay__gem tc-api-overlay__gem--left" />
-            <span className="tc-api-overlay__gem tc-api-overlay__gem--center" />
-            <span className="tc-api-overlay__gem tc-api-overlay__gem--right" />
+          <div className="tc-api-overlay__mark" aria-hidden="true">
+            <span className="tc-api-overlay__steam tc-api-overlay__steam--left" />
+            <span className="tc-api-overlay__steam tc-api-overlay__steam--center" />
+            <span className="tc-api-overlay__steam tc-api-overlay__steam--right" />
+            <img src="/shawerma-3a-saj-logo.jpg" alt="" className="tc-api-overlay__logo" />
           </div>
           <div className="tc-api-overlay__copy">
-            <span className="tc-api-overlay__eyebrow">Coven Ritual</span>
-            <span className="tc-api-overlay__label">Setting The Order In Stone</span>
+            <span className="tc-api-overlay__eyebrow">Shawerma 3a Saj</span>
+            <span className="tc-api-overlay__label">Preparing Your Order</span>
           </div>
         </div>
       </div>

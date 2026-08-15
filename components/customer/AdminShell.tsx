@@ -1,6 +1,18 @@
 'use client';
 
-import { ActionIcon, Avatar, Box, Burger, Button, Divider, Drawer, Group, Loader, Paper, Stack, Text } from '@mantine/core';
+import {
+  ActionIcon,
+  Avatar,
+  Box,
+  Burger,
+  Button,
+  Divider,
+  Drawer,
+  Group,
+  Paper,
+  Stack,
+  Text,
+} from '@mantine/core';
 import { IconLayoutSidebarLeftCollapse, IconLogout } from '@tabler/icons-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -96,19 +108,15 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
       <Group justify="space-between" mb="xl">
         {!isCompact ? (
           <Stack gap={2}>
-            <Text fw={800} size="lg" tt="uppercase" style={{ letterSpacing: 2 }}>
+            <Text fw={800} size="lg" tt="uppercase" style={{ color: '#181211', letterSpacing: 2 }}>
               {t('Admin panel')}
             </Text>
-            <Text size="xs" c="var(--muted)" tt="uppercase" style={{ letterSpacing: 3 }}>
-              {t('Dark operations')}
+            <Text size="xs" tt="uppercase" style={{ color: '#80716d', letterSpacing: 3 }}>
+              {t('Restaurant operations')}
             </Text>
           </Stack>
         ) : null}
-        <ActionIcon
-          variant="subtle"
-          color={isDark ? 'gray' : 'dark'}
-          onClick={() => setCollapsed((value) => !value)}
-        >
+        <ActionIcon variant="subtle" color="red" onClick={() => setCollapsed((value) => !value)}>
           <IconLayoutSidebarLeftCollapse size={18} />
         </ActionIcon>
       </Group>
@@ -129,15 +137,11 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
               variant={active === link.label ? 'filled' : 'subtle'}
               styles={{
                 root: {
-                  border: '1px solid var(--border)',
-                  background:
-                    active === link.label
-                      ? isDark
-                        ? 'rgba(255,255,255,0.08)'
-                        : 'rgba(23,23,23,0.08)'
-                      : 'transparent',
-                  color: 'var(--text)',
-                  letterSpacing: 1.5,
+                  border: '1px solid rgba(24,18,17,0.10)',
+                  background: active === link.label ? '#c7202f' : 'transparent',
+                  color: active === link.label ? '#ffffff' : '#181211',
+                  fontWeight: 700,
+                  letterSpacing: 1.2,
                 },
               }}
             >
@@ -152,8 +156,8 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
         p="sm"
         mt="xl"
         style={{
-          background: isDark ? 'rgba(22,22,22,0.92)' : 'rgba(255,255,255,0.86)',
-          border: '1px solid var(--border)',
+          background: '#fffefe',
+          border: '1px solid rgba(24,18,17,0.10)',
         }}
       >
         <Group wrap="nowrap" align="center">
@@ -162,8 +166,8 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
             color={isDark ? 'dark' : 'gray'}
             styles={{
               root: {
-                background: isDark ? '#171717' : '#ece3de',
-                color: isDark ? '#f4f4f4' : '#171717',
+                background: '#fff0f1',
+                color: '#c7202f',
               },
             }}
           >
@@ -171,13 +175,13 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
           </Avatar>
           {!isCompact ? (
             <Stack gap={0} style={{ flex: 1, minWidth: 0 }}>
-              <Text fw={600} truncate>
+              <Text fw={700} c="#181211" truncate>
                 {session.fullName}
               </Text>
-              <Text size="xs" c="var(--muted)" truncate>
+              <Text size="xs" c="#80716d" truncate>
                 {session.email}
               </Text>
-              <Text size="xs" tt="uppercase" c="var(--muted)">
+              <Text size="xs" tt="uppercase" c="#c7202f" fw={700}>
                 {t(session.role)}
               </Text>
             </Stack>
@@ -191,18 +195,18 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
     <Box
       style={{
         minHeight: '100vh',
-        background: 'var(--admin-background)',
-        color: 'var(--text)',
+        background: '#f8f4f1',
+        color: '#181211',
       }}
     >
       <Box p={{ base: 'sm', sm: 'lg' }}>
         <div className="mb-3 flex items-center justify-between gap-3 lg:hidden">
           <div>
-            <Text fw={800} size="sm" tt="uppercase" style={{ letterSpacing: 2 }}>
+            <Text fw={800} size="sm" tt="uppercase" style={{ color: '#181211', letterSpacing: 2 }}>
               {t('Admin panel')}
             </Text>
-            <Text size="xs" c="var(--muted)" tt="uppercase" style={{ letterSpacing: 2.6 }}>
-              {t('Dark operations')}
+            <Text size="xs" tt="uppercase" style={{ color: '#80716d', letterSpacing: 2.6 }}>
+              {t('Restaurant operations')}
             </Text>
           </div>
           <Burger
@@ -221,12 +225,12 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
           hiddenFrom="lg"
           styles={{
             content: {
-              background: 'var(--background)',
-              color: 'var(--text)',
+              background: '#fffefe',
+              color: '#181211',
             },
             header: {
-              background: 'var(--card)',
-              borderBottom: '1px solid var(--border)',
+              background: '#fffefe',
+              borderBottom: '1px solid rgba(24,18,17,0.10)',
             },
             title: {
               textTransform: 'uppercase',
@@ -246,7 +250,10 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
           </Stack>
         </Drawer>
 
-        <div className="flex flex-col items-start gap-5 lg:grid" style={{ gridTemplateColumns: collapsed ? '92px 1fr' : '280px 1fr' }}>
+        <div
+          className="flex flex-col items-start gap-5 lg:grid"
+          style={{ gridTemplateColumns: collapsed ? '92px 1fr' : '280px 1fr' }}
+        >
           <Paper
             visibleFrom="lg"
             radius={0}
@@ -254,10 +261,10 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
             style={{
               position: 'sticky',
               top: 16,
-              background: isDark ? 'rgba(12,12,12,0.92)' : 'rgba(255,250,247,0.88)',
-              border: '1px solid var(--border)',
-              backdropFilter: 'blur(24px)',
-              boxShadow: isDark ? 'none' : '0 24px 80px rgba(50, 26, 24, 0.08)',
+              background: '#fffefe',
+              border: '1px solid rgba(24,18,17,0.10)',
+              borderRadius: 8,
+              boxShadow: '0 24px 80px rgba(24, 18, 17, 0.08)',
             }}
           >
             {navigationContent(collapsed)}
@@ -268,21 +275,27 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
               radius={0}
               p={{ base: 'md', sm: 'lg' }}
               style={{
-                background: isDark ? 'rgba(12,12,12,0.92)' : 'rgba(255,250,247,0.88)',
-                border: '1px solid var(--border)',
-                backdropFilter: 'blur(24px)',
-                boxShadow: isDark ? 'none' : '0 24px 80px rgba(50, 26, 24, 0.08)',
+                background: '#fffefe',
+                border: '1px solid rgba(24,18,17,0.10)',
+                borderRadius: 8,
+                boxShadow: '0 24px 80px rgba(24, 18, 17, 0.08)',
               }}
             >
               <Group justify="space-between" align="start" wrap="wrap" gap="md">
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <Text size="xs" tt="uppercase" c="var(--muted)" style={{ letterSpacing: 2.6 }}>
-                    {t('Operations dashboard')}
+                    {t('Restaurant control room')}
                   </Text>
-                  <Text fw={800} size="clamp(2rem, 5vw, 2.6rem)" mt={6} tt="uppercase" style={{ lineHeight: 1, letterSpacing: 1.2 }}>
+                  <Text
+                    fw={800}
+                    size="clamp(2rem, 5vw, 2.6rem)"
+                    mt={6}
+                    tt="uppercase"
+                    style={{ lineHeight: 1, letterSpacing: 1.2 }}
+                  >
                     {t(title)}
                   </Text>
-                  <Text mt="sm" c="var(--text-secondary)">
+                  <Text mt="sm" c="#5d504d">
                     {t(subtitle)}
                   </Text>
                 </div>
@@ -310,14 +323,33 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
             zIndex: 1000,
             display: 'grid',
             placeItems: 'center',
-            background: isDark ? 'rgba(0, 0, 0, 0.55)' : 'rgba(255, 250, 247, 0.62)',
+            background: isDark ? 'rgba(0, 0, 0, 0.55)' : 'rgba(255, 255, 255, 0.72)',
             backdropFilter: 'blur(3px)',
           }}
         >
-          <Stack align="center" gap="sm">
-            <Loader color="grape" size="sm" />
-            <Text size="xs" tt="uppercase" fw={700} style={{ letterSpacing: 2 }}>
-              {t('Loading')}
+          <Stack
+            align="center"
+            gap="sm"
+            p="lg"
+            style={{
+              minWidth: 240,
+              background: '#fffefe',
+              border: '1px solid rgba(199,32,47,0.16)',
+              borderRadius: 16,
+              boxShadow: '0 24px 64px rgba(24,18,17,0.24)',
+            }}
+          >
+            <div className="tc-api-overlay__mark" aria-hidden="true">
+              <span className="tc-api-overlay__steam tc-api-overlay__steam--left" />
+              <span className="tc-api-overlay__steam tc-api-overlay__steam--center" />
+              <span className="tc-api-overlay__steam tc-api-overlay__steam--right" />
+              <img src="/shawerma-3a-saj-logo.jpg" alt="" className="tc-api-overlay__logo" />
+            </div>
+            <Text size="xs" tt="uppercase" fw={800} c="#c7202f" style={{ letterSpacing: 2 }}>
+              {t('Kitchen control')}
+            </Text>
+            <Text size="sm" fw={800} tt="uppercase" c="#181211" style={{ letterSpacing: 1.4 }}>
+              {t('Syncing admin updates')}
             </Text>
           </Stack>
         </Box>

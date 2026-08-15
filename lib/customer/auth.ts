@@ -83,7 +83,7 @@ export async function resolveCustomerSession(accessToken: string): Promise<Custo
     fullName:
       result.data?.full_name ??
       (typeof claims.user_metadata?.full_name === 'string' ? claims.user_metadata.full_name : deriveFallbackName(claims.email)),
-    phone: result.data?.phone ?? null,
+    phone: result.data?.phone ?? (typeof claims.user_metadata?.phone === 'string' ? claims.user_metadata.phone : null),
     avatarUrl: result.data?.avatar_url ?? null,
     role: result.data?.role ?? 'customer',
   };

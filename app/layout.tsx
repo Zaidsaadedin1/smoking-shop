@@ -8,10 +8,10 @@ import { getFlashSale, getNavigationItems, getStoreSettings } from '@/lib/commer
 
 export const metadata: Metadata = {
   title: {
-    default: 'Tourmaline Coven',
-    template: '%s | Tourmaline Coven',
+    default: 'Shawerma 3a Saj',
+    template: '%s | Shawerma 3a Saj',
   },
-  description: 'Premium dark feminine ecommerce experience for Jordan.',
+  description: 'Fresh shawerma, saj meals, delivery, and pickup across Jordan.',
   icons: {
     icon: '/favicon.svg',
     shortcut: '/favicon.svg',
@@ -33,7 +33,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body suppressHydrationWarning>
         <Providers>
-          <StorefrontShell settings={settings} flashSale={flashSale} navigationItems={navigationItems}>
+          <StorefrontShell
+            settings={settings}
+            flashSale={flashSale}
+            navigationItems={navigationItems}
+          >
             {children}
           </StorefrontShell>
         </Providers>

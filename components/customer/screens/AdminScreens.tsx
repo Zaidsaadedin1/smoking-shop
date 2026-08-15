@@ -11,6 +11,7 @@ import {
   Group,
   Image,
   Modal,
+  MultiSelect,
   NativeSelect,
   Paper,
   ScrollArea,
@@ -30,7 +31,6 @@ import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 import { AdminShell } from '@/components/customer/AdminShell';
 import { LocaleSwitcher, useLocale } from '@/components/storefront/locale-provider';
-import { useThemeMode } from '@/components/storefront/theme-provider';
 import {
   AdminBrandRecord,
   AdminCategoryRecord,
@@ -42,6 +42,9 @@ import {
   AdminHeroSlideRecord,
   AdminNavigationItemRecord,
   AdminOrderRecord,
+  AdminProductOptionGroupLinkRecord,
+  AdminProductOptionGroupRecord,
+  AdminProductOptionItemRecord,
   AdminProductRecord,
   AdminProductVariantRecord,
   AdminSizeRecord,
@@ -147,14 +150,14 @@ type CrudManagerProps<T extends { id: string }> = {
 
 const adminInputStyles = {
   input: {
-    borderRadius: '0.25rem',
-    background: 'var(--card)',
-    borderColor: 'var(--border)',
-    color: 'var(--text)',
+    borderRadius: '0.5rem',
+    background: '#fffefe',
+    borderColor: 'rgba(24,18,17,0.12)',
+    color: '#181211',
   },
   label: {
     marginBottom: 6,
-    color: 'var(--text)',
+    color: '#181211',
     fontSize: '0.82rem',
     letterSpacing: '0.04em',
   },
@@ -165,30 +168,31 @@ const adminInputStyles = {
 
 const adminSelectStyles = {
   input: {
-    borderRadius: '0.25rem',
-    background: 'var(--card)',
-    borderColor: 'var(--border)',
-    color: 'var(--text)',
+    borderRadius: '0.5rem',
+    background: '#fffefe',
+    borderColor: 'rgba(24,18,17,0.12)',
+    color: '#181211',
   },
   label: {
     marginBottom: 6,
-    color: 'var(--text)',
+    color: '#181211',
     fontSize: '0.82rem',
     letterSpacing: '0.04em',
   },
   section: {
-    color: 'var(--muted)',
+    color: '#80716d',
   },
 } as const;
 
 const adminPrimaryButtonStyles = {
   root: {
-    background: 'var(--accent)',
-    color: 'var(--background)',
-    border: '1px solid var(--border)',
+    background: '#c7202f',
+    color: '#ffffff',
+    border: '1px solid #c7202f',
+    borderRadius: '999px',
   },
   label: {
-    color: 'var(--background)',
+    color: '#ffffff',
     fontWeight: 700,
     letterSpacing: '0.08em',
   },
@@ -196,12 +200,13 @@ const adminPrimaryButtonStyles = {
 
 const adminSecondaryButtonStyles = {
   root: {
-    background: 'var(--surface)',
-    color: 'var(--text)',
-    border: '1px solid var(--border)',
+    background: '#fffefe',
+    color: '#181211',
+    border: '1px solid rgba(24,18,17,0.12)',
+    borderRadius: '999px',
   },
   label: {
-    color: 'var(--text)',
+    color: '#181211',
     fontWeight: 700,
     letterSpacing: '0.08em',
   },
@@ -350,13 +355,7 @@ function openFieldErrorModal(
   setModalError({ title, messages });
 }
 
-function ErrorModal({
-  error,
-  onClose,
-}: {
-  error: ModalErrorState | null;
-  onClose: () => void;
-}) {
+function ErrorModal({ error, onClose }: { error: ModalErrorState | null; onClose: () => void }) {
   const { t } = useLocale();
 
   return (
@@ -367,13 +366,14 @@ function ErrorModal({
       title={error?.title}
       styles={{
         content: {
-          background: 'var(--surface)',
-          color: 'var(--text)',
-          border: '1px solid var(--surface-border)',
+          background: '#fffefe',
+          color: '#181211',
+          border: '1px solid rgba(24,18,17,0.10)',
+          borderRadius: 8,
         },
         header: {
-          background: 'var(--surface)',
-          borderBottom: '1px solid var(--border)',
+          background: '#fffefe',
+          borderBottom: '1px solid rgba(24,18,17,0.10)',
         },
         title: {
           textTransform: 'uppercase',
@@ -709,7 +709,11 @@ function AdminOrderDetailPanel({ orderId }: { orderId: string }) {
 function inventoryBadge(quantity: number, t: (value: string) => string) {
   const tone = quantity <= 0 ? 'red' : quantity <= 5 ? 'yellow' : 'teal';
   const label =
-    quantity <= 0 ? t('Out of stock') : quantity <= 5 ? `${t('Low')}: ${quantity}` : `${quantity} ${t('in stock')}`;
+    quantity <= 0
+      ? t('Out of stock')
+      : quantity <= 5
+        ? `${t('Low')}: ${quantity}`
+        : `${quantity} ${t('in stock')}`;
 
   return (
     <Badge color={tone} variant="light" radius="sm">
@@ -789,11 +793,11 @@ function CrudManager<T extends { id: string }>({
       return;
     }
 
-     setModalError(null);
-     setFilePreviews((current) => {
-       Object.values(current).forEach(revokePreviewItems);
-       return {};
-     });
+    setModalError(null);
+    setFilePreviews((current) => {
+      Object.values(current).forEach(revokePreviewItems);
+      return {};
+    });
 
     if (mode === 'create') {
       reset(defaults);
@@ -954,10 +958,6 @@ function CrudManager<T extends { id: string }>({
   }
 
   async function handleDelete(row: T) {
-    if (!window.confirm(t('Are you sure you want to delete this record?'))) {
-      return;
-    }
-
     const request = deleteRequest(row.id);
     const response = await fetch(request.url, { method: request.method });
 
@@ -975,29 +975,30 @@ function CrudManager<T extends { id: string }>({
 
   return (
     <Paper
-      radius={0}
+      radius="md"
       p="lg"
       style={{
-        background: 'var(--surface)',
-        border: '1px solid var(--surface-border)',
+        background: '#fffefe',
+        border: '1px solid rgba(24,18,17,0.10)',
+        boxShadow: '0 18px 48px rgba(24,18,17,0.06)',
       }}
     >
       <Group justify="space-between" align="end" mb="md" wrap="wrap" gap="md">
         <Stack gap={4}>
-          <Text size="xs" tt="uppercase" c="dimmed" style={{ letterSpacing: 2.2 }}>
-            {t('Control center')}
+          <Text size="xs" tt="uppercase" c="#c7202f" fw={700} style={{ letterSpacing: 2.2 }}>
+            {t('Admin control')}
           </Text>
-          <Text fw={700} size="1.35rem">
+          <Text fw={800} size="1.35rem" c="#181211">
             {t(title)}
           </Text>
-          <Text size="sm" c="dimmed">
+          <Text size="sm" c="#5d504d">
             {t(description)}
           </Text>
         </Stack>
         {allowCreate ? (
           <Button
             leftSection={<IconPlus size={16} />}
-            radius={0}
+            radius="xl"
             variant="default"
             styles={adminPrimaryButtonStyles}
             onClick={() => setMode('create')}
@@ -1009,13 +1010,7 @@ function CrudManager<T extends { id: string }>({
       </Group>
 
       <ScrollArea type="auto" offsetScrollbars>
-        <Table
-          verticalSpacing="md"
-          striped
-          highlightOnHover
-          withTableBorder
-          miw={720}
-        >
+        <Table verticalSpacing="md" striped highlightOnHover withTableBorder miw={720}>
           <Table.Thead>
             <Table.Tr>
               {columns.map((column) => (
@@ -1034,7 +1029,7 @@ function CrudManager<T extends { id: string }>({
                   <Group gap={6} wrap="nowrap">
                     <ActionIcon
                       variant="subtle"
-                      color="gray"
+                      color="red"
                       onClick={() => {
                         setSelected(row);
                         setMode('view');
@@ -1044,7 +1039,7 @@ function CrudManager<T extends { id: string }>({
                     </ActionIcon>
                     <ActionIcon
                       variant="subtle"
-                      color="gray"
+                      color="red"
                       onClick={() => {
                         setSelected(row);
                         setMode('edit');
@@ -1082,12 +1077,12 @@ function CrudManager<T extends { id: string }>({
         }
         styles={{
           content: {
-            background: 'var(--background)',
-            color: 'var(--text)',
+            background: '#fffefe',
+            color: '#181211',
           },
           header: {
-            background: 'var(--card)',
-            borderBottom: '1px solid var(--border)',
+            background: '#fffefe',
+            borderBottom: '1px solid rgba(24,18,17,0.10)',
           },
           title: {
             textTransform: 'uppercase',
@@ -1102,10 +1097,10 @@ function CrudManager<T extends { id: string }>({
             {drawerExtras ? drawerExtras({ mode, selected }) : null}
             {fields.map((field) => (
               <Box key={field.name}>
-                <Text size="xs" tt="uppercase" c="dimmed" mb={4}>
+                <Text size="xs" tt="uppercase" c="#80716d" fw={700} mb={4}>
                   {t(field.label)}
                 </Text>
-                <Text>{rowValue(selected as Record<string, unknown>, field, t)}</Text>
+                <Text c="#181211">{rowValue(selected as Record<string, unknown>, field, t)}</Text>
               </Box>
             ))}
           </Stack>
@@ -1165,7 +1160,7 @@ function CrudManager<T extends { id: string }>({
                           }
                           radius="xs"
                           size="md"
-                          color="dark"
+                          color="red"
                         />
                       )}
                     />
@@ -1213,20 +1208,27 @@ function CrudManager<T extends { id: string }>({
                             <Paper
                               key={item.id}
                               p="xs"
-                              radius={0}
+                              radius="md"
                               style={{
-                                background: 'rgba(255,255,255,0.03)',
-                                border: '1px solid var(--border)',
+                                background: '#f8f4f1',
+                                border: '1px solid rgba(24,18,17,0.10)',
                               }}
                             >
                               <Group justify="space-between" align="start" wrap="wrap">
                                 <Group align="start" wrap="nowrap">
-                                  <Image src={item.url} alt={item.name} w={72} h={92} fit="cover" />
+                                  <Image
+                                    src={item.url}
+                                    alt={item.name}
+                                    w={72}
+                                    h={72}
+                                    fit="cover"
+                                    radius="md"
+                                  />
                                   <Stack gap={2} style={{ minWidth: 0 }}>
                                     <Text size="sm" fw={600}>
                                       {item.isExisting ? t('Current image') : t('Selected image')}
                                     </Text>
-                                    <Text size="xs" c="dimmed" style={{ wordBreak: 'break-word' }}>
+                                    <Text size="xs" c="#80716d" style={{ wordBreak: 'break-word' }}>
                                       {item.name}
                                     </Text>
                                   </Stack>
@@ -1235,7 +1237,7 @@ function CrudManager<T extends { id: string }>({
                                   type="button"
                                   size="xs"
                                   variant="default"
-                                  radius={0}
+                                  radius="xl"
                                   styles={adminSecondaryButtonStyles}
                                   onClick={() => clearFileField(field.name)}
                                 >
@@ -1276,7 +1278,7 @@ function CrudManager<T extends { id: string }>({
                 <Button
                   type="button"
                   variant="default"
-                  radius={0}
+                  radius="xl"
                   styles={adminSecondaryButtonStyles}
                   onClick={() => setMode(null)}
                 >
@@ -1285,7 +1287,7 @@ function CrudManager<T extends { id: string }>({
                 <Button
                   type="submit"
                   loading={submitting}
-                  radius={0}
+                  radius="xl"
                   styles={adminPrimaryButtonStyles}
                 >
                   {mode === 'edit' ? t('Save changes') : t('Create')}
@@ -1309,7 +1311,6 @@ function getEnumLabel(
 }
 
 function EnumLabelsManager({ enumLabels }: { enumLabels: AdminEnumLabels }) {
-  const { t } = useLocale();
   const rows: AdminEnumLabelRow[] = (Object.keys(enumLabels) as AdminEnumKey[]).flatMap((enumKey) =>
     Object.entries(enumLabels[enumKey]).map(([value, names]) => ({
       id: `${enumKey}:${value}`,
@@ -1366,38 +1367,42 @@ export function AdminDashboardScreen({
 }) {
   const { t, locale } = useLocale();
   const cards = [
-    { label: 'Products', value: products.length, detail: 'Live catalog records' },
-    { label: 'Orders', value: orders.length, detail: 'Trackable orders' },
-    { label: 'Customers', value: customers.length, detail: 'Profiles and roles' },
+    { label: 'Menu items', value: products.length, detail: 'Active food catalog records' },
+    { label: 'Orders', value: orders.length, detail: 'Kitchen and delivery queue' },
+    { label: 'Customers', value: customers.length, detail: 'Customer profiles and roles' },
     {
-      label: 'Categories',
+      label: 'Menu groups',
       value: categories.length + brands.length,
-      detail: 'Taxonomy and brands',
+      detail: 'Categories, sauces, and brands',
     },
   ];
 
   return (
     <AdminShell
       session={session}
-      title="Operations dashboard"
-      subtitle="Connected admin dashboard with live catalog, customer, order, and settings control."
+      title="Restaurant control room"
+      subtitle="Manage Shawerma 3a Saj menu items, kitchen orders, customers, delivery zones, offers, and storefront settings."
       active="Dashboard"
     >
       <SimpleGrid cols={{ base: 1, md: 2, xl: 4 }} spacing="lg">
         {cards.map((card) => (
           <Paper
             key={card.label}
-            radius={0}
+            radius="md"
             p="lg"
-            style={{ background: 'var(--surface)', border: '1px solid var(--surface-border)' }}
+            style={{
+              background: '#fffefe',
+              border: '1px solid rgba(24,18,17,0.10)',
+              boxShadow: '0 18px 48px rgba(24,18,17,0.06)',
+            }}
           >
-            <Text size="xs" tt="uppercase" c="var(--muted)" style={{ letterSpacing: 2.2 }}>
+            <Text size="xs" tt="uppercase" c="#80716d" fw={700} style={{ letterSpacing: 2.2 }}>
               {t(card.label)}
             </Text>
-            <Text fw={800} size="2.2rem" mt={8}>
+            <Text fw={800} size="2.4rem" mt={8} c="#c7202f">
               {card.value}
             </Text>
-            <Text size="sm" c="var(--text-secondary)" mt={6}>
+            <Text size="sm" c="#5d504d" mt={6}>
               {t(card.detail)}
             </Text>
           </Paper>
@@ -1406,11 +1411,15 @@ export function AdminDashboardScreen({
 
       <SimpleGrid cols={{ base: 1, xl: 2 }} spacing="lg" mt="lg">
         <Paper
-          radius={0}
+          radius="md"
           p="lg"
-          style={{ background: 'var(--surface)', border: '1px solid var(--surface-border)' }}
+          style={{
+            background: '#fffefe',
+            border: '1px solid rgba(24,18,17,0.10)',
+            boxShadow: '0 18px 48px rgba(24,18,17,0.06)',
+          }}
         >
-          <Text fw={700} mb="md">
+          <Text fw={800} c="#181211" mb="md">
             {t('Recent orders')}
           </Text>
           <ScrollArea type="auto" offsetScrollbars>
@@ -1443,12 +1452,16 @@ export function AdminDashboardScreen({
         </Paper>
 
         <Paper
-          radius={0}
+          radius="md"
           p="lg"
-          style={{ background: 'var(--surface)', border: '1px solid var(--surface-border)' }}
+          style={{
+            background: '#fffefe',
+            border: '1px solid rgba(24,18,17,0.10)',
+            boxShadow: '0 18px 48px rgba(24,18,17,0.06)',
+          }}
         >
-          <Text fw={700} mb="md">
-            {t('Recent products')}
+          <Text fw={800} c="#181211" mb="md">
+            {t('Recent menu items')}
           </Text>
           <ScrollArea type="auto" offsetScrollbars>
             <Table striped miw={520}>
@@ -1489,8 +1502,10 @@ export function AdminProductsScreen({
   categories,
   brands,
   sizes,
-  colors,
   variants,
+  optionGroups,
+  optionItems,
+  optionGroupLinks,
   enumLabels,
 }: {
   session: AdminSessionInfo;
@@ -1498,18 +1513,12 @@ export function AdminProductsScreen({
   categories: AdminCategoryRecord[];
   brands: AdminBrandRecord[];
   sizes: AdminSizeRecord[];
-  colors: AdminColorRecord[];
   variants: AdminProductVariantRecord[];
+  optionGroups: AdminProductOptionGroupRecord[];
+  optionItems: AdminProductOptionItemRecord[];
+  optionGroupLinks: AdminProductOptionGroupLinkRecord[];
   enumLabels: AdminEnumLabels;
 }) {
-  const { locale } = useLocale();
-  const productVariantMap = new Map(
-    products.map((product) => [
-      product.id,
-      variants.filter((variant) => variant.product_id === product.id),
-    ])
-  );
-
   return (
     <AdminShell
       session={session}
@@ -1522,8 +1531,10 @@ export function AdminProductsScreen({
         categories={categories}
         brands={brands}
         sizes={sizes}
-        colors={colors}
         variants={variants}
+        optionGroups={optionGroups}
+        optionItems={optionItems}
+        optionGroupLinks={optionGroupLinks}
         enumLabels={enumLabels}
       />
     </AdminShell>
@@ -1563,6 +1574,8 @@ type ProductFormValues = {
   categoryId: string;
   brandId: string;
   variants: ProductVariantFormRow[];
+  singleOptionGroupId: string;
+  addOnGroupIds: string[];
 };
 
 function emptyVariantRow(): ProductVariantFormRow {
@@ -1636,16 +1649,20 @@ function ProductCrudManager({
   categories,
   brands,
   sizes,
-  colors,
   variants,
+  optionGroups,
+  optionItems,
+  optionGroupLinks,
   enumLabels,
 }: {
   products: AdminProductRecord[];
   categories: AdminCategoryRecord[];
   brands: AdminBrandRecord[];
   sizes: AdminSizeRecord[];
-  colors: AdminColorRecord[];
   variants: AdminProductVariantRecord[];
+  optionGroups: AdminProductOptionGroupRecord[];
+  optionItems: AdminProductOptionItemRecord[];
+  optionGroupLinks: AdminProductOptionGroupLinkRecord[];
   enumLabels: AdminEnumLabels;
 }) {
   const router = useRouter();
@@ -1670,6 +1687,38 @@ function ProductCrudManager({
       ),
     [products, variants]
   );
+  const productOptionLinkMap = useMemo(
+    () =>
+      new Map(
+        products.map((product) => [
+          product.id,
+          optionGroupLinks
+            .filter((link) => link.product_id === product.id)
+            .sort((a, b) => a.sort_order - b.sort_order),
+        ])
+      ),
+    [optionGroupLinks, products]
+  );
+  const optionItemsByGroup = useMemo(
+    () =>
+      new Map(
+        optionGroups.map((group) => [
+          group.id,
+          optionItems
+            .filter((item) => item.group_id === group.id)
+            .sort((a, b) => a.sort_order - b.sort_order),
+        ])
+      ),
+    [optionGroups, optionItems]
+  );
+  const radioOptionGroups = useMemo(
+    () => optionGroups.filter((group) => group.selection_type === 'radio' && group.is_active),
+    [optionGroups]
+  );
+  const addOnOptionGroups = useMemo(
+    () => optionGroups.filter((group) => group.selection_type === 'checkbox' && group.is_active),
+    [optionGroups]
+  );
   const schema = useMemo(
     () =>
       z.object({
@@ -1689,6 +1738,8 @@ function ProductCrudManager({
         isFeatured: z.boolean().default(false),
         categoryId: z.string().optional(),
         brandId: z.string().optional(),
+        singleOptionGroupId: z.string().optional(),
+        addOnGroupIds: z.array(z.string()).default([]),
         variants: z.array(
           z.object({
             sizeId: z.string().optional(),
@@ -1716,11 +1767,11 @@ function ProductCrudManager({
       ).map((size) => ({
         ...emptyVariantRow(),
         sizeId: size.id,
-        colorId: colors[0]?.id ?? '',
-        sku: buildVariantSku(size.code, colors[0]?.code),
+        colorId: '',
+        sku: buildVariantSku(size.code),
         barcode: buildVariantBarcode(),
       })),
-    [colors, sizes]
+    [sizes]
   );
   const defaults = useMemo<ProductFormValues>(
     () => ({
@@ -1741,6 +1792,8 @@ function ProductCrudManager({
       categoryId: categories[0]?.id ?? '',
       brandId: brands[0]?.id ?? '',
       variants: defaultVariantRows,
+      singleOptionGroupId: '',
+      addOnGroupIds: [],
     }),
     [brands, categories, defaultVariantRows]
   );
@@ -1802,7 +1855,7 @@ function ProductCrudManager({
       const mappedVariants = (productVariantMap.get(selected.id) ?? []).map(
         (variant: AdminProductVariantRecord) => ({
           sizeId: variant.size_id ?? '',
-          colorId: variant.color_id ?? colors[0]?.id ?? '',
+          colorId: '',
           sku: variant.sku,
           barcode: variant.barcode ?? '',
           price: variant.price ?? selected.base_price,
@@ -1833,6 +1886,17 @@ function ProductCrudManager({
         categoryId: selected.category_id,
         brandId: selected.brand_id,
         variants: mappedVariants.length ? mappedVariants : defaultVariantRows,
+        singleOptionGroupId:
+          (productOptionLinkMap.get(selected.id) ?? []).find((link) => {
+            const group = optionGroups.find((item) => item.id === link.option_group_id);
+            return group?.selection_type === 'radio';
+          })?.option_group_id ?? '',
+        addOnGroupIds: (productOptionLinkMap.get(selected.id) ?? [])
+          .filter((link) => {
+            const group = optionGroups.find((item) => item.id === link.option_group_id);
+            return group?.selection_type === 'checkbox';
+          })
+          .map((link) => link.option_group_id),
       });
       replace(mappedVariants.length ? mappedVariants : defaultVariantRows);
       setExistingMainImageUrl(selected.primary_image_url ?? '');
@@ -1842,6 +1906,8 @@ function ProductCrudManager({
     defaultVariantRows,
     defaults,
     mode,
+    optionGroups,
+    productOptionLinkMap,
     productVariantMap,
     replace,
     reset,
@@ -1930,6 +1996,27 @@ function ProductCrudManager({
       ['categoryId', values.categoryId],
       ['brandId', values.brandId],
       [
+        'optionGroupLinksJson',
+        JSON.stringify([
+          ...(values.singleOptionGroupId
+            ? [
+                {
+                  optionGroupId: values.singleOptionGroupId,
+                  isRequired: true,
+                  minSelections: 1,
+                  maxSelections: 1,
+                },
+              ]
+            : []),
+          ...(values.addOnGroupIds ?? []).map((optionGroupId: string) => ({
+            optionGroupId,
+            isRequired: false,
+            minSelections: 0,
+            maxSelections: null,
+          })),
+        ]),
+      ],
+      [
         'variantsJson',
         JSON.stringify(
           (values.variants as ProductVariantFormRow[]).map((variant: ProductVariantFormRow) => ({
@@ -1948,7 +2035,9 @@ function ProductCrudManager({
     ];
 
     for (const [key, value] of entries) {
-      if (value === undefined || value === null) continue;
+      if (value === undefined || value === null) {
+        continue;
+      }
       formData.append(key, String(value));
     }
 
@@ -1956,10 +2045,14 @@ function ProductCrudManager({
     formData.append('subImageUrlsJson', JSON.stringify(existingSubImageUrls));
 
     for (const file of mainImageFiles) {
-      if (file.size > 0) formData.append('mainImage', file);
+      if (file.size > 0) {
+        formData.append('mainImage', file);
+      }
     }
     for (const file of subImageFiles) {
-      if (file.size > 0) formData.append('subImages', file);
+      if (file.size > 0) {
+        formData.append('subImages', file);
+      }
     }
 
     const response = await fetch(request.url, { method: request.method, body: formData });
@@ -1980,7 +2073,6 @@ function ProductCrudManager({
   }
 
   async function handleDelete(row: AdminProductRecord) {
-    if (!window.confirm(t('Are you sure you want to delete this record?'))) return;
     const response = await fetch(`/api/admin/products/${row.id}`, { method: 'DELETE' });
     if (!response.ok) {
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
@@ -2226,7 +2318,81 @@ function ProductCrudManager({
                 </>
               ) : null}
               <Text size="xs" tt="uppercase" c="dimmed" mb="sm" style={{ letterSpacing: 2 }}>
-                Variants
+                {t('Food options')}
+              </Text>
+              <Stack gap="sm" mb="md">
+                {(productOptionLinkMap.get(selected.id) ?? []).length ? (
+                  (productOptionLinkMap.get(selected.id) ?? []).map((link) => {
+                    const group = optionGroups.find((item) => item.id === link.option_group_id);
+                    const items = optionItemsByGroup.get(link.option_group_id) ?? [];
+
+                    if (!group) {
+                      return null;
+                    }
+
+                    return (
+                      <Paper
+                        key={link.option_group_id}
+                        radius={0}
+                        p="sm"
+                        style={{
+                          background: 'rgba(255,255,255,0.03)',
+                          border: '1px solid var(--border)',
+                        }}
+                      >
+                        <Group justify="space-between" align="start">
+                          <Stack gap={4}>
+                            <Group gap="xs">
+                              <Badge variant="light" radius="sm" color="red">
+                                {group.selection_type === 'radio'
+                                  ? t('Single choice')
+                                  : t('Add-ons')}
+                              </Badge>
+                              {link.is_required ? (
+                                <Badge variant="light" radius="sm" color="yellow">
+                                  {t('Required')}
+                                </Badge>
+                              ) : null}
+                            </Group>
+                            <Text fw={700}>{group.name}</Text>
+                            {group.name_ar ? (
+                              <Text size="sm" c="var(--text-secondary)">
+                                {group.name_ar}
+                              </Text>
+                            ) : null}
+                          </Stack>
+                          <Text size="xs" c="dimmed">
+                            {items.length} {t('items')}
+                          </Text>
+                        </Group>
+                        {items.length ? (
+                          <Group gap="xs" mt="sm">
+                            {items.slice(0, 4).map((item) => (
+                              <Badge key={item.id} variant="light" radius="sm" color="gray">
+                                {item.name}
+                                {item.track_inventory
+                                  ? ` · ${t('Stock')}: ${item.stock_quantity}`
+                                  : ''}
+                              </Badge>
+                            ))}
+                            {items.length > 4 ? (
+                              <Badge variant="light" radius="sm" color="gray">
+                                +{items.length - 4}
+                              </Badge>
+                            ) : null}
+                          </Group>
+                        ) : null}
+                      </Paper>
+                    );
+                  })
+                ) : (
+                  <Text size="sm" c="dimmed">
+                    {t('No food options attached.')}
+                  </Text>
+                )}
+              </Stack>
+              <Text size="xs" tt="uppercase" c="dimmed" mb="sm" style={{ letterSpacing: 2 }}>
+                {t('Sizes and stock')}
               </Text>
               <Stack gap="sm">
                 {(productVariantMap.get(selected.id) ?? []).length ? (
@@ -2244,12 +2410,8 @@ function ProductCrudManager({
                         <Stack gap={4}>
                           <Group gap="xs">
                             <Badge variant="light" radius="sm" color="gray">
-                              {colors.find((item) => item.id === variant.color_id)?.name ??
-                                'Default color'}
-                            </Badge>
-                            <Badge variant="light" radius="sm" color="gray">
                               {sizes.find((item) => item.id === variant.size_id)?.name ??
-                                'One size'}
+                                t('Regular')}
                             </Badge>
                             {variant.is_active ? (
                               <Badge variant="light" radius="sm" color="teal">
@@ -2377,6 +2539,45 @@ function ProductCrudManager({
                   data={brands.map((item) => ({ label: item.name, value: item.id }))}
                   {...register('brandId')}
                 />
+                <Controller
+                  control={control}
+                  name="singleOptionGroupId"
+                  render={({ field }) => (
+                    <NativeSelect
+                      label={t('Single-choice option')}
+                      radius="xs"
+                      styles={adminSelectStyles}
+                      data={[
+                        { label: t('No single-choice option'), value: '' },
+                        ...radioOptionGroups.map((item) => ({
+                          label: `${item.name}${item.name_ar ? ` / ${item.name_ar}` : ''}`,
+                          value: item.id,
+                        })),
+                      ]}
+                      value={field.value ?? ''}
+                      onChange={(event) => field.onChange(event.currentTarget.value)}
+                    />
+                  )}
+                />
+                <Controller
+                  control={control}
+                  name="addOnGroupIds"
+                  render={({ field }) => (
+                    <MultiSelect
+                      label={t('Add-on groups')}
+                      radius="xs"
+                      styles={adminSelectStyles}
+                      data={addOnOptionGroups.map((item) => ({
+                        label: `${item.name}${item.name_ar ? ` / ${item.name_ar}` : ''}`,
+                        value: item.id,
+                      }))}
+                      value={field.value ?? []}
+                      onChange={field.onChange}
+                      searchable
+                      clearable
+                    />
+                  )}
+                />
                 <NativeSelect
                   label={t('Status')}
                   radius="xs"
@@ -2473,7 +2674,9 @@ function ProductCrudManager({
                         />
                         <Stack gap={2}>
                           <Text size="sm" fw={600}>
-                            {mainImagePreview.length ? t('Selected main image') : t('Current main image')}
+                            {mainImagePreview.length
+                              ? t('Selected main image')
+                              : t('Current main image')}
                           </Text>
                           <Text size="xs" c="dimmed">
                             {mainImagePreview[0]?.name ??
@@ -2541,7 +2744,13 @@ function ProductCrudManager({
                         }}
                       >
                         <Stack gap="xs">
-                          <Image src={imageUrl} alt={t('Sub image')} h={180} fit="cover" radius={0} />
+                          <Image
+                            src={imageUrl}
+                            alt={t('Sub image')}
+                            h={180}
+                            fit="cover"
+                            radius={0}
+                          />
                           <Text size="sm" fw={600}>
                             {t('Current sub image')} {index + 1}
                           </Text>
@@ -2590,8 +2799,12 @@ function ProductCrudManager({
                             radius={0}
                             styles={adminSecondaryButtonStyles}
                             onClick={() => {
-                              const nextFiles = subImageFiles.filter((_, fileIndex) => fileIndex !== index);
-                              const nextPreviews = subImagePreviews.filter((preview) => preview.id !== item.id);
+                              const nextFiles = subImageFiles.filter(
+                                (_, fileIndex) => fileIndex !== index
+                              );
+                              const nextPreviews = subImagePreviews.filter(
+                                (preview) => preview.id !== item.id
+                              );
                               setSubImageFiles(nextFiles);
                               replaceSubImagePreviews(nextPreviews);
                               setValue('subImages', undefined, {
@@ -2619,7 +2832,7 @@ function ProductCrudManager({
                   <div>
                     <Text fw={700}>{t('Product variants')}</Text>
                     <Text size="sm" c="dimmed">
-                      {t('Set available sizes, colors, and stock in the same product drawer.')}
+                      {t('Set available food sizes and stock in the same product drawer.')}
                     </Text>
                   </div>
                   <Button
@@ -2630,15 +2843,15 @@ function ProductCrudManager({
                     onClick={() =>
                       append({
                         ...emptyVariantRow(),
-                        colorId: colors[0]?.id ?? '',
-                        sku: buildVariantSku(undefined, colors[0]?.code),
+                        colorId: '',
+                        sku: buildVariantSku(),
                         barcode: buildVariantBarcode(),
                         price: getValues('basePrice') ?? '',
                         compareAtPrice: getValues('compareAtPrice') ?? '',
                       })
                     }
                   >
-                    {t('Add variant')}
+                    {t('Add size')}
                   </Button>
                 </Group>
                 <Stack gap="md">
@@ -2672,16 +2885,6 @@ function ProductCrudManager({
                             ...sizes.map((item) => ({ label: item.name, value: item.id })),
                           ]}
                           {...register(`variants.${index}.sizeId` as const)}
-                        />
-                        <NativeSelect
-                          label={t('Color')}
-                          radius="xs"
-                          styles={adminSelectStyles}
-                          data={[
-                            { label: '—', value: '' },
-                            ...colors.map((item) => ({ label: item.name, value: item.id })),
-                          ]}
-                          {...register(`variants.${index}.colorId` as const)}
                         />
                         <TextInput
                           label="SKU"
@@ -3367,9 +3570,26 @@ export function AdminSettingsScreen({
               isActive: true,
             }}
             fields={[
-              { name: 'code', label: 'Code', type: 'text', required: true, editableOn: ['create', 'edit'] },
-              { name: 'name', label: 'Name', type: 'text', required: true, editableOn: ['create', 'edit'] },
-              { name: 'description', label: 'Description', type: 'textarea', editableOn: ['create', 'edit'] },
+              {
+                name: 'code',
+                label: 'Code',
+                type: 'text',
+                required: true,
+                editableOn: ['create', 'edit'],
+              },
+              {
+                name: 'name',
+                label: 'Name',
+                type: 'text',
+                required: true,
+                editableOn: ['create', 'edit'],
+              },
+              {
+                name: 'description',
+                label: 'Description',
+                type: 'textarea',
+                editableOn: ['create', 'edit'],
+              },
               {
                 name: 'discountType',
                 label: 'Discount type',
@@ -3398,8 +3618,18 @@ export function AdminSettingsScreen({
                 step: 0.01,
                 editableOn: ['create', 'edit'],
               },
-              { name: 'startsAt', label: 'Starts at', type: 'datetime', editableOn: ['create', 'edit'] },
-              { name: 'endsAt', label: 'Ends at', type: 'datetime', editableOn: ['create', 'edit'] },
+              {
+                name: 'startsAt',
+                label: 'Starts at',
+                type: 'datetime',
+                editableOn: ['create', 'edit'],
+              },
+              {
+                name: 'endsAt',
+                label: 'Ends at',
+                type: 'datetime',
+                editableOn: ['create', 'edit'],
+              },
               { name: 'isActive', label: 'Active', type: 'switch', editableOn: ['create', 'edit'] },
             ]}
             columns={[
@@ -3414,7 +3644,8 @@ export function AdminSettingsScreen({
               {
                 key: 'min_subtotal',
                 label: 'Minimum subtotal',
-                render: (row) => (row.min_subtotal === null ? '—' : formatCurrency(row.min_subtotal)),
+                render: (row) =>
+                  row.min_subtotal === null ? '—' : formatCurrency(row.min_subtotal),
               },
               {
                 key: 'starts_at',
@@ -3459,10 +3690,34 @@ export function AdminSettingsScreen({
                 editableOn: ['create', 'edit'],
                 options: navigationParentOptions,
               },
-              { name: 'label', label: 'Label', type: 'text', required: true, editableOn: ['create', 'edit'] },
-              { name: 'labelAr', label: 'Arabic label', type: 'text', editableOn: ['create', 'edit'] },
-              { name: 'path', label: 'Path', type: 'text', required: true, editableOn: ['create', 'edit'] },
-              { name: 'sortOrder', label: 'Sort order', type: 'number', min: 0, step: 1, editableOn: ['create', 'edit'] },
+              {
+                name: 'label',
+                label: 'Label',
+                type: 'text',
+                required: true,
+                editableOn: ['create', 'edit'],
+              },
+              {
+                name: 'labelAr',
+                label: 'Arabic label',
+                type: 'text',
+                editableOn: ['create', 'edit'],
+              },
+              {
+                name: 'path',
+                label: 'Path',
+                type: 'text',
+                required: true,
+                editableOn: ['create', 'edit'],
+              },
+              {
+                name: 'sortOrder',
+                label: 'Sort order',
+                type: 'number',
+                min: 0,
+                step: 1,
+                editableOn: ['create', 'edit'],
+              },
               { name: 'isActive', label: 'Active', type: 'switch', editableOn: ['create', 'edit'] },
             ]}
             columns={[
@@ -3480,7 +3735,11 @@ export function AdminSettingsScreen({
               },
               { key: 'path', label: 'Path', render: (row) => row.path },
               { key: 'sort_order', label: 'Sort order', render: (row) => row.sort_order },
-              { key: 'is_active', label: 'Active', render: (row) => (row.is_active ? t('Yes') : t('No')) },
+              {
+                key: 'is_active',
+                label: 'Active',
+                render: (row) => (row.is_active ? t('Yes') : t('No')),
+              },
             ]}
             createRequest={{ url: '/api/admin/navigation', method: 'POST' }}
             updateRequest={(id) => ({ url: `/api/admin/navigation/${id}`, method: 'PATCH' })}
@@ -3503,22 +3762,61 @@ export function AdminSettingsScreen({
               isActive: true,
             }}
             fields={[
-              { name: 'country', label: 'Country', type: 'text', required: true, editableOn: ['create', 'edit'] },
-              { name: 'countryAr', label: 'Arabic country', type: 'text', editableOn: ['create', 'edit'] },
+              {
+                name: 'country',
+                label: 'Country',
+                type: 'text',
+                required: true,
+                editableOn: ['create', 'edit'],
+              },
+              {
+                name: 'countryAr',
+                label: 'Arabic country',
+                type: 'text',
+                editableOn: ['create', 'edit'],
+              },
               { name: 'city', label: 'City', type: 'text', editableOn: ['create', 'edit'] },
-              { name: 'cityAr', label: 'Arabic city', type: 'text', editableOn: ['create', 'edit'] },
-              { name: 'fee', label: 'Delivery fee', type: 'number', required: true, min: 0, step: 0.01, editableOn: ['create', 'edit'] },
-              { name: 'sortOrder', label: 'Sort order', type: 'number', min: 0, step: 1, editableOn: ['create', 'edit'] },
+              {
+                name: 'cityAr',
+                label: 'Arabic city',
+                type: 'text',
+                editableOn: ['create', 'edit'],
+              },
+              {
+                name: 'fee',
+                label: 'Delivery fee',
+                type: 'number',
+                required: true,
+                min: 0,
+                step: 0.01,
+                editableOn: ['create', 'edit'],
+              },
+              {
+                name: 'sortOrder',
+                label: 'Sort order',
+                type: 'number',
+                min: 0,
+                step: 1,
+                editableOn: ['create', 'edit'],
+              },
               { name: 'isActive', label: 'Active', type: 'switch', editableOn: ['create', 'edit'] },
             ]}
             columns={[
               { key: 'country', label: 'Country', render: (row) => row.country },
-              { key: 'country_ar', label: 'Arabic country', render: (row) => row.country_ar || '—' },
+              {
+                key: 'country_ar',
+                label: 'Arabic country',
+                render: (row) => row.country_ar || '—',
+              },
               { key: 'city', label: 'City', render: (row) => row.city || '—' },
               { key: 'city_ar', label: 'Arabic city', render: (row) => row.city_ar || '—' },
               { key: 'fee', label: 'Delivery fee', render: (row) => formatCurrency(row.fee) },
               { key: 'sort_order', label: 'Sort order', render: (row) => row.sort_order },
-              { key: 'is_active', label: 'Active', render: (row) => (row.is_active ? t('Yes') : t('No')) },
+              {
+                key: 'is_active',
+                label: 'Active',
+                render: (row) => (row.is_active ? t('Yes') : t('No')),
+              },
             ]}
             createRequest={{ url: '/api/admin/delivery-zones', method: 'POST' }}
             updateRequest={(id) => ({ url: `/api/admin/delivery-zones/${id}`, method: 'PATCH' })}
@@ -3549,16 +3847,67 @@ export function AdminSettingsScreen({
             }}
             fields={[
               { name: 'eyebrow', label: 'Eyebrow', type: 'text', editableOn: ['create', 'edit'] },
-              { name: 'eyebrowAr', label: 'Arabic eyebrow', type: 'text', editableOn: ['create', 'edit'] },
-              { name: 'title', label: 'Title', type: 'text', required: true, editableOn: ['create', 'edit'] },
-              { name: 'titleAr', label: 'Arabic title', type: 'text', editableOn: ['create', 'edit'] },
-              { name: 'description', label: 'Description', type: 'textarea', editableOn: ['create', 'edit'] },
-              { name: 'descriptionAr', label: 'Arabic description', type: 'textarea', editableOn: ['create', 'edit'] },
-              { name: 'buttonText', label: 'Button text', type: 'text', editableOn: ['create', 'edit'] },
-              { name: 'buttonTextAr', label: 'Arabic button text', type: 'text', editableOn: ['create', 'edit'] },
-              { name: 'buttonUrl', label: 'Button URL', type: 'text', editableOn: ['create', 'edit'] },
-              { name: 'imageEn', label: 'English image', type: 'file', editableOn: ['create', 'edit'] },
-              { name: 'imageAr', label: 'Arabic image', type: 'file', editableOn: ['create', 'edit'] },
+              {
+                name: 'eyebrowAr',
+                label: 'Arabic eyebrow',
+                type: 'text',
+                editableOn: ['create', 'edit'],
+              },
+              {
+                name: 'title',
+                label: 'Title',
+                type: 'text',
+                required: true,
+                editableOn: ['create', 'edit'],
+              },
+              {
+                name: 'titleAr',
+                label: 'Arabic title',
+                type: 'text',
+                editableOn: ['create', 'edit'],
+              },
+              {
+                name: 'description',
+                label: 'Description',
+                type: 'textarea',
+                editableOn: ['create', 'edit'],
+              },
+              {
+                name: 'descriptionAr',
+                label: 'Arabic description',
+                type: 'textarea',
+                editableOn: ['create', 'edit'],
+              },
+              {
+                name: 'buttonText',
+                label: 'Button text',
+                type: 'text',
+                editableOn: ['create', 'edit'],
+              },
+              {
+                name: 'buttonTextAr',
+                label: 'Arabic button text',
+                type: 'text',
+                editableOn: ['create', 'edit'],
+              },
+              {
+                name: 'buttonUrl',
+                label: 'Button URL',
+                type: 'text',
+                editableOn: ['create', 'edit'],
+              },
+              {
+                name: 'imageEn',
+                label: 'English image',
+                type: 'file',
+                editableOn: ['create', 'edit'],
+              },
+              {
+                name: 'imageAr',
+                label: 'Arabic image',
+                type: 'file',
+                editableOn: ['create', 'edit'],
+              },
               {
                 name: 'displaySeconds',
                 label: 'Display seconds',
@@ -3568,7 +3917,14 @@ export function AdminSettingsScreen({
                 step: 1,
                 editableOn: ['create', 'edit'],
               },
-              { name: 'sortOrder', label: 'Sort order', type: 'number', min: 0, step: 1, editableOn: ['create', 'edit'] },
+              {
+                name: 'sortOrder',
+                label: 'Sort order',
+                type: 'number',
+                min: 0,
+                step: 1,
+                editableOn: ['create', 'edit'],
+              },
               { name: 'isActive', label: 'Active', type: 'switch', editableOn: ['create', 'edit'] },
             ]}
             columns={[
@@ -3576,31 +3932,63 @@ export function AdminSettingsScreen({
               { key: 'title_ar', label: 'Arabic title', render: (row) => row.title_ar || '—' },
               { key: 'display_seconds', label: 'Seconds', render: (row) => row.display_seconds },
               { key: 'sort_order', label: 'Sort order', render: (row) => row.sort_order },
-              { key: 'is_active', label: 'Active', render: (row) => (row.is_active ? t('Yes') : t('No')) },
+              {
+                key: 'is_active',
+                label: 'Active',
+                render: (row) => (row.is_active ? t('Yes') : t('No')),
+              },
             ]}
             drawerExtras={({ mode, selected }) =>
               mode === 'view' && selected ? (
                 <SimpleGrid cols={{ base: 1, md: 2 }}>
                   {selected.image_en_url ? (
-                    <Paper radius={0} p="md" style={{ background: 'var(--surface)', border: '1px solid var(--surface-border)' }}>
+                    <Paper
+                      radius={0}
+                      p="md"
+                      style={{
+                        background: 'var(--surface)',
+                        border: '1px solid var(--surface-border)',
+                      }}
+                    >
                       <Text size="xs" tt="uppercase" c="dimmed" mb="sm">
                         {t('English image')}
                       </Text>
-                      <Image src={selected.image_en_url} alt={selected.title} h={220} fit="cover" radius={0} />
+                      <Image
+                        src={selected.image_en_url}
+                        alt={selected.title}
+                        h={220}
+                        fit="cover"
+                        radius={0}
+                      />
                     </Paper>
                   ) : null}
                   {selected.image_ar_url ? (
-                    <Paper radius={0} p="md" style={{ background: 'var(--surface)', border: '1px solid var(--surface-border)' }}>
+                    <Paper
+                      radius={0}
+                      p="md"
+                      style={{
+                        background: 'var(--surface)',
+                        border: '1px solid var(--surface-border)',
+                      }}
+                    >
                       <Text size="xs" tt="uppercase" c="dimmed" mb="sm">
                         {t('Arabic image')}
                       </Text>
-                      <Image src={selected.image_ar_url} alt={selected.title_ar || selected.title} h={220} fit="cover" radius={0} />
+                      <Image
+                        src={selected.image_ar_url}
+                        alt={selected.title_ar || selected.title}
+                        h={220}
+                        fit="cover"
+                        radius={0}
+                      />
                     </Paper>
                   ) : null}
                 </SimpleGrid>
               ) : (
                 <Text size="sm" c="dimmed">
-                  {t('Use 2200 x 1400 px images. Keep the subject centered so mobile crops stay safe.')}
+                  {t(
+                    'Use 2200 x 1400 px images. Keep the subject centered so mobile crops stay safe.'
+                  )}
                 </Text>
               )
             }
@@ -3957,7 +4345,6 @@ export function AdminSettingsScreen({
 export function AdminLoginScreen() {
   const router = useRouter();
   const { t } = useLocale();
-  const { isDark } = useThemeMode();
   const [modalError, setModalError] = useState<ModalErrorState | null>(null);
   const schema = z.object({
     email: z.string().email(t('Enter a valid email')),
@@ -4018,24 +4405,27 @@ export function AdminLoginScreen() {
       <Box maw={1080} w="100%">
         <SimpleGrid cols={{ base: 1, md: 2 }} spacing={0}>
           <Paper
-            radius={0}
+            radius="md"
             p="xl"
             style={{
               minHeight: 640,
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              background: isDark
-                ? 'linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))'
-                : 'linear-gradient(160deg, rgba(255,255,255,0.92), rgba(255,247,242,0.78))',
-              border: '1px solid var(--border)',
+              background: '#c7202f',
+              color: '#ffffff',
+              border: '1px solid rgba(24,18,17,0.10)',
               borderRight: 'none',
-              backdropFilter: 'blur(24px)',
             }}
           >
             <Group justify="space-between" align="start">
               <div>
-                <Text size="xs" tt="uppercase" c="dimmed" style={{ letterSpacing: 3 }}>
+                <Text
+                  size="xs"
+                  tt="uppercase"
+                  c="rgba(255,255,255,0.72)"
+                  style={{ letterSpacing: 3 }}
+                >
                   {t('Admin panel')}
                 </Text>
               </div>
@@ -4049,9 +4439,9 @@ export function AdminLoginScreen() {
                 tt="uppercase"
                 style={{ lineHeight: 0.95, letterSpacing: 1.4 }}
               >
-                {t('Ice control room')}
+                {t('Restaurant control room')}
               </Text>
-              <Text mt="lg" c="var(--text-secondary)" maw={420} style={{ lineHeight: 1.8 }}>
+              <Text mt="lg" c="rgba(255,255,255,0.78)" maw={420} style={{ lineHeight: 1.8 }}>
                 {t('Use an admin or super admin account to access the dashboard.')}
               </Text>
             </div>
@@ -4065,14 +4455,14 @@ export function AdminLoginScreen() {
               ].map((item) => (
                 <Paper
                   key={item}
-                  radius={0}
+                  radius="md"
                   p="md"
                   style={{
-                    background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(23,23,23,0.04)',
-                    border: '1px solid var(--border)',
+                    background: 'rgba(255,255,255,0.12)',
+                    border: '1px solid rgba(255,255,255,0.18)',
                   }}
                 >
-                  <Text size="sm" c="var(--text-secondary)">
+                  <Text size="sm" c="rgba(255,255,255,0.78)">
                     {t(item)}
                   </Text>
                 </Paper>
@@ -4081,37 +4471,43 @@ export function AdminLoginScreen() {
           </Paper>
 
           <Paper
-            radius={0}
+            radius="md"
             p="xl"
             style={{
               minHeight: 640,
               display: 'flex',
               alignItems: 'center',
-              background: isDark ? 'rgba(12,12,12,0.9)' : 'rgba(255,252,249,0.92)',
-              border: '1px solid var(--border)',
-              backdropFilter: 'blur(24px)',
-              boxShadow: isDark ? 'none' : '0 32px 120px rgba(50, 26, 24, 0.10)',
+              background: '#fffefe',
+              border: '1px solid rgba(24,18,17,0.10)',
+              boxShadow: '0 32px 120px rgba(24, 18, 17, 0.10)',
             }}
           >
             <Box w="100%">
-              <Text size="xs" tt="uppercase" c="dimmed" style={{ letterSpacing: 3 }}>
-                {t('Operations dashboard')}
+              <Text size="xs" tt="uppercase" c="#c7202f" fw={700} style={{ letterSpacing: 3 }}>
+                {t('Restaurant operations')}
               </Text>
-              <Text fw={800} size="2.4rem" mt="sm" tt="uppercase" style={{ lineHeight: 1 }}>
+              <Text
+                fw={800}
+                size="2.4rem"
+                mt="sm"
+                tt="uppercase"
+                c="#181211"
+                style={{ lineHeight: 1 }}
+              >
                 {t('Sign in to continue')}
               </Text>
-              <Text c="var(--text-secondary)" mt="sm">
+              <Text c="#5d504d" mt="sm">
                 {t('Use an admin or super admin account to access the dashboard.')}
               </Text>
 
-              <Divider my="xl" color="var(--border)" />
+              <Divider my="xl" color="rgba(24,18,17,0.10)" />
 
               <form onSubmit={handleSubmit(onSubmit, handleInvalidSubmit)}>
                 <Stack gap="md">
                   <TextInput
                     label={t('Email')}
                     error={errors.email?.message}
-                    radius="xs"
+                    radius="md"
                     styles={adminInputStyles}
                     {...register('email')}
                   />
@@ -4119,13 +4515,13 @@ export function AdminLoginScreen() {
                     type="password"
                     label={t('Password')}
                     error={errors.password?.message}
-                    radius="xs"
+                    radius="md"
                     styles={adminInputStyles}
                     {...register('password')}
                   />
                   <Button
                     type="submit"
-                    radius={0}
+                    radius="xl"
                     loading={isSubmitting}
                     mt="md"
                     styles={adminPrimaryButtonStyles}

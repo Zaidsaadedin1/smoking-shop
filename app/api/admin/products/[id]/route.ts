@@ -5,6 +5,7 @@ import {
   getProductById,
   listProductVariants,
   replaceProductImages,
+  replaceProductOptionGroupLinks,
   replaceProductVariants,
   updateProduct,
 } from '@/lib/api/store-api';
@@ -67,6 +68,24 @@ function parseVariants(value: unknown) {
     weight_grams: parseOptionalNumber(variant.weightGrams),
     is_active: variant.isActive === undefined ? true : parseBoolean(variant.isActive),
   }));
+}
+
+function parseOptionGroupLinks(value: unknown) {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return [];
+  }
+
+  const parsed = JSON.parse(value) as Array<Record<string, unknown>>;
+
+  return parsed
+    .map((link, index) => ({
+      option_group_id: optionalString(link.optionGroupId),
+      is_required: parseBoolean(link.isRequired),
+      min_selections: parseOptionalNumber(link.minSelections),
+      max_selections: parseOptionalNumber(link.maxSelections),
+      sort_order: index,
+    }))
+    .filter((link) => Boolean(link.option_group_id));
 }
 
 function parseImageUrls(value: unknown) {
@@ -173,6 +192,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const { body, mainImageFile, subImageFiles } = await parseProductRequest(request);
     const payload: Record<string, unknown> = {};
     const hasVariants = body.variantsJson !== undefined;
+    const hasOptionGroupLinks = body.optionGroupLinksJson !== undefined;
 
     if (body.name !== undefined) payload.name = optionalString(body.name);
     if (body.nameAr !== undefined) payload.name_ar = optionalString(body.nameAr);
@@ -282,6 +302,18 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
       if (variantsResult.error) {
         return jsonError(variantsResult.error, variantsResult.status);
+      }
+    }
+
+    if (hasOptionGroupLinks) {
+      const optionLinksResult = await replaceProductOptionGroupLinks(
+        id,
+        parseOptionGroupLinks(body.optionGroupLinksJson),
+        auth
+      );
+
+      if (optionLinksResult.error) {
+        return jsonError(optionLinksResult.error, optionLinksResult.status);
       }
     }
 
