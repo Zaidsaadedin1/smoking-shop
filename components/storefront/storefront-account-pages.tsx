@@ -3,17 +3,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   ArrowLeft,
-  Bell,
   Pencil,
   Heart,
   LogOut,
   MapPin,
   Package,
-  Settings,
   ShieldCheck,
   Star,
   Trash2,
-  User2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -306,12 +303,6 @@ export function AccountDashboardPageView({
       </div>
       <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <AccountLinkCard
-          href="/profile"
-          title="Profile"
-          body="Update your contact details and account identity."
-          icon={<User2 className="h-5 w-5" />}
-        />
-        <AccountLinkCard
           href="/orders"
           title="My Orders"
           body="Track placed orders, payment state, and delivery progress."
@@ -328,18 +319,6 @@ export function AccountDashboardPageView({
           title="Addresses"
           body="Review your saved delivery addresses for faster checkout."
           icon={<MapPin className="h-5 w-5" />}
-        />
-        <AccountLinkCard
-          href="/settings"
-          title="Settings"
-          body="Manage password recovery, communication preferences, and account actions."
-          icon={<Settings className="h-5 w-5" />}
-        />
-        <AccountLinkCard
-          href="/notifications"
-          title="Notifications"
-          body="See account events, order updates, and wishlist reminders."
-          icon={<Bell className="h-5 w-5" />}
         />
       </div>
     </Container>

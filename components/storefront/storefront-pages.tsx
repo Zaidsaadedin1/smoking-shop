@@ -1128,6 +1128,7 @@ type CheckoutFormState = {
   area: string;
   street: string;
   building: string;
+  notes: string;
   paymentMethod: string;
 };
 
@@ -1165,6 +1166,7 @@ export function CheckoutPageView({
     area: defaultAddress?.area ?? '',
     street: defaultAddress?.street ?? '',
     building: defaultAddress?.building ?? '',
+    notes: '',
     paymentMethod: 'cash_on_delivery',
   });
   const countryOptions = useMemo(
@@ -1501,6 +1503,7 @@ export function CheckoutPageView({
           totalAmount: total,
           currency: 'JOD',
           couponCode: appliedCoupon?.code ?? null,
+          notes: form.notes,
           items: lines.map((line) => ({
             productId: line.product.id,
             variantId: line.variant.id,
@@ -1729,6 +1732,24 @@ export function CheckoutPageView({
             <option value="cash_on_delivery">{t('Cash on Delivery')}</option>
             <option disabled>{t('Card (not configured)')}</option>
           </select>
+          <div>
+            <label
+              htmlFor="checkout-notes"
+              className="mb-2 block text-xs tracking-[0.16em] text-[var(--muted)]"
+            >
+              {t('Delivery instructions (optional)')}
+            </label>
+            <textarea
+              id="checkout-notes"
+              value={form.notes}
+              onChange={(event) =>
+                setForm((current) => ({ ...current, notes: event.target.value }))
+              }
+              placeholder={t('Add delivery instructions or a note for your order')}
+              rows={3}
+              className="w-full resize-y rounded-[0.25rem] border border-white/10 bg-black/20 px-5 py-3 text-sm outline-none"
+            />
+          </div>
         </div>
         <div className="rounded-[30px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-6">
           <div className="mb-4 text-xs tracking-[0.25em] text-[var(--muted)]">

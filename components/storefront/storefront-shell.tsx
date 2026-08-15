@@ -150,7 +150,7 @@ function Header({
         color: headerTextColor,
       }}
     >
-      <div className="mx-auto flex max-w-[1440px] items-center justify-between px-4 py-4 md:px-8 lg:px-12">
+      <div className="relative mx-auto flex max-w-[1440px] items-center justify-between px-4 py-4 md:px-8 lg:px-12">
         <div className="flex items-center gap-3 md:hidden">
           <button
             type="button"
@@ -206,7 +206,7 @@ function Header({
 
         <Link
           href="/"
-          className="text-center font-display text-[0.82rem] uppercase tracking-[0.18em] sm:text-[1rem] sm:tracking-[0.22em] md:text-3xl md:tracking-[0.35em]"
+          className="absolute left-1/2 -translate-x-1/2 text-center font-display text-[0.82rem] uppercase tracking-[0.18em] sm:text-[1rem] sm:tracking-[0.22em] md:text-3xl md:tracking-[0.35em]"
           style={{ color: headerTextColor }}
         >
           {brandName}

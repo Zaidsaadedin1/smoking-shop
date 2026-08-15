@@ -1,9 +1,10 @@
 'use client';
 
-import { ActionIcon, Avatar, Box, Burger, Button, Divider, Drawer, Group, Paper, Stack, Text } from '@mantine/core';
+import { ActionIcon, Avatar, Box, Burger, Button, Divider, Drawer, Group, Loader, Paper, Stack, Text } from '@mantine/core';
 import { IconLayoutSidebarLeftCollapse, IconLogout } from '@tabler/icons-react';
 import Link from 'next/link';
-import { PropsWithChildren, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { PropsWithChildren, useEffect, useState, useTransition } from 'react';
 import { LocaleSwitcher, useLocale } from '@/components/storefront/locale-provider';
 import { ThemeSwitcher, useThemeMode } from '@/components/storefront/theme-provider';
 
@@ -29,8 +30,49 @@ type AdminShellProps = PropsWithChildren<{
 export function AdminShell({ children, title, subtitle, active, session }: AdminShellProps) {
   const { t } = useLocale();
   const { isDark } = useThemeMode();
+  const pathname = usePathname();
+  const router = useRouter();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileNavOpened, setMobileNavOpened] = useState(false);
+  const [requestCount, setRequestCount] = useState(0);
+  const [isNavigating, startNavigation] = useTransition();
+
+  useEffect(() => {
+    const originalFetch = window.fetch.bind(window);
+    let mounted = true;
+
+    window.fetch = async (...args) => {
+      if (mounted) {
+        setRequestCount((count) => count + 1);
+      }
+
+      try {
+        return await originalFetch(...args);
+      } finally {
+        if (mounted) {
+          setRequestCount((count) => Math.max(0, count - 1));
+        }
+      }
+    };
+
+    return () => {
+      mounted = false;
+      window.fetch = originalFetch;
+    };
+  }, []);
+
+  function handleNavigation(event: React.MouseEvent<HTMLAnchorElement>, href: string) {
+    event.preventDefault();
+    setMobileNavOpened(false);
+    startNavigation(() => {
+      if (pathname === href) {
+        router.refresh();
+        return;
+      }
+
+      router.push(href);
+    });
+  }
 
   const logoutForm = (
     <form
@@ -77,7 +119,7 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
             key={link.href}
             href={link.href}
             style={{ textDecoration: 'none' }}
-            onClick={() => setMobileNavOpened(false)}
+            onClick={(event) => handleNavigation(event, link.href)}
           >
             <Button
               component="span"
@@ -257,6 +299,29 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
           </Stack>
         </div>
       </Box>
+      {requestCount > 0 || isNavigating ? (
+        <Box
+          aria-busy="true"
+          aria-live="polite"
+          role="status"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 1000,
+            display: 'grid',
+            placeItems: 'center',
+            background: isDark ? 'rgba(0, 0, 0, 0.55)' : 'rgba(255, 250, 247, 0.62)',
+            backdropFilter: 'blur(3px)',
+          }}
+        >
+          <Stack align="center" gap="sm">
+            <Loader color="grape" size="sm" />
+            <Text size="xs" tt="uppercase" fw={700} style={{ letterSpacing: 2 }}>
+              {t('Loading')}
+            </Text>
+          </Stack>
+        </Box>
+      ) : null}
     </Box>
   );
 }

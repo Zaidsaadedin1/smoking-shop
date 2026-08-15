@@ -470,10 +470,11 @@ function AdminOrderDetailPanel({ orderId }: { orderId: string }) {
 
   const shippingAddress = detail.shipping_address ?? {};
   const billingAddress = detail.billing_address ?? {};
+  const currency = detail.currency || 'JOD';
 
   return (
     <Stack gap="md">
-      <SimpleGrid cols={{ base: 1, md: 2 }}>
+      <SimpleGrid cols={{ base: 1, md: 2, xl: 3 }}>
         <Paper
           p="md"
           radius={0}
@@ -516,9 +517,76 @@ function AdminOrderDetailPanel({ orderId }: { orderId: string }) {
           style={{ background: 'var(--surface)', border: '1px solid var(--surface-border)' }}
         >
           <Text size="xs" tt="uppercase" c="dimmed" mb="sm">
-            {t('Billing')}
+            {t('Financial summary')}
+          </Text>
+          <Stack gap={8}>
+            <Group justify="space-between">
+              <Text size="xs" c="dimmed" tt="uppercase">
+                {t('Subtotal')}
+              </Text>
+              <Text size="sm">{formatCurrency(Number(detail.subtotal), currency)}</Text>
+            </Group>
+            <Group justify="space-between">
+              <Text size="xs" c="dimmed" tt="uppercase">
+                {t('Discount amount')}
+              </Text>
+              <Text size="sm">
+                {Number(detail.discount_amount) > 0
+                  ? `-${formatCurrency(Number(detail.discount_amount), currency)}`
+                  : formatCurrency(Number(detail.discount_amount), currency)}
+              </Text>
+            </Group>
+            <Group justify="space-between">
+              <Text size="xs" c="dimmed" tt="uppercase">
+                {t('Shipping amount')}
+              </Text>
+              <Text size="sm">{formatCurrency(Number(detail.shipping_amount), currency)}</Text>
+            </Group>
+            <Group justify="space-between">
+              <Text size="xs" c="dimmed" tt="uppercase">
+                {t('Tax amount')}
+              </Text>
+              <Text size="sm">{formatCurrency(Number(detail.tax_amount), currency)}</Text>
+            </Group>
+            <Divider my="xs" />
+            <Group justify="space-between">
+              <Text size="xs" c="dimmed" tt="uppercase">
+                {t('Total amount')}
+              </Text>
+              <Text size="sm" fw={700}>
+                {formatCurrency(Number(detail.total_amount), currency)}
+              </Text>
+            </Group>
+            <Group justify="space-between">
+              <Text size="xs" c="dimmed" tt="uppercase">
+                {t('Currency')}
+              </Text>
+              <Text size="sm">{currency}</Text>
+            </Group>
+          </Stack>
+        </Paper>
+
+        <Paper
+          p="md"
+          radius={0}
+          style={{ background: 'var(--surface)', border: '1px solid var(--surface-border)' }}
+        >
+          <Text size="xs" tt="uppercase" c="dimmed" mb="sm">
+            {t('Billing and operations')}
           </Text>
           <Stack gap={6}>
+            <Group justify="space-between">
+              <Text size="xs" c="dimmed" tt="uppercase">
+                {t('Payment method')}
+              </Text>
+              <Text size="sm">{detail.payment_method || '—'}</Text>
+            </Group>
+            <Group justify="space-between">
+              <Text size="xs" c="dimmed" tt="uppercase">
+                {t('Payment status')}
+              </Text>
+              <Text size="sm">{detail.payment_status || '—'}</Text>
+            </Group>
             <Group justify="space-between">
               <Text size="xs" c="dimmed" tt="uppercase">
                 {t('Coupon code')}
@@ -536,6 +604,14 @@ function AdminOrderDetailPanel({ orderId }: { orderId: string }) {
                 {t('Shipping carrier')}
               </Text>
               <Text size="sm">{detail.shipping_carrier || '—'}</Text>
+            </Group>
+            <Group justify="space-between" align="start">
+              <Text size="xs" c="dimmed" tt="uppercase">
+                {t('Notes')}
+              </Text>
+              <Text size="sm" ta="right" maw={220}>
+                {detail.notes || '—'}
+              </Text>
             </Group>
             <Divider my="xs" />
             {Object.entries(billingAddress).length ? (
@@ -2784,6 +2860,7 @@ export function AdminOrdersScreen({
           taxAmount: 0,
           totalAmount: 0,
           currency: 'JOD',
+          couponCode: '',
           trackingNumber: '',
           shippingCarrier: '',
           notes: '',
@@ -2923,6 +3000,12 @@ export function AdminOrdersScreen({
               { label: 'USD', value: 'USD' },
             ],
           },
+          {
+            name: 'couponCode',
+            label: 'Coupon code',
+            type: 'text',
+            editableOn: ['create', 'edit'],
+          },
           { name: 'trackingNumber', label: 'Tracking number', type: 'text', editableOn: ['edit'] },
           {
             name: 'shippingCarrier',
@@ -2930,7 +3013,7 @@ export function AdminOrdersScreen({
             type: 'text',
             editableOn: ['edit'],
           },
-          { name: 'notes', label: 'Notes', type: 'textarea', editableOn: ['edit'] },
+          { name: 'notes', label: 'Notes', type: 'textarea', editableOn: ['create', 'edit'] },
         ]}
         columns={[
           { key: 'order_number', label: 'Order', render: (row) => row.order_number },

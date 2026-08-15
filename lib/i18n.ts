@@ -42,6 +42,14 @@ export const messages: Record<string, LocaleMessages> = {
     ar: 'أزياء أنثوية داكنة وإكسسوارات قوطية وقطع مستوحاة من الطقوس ضمن متجر فاخر.',
   },
   'Secure checkout': { en: 'Secure checkout', ar: 'دفع آمن' },
+  'Delivery instructions (optional)': {
+    en: 'Delivery instructions (optional)',
+    ar: 'تعليمات التوصيل (اختياري)',
+  },
+  'Add delivery instructions or a note for your order': {
+    en: 'Add delivery instructions or a note for your order',
+    ar: 'أضيفي تعليمات التوصيل أو ملاحظة لطلبك',
+  },
   'Worldwide aesthetic': { en: 'Worldwide aesthetic', ar: 'هوية عالمية' },
   'Limited drops': { en: 'Limited drops', ar: 'إصدارات محدودة' },
   Shop: { en: 'Shop', ar: 'تسوقي' },
@@ -299,6 +307,7 @@ export const messages: Record<string, LocaleMessages> = {
   'Products / Category Page': { en: 'Products / Category Page', ar: 'المنتجات / صفحة الفئة' },
   'View': { en: 'View', ar: 'عرض' },
   'Loading product...': { en: 'Loading product...', ar: 'جاري تحميل المنتج...' },
+  Loading: { en: 'Loading', ar: 'جارٍ التحميل' },
   'EmptyProducts': { en: 'No products found', ar: 'لا توجد منتجات' },
   'No products matched the current filters.': { en: 'No products matched the current filters.', ar: 'لا توجد منتجات مطابقة للفلاتر الحالية.' },
   'Pagination / InfiniteScroll': { en: 'Pagination / InfiniteScroll', ar: 'الترقيم / التحميل المستمر' },

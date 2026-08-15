@@ -46,6 +46,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (body.customerEmail !== undefined) payload.customer_email = optionalString(body.customerEmail);
     if (body.customerPhone !== undefined) payload.customer_phone = optionalString(body.customerPhone);
     if (body.currency !== undefined) payload.currency = optionalString(body.currency);
+    if (body.couponCode !== undefined) payload.coupon_code = optionalString(body.couponCode);
     if (body.notes !== undefined) payload.notes = optionalString(body.notes);
     if (body.trackingNumber !== undefined) payload.tracking_number = optionalString(body.trackingNumber);
     if (body.shippingCarrier !== undefined) payload.shipping_carrier = optionalString(body.shippingCarrier);

@@ -46,6 +46,7 @@ export async function POST(request: Request) {
       tax_amount: typeof body.taxAmount === 'number' ? body.taxAmount : 0,
       total_amount: requireNumber(body.totalAmount, 'totalAmount'),
       currency: optionalString(body.currency) ?? 'JOD',
+      coupon_code: optionalString(body.couponCode),
       notes: optionalString(body.notes),
       tracking_number: optionalString(body.trackingNumber),
       shipping_carrier: optionalString(body.shippingCarrier),

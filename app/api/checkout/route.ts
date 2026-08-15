@@ -1,4 +1,9 @@
-import { createOrder, listActiveDeliveryZones, listActiveFlashSales } from '@/lib/api/store-api';
+import {
+  createOrder,
+  listActiveDeliveryZones,
+  listActiveFlashSales,
+  updateProfile,
+} from '@/lib/api/store-api';
 import { jsonError, jsonOk, optionalString, requireNumber, requireString } from '@/lib/api/http';
 import { calculateDiscountAmount as calculateFlashSaleDiscount } from '@/lib/commerce-utils';
 import { calculateCouponDiscount, getCouponByCode } from '@/lib/coupon-utils';
@@ -20,6 +25,7 @@ export async function POST(request: Request) {
     const requestedShippingAmount = typeof body.shippingAmount === 'number' ? body.shippingAmount : 0;
     const taxAmount = typeof body.taxAmount === 'number' ? body.taxAmount : 0;
     const couponCode = optionalString(body.couponCode);
+    const customerPhone = requireString(body.customerPhone, 'customerPhone');
     const shippingAddress = (body.shippingAddress as Record<string, unknown>) ?? {};
     const shippingCountry = requireString(shippingAddress.country, 'shippingAddress.country');
     const shippingCity = optionalString(shippingAddress.city) ?? '';
@@ -85,7 +91,7 @@ export async function POST(request: Request) {
       paymentMethod: requireString(body.paymentMethod, 'paymentMethod'),
       customerName: optionalString(body.customerName) ?? session.fullName,
       customerEmail: optionalString(body.customerEmail) ?? session.email,
-      customerPhone: requireString(body.customerPhone, 'customerPhone'),
+      customerPhone,
       shippingAddress,
       billingAddress: (body.billingAddress as Record<string, unknown>) ?? null,
       subtotal,
@@ -124,6 +130,16 @@ export async function POST(request: Request) {
         return jsonError('Checkout is blocked by the current Supabase orders RLS policy. Update the orders insert policy to allow authenticated customers to create their own orders.', 403);
       }
       return jsonError(result.error, result.status);
+    }
+
+    try {
+      await updateProfile(
+        session.id,
+        { phone: customerPhone },
+        authHeaders ? { headers: authHeaders } : undefined
+      );
+    } catch {
+      // The completed order remains valid even if the optional profile sync fails.
     }
 
     return jsonOk(result.data, { status: 201 });
