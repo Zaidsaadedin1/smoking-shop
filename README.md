@@ -36,3 +36,4 @@ This template comes with the following features:
 - `storybook:build` – build production storybook bundle to `storybook-static`
 - `format:write` – formats all files with oxfmt
 # e-commerce-website
+# food-ordering-website
