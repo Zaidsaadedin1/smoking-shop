@@ -1,17 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Tourmaline Coven">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Shawerma 3a Saj">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#181214" />
-      <stop offset="55%" stop-color="#090909" />
-      <stop offset="100%" stop-color="#2b1820" />
-    </linearGradient>
-    <linearGradient id="stroke" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#f4e6d1" />
-      <stop offset="100%" stop-color="#c5a27a" />
+      <stop offset="0%" stop-color="#c7202f" />
+      <stop offset="100%" stop-color="#8c111b" />
     </linearGradient>
   </defs>
+
   <rect width="128" height="128" rx="28" fill="url(#bg)" />
-  <path d="M64 18 74 40l24 4-18 17 4 25-20-12-20 12 4-25-18-17 24-4z" fill="none" stroke="url(#stroke)" stroke-width="4.5" stroke-linejoin="round" />
-  <path d="M39 99V36h50" fill="none" stroke="#f4e6d1" stroke-width="8" stroke-linecap="square" />
-  <path d="M62 51h20" fill="none" stroke="#f4e6d1" stroke-width="8" stroke-linecap="square" />
+
+  <circle cx="64" cy="64" r="42" fill="rgba(255,255,255,0.12)" />
+
+  <path d="M35 52c0-10 8-18 18-18h20c12 0 22 10 22 22v2c0 5-1.7 9.6-4.6 13.3L72 72.5c-3 2.9-4.6 6.8-4.6 11.1v8.4H54.4v-8.4c0-4.3-1.6-8.2-4.6-11.1L32.6 71.3A21.8 21.8 0 0 1 28 58v-6Z" fill="#fff7f3" opacity="0.95"/>
+
+  <path d="M50 36h30c11 0 20 9 20 20v4c0 10-8 18-18 18H66v10H50V36Zm16 16v12h12c4 0 8-3.2 8-8v-4c0-4.8-3.2-8-8-8H66Z" fill="#c7202f"/>
+
+  <path d="M46 80c6 0 11 5 11 11v5H46c-6 0-11-5-11-11 0-6 5-11 11-11Z" fill="#fff7f3" opacity="0.96"/>
+  <circle cx="49" cy="92" r="5" fill="#c7202f"/>
 </svg>
