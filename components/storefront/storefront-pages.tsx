@@ -1944,24 +1944,24 @@ export function CheckoutPageView({
   }
 
   return (
-    <Container className="py-8 md:py-14">
-      <section className="relative overflow-hidden rounded-[34px] border border-white/8 bg-[linear-gradient(135deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] px-6 py-8 md:px-8 md:py-10">
+    <Container className="py-6 md:py-14">
+      <section className="relative overflow-hidden rounded-[24px] border border-white/8 bg-[linear-gradient(135deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] px-4 py-5 sm:px-6 md:rounded-[34px] md:px-8 md:py-10">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(140,36,71,0.24),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(214,180,180,0.08),transparent_28%)]" />
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+        <div className="relative flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <div className="text-[11px] uppercase tracking-[0.34em] text-[var(--muted)]">
+            <div className="text-[10px] uppercase tracking-[0.28em] text-[var(--muted)] md:text-[11px]">
               {t("Secure checkout")}
             </div>
-            <h1 className="mt-3 font-display text-4xl uppercase leading-none md:text-6xl">
+            <h1 className="mt-2 font-display text-3xl uppercase leading-none md:mt-3 md:text-6xl">
               {t("CHECKOUT")}
             </h1>
-            <p className="mt-4 max-w-2xl text-sm uppercase tracking-[0.14em] text-[var(--text-secondary)]">
+            <p className="mt-3 max-w-2xl text-[10px] uppercase tracking-[0.12em] text-[var(--text-secondary)] md:mt-4 md:text-sm md:tracking-[0.14em]">
               {t(
                 "Cash on Delivery is supported. Card checkout requires a configured payment provider.",
               )}
             </p>
           </div>
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
             {[
               { label: "Bag lines", value: String(lines.length || 0) },
               {
@@ -1973,12 +1973,12 @@ export function CheckoutPageView({
             ].map((metric) => (
               <div
                 key={metric.label}
-                className="rounded-[22px] border border-white/10 bg-black/16 px-4 py-4 backdrop-blur-sm"
+                className="rounded-[16px] border border-white/10 bg-black/16 px-2.5 py-3 backdrop-blur-sm md:rounded-[22px] md:px-4 md:py-4"
               >
-                <div className="text-[10px] uppercase tracking-[0.24em] text-[var(--muted)]">
+                <div className="text-[8px] uppercase tracking-[0.2em] text-[var(--muted)] md:text-[10px]">
                   {t(metric.label)}
                 </div>
-                <div className="mt-2 text-lg uppercase tracking-[0.08em] text-[var(--text)]">
+                <div className="mt-1 text-sm uppercase tracking-[0.04em] text-[var(--text)] md:mt-2 md:text-lg md:tracking-[0.08em]">
                   {metric.value}
                 </div>
               </div>
@@ -1986,13 +1986,13 @@ export function CheckoutPageView({
           </div>
         </div>
       </section>
-      <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
-        <div className="space-y-5 rounded-[30px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-6 md:p-7">
-          <div className="rounded-[22px] border border-white/8 bg-black/10 px-5 py-4">
-            <div className="text-[10px] uppercase tracking-[0.24em] text-[var(--muted)]">
+      <div className="mt-6 grid gap-5 lg:grid-cols-[1fr_360px] lg:mt-8">
+        <div className="space-y-4 rounded-[24px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-4 md:rounded-[30px] md:p-7">
+          <div className="rounded-[18px] border border-white/8 bg-black/10 px-4 py-3 md:rounded-[22px] md:px-5 md:py-4">
+            <div className="text-[9px] uppercase tracking-[0.22em] text-[var(--muted)] md:text-[10px]">
               {t("Single-page checkout")}
             </div>
-            <div className="mt-2 text-sm uppercase tracking-[0.14em] text-[var(--text-secondary)]">
+            <div className="mt-2 text-[11px] uppercase tracking-[0.12em] text-[var(--text-secondary)] md:text-sm md:tracking-[0.14em]">
               {t(
                 "Delivery, payment, and review are handled on this one screen.",
               )}
@@ -2004,8 +2004,8 @@ export function CheckoutPageView({
             </div>
           ) : null}
           {addresses.length ? (
-            <div className="space-y-3 rounded-[24px] border border-white/8 bg-black/10 p-4">
-              <div className="text-xs tracking-[0.24em] text-[var(--muted)]">
+            <div className="space-y-3 rounded-[20px] border border-white/8 bg-black/10 p-3 md:rounded-[24px] md:p-4">
+              <div className="text-[10px] tracking-[0.22em] text-[var(--muted)] md:text-xs">
                 {t("Saved addresses")}
               </div>
               <div className="grid gap-3">
@@ -2014,7 +2014,7 @@ export function CheckoutPageView({
                     key={address.id}
                     type="button"
                     onClick={() => setSelectedAddressId(address.id)}
-                    className={`rounded-[22px] border px-4 py-4 text-left transition ${
+                    className={`rounded-[18px] border px-3 py-3 text-left transition md:rounded-[22px] md:px-4 md:py-4 ${
                       selectedAddressId === address.id
                         ? "border-[var(--text)] bg-[color:color-mix(in_srgb,var(--card)_88%,var(--text)_12%)] text-[var(--text)]"
                         : "border-white/10 bg-transparent text-[var(--text)]"
@@ -2074,7 +2074,7 @@ export function CheckoutPageView({
               </Link>
             </div>
           )}
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <select
               value={form.country}
               onChange={(event) =>
@@ -2084,7 +2084,7 @@ export function CheckoutPageView({
                   city: "",
                 }))
               }
-              className="h-12 rounded-[0.25rem] border border-white/10 bg-black/20 px-5 text-sm outline-none"
+              className="h-11 rounded-full border border-white/10 bg-black/20 px-4 text-sm outline-none md:h-12 md:rounded-[0.25rem] md:px-5"
             >
               <option value="">{t("Select a country")}</option>
               {countryOptions.map((option) => (
@@ -2101,7 +2101,7 @@ export function CheckoutPageView({
                   city: event.target.value,
                 }))
               }
-              className="h-12 rounded-[0.25rem] border border-white/10 bg-black/20 px-5 text-sm outline-none"
+              className="h-11 rounded-full border border-white/10 bg-black/20 px-4 text-sm outline-none md:h-12 md:rounded-[0.25rem] md:px-5"
             >
               <option value="">{t("Select a city")}</option>
               {cityOptions.map((option) => (
@@ -2121,7 +2121,7 @@ export function CheckoutPageView({
                   }))
                 }
                 placeholder={t(field.label)}
-                className="h-12 rounded-[0.25rem] border border-white/10 bg-black/20 px-5 text-sm outline-none"
+                className="h-11 rounded-full border border-white/10 bg-black/20 px-4 text-sm outline-none md:h-12 md:rounded-[0.25rem] md:px-5"
               />
             ))}
           </div>
@@ -2133,7 +2133,7 @@ export function CheckoutPageView({
                 paymentMethod: event.target.value,
               }))
             }
-            className="h-12 rounded-[0.25rem] border border-white/10 bg-black/20 px-5 text-sm outline-none"
+            className="h-11 rounded-full border border-white/10 bg-black/20 px-4 text-sm outline-none md:h-12 md:rounded-[0.25rem] md:px-5"
           >
             <option value="cash_on_delivery">{t("Cash on Delivery")}</option>
             <option disabled>{t("Card (not configured)")}</option>
@@ -2162,15 +2162,15 @@ export function CheckoutPageView({
             />
           </div>
         </div>
-        <div className="rounded-[30px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-6">
-          <div className="mb-4 text-xs tracking-[0.25em] text-[var(--muted)]">
+        <div className="rounded-[24px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-4 md:rounded-[30px] md:p-6">
+          <div className="mb-4 text-[10px] tracking-[0.22em] text-[var(--muted)] md:text-xs">
             {t("ORDER SUMMARY")}
           </div>
           <div className="mb-5 space-y-3">
             {lines.map((line) => (
               <div
                 key={line.lineId}
-                className="rounded-[24px] border border-white/8 bg-black/10 p-3"
+                className="rounded-[18px] border border-white/8 bg-black/10 p-2.5 md:rounded-[24px] md:p-3"
               >
                 <div className="flex items-center gap-3">
                   <img
@@ -2268,13 +2268,13 @@ export function CheckoutPageView({
               value={couponCode}
               onChange={(event) => setCouponCode(event.target.value)}
               placeholder={t("Enter promo code")}
-              className="h-12 rounded-[0.25rem] border border-white/10 bg-black/20 px-5 text-sm outline-none"
+              className="h-11 rounded-full border border-white/10 bg-black/20 px-4 text-sm outline-none md:h-12 md:rounded-[0.25rem] md:px-5"
             />
             {appliedCoupon ? (
               <button
                 type="button"
                 onClick={clearAppliedCoupon}
-                className="rounded-full border border-white/10 px-5 py-3 text-sm tracking-[0.2em]"
+                className="rounded-full border border-white/10 px-4 py-2.5 text-sm tracking-[0.2em] md:px-5 md:py-3"
               >
                 {t("REMOVE COUPON")}
               </button>
@@ -2283,7 +2283,7 @@ export function CheckoutPageView({
                 type="button"
                 disabled={!lines.length || isApplyingCoupon}
                 onClick={applyCoupon}
-                className="rounded-full border border-white/10 px-5 py-3 text-sm tracking-[0.2em] disabled:cursor-not-allowed disabled:opacity-40"
+                className="rounded-full border border-white/10 px-4 py-2.5 text-sm tracking-[0.2em] disabled:cursor-not-allowed disabled:opacity-40 md:px-5 md:py-3"
               >
                 {isApplyingCoupon ? t("APPLYING") : t("Apply")}
               </button>
@@ -2321,7 +2321,7 @@ export function CheckoutPageView({
             type="button"
             disabled={!lines.length || isSubmitting || !hasConfiguredDelivery}
             onClick={placeOrder}
-            className="mt-6 w-full rounded-full bg-[var(--text)] px-5 py-3 text-sm tracking-[0.2em] text-[var(--background)] disabled:cursor-not-allowed disabled:opacity-40"
+            className="mt-6 w-full rounded-full bg-[var(--text)] px-5 py-3 text-sm tracking-[0.2em] text-[var(--background)] disabled:cursor-not-allowed disabled:opacity-40 md:py-3"
           >
             {isSubmitting ? t("PLEASE WAIT") : t("PLACE ORDER")}
           </button>

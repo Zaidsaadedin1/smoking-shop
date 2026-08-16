@@ -13,7 +13,8 @@ export async function GET(request: Request) {
   }
 
   const authHeaders = await getCustomerAuthHeaders();
-  const orders = await listOrders(session.id, authHeaders ? { headers: authHeaders } : undefined);
+  // Don't filter by user_id - let RLS policy handle it (returns user's orders + guest orders with null user_id)
+  const orders = await listOrders(undefined, authHeaders ? { headers: authHeaders } : undefined);
   return jsonOk(orders ?? []);
 }
 
@@ -92,7 +93,7 @@ export async function POST(request: Request) {
     }
 
     const result = await createOrder({
-      userId: session.id,
+      userId: null,
       paymentMethod: requireString(body.paymentMethod, 'paymentMethod'),
       customerName: optionalString(body.customerName) ?? session.fullName,
       customerEmail: optionalString(body.customerEmail) ?? session.email,

@@ -1,6 +1,9 @@
-import { OrderDetailPageView } from '@/components/storefront/storefront-account-pages';
-import { getOrderById } from '@/lib/api/store-api';
-import { getCustomerAuthHeaders, requireCustomerSession } from '@/lib/customer/auth';
+import { OrderDetailPageView } from "@/components/storefront/storefront-account-pages";
+import { getOrderById } from "@/lib/api/store-api";
+import {
+  getCustomerAuthHeaders,
+  requireCustomerSession,
+} from "@/lib/customer/auth";
 
 export default async function OrderPage({
   params,
@@ -10,9 +13,16 @@ export default async function OrderPage({
   const session = await requireCustomerSession();
   const authHeaders = await getCustomerAuthHeaders();
   const { id } = await params;
-  const order = await getOrderById(id, authHeaders ? { headers: authHeaders } : undefined);
+  const order = await getOrderById(
+    id,
+    authHeaders ? { headers: authHeaders } : undefined,
+  );
 
-  if (!order.data || order.data.user_id !== session.id) {
+  // Allow viewing orders that belong to the user OR guest orders with null user_id
+  if (
+    !order.data ||
+    (order.data.user_id !== session.id && order.data.user_id !== null)
+  ) {
     return <OrderDetailPageView order={null} />;
   }
 
@@ -35,10 +45,10 @@ export default async function OrderPage({
       order={{
         id: orderData.id,
         number: orderData.order_number,
-        createdAt: new Intl.DateTimeFormat('en-US', {
-          month: 'long',
-          day: 'numeric',
-          year: 'numeric',
+        createdAt: new Intl.DateTimeFormat("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
         }).format(new Date(orderData.created_at)),
         status: orderData.status,
         paymentStatus: orderData.payment_status,

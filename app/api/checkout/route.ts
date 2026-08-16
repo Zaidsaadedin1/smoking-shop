@@ -87,7 +87,7 @@ export async function POST(request: Request) {
     }
 
     const result = await createOrder({
-      userId: session.id,
+      userId: null,
       paymentMethod: requireString(body.paymentMethod, 'paymentMethod'),
       customerName: optionalString(body.customerName) ?? session.fullName,
       customerEmail: optionalString(body.customerEmail) ?? session.email,
@@ -121,14 +121,7 @@ export async function POST(request: Request) {
     }, authHeaders ? { headers: authHeaders } : undefined);
 
     if (result.error) {
-      const normalizedError = result.error.toLowerCase();
-      if (
-        normalizedError.includes('row-level security') ||
-        normalizedError.includes('row level security') ||
-        normalizedError.includes('violates row-level security policy')
-      ) {
-        return jsonError('Checkout is blocked by the current Supabase orders RLS policy. Update the orders insert policy to allow authenticated customers to create their own orders.', 403);
-      }
+      console.error('[Checkout] createOrder error:', result.error);
       return jsonError(result.error, result.status);
     }
 
