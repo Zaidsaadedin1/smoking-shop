@@ -1,9 +1,14 @@
+'use client';
+
 import Link from 'next/link';
 import { Home, ShoppingBag } from 'lucide-react';
+import { useLocale } from '@/components/storefront/locale-provider';
 
 export default function NotFound() {
+  const { t, dir } = useLocale();
+
   return (
-    <main className="tc-not-found relative isolate min-h-screen overflow-hidden">
+    <main className="tc-not-found relative isolate min-h-screen overflow-hidden" dir={dir}>
       <div className="tc-not-found__beam tc-not-found__beam--one" aria-hidden="true" />
       <div className="tc-not-found__beam tc-not-found__beam--two" aria-hidden="true" />
       <div className="noise-overlay absolute inset-0 pointer-events-none" aria-hidden="true" />
@@ -12,20 +17,19 @@ export default function NotFound() {
         <div className="flex flex-col justify-center gap-7">
           <div className="tc-not-found__badge">
             <img src="/shawerma-3a-saj-logo.jpg" alt="Shawerma 3a Saj" />
-            <span>Kitchen route check</span>
+            <span>{t('Kitchen route check')}</span>
           </div>
 
           <div className="space-y-5">
             <p className="tc-not-found__code">404</p>
             <div className="space-y-3">
               <h1 className="font-display text-5xl font-bold leading-[0.96] sm:text-6xl lg:text-7xl">
-                This order
-                <br />
-                rolled away.
+                {t('This order rolled away.')}
               </h1>
               <p className="max-w-xl text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-                The page you opened is not on today&apos;s route. Head back to the menu and build a
-                fresh shawerma order.
+                {t(
+                  "The page you opened is not on today's route. Head back to the menu and build a fresh shawerma order."
+                )}
               </p>
             </div>
           </div>
@@ -33,11 +37,11 @@ export default function NotFound() {
           <div className="flex flex-wrap gap-3">
             <Link href="/shop" className="tc-not-found__button tc-not-found__button--primary">
               <ShoppingBag size={18} aria-hidden="true" />
-              Order now
+              {t('Order now')}
             </Link>
             <Link href="/" className="tc-not-found__button tc-not-found__button--secondary">
               <Home size={18} aria-hidden="true" />
-              Go home
+              {t('Go home')}
             </Link>
           </div>
         </div>
@@ -45,7 +49,7 @@ export default function NotFound() {
         <div className="tc-not-found__stage" aria-hidden="true">
           <div className="tc-not-found__ticket">
             <div className="tc-not-found__ticket-top">
-              <span>Order ticket</span>
+              <span>{t('Order ticket')}</span>
               <strong>#0404</strong>
             </div>
             <div className="tc-not-found__ticket-lines">
@@ -53,7 +57,7 @@ export default function NotFound() {
               <span />
               <span />
             </div>
-            <div className="tc-not-found__stamp">Not found</div>
+            <div className="tc-not-found__stamp">{t('Not found')}</div>
           </div>
 
           <div className="tc-not-found__tray">

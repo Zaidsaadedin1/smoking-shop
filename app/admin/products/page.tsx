@@ -7,9 +7,9 @@ import {
   getAdminProductOptionGroupLinks,
   getAdminProductOptionGroups,
   getAdminProductOptionItems,
+  getAdminProductOptionItemLinks,
   getAdminProducts,
   getAdminProductVariants,
-  getAdminSizes,
 } from '@/lib/admin/data';
 
 export default async function AdminProductsPage() {
@@ -18,21 +18,21 @@ export default async function AdminProductsPage() {
     products,
     categories,
     brands,
-    sizes,
     variants,
     optionGroups,
     optionItems,
     optionGroupLinks,
+    optionItemLinks,
     enumLabels,
   ] = await Promise.all([
     getAdminProducts(),
     getAdminCategories(),
     getAdminBrands(),
-    getAdminSizes(),
     getAdminProductVariants(),
     getAdminProductOptionGroups(),
     getAdminProductOptionItems(),
     getAdminProductOptionGroupLinks(),
+    getAdminProductOptionItemLinks(),
     getAdminEnumLabels(),
   ]);
 
@@ -42,11 +42,11 @@ export default async function AdminProductsPage() {
       products={products}
       categories={categories}
       brands={brands}
-      sizes={sizes}
       variants={variants}
       optionGroups={optionGroups}
       optionItems={optionItems}
       optionGroupLinks={optionGroupLinks}
+      optionItemLinks={optionItemLinks}
       enumLabels={enumLabels}
     />
   );

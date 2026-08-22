@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   ActionIcon,
@@ -12,26 +12,20 @@ import {
   Paper,
   Stack,
   Text,
-} from "@mantine/core";
-import { IconLayoutSidebarLeftCollapse, IconLogout } from "@tabler/icons-react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { PropsWithChildren, useEffect, useState, useTransition } from "react";
-import {
-  LocaleSwitcher,
-  useLocale,
-} from "@/components/storefront/locale-provider";
-import {
-  ThemeSwitcher,
-  useThemeMode,
-} from "@/components/storefront/theme-provider";
+} from '@mantine/core';
+import { IconLayoutSidebarLeftCollapse, IconLogout } from '@tabler/icons-react';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { PropsWithChildren, useEffect, useState, useTransition } from 'react';
+import { LocaleSwitcher, useLocale } from '@/components/storefront/locale-provider';
+import { ThemeSwitcher, useThemeMode } from '@/components/storefront/theme-provider';
 
 const adminLinks = [
-  { label: "Dashboard", href: "/admin" },
-  { label: "Products", href: "/admin/products" },
-  { label: "Orders", href: "/admin/orders" },
-  { label: "Customers", href: "/admin/customers" },
-  { label: "Settings", href: "/admin/settings" },
+  { label: 'Dashboard', href: '/admin' },
+  { label: 'Products', href: '/admin/products' },
+  { label: 'Orders', href: '/admin/orders' },
+  { label: 'Customers', href: '/admin/customers' },
+  { label: 'Settings', href: '/admin/settings' },
 ];
 
 type AdminShellProps = PropsWithChildren<{
@@ -41,18 +35,12 @@ type AdminShellProps = PropsWithChildren<{
   session: {
     fullName: string;
     email: string;
-    role: "admin" | "super_admin";
+    role: 'admin' | 'super_admin';
   };
 }>;
 
-export function AdminShell({
-  children,
-  title,
-  subtitle,
-  active,
-  session,
-}: AdminShellProps) {
-  const { t } = useLocale();
+export function AdminShell({ children, title, subtitle, active, session }: AdminShellProps) {
+  const { t, dir } = useLocale();
   const { isDark } = useThemeMode();
   const pathname = usePathname();
   const router = useRouter();
@@ -85,10 +73,7 @@ export function AdminShell({
     };
   }, []);
 
-  function handleNavigation(
-    event: React.MouseEvent<HTMLAnchorElement>,
-    href: string,
-  ) {
+  function handleNavigation(event: React.MouseEvent<HTMLAnchorElement>, href: string) {
     event.preventDefault();
     setMobileNavOpened(false);
     startNavigation(() => {
@@ -107,18 +92,13 @@ export function AdminShell({
       method="post"
       onSubmit={(event) => {
         event.preventDefault();
-        fetch("/api/admin/logout", { method: "POST" }).then(() => {
-          window.location.href = "/admin/login";
+        fetch('/api/admin/logout', { method: 'POST' }).then(() => {
+          window.location.href = '/admin/login';
         });
       }}
     >
-      <Button
-        type="submit"
-        leftSection={<IconLogout size={16} />}
-        variant="default"
-        radius={0}
-      >
-        {t("Logout")}
+      <Button type="submit" leftSection={<IconLogout size={16} />} variant="default" radius={0}>
+        {t('Logout')}
       </Button>
     </form>
   );
@@ -132,24 +112,20 @@ export function AdminShell({
               fw={800}
               size="lg"
               tt="uppercase"
-              style={{ color: "var(--text)", letterSpacing: 2 }}
+              style={{ color: 'var(--text)', letterSpacing: 2 }}
             >
-              {t("Admin panel")}
+              {t('Admin panel')}
             </Text>
-            <Text
-              size="xs"
-              tt="uppercase"
-              style={{ color: "var(--muted)", letterSpacing: 3 }}
-            >
-              {t("Restaurant operations")}
+            <Text size="xs" tt="uppercase" style={{ color: 'var(--muted)', letterSpacing: 3 }}>
+              {t('Restaurant operations')}
             </Text>
           </Stack>
         ) : null}
         <ActionIcon
           variant="subtle"
-          color={isDark ? "gray" : "red"}
+          color={isDark ? 'gray' : 'red'}
           onClick={() => setCollapsed((value) => !value)}
-          style={{ color: "var(--accent)" }}
+          style={{ color: 'var(--accent)' }}
         >
           <IconLayoutSidebarLeftCollapse size={18} />
         </ActionIcon>
@@ -160,28 +136,26 @@ export function AdminShell({
           <Link
             key={link.href}
             href={link.href}
-            style={{ textDecoration: "none" }}
+            style={{ textDecoration: 'none' }}
             onClick={(event) => handleNavigation(event, link.href)}
           >
             <Button
               component="span"
               fullWidth
-              justify={isCompact ? "center" : "flex-start"}
+              justify={isCompact ? 'center' : 'flex-start'}
               radius={0}
-              variant={active === link.label ? "filled" : "subtle"}
+              variant={active === link.label ? 'filled' : 'subtle'}
               styles={{
                 root: {
-                  border: "1px solid var(--border)",
-                  background:
-                    active === link.label ? "var(--accent)" : "transparent",
-                  color:
-                    active === link.label ? "var(--background)" : "var(--text)",
+                  border: '1px solid var(--border)',
+                  background: active === link.label ? 'var(--accent)' : 'transparent',
+                  color: active === link.label ? 'var(--background)' : 'var(--text)',
                   fontWeight: 700,
                   letterSpacing: 1.2,
                 },
               }}
             >
-              {isCompact ? link.label.charAt(0) : t(link.label)}
+              {isCompact ? t(link.label).charAt(0) : t(link.label)}
             </Button>
           </Link>
         ))}
@@ -192,19 +166,18 @@ export function AdminShell({
         p="sm"
         mt="xl"
         style={{
-          background: "var(--card)",
-          border: "1px solid var(--border)",
+          background: 'var(--card)',
+          border: '1px solid var(--border)',
         }}
       >
         <Group wrap="nowrap" align="center">
           <Avatar
             radius={0}
-            color={isDark ? "dark" : "gray"}
+            color={isDark ? 'dark' : 'gray'}
             styles={{
               root: {
-                background:
-                  "color-mix(in srgb, var(--accent) 15%, transparent)",
-                color: "var(--accent)",
+                background: 'color-mix(in srgb, var(--accent) 15%, transparent)',
+                color: 'var(--accent)',
               },
             }}
           >
@@ -231,56 +204,52 @@ export function AdminShell({
   return (
     <Box
       style={{
-        minHeight: "100vh",
-        background: "var(--background)",
-        color: "var(--text)",
+        minHeight: '100vh',
+        background: 'var(--background)',
+        color: 'var(--text)',
       }}
     >
-      <Box p={{ base: "sm", sm: "lg" }}>
+      <Box p={{ base: 'sm', sm: 'lg' }}>
         <div className="mb-3 flex items-center justify-between gap-3 lg:hidden">
           <div>
             <Text
               fw={800}
               size="sm"
               tt="uppercase"
-              style={{ color: "var(--text)", letterSpacing: 2 }}
+              style={{ color: 'var(--text)', letterSpacing: 2 }}
             >
-              {t("Admin panel")}
+              {t('Admin panel')}
             </Text>
-            <Text
-              size="xs"
-              tt="uppercase"
-              style={{ color: "var(--muted)", letterSpacing: 2.6 }}
-            >
-              {t("Restaurant operations")}
+            <Text size="xs" tt="uppercase" style={{ color: 'var(--muted)', letterSpacing: 2.6 }}>
+              {t('Restaurant operations')}
             </Text>
           </div>
           <Burger
             opened={mobileNavOpened}
             onClick={() => setMobileNavOpened((value) => !value)}
-            aria-label={t("Toggle navigation")}
+            aria-label={t('Toggle navigation')}
           />
         </div>
 
         <Drawer
           opened={mobileNavOpened}
           onClose={() => setMobileNavOpened(false)}
-          position="left"
+          position={dir === 'rtl' ? 'right' : 'left'}
           size="84%"
-          title={t("Admin navigation")}
+          title={t('Admin navigation')}
           hiddenFrom="lg"
           styles={{
             content: {
-              background: "var(--background)",
-              color: "var(--text)",
+              background: 'var(--background)',
+              color: 'var(--text)',
             },
             header: {
-              background: "var(--background)",
-              borderBottom: "1px solid var(--border)",
+              background: 'var(--background)',
+              borderBottom: '1px solid var(--border)',
             },
             title: {
-              textTransform: "uppercase",
-              letterSpacing: "0.12em",
+              textTransform: 'uppercase',
+              letterSpacing: '0.12em',
               fontWeight: 700,
             },
           }}
@@ -298,44 +267,39 @@ export function AdminShell({
 
         <div
           className="flex flex-col items-start gap-5 lg:grid"
-          style={{ gridTemplateColumns: collapsed ? "92px 1fr" : "280px 1fr" }}
+          style={{ gridTemplateColumns: collapsed ? '92px 1fr' : '280px 1fr' }}
         >
           <Paper
             visibleFrom="lg"
             radius={0}
             p="md"
             style={{
-              position: "sticky",
+              position: 'sticky',
               top: 16,
-              background: "var(--card)",
-              border: "1px solid var(--border)",
+              background: 'var(--card)',
+              border: '1px solid var(--border)',
               borderRadius: 8,
-              boxShadow: "0 24px 80px rgba(24, 18, 17, 0.08)",
+              boxShadow: '0 24px 80px rgba(24, 18, 17, 0.08)',
             }}
           >
             {navigationContent(collapsed)}
           </Paper>
 
-          <Stack gap="lg" style={{ width: "100%", minWidth: 0 }}>
+          <Stack gap="lg" style={{ width: '100%', minWidth: 0 }}>
             <Paper
               radius={0}
-              p={{ base: "md", sm: "lg" }}
+              p={{ base: 'md', sm: 'lg' }}
               style={{
-                background: "var(--card)",
-                border: "1px solid var(--border)",
+                background: 'var(--card)',
+                border: '1px solid var(--border)',
                 borderRadius: 8,
-                boxShadow: "0 24px 80px rgba(24, 18, 17, 0.08)",
+                boxShadow: '0 24px 80px rgba(24, 18, 17, 0.08)',
               }}
             >
               <Group justify="space-between" align="start" wrap="wrap" gap="md">
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <Text
-                    size="xs"
-                    tt="uppercase"
-                    c="var(--muted)"
-                    style={{ letterSpacing: 2.6 }}
-                  >
-                    {t("Restaurant control room")}
+                  <Text size="xs" tt="uppercase" c="var(--muted)" style={{ letterSpacing: 2.6 }}>
+                    {t('Restaurant control room')}
                   </Text>
                   <Text
                     fw={800}
@@ -369,15 +333,13 @@ export function AdminShell({
           aria-live="polite"
           role="status"
           style={{
-            position: "fixed",
+            position: 'fixed',
             inset: 0,
             zIndex: 1000,
-            display: "grid",
-            placeItems: "center",
-            background: isDark
-              ? "rgba(0, 0, 0, 0.55)"
-              : "rgba(255, 255, 255, 0.72)",
-            backdropFilter: "blur(3px)",
+            display: 'grid',
+            placeItems: 'center',
+            background: isDark ? 'rgba(0, 0, 0, 0.55)' : 'rgba(255, 255, 255, 0.72)',
+            backdropFilter: 'blur(3px)',
           }}
         >
           <Stack
@@ -386,39 +348,23 @@ export function AdminShell({
             p="lg"
             style={{
               minWidth: 240,
-              background: "var(--card)",
-              border: "1px solid var(--border)",
+              background: 'var(--card)',
+              border: '1px solid var(--border)',
               borderRadius: 16,
-              boxShadow: "0 24px 64px rgba(24,18,17,0.24)",
+              boxShadow: '0 24px 64px rgba(24,18,17,0.24)',
             }}
           >
             <div className="tc-api-overlay__mark" aria-hidden="true">
               <span className="tc-api-overlay__steam tc-api-overlay__steam--left" />
               <span className="tc-api-overlay__steam tc-api-overlay__steam--center" />
               <span className="tc-api-overlay__steam tc-api-overlay__steam--right" />
-              <img
-                src="/shawerma-3a-saj-logo.jpg"
-                alt=""
-                className="tc-api-overlay__logo"
-              />
+              <img src="/shawerma-3a-saj-logo.jpg" alt="" className="tc-api-overlay__logo" />
             </div>
-            <Text
-              size="xs"
-              tt="uppercase"
-              fw={800}
-              c="var(--accent)"
-              style={{ letterSpacing: 2 }}
-            >
-              {t("Kitchen control")}
+            <Text size="xs" tt="uppercase" fw={800} c="var(--accent)" style={{ letterSpacing: 2 }}>
+              {t('Kitchen control')}
             </Text>
-            <Text
-              size="sm"
-              fw={800}
-              tt="uppercase"
-              c="var(--text)"
-              style={{ letterSpacing: 1.4 }}
-            >
-              {t("Syncing admin updates")}
+            <Text size="sm" fw={800} tt="uppercase" c="var(--text)" style={{ letterSpacing: 1.4 }}>
+              {t('Syncing admin updates')}
             </Text>
           </Stack>
         </Box>

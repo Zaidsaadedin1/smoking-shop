@@ -1,0 +1,47 @@
+import { ensureAdminApiAccess, handleApiError } from '@/app/api/admin/_utils';
+import { getAdminAccessToken } from '@/lib/admin/auth';
+import { createProductOptionItem, listProductOptionItems } from '@/lib/api/store-api';
+import { jsonError, jsonOk, optionalString, requireString } from '@/lib/api/http';
+
+const auth = (token: string | null) =>
+  token ? { headers: { Authorization: `Bearer ${token}` } } : undefined;
+const bool = (value: unknown) => value === true || value === 'true' || value === 'on';
+
+export async function GET() {
+  const denied = await ensureAdminApiAccess();
+  if (denied) {
+    return denied;
+  }
+  return jsonOk((await listProductOptionItems(auth(await getAdminAccessToken()))) ?? []);
+}
+export async function POST(request: Request) {
+  const denied = await ensureAdminApiAccess();
+  if (denied) {
+    return denied;
+  }
+  try {
+    const body = (await request.json()) as Record<string, unknown>;
+    const result = await createProductOptionItem(
+      {
+        group_id: requireString(body.groupId, 'groupId'),
+        code: requireString(body.code, 'code'),
+        name: requireString(body.name, 'name'),
+        name_ar: optionalString(body.nameAr),
+        image_url: optionalString(body.imageUrl),
+        price_delta: Number(body.priceDelta ?? 0),
+        stock_quantity: Number(body.stockQuantity ?? 0),
+        track_inventory: bool(body.trackInventory),
+        allow_backorder: bool(body.allowBackorder),
+        is_default: bool(body.isDefault),
+        is_active: bool(body.isActive),
+        sort_order: Number(body.sortOrder ?? 0),
+      },
+      auth(await getAdminAccessToken())
+    );
+    return result.error
+      ? jsonError(result.error, result.status)
+      : jsonOk(result.data, { status: 201 });
+  } catch (error) {
+    return handleApiError(error);
+  }
+}

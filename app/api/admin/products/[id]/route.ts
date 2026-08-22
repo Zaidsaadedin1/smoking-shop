@@ -6,6 +6,7 @@ import {
   listProductVariants,
   replaceProductImages,
   replaceProductOptionGroupLinks,
+  replaceProductOptionItemLinks,
   replaceProductVariants,
   updateProduct,
 } from '@/lib/api/store-api';
@@ -80,6 +81,7 @@ function parseOptionGroupLinks(value: unknown) {
   return parsed
     .map((link, index) => ({
       option_group_id: optionalString(link.optionGroupId),
+      selection_type: optionalString(link.selectionType) ?? 'radio',
       is_required: parseBoolean(link.isRequired),
       min_selections: parseOptionalNumber(link.minSelections),
       max_selections: parseOptionalNumber(link.maxSelections),
@@ -88,13 +90,27 @@ function parseOptionGroupLinks(value: unknown) {
     .filter((link) => Boolean(link.option_group_id));
 }
 
+function parseOptionItemLinks(value: unknown) {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return [];
+  }
+  return (JSON.parse(value) as Array<Record<string, unknown>>)
+    .map((link) => ({
+      option_group_id: optionalString(link.optionGroupId),
+      option_item_id: optionalString(link.optionItemId),
+    }))
+    .filter((link) => Boolean(link.option_group_id && link.option_item_id));
+}
+
 function parseImageUrls(value: unknown) {
   if (typeof value !== 'string' || value.trim().length === 0) {
     return [];
   }
 
   const parsed = JSON.parse(value) as unknown[];
-  return parsed.filter((entry): entry is string => typeof entry === 'string' && entry.trim().length > 0);
+  return parsed.filter(
+    (entry): entry is string => typeof entry === 'string' && entry.trim().length > 0
+  );
 }
 
 function normalizeImageUrls(imageUrls: string[]) {
@@ -193,9 +209,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const payload: Record<string, unknown> = {};
     const hasVariants = body.variantsJson !== undefined;
     const hasOptionGroupLinks = body.optionGroupLinksJson !== undefined;
+    const hasOptionItemLinks = body.optionItemLinksJson !== undefined;
 
-    if (body.name !== undefined) payload.name = optionalString(body.name);
-    if (body.nameAr !== undefined) payload.name_ar = optionalString(body.nameAr);
+    if (body.name !== undefined) {
+      payload.name = optionalString(body.name);
+    }
+    if (body.nameAr !== undefined) {
+      payload.name_ar = optionalString(body.nameAr);
+    }
     if (body.slug !== undefined) {
       const nextSlug = optionalString(body.slug);
 
@@ -209,18 +230,33 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
       payload.slug = nextSlug;
     }
-    if (body.slugAr !== undefined) payload.slug_ar = optionalString(body.slugAr);
-    if (body.shortDescription !== undefined)
+    if (body.slugAr !== undefined) {
+      payload.slug_ar = optionalString(body.slugAr);
+    }
+    if (body.shortDescription !== undefined) {
       payload.short_description = optionalString(body.shortDescription);
-    if (body.shortDescriptionAr !== undefined)
+    }
+    if (body.shortDescriptionAr !== undefined) {
       payload.short_description_ar = optionalString(body.shortDescriptionAr);
-    if (body.description !== undefined) payload.description = optionalString(body.description);
-    if (body.descriptionAr !== undefined)
+    }
+    if (body.description !== undefined) {
+      payload.description = optionalString(body.description);
+    }
+    if (body.descriptionAr !== undefined) {
       payload.description_ar = optionalString(body.descriptionAr);
-    if (body.currency !== undefined) payload.currency = optionalString(body.currency);
-    if (body.status !== undefined) payload.status = optionalString(body.status);
-    if (body.categoryId !== undefined) payload.category_id = optionalString(body.categoryId);
-    if (body.brandId !== undefined) payload.brand_id = optionalString(body.brandId);
+    }
+    if (body.currency !== undefined) {
+      payload.currency = optionalString(body.currency);
+    }
+    if (body.status !== undefined) {
+      payload.status = optionalString(body.status);
+    }
+    if (body.categoryId !== undefined) {
+      payload.category_id = optionalString(body.categoryId);
+    }
+    if (body.brandId !== undefined) {
+      payload.brand_id = optionalString(body.brandId);
+    }
 
     const basePrice = parseOptionalNumber(body.basePrice);
     if (basePrice !== null) {
@@ -275,7 +311,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         ...uploadedSubImages,
       ]);
 
-      if (!uploadedMainImage && uploadedSubImages.length === 0 && areImageSetsEqual(imageUrls, currentImageUrls)) {
+      if (
+        !uploadedMainImage &&
+        uploadedSubImages.length === 0 &&
+        areImageSetsEqual(imageUrls, currentImageUrls)
+      ) {
         // Skip image replacement when the submitted gallery matches the current gallery.
       } else {
         const imagesResult = await replaceProductImages(id, imageUrls, auth);
@@ -294,11 +334,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         return skuConflict;
       }
 
-      const variantsResult = await replaceProductVariants(
-        id,
-        parsedVariants,
-        auth
-      );
+      const variantsResult = await replaceProductVariants(id, parsedVariants, auth);
 
       if (variantsResult.error) {
         return jsonError(variantsResult.error, variantsResult.status);
@@ -314,6 +350,17 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
 
       if (optionLinksResult.error) {
         return jsonError(optionLinksResult.error, optionLinksResult.status);
+      }
+    }
+
+    if (hasOptionItemLinks) {
+      const itemLinksResult = await replaceProductOptionItemLinks(
+        id,
+        parseOptionItemLinks(body.optionItemLinksJson),
+        auth
+      );
+      if (itemLinksResult.error) {
+        return jsonError(itemLinksResult.error, itemLinksResult.status);
       }
     }
 

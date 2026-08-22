@@ -102,10 +102,17 @@ type SupabaseProductOptionItem = {
 type SupabaseProductOptionGroupLink = {
   product_id: string;
   option_group_id: string;
+  selection_type?: 'radio' | 'checkbox' | null;
   is_required?: boolean | null;
   min_selections?: number | null;
   max_selections?: number | null;
   sort_order?: number | null;
+};
+
+type SupabaseProductOptionItemLink = {
+  product_id: string;
+  option_group_id: string;
+  option_item_id: string;
 };
 
 type SupabaseFlashSale = {
@@ -254,6 +261,7 @@ export async function getProducts(): Promise<StoreProduct[]> {
     optionGroups,
     optionItems,
     optionGroupLinks,
+    optionItemLinks,
   ] = await Promise.all([
     fetchSupabaseRest<SupabaseProduct[]>('products', {
       query: {
@@ -286,8 +294,7 @@ export async function getProducts(): Promise<StoreProduct[]> {
     }),
     fetchSupabaseRest<SupabaseVariant[]>('product_variants', {
       query: {
-        select:
-          'id,product_id,sku,size_id,price,compare_at_price,stock_quantity,allow_backorder',
+        select: 'id,product_id,sku,size_id,price,compare_at_price,stock_quantity,allow_backorder',
         is_active: 'eq.true',
       },
       revalidate: 60,
@@ -320,9 +327,13 @@ export async function getProducts(): Promise<StoreProduct[]> {
     fetchSupabaseRest<SupabaseProductOptionGroupLink[]>('product_option_group_links', {
       query: {
         select:
-          'product_id,option_group_id,is_required,min_selections,max_selections,sort_order',
+          'product_id,option_group_id,selection_type,is_required,min_selections,max_selections,sort_order',
         order: 'sort_order.asc',
       },
+      revalidate: 60,
+    }),
+    fetchSupabaseRest<SupabaseProductOptionItemLink[]>('product_option_item_links', {
+      query: { select: 'product_id,option_group_id,option_item_id' },
       revalidate: 60,
     }),
   ]);
@@ -339,6 +350,7 @@ export async function getProducts(): Promise<StoreProduct[]> {
   const optionGroupsById = new Map((optionGroups ?? []).map((group) => [group.id, group]));
   const optionItemsByGroup = groupBy(optionItems ?? [], (item) => item.group_id);
   const optionLinksByProduct = groupBy(optionGroupLinks ?? [], (link) => link.product_id);
+  const optionItemLinksByProduct = groupBy(optionItemLinks ?? [], (link) => link.product_id);
 
   return products.reduce<StoreProduct[]>((acc, product) => {
     const productVariants = variantsByProduct[product.id] ?? [];
@@ -412,23 +424,30 @@ export async function getProducts(): Promise<StoreProduct[]> {
             nameAr: group.name_ar ?? '',
             description: group.description ?? '',
             descriptionAr: group.description_ar ?? '',
-            selectionType: group.selection_type,
+            selectionType: link.selection_type ?? group.selection_type,
             isRequired: Boolean(link.is_required),
             minSelections: link.min_selections,
             maxSelections: link.max_selections,
             sortOrder: Number(link.sort_order ?? group.sort_order ?? 0),
-            items: (optionItemsByGroup[group.id] ?? []).map((item) => ({
-              id: item.id,
-              name: item.name,
-              nameAr: item.name_ar ?? '',
-              imageUrl: item.image_url ?? '',
-              priceDelta: Number(item.price_delta ?? 0),
-              stockQuantity: Number(item.stock_quantity ?? 0),
-              trackInventory: Boolean(item.track_inventory),
-              allowBackorder: Boolean(item.allow_backorder),
-              sortOrder: Number(item.sort_order ?? 0),
-              isDefault: Boolean(item.is_default),
-            })),
+            items: (optionItemsByGroup[group.id] ?? [])
+              .filter((item) =>
+                (optionItemLinksByProduct[product.id] ?? []).some(
+                  (itemLink) =>
+                    itemLink.option_group_id === group.id && itemLink.option_item_id === item.id
+                )
+              )
+              .map((item) => ({
+                id: item.id,
+                name: item.name,
+                nameAr: item.name_ar ?? '',
+                imageUrl: item.image_url ?? '',
+                priceDelta: Number(item.price_delta ?? 0),
+                stockQuantity: Number(item.stock_quantity ?? 0),
+                trackInventory: Boolean(item.track_inventory),
+                allowBackorder: Boolean(item.allow_backorder),
+                sortOrder: Number(item.sort_order ?? 0),
+                isDefault: Boolean(item.is_default),
+              })),
           };
         })
         .filter((group): group is NonNullable<typeof group> => Boolean(group))

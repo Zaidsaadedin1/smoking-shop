@@ -306,10 +306,11 @@ groups_to_attach (code, is_required, min_selections, max_selections, offset_orde
     ('shawerma-add-ons', false, 0, null::integer, 2)
 )
 INSERT INTO public.product_option_group_links
-  (product_id, option_group_id, is_required, min_selections, max_selections, sort_order)
+  (product_id, option_group_id, selection_type, is_required, min_selections, max_selections, sort_order)
 SELECT
   p.id,
   g.id,
+  g.selection_type,
   gtl.is_required,
   gtl.min_selections,
   gtl.max_selections,
@@ -320,9 +321,16 @@ CROSS JOIN groups_to_attach gtl
 JOIN public.product_option_groups g ON g.code = gtl.code
 ON CONFLICT (product_id, option_group_id) DO UPDATE
 SET
+  selection_type = EXCLUDED.selection_type,
   is_required = EXCLUDED.is_required,
   min_selections = EXCLUDED.min_selections,
   max_selections = EXCLUDED.max_selections,
   sort_order = EXCLUDED.sort_order;
+
+INSERT INTO public.product_option_item_links (product_id, option_group_id, option_item_id, sort_order)
+SELECT l.product_id, l.option_group_id, i.id, i.sort_order
+FROM public.product_option_group_links l
+JOIN public.product_option_items i ON i.group_id = l.option_group_id
+ON CONFLICT DO NOTHING;
 
 COMMIT;

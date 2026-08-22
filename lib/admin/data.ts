@@ -11,6 +11,7 @@ import {
   listOrders,
   listProductOptionGroupLinks,
   listProductOptionGroups,
+  listProductOptionItemLinks,
   listProductOptionItems,
   listProductVariants,
   listProducts,
@@ -137,9 +138,17 @@ export type AdminProductOptionItemRecord = {
 export type AdminProductOptionGroupLinkRecord = {
   product_id: string;
   option_group_id: string;
+  selection_type: 'radio' | 'checkbox';
   is_required: boolean;
   min_selections: number | null;
   max_selections: number | null;
+  sort_order: number;
+};
+
+export type AdminProductOptionItemLinkRecord = {
+  product_id: string;
+  option_group_id: string;
+  option_item_id: string;
   sort_order: number;
 };
 
@@ -360,15 +369,31 @@ export async function getAdminProductOptionItems(): Promise<AdminProductOptionIt
   }));
 }
 
-export async function getAdminProductOptionGroupLinks(): Promise<AdminProductOptionGroupLinkRecord[]> {
+export async function getAdminProductOptionGroupLinks(): Promise<
+  AdminProductOptionGroupLinkRecord[]
+> {
   const auth = await getAdminSupabaseAuth();
   const rows = await listProductOptionGroupLinks(auth);
   return (rows ?? []).map((row) => ({
     product_id: row.product_id,
     option_group_id: row.option_group_id,
+    selection_type: row.selection_type ?? 'radio',
     is_required: Boolean(row.is_required),
     min_selections: row.min_selections,
     max_selections: row.max_selections,
+    sort_order: Number(row.sort_order ?? 0),
+  }));
+}
+
+export async function getAdminProductOptionItemLinks(): Promise<
+  AdminProductOptionItemLinkRecord[]
+> {
+  const auth = await getAdminSupabaseAuth();
+  const rows = await listProductOptionItemLinks(auth);
+  return (rows ?? []).map((row) => ({
+    product_id: row.product_id,
+    option_group_id: row.option_group_id,
+    option_item_id: row.option_item_id,
     sort_order: Number(row.sort_order ?? 0),
   }));
 }

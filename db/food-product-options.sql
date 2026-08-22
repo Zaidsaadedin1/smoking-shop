@@ -58,6 +58,7 @@ $$;
 CREATE TABLE IF NOT EXISTS public.product_option_group_links (
   product_id uuid NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,
   option_group_id uuid NOT NULL REFERENCES public.product_option_groups(id) ON DELETE CASCADE,
+  selection_type text NOT NULL DEFAULT 'radio',
   is_required boolean NOT NULL DEFAULT false,
   min_selections integer,
   max_selections integer,
@@ -76,6 +77,21 @@ CREATE TABLE IF NOT EXISTS public.product_option_group_links (
     )
 );
 
+ALTER TABLE public.product_option_group_links
+  ADD COLUMN IF NOT EXISTS selection_type text NOT NULL DEFAULT 'radio';
+
+CREATE TABLE IF NOT EXISTS public.product_option_item_links (
+  product_id uuid NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,
+  option_group_id uuid NOT NULL REFERENCES public.product_option_groups(id) ON DELETE CASCADE,
+  option_item_id uuid NOT NULL REFERENCES public.product_option_items(id) ON DELETE CASCADE,
+  sort_order integer NOT NULL DEFAULT 0,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (product_id, option_group_id, option_item_id)
+);
+
+CREATE INDEX IF NOT EXISTS product_option_item_links_product_idx
+  ON public.product_option_item_links(product_id);
+
 CREATE INDEX IF NOT EXISTS product_option_items_group_idx
   ON public.product_option_items(group_id);
 
@@ -85,6 +101,7 @@ CREATE INDEX IF NOT EXISTS product_option_group_links_product_idx
 ALTER TABLE public.product_option_groups ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.product_option_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.product_option_group_links ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.product_option_item_links ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS product_option_groups_admin ON public.product_option_groups;
 CREATE POLICY product_option_groups_admin
@@ -139,9 +156,27 @@ USING (
   OR public.is_admin()
 );
 
+DROP POLICY IF EXISTS product_option_item_links_admin ON public.product_option_item_links;
+CREATE POLICY product_option_item_links_admin
+ON public.product_option_item_links
+USING (public.is_admin())
+WITH CHECK (public.is_admin());
+
+DROP POLICY IF EXISTS product_option_item_links_read ON public.product_option_item_links;
+CREATE POLICY product_option_item_links_read
+ON public.product_option_item_links
+FOR SELECT
+USING (
+  EXISTS (
+    SELECT 1 FROM public.products p
+    WHERE p.id = product_option_item_links.product_id AND p.status = 'active'
+  ) OR public.is_admin()
+);
+
 GRANT ALL ON TABLE public.product_option_groups TO anon, authenticated, service_role;
 GRANT ALL ON TABLE public.product_option_items TO anon, authenticated, service_role;
 GRANT ALL ON TABLE public.product_option_group_links TO anon, authenticated, service_role;
+GRANT ALL ON TABLE public.product_option_item_links TO anon, authenticated, service_role;
 
 INSERT INTO public.product_option_groups
   (code, name, name_ar, description, description_ar, selection_type, sort_order)

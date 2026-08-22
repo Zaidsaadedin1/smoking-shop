@@ -3,13 +3,14 @@ import { getAdminAccessToken } from '@/lib/admin/auth';
 import {
   createProduct,
   getProductById,
+  listProducts,
   listProductVariants,
   replaceProductImages,
   replaceProductOptionGroupLinks,
+  replaceProductOptionItemLinks,
   replaceProductVariants,
 } from '@/lib/api/store-api';
 import { jsonError, jsonOk, optionalString, requireNumber, requireString } from '@/lib/api/http';
-import { listProducts } from '@/lib/api/store-api';
 import { saveUploadedImage, saveUploadedImages } from '@/lib/admin/uploads';
 
 function getAuthHeaders(accessToken: string | null) {
@@ -82,12 +83,25 @@ function parseOptionGroupLinks(value: unknown) {
   return parsed
     .map((link, index) => ({
       option_group_id: optionalString(link.optionGroupId),
+      selection_type: optionalString(link.selectionType) ?? 'radio',
       is_required: parseBoolean(link.isRequired),
       min_selections: parseOptionalNumber(link.minSelections),
       max_selections: parseOptionalNumber(link.maxSelections),
       sort_order: index,
     }))
     .filter((link) => Boolean(link.option_group_id));
+}
+
+function parseOptionItemLinks(value: unknown) {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return [];
+  }
+  return (JSON.parse(value) as Array<Record<string, unknown>>)
+    .map((link) => ({
+      option_group_id: optionalString(link.optionGroupId),
+      option_item_id: optionalString(link.optionItemId),
+    }))
+    .filter((link) => Boolean(link.option_group_id && link.option_item_id));
 }
 
 function findDuplicateSkus(variants: Array<{ sku: string }>) {
@@ -195,6 +209,7 @@ export async function POST(request: Request) {
     const compareAtPrice = parseOptionalNumber(body.compareAtPrice);
     const variants = parseVariants(body.variantsJson);
     const optionGroupLinks = parseOptionGroupLinks(body.optionGroupLinksJson);
+    const optionItemLinks = parseOptionItemLinks(body.optionItemLinksJson);
     const slug = requireString(body.slug, 'slug');
     const slugConflict = await ensureProductSlugAvailable(slug, accessToken);
 
@@ -264,6 +279,15 @@ export async function POST(request: Request) {
 
     if (optionLinksResult.error) {
       return jsonError(optionLinksResult.error, optionLinksResult.status);
+    }
+
+    const itemLinksResult = await replaceProductOptionItemLinks(
+      result.data.id,
+      optionItemLinks,
+      auth
+    );
+    if (itemLinksResult.error) {
+      return jsonError(itemLinksResult.error, itemLinksResult.status);
     }
 
     return jsonOk(result.data, { status: 201 });
