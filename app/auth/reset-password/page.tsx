@@ -12,14 +12,45 @@ const supabase = createClient(
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState('');
   const [sessionReady, setSessionReady] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    void supabase.auth.getSession().then(({ data }) => {
-      setSessionReady(Boolean(data.session));
+    let active = true;
+
+    const finishSessionCheck = (hasSession: boolean) => {
+      if (!active) {
+        return;
+      }
+      setSessionReady(hasSession);
+      setCheckingSession(false);
+    };
+
+    const initializeRecoverySession = async () => {
+      const code = new URLSearchParams(window.location.search).get('code');
+
+      if (code) {
+        const { data } = await supabase.auth.exchangeCodeForSession(code);
+        finishSessionCheck(Boolean(data.session));
+        return;
+      }
+
+      const { data } = await supabase.auth.getSession();
+      finishSessionCheck(Boolean(data.session));
+    };
+
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      finishSessionCheck(Boolean(session));
     });
+
+    void initializeRecoverySession();
+
+    return () => {
+      active = false;
+      data.subscription.unsubscribe();
+    };
   }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -45,7 +76,11 @@ export default function ResetPasswordPage() {
       <div className="w-full rounded-[36px] border border-[var(--border)] bg-[var(--card)] p-8 shadow-[0_18px_54px_rgba(24,18,17,0.08)] md:p-10">
         <div className="text-xs tracking-[0.25em] text-[var(--muted)]">ACCOUNT RECOVERY</div>
         <h1 className="mt-3 font-display text-5xl uppercase">Reset password</h1>
-        {sessionReady ? (
+        {checkingSession ? (
+          <p className="mt-4 text-sm leading-7 text-[var(--text-secondary)]">
+            Preparing your secure password reset…
+          </p>
+        ) : sessionReady ? (
           <form onSubmit={handleSubmit} className="mt-8 space-y-4 text-left">
             <label className="block text-sm font-medium" htmlFor="password">
               New password
