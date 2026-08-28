@@ -4895,7 +4895,6 @@ export function AdminSettingsScreen({
                 name: 'title',
                 label: 'Title',
                 type: 'text',
-                required: true,
                 editableOn: ['create', 'edit'],
               },
               {

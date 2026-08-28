@@ -524,7 +524,7 @@ export async function getHeroSlides(): Promise<HeroSlide[]> {
       id: slide.id,
       eyebrow: slide.eyebrow ?? 'Shawerma 3a Saj',
       eyebrowAr: slide.eyebrow_ar ?? '',
-      title: slide.title,
+      title: slide.title ?? '',
       titleAr: slide.title_ar ?? '',
       description: slide.description ?? '',
       descriptionAr: slide.description_ar ?? '',

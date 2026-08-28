@@ -2,7 +2,7 @@ import { ensureAdminApiAccess, handleApiError } from '@/app/api/admin/_utils';
 import { getAdminAccessToken } from '@/lib/admin/auth';
 import { saveUploadedImage } from '@/lib/admin/uploads';
 import { createHeroSlide, listHeroSlides } from '@/lib/api/store-api';
-import { jsonError, jsonOk, optionalString, requireNumber, requireString } from '@/lib/api/http';
+import { jsonError, jsonOk, optionalString, requireNumber } from '@/lib/api/http';
 
 function getAuthHeaders(accessToken: string | null) {
   return accessToken ? { headers: { Authorization: `Bearer ${accessToken}` } } : undefined;
@@ -73,7 +73,7 @@ export async function POST(request: Request) {
       {
         eyebrow: optionalString(body.eyebrow),
         eyebrow_ar: optionalString(body.eyebrowAr),
-        title: requireString(body.title, 'title'),
+        title: optionalString(body.title) ?? '',
         title_ar: optionalString(body.titleAr),
         description: optionalString(body.description),
         description_ar: optionalString(body.descriptionAr),
@@ -83,7 +83,9 @@ export async function POST(request: Request) {
         image_en_url: uploadedImageEn ?? optionalString(body.imageEnUrl),
         image_ar_url: uploadedImageAr ?? optionalString(body.imageArUrl),
         display_seconds:
-          body.displaySeconds === undefined ? 6 : parseNumber(body.displaySeconds, 'displaySeconds'),
+          body.displaySeconds === undefined
+            ? 6
+            : parseNumber(body.displaySeconds, 'displaySeconds'),
         sort_order: body.sortOrder === undefined ? 0 : parseNumber(body.sortOrder, 'sortOrder'),
         is_active: body.isActive === undefined ? true : parseBoolean(body.isActive),
       },

@@ -3,23 +3,25 @@
 import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Cloud, MapPin, Star, Timer, Zap } from 'lucide-react';
 import Link from 'next/link';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { useLocale } from '@/components/storefront/locale-provider';
 import {
   Container,
   ProductGrid,
   SectionHeading,
 } from '@/components/storefront/storefront-sections';
-import { FlashSale, StoreCategory, StoreProduct } from '@/lib/commerce-types';
+import { FlashSale, HeroSlide, StoreCategory, StoreProduct } from '@/lib/commerce-types';
 
 export function StorefrontHome({
   categories,
   products,
   flashSale,
+  heroSlides,
 }: {
   categories: StoreCategory[];
   products: StoreProduct[];
   flashSale: FlashSale | null;
+  heroSlides: HeroSlide[];
 }) {
   const { t, dir } = useLocale();
   const isRtl = dir === 'rtl';
@@ -30,7 +32,7 @@ export function StorefrontHome({
 
   return (
     <div className="bg-[var(--background)] pb-16 md:pb-24">
-      <Hero />
+      <Hero slides={heroSlides} />
 
       {flashSale ? <PromoRibbon flashSale={flashSale} /> : null}
 
@@ -97,15 +99,50 @@ export function StorefrontHome({
   );
 }
 
-function Hero() {
+function Hero({ slides }: { slides: HeroSlide[] }) {
   const { t, dir } = useLocale();
-  const title = t('Your go-to vape shop in Jordan.');
-  const description = t(
-    'Shop trusted vape devices, e-liquids, pods, coils, and accessories with delivery across Amman and Jordan.'
-  );
+  const slide = slides[0];
+  const imageUrl = dir === 'rtl' ? slide?.imageArUrl : slide?.imageEnUrl;
+  const [imageRatio, setImageRatio] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!imageUrl) return;
+    const image = new window.Image();
+    image.onload = () => {
+      if (image.naturalWidth && image.naturalHeight) {
+        setImageRatio(image.naturalWidth / image.naturalHeight);
+      }
+    };
+    image.src = imageUrl;
+  }, [imageUrl]);
+  const title = slide
+    ? dir === 'rtl'
+      ? slide.titleAr || slide.title
+      : slide.title
+    : t('Your go-to vape shop in Jordan.');
+  const description = slide
+    ? dir === 'rtl'
+      ? slide.descriptionAr || slide.description
+      : slide.description
+    : t(
+        'Shop trusted vape devices, e-liquids, pods, coils, and accessories with delivery across Amman and Jordan.'
+      );
 
   return (
-    <section className="relative isolate overflow-hidden bg-[#0b0c0c] text-[#f4f1e8]">
+    <section
+      className="relative isolate overflow-hidden bg-[#0b0c0c] text-[#f4f1e8]"
+      style={
+        slide?.imageEnUrl || slide?.imageArUrl
+          ? {
+              backgroundImage: `linear-gradient(90deg, rgba(11,12,12,.9), rgba(11,12,12,.35)), url(${imageUrl})`,
+              backgroundSize: 'contain',
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'center',
+              aspectRatio: imageRatio ? `${imageRatio}` : undefined,
+            }
+          : undefined
+      }
+    >
       <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-white/10 blur-3xl" />
       <div className="mx-auto grid max-w-[1440px] items-center gap-10 px-6 py-20 md:grid-cols-[1.05fr_.95fr] md:px-12 md:py-28">
         <motion.div
@@ -114,50 +151,64 @@ function Hero() {
           transition={{ duration: 0.7 }}
           className="relative z-10 max-w-2xl"
         >
-          <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[0.28em] text-white">
-            <Cloud className="h-4 w-4" /> {t('PUFF JO / VAPE SHOP IN JORDAN')}
-          </div>
-          <h1 className="max-w-xl text-5xl font-black leading-[0.95] tracking-[-0.06em] md:text-8xl">
-            {title}
-          </h1>
-          <p className="mt-6 max-w-lg text-base leading-7 text-[#b7c0b9] md:text-lg">
-            {description}
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href="/shop"
-              className="!text-black inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-black uppercase tracking-[0.12em] transition hover:bg-neutral-200"
-            >
-              {t('SHOP VAPE GEAR')}
-              {dir === 'rtl' ? <ArrowLeft className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
-            </Link>
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-3 text-sm text-[#b7c0b9]">
-              <Zap className="h-4 w-4 text-white" /> {t('18+ ONLY')}
-            </span>
-          </div>
+          {!slide ? (
+            <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[0.28em] text-white">
+              <Cloud className="h-4 w-4" /> {t('PUFF JO / VAPE SHOP IN JORDAN')}
+            </div>
+          ) : null}
+          {title ? (
+            <h1 className="max-w-xl text-5xl font-black leading-[0.95] tracking-[-0.06em] md:text-8xl">
+              {title}
+            </h1>
+          ) : null}
+          {description ? (
+            <p className="mt-6 max-w-lg text-base leading-7 text-[#b7c0b9] md:text-lg">
+              {description}
+            </p>
+          ) : null}
+          {!slide ? (
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href="/shop"
+                className="!text-black inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-black uppercase tracking-[0.12em] transition hover:bg-neutral-200"
+              >
+                {t('SHOP VAPE GEAR')}
+                {dir === 'rtl' ? (
+                  <ArrowLeft className="h-4 w-4" />
+                ) : (
+                  <ArrowRight className="h-4 w-4" />
+                )}
+              </Link>
+              <span className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-3 text-sm text-[#b7c0b9]">
+                <Zap className="h-4 w-4 text-white" /> {t('18+ ONLY')}
+              </span>
+            </div>
+          ) : null}
         </motion.div>
-        <div className="relative flex min-h-[310px] items-center justify-center md:min-h-[430px]">
-          <div className="absolute h-64 w-64 rounded-full border border-white/25 md:h-96 md:w-96" />
-          <div className="absolute h-48 w-48 rounded-full border border-white/10 md:h-72 md:w-72" />
-          <div className="relative flex h-64 w-44 -rotate-6 flex-col justify-between rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-[#27352d] via-[#101513] to-[#070908] p-5 shadow-[0_35px_90px_rgba(0,0,0,.5)] md:h-80 md:w-56">
-            <div className="flex items-center justify-between text-[10px] font-bold tracking-[0.18em] text-white">
-              <span>PUFF/JOR</span>
-              <span>01</span>
-            </div>
-            <div>
-              <div className="text-7xl font-black tracking-[-.12em] text-[#f4f1e8]">V</div>
-              <div className="mt-2 text-[9px] uppercase tracking-[.3em] text-[#b7c0b9]">
-                {t('Vape essentials')}
+        {!slide ? (
+          <div className="relative flex min-h-[310px] items-center justify-center md:min-h-[430px]">
+            <div className="absolute h-64 w-64 rounded-full border border-white/25 md:h-96 md:w-96" />
+            <div className="absolute h-48 w-48 rounded-full border border-white/10 md:h-72 md:w-72" />
+            <div className="relative flex h-64 w-44 -rotate-6 flex-col justify-between rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-[#27352d] via-[#101513] to-[#070908] p-5 shadow-[0_35px_90px_rgba(0,0,0,.5)] md:h-80 md:w-56">
+              <div className="flex items-center justify-between text-[10px] font-bold tracking-[0.18em] text-white">
+                <span>PUFF/JOR</span>
+                <span>01</span>
               </div>
+              <div>
+                <div className="text-7xl font-black tracking-[-.12em] text-[#f4f1e8]">V</div>
+                <div className="mt-2 text-[9px] uppercase tracking-[.3em] text-[#b7c0b9]">
+                  {t('Vape essentials')}
+                </div>
+              </div>
+              <div className="h-1.5 w-full rounded-full bg-white" />
             </div>
-            <div className="h-1.5 w-full rounded-full bg-white" />
+            <div className="absolute bottom-4 right-2 rotate-12 rounded-2xl border border-white/15 bg-[#171b1a] px-4 py-3 text-xs font-bold uppercase tracking-[.15em] text-[#b7c0b9] shadow-xl md:right-10">
+              <span className="text-white">{t('Ready for pickup')}</span>
+              <br />
+              {t('in Jordan')}
+            </div>
           </div>
-          <div className="absolute bottom-4 right-2 rotate-12 rounded-2xl border border-white/15 bg-[#171b1a] px-4 py-3 text-xs font-bold uppercase tracking-[.15em] text-[#b7c0b9] shadow-xl md:right-10">
-            <span className="text-white">{t('Ready for pickup')}</span>
-            <br />
-            {t('in Jordan')}
-          </div>
-        </div>
+        ) : null}
       </div>
 
       {/* SCROLL INDICATOR */}
