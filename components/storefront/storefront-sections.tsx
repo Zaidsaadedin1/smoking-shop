@@ -257,7 +257,7 @@ export function ProductCard({ product }: { product: StoreProduct }) {
           type="button"
           onClick={handleAddToCart}
           disabled={!canPurchase}
-          className="mt-auto flex min-h-10 w-full items-center justify-center gap-1.5 rounded-full bg-[var(--accent)] px-2.5 py-2.5 text-[clamp(.64rem,1.8vw,.8rem)] font-bold uppercase leading-tight tracking-[.08em] text-white transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-45 sm:gap-2 sm:px-3 sm:tracking-[.12em]"
+          className="mt-auto flex min-h-10 w-full items-center justify-center gap-1 whitespace-nowrap rounded-full bg-[var(--accent)] px-1.5 py-2.5 !text-[8px] font-bold uppercase leading-none tracking-[.02em] text-white transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-45 sm:gap-2 sm:px-3 sm:tracking-[.08em]"
         >
           {canPurchase ? (
             added ? (

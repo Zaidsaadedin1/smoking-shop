@@ -366,7 +366,7 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'Add active products and categories in admin to populate the storefront home automatically.',
     ar: 'أضيفي منتجات وفئات مفعلة من لوحة الإدارة لملء الصفحة الرئيسية تلقائياً.',
   },
-  'VIEW SHOP': { en: 'VIEW SHOP', ar: 'عرض المتجر' },
+  'VIEW SHOP': { en: 'View all products', ar: 'عرض جميع المنتجات' },
   'SHOP THIS PIECE': { en: 'SHOP THIS PIECE', ar: 'تسوقي هذه القطعة' },
   'DISCOVER THIS PRODUCT': { en: 'DISCOVER THIS PRODUCT', ar: 'اكتشفي هذا المنتج' },
   'NO LIVE HOME CONTENT YET.': {
@@ -2167,7 +2167,7 @@ export const messages: Record<string, LocaleMessages> = {
   },
   'ORDER THE DEAL': { en: 'ORDER THE DEAL', ar: 'اطلب العرض' },
   'FEATURED GEAR': { en: 'FEATURED GEAR', ar: 'معدات مختارة' },
-  'Your next vape, sorted.': { en: 'Your next vape, sorted.', ar: 'فيبك القادم، صار جاهز.' },
+  'Your next vape, sorted.': { en: 'Your next vape, sorted.', ar: 'فيبك الجاي صار جاهز.' },
   'Original devices, e-liquids, pods, coils, and accessories delivered across Amman and Jordan.': {
     en: 'Original devices, e-liquids, pods, coils, and accessories delivered across Amman and Jordan.',
     ar: 'أجهزة أصلية وجوس إلكتروني وبودات وكويلات وإكسسوارات نوصلها داخل عمان ومختلف مناطق الأردن.',

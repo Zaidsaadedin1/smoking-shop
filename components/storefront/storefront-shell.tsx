@@ -575,8 +575,8 @@ function Footer({
             )}
           </div>
         </div>
-        <div className="grid gap-8 sm:gap-10 lg:grid-cols-[1.5fr_repeat(3,1fr)]">
-          <div className="max-w-md text-center sm:text-left">
+        <div className="grid grid-cols-3 gap-3 sm:gap-10 lg:grid-cols-[1.5fr_repeat(3,1fr)]">
+          <div className="col-span-3 max-w-md text-center sm:text-left lg:col-span-1">
             <Link href="/" className="inline-flex items-center gap-3 sm:gap-4">
               <span className="flex h-16 w-20 shrink-0 items-center justify-center overflow-hidden sm:h-20 sm:w-24">
                 <BrandLogo className="h-full w-full object-contain" />
@@ -620,7 +620,7 @@ function Footer({
             ]}
           />
 
-          <div className="lg:pt-0">
+          <div className="lg:col-span-1 lg:pt-0">
             <FooterColumn
               title="FOLLOW"
               links={[
