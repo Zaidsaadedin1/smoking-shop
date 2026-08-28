@@ -62,8 +62,6 @@ export function StorefrontHome({
         </Container>
       ) : null}
 
-      <FeatureBand />
-
       {refills.length ? (
         <Container className="py-12 md:py-16">
           <section>
@@ -250,28 +248,32 @@ function PopularCategories({ categories }: { categories: StoreCategory[] }) {
             {t('VIEW SHOP')}
           </Link>
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-4 md:gap-4">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-5">
           {categories.map((category) => (
             <Link
               key={category.id}
               href={`/shop?category=${category.slug}`}
-              className="group rounded-[22px] border border-[var(--border)] bg-[var(--card)] p-2.5 shadow-[0_14px_35px_rgba(0,0,0,.14)] transition duration-300 hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[0_22px_50px_rgba(0,0,0,.22)] md:p-4"
+              className="group relative aspect-[0.86] overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] transition duration-300 hover:-translate-y-1 hover:border-[var(--accent)] md:rounded-[22px]"
             >
-              <div className="aspect-square w-full overflow-hidden rounded-[17px] border border-white/8 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,.12),transparent_35%),#171717] md:rounded-[18px]">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,.12),transparent_35%),#171717]">
                 <img
-                  src={category.image || '/products/puff-jo-product-default.png'}
+                  src={category.image?.trim() || '/products/puff-jo-product-default.png'}
                   alt={localize(category.name, category.nameAr)}
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  onError={(event) => {
+                    event.currentTarget.onerror = null;
+                    event.currentTarget.src = '/products/puff-jo-product-default.png';
+                  }}
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               </div>
-
-              <div className="mt-2 text-center text-sm font-bold leading-5 text-[var(--text)] md:mt-4 md:text-lg">
-                {localize(category.name, category.nameAr)}
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent px-3 pb-3 pt-12 md:px-4 md:pb-4">
+                <div className="text-sm font-bold leading-5 text-white md:text-lg">
+                  {localize(category.name, category.nameAr)}
+                </div>
+                <p className="mt-1 hidden line-clamp-1 text-xs text-white/70 md:block">
+                  {localize(category.description, category.descriptionAr)}
+                </p>
               </div>
-
-              <p className="mt-1 hidden text-center text-xs leading-5 text-[var(--text-secondary)] md:mt-2 md:line-clamp-2 md:block md:text-sm">
-                {localize(category.description, category.descriptionAr)}
-              </p>
             </Link>
           ))}
         </div>

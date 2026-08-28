@@ -1752,7 +1752,7 @@ CREATE TABLE IF NOT EXISTS "public"."product_variants" (
     "barcode" "text",
     "price" numeric(12,2),
     "compare_at_price" numeric(12,2),
-    "stock_quantity" integer DEFAULT 0 NOT NULL,
+    "stock_quantity" integer DEFAULT 10 NOT NULL,
     "low_stock_threshold" integer DEFAULT 5 NOT NULL,
     "track_inventory" boolean DEFAULT true NOT NULL,
     "allow_backorder" boolean DEFAULT false NOT NULL,
@@ -1784,6 +1784,7 @@ CREATE TABLE IF NOT EXISTS "public"."products" (
     "currency" character(3) DEFAULT 'JOD'::"bpchar" NOT NULL,
     "status" "public"."product_status" DEFAULT 'draft'::"public"."product_status" NOT NULL,
     "is_featured" boolean DEFAULT false NOT NULL,
+    "max_order_quantity" integer DEFAULT 5 NOT NULL,
     "tags" "text"[] DEFAULT ARRAY[]::"text"[],
     "seo_title" "text",
     "seo_description" "text",
@@ -3459,10 +3460,6 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TAB
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "anon";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "authenticated";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "service_role";
-
-
-
-
 
 
 

@@ -40,6 +40,7 @@ type SupabaseProduct = {
   brand_id?: string | null;
   status: string;
   is_featured?: boolean | null;
+  max_order_quantity?: number | null;
 };
 
 type SupabaseBrand = {
@@ -274,7 +275,7 @@ export async function getProducts(): Promise<StoreProduct[]> {
     fetchSupabaseRest<SupabaseProduct[]>('products', {
       query: {
         select:
-          'id,slug,slug_ar,name,name_ar,short_description,short_description_ar,description,description_ar,base_price,compare_at_price,category_id,brand_id,status,is_featured',
+          'id,slug,slug_ar,name,name_ar,short_description,short_description_ar,description,description_ar,base_price,compare_at_price,category_id,brand_id,status,is_featured,max_order_quantity',
         status: 'eq.active',
         order: 'created_at.desc',
       },
@@ -418,6 +419,7 @@ export async function getProducts(): Promise<StoreProduct[]> {
               allowBackorder: true,
             },
           ],
+      maxOrderQuantity: product.max_order_quantity ?? null,
       optionGroups: (optionLinksByProduct[product.id] ?? [])
         .map((link) => {
           const group = optionGroupsById.get(link.option_group_id);

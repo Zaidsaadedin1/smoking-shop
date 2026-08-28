@@ -52,7 +52,8 @@ function clampVariantQuantity(
     return Math.max(1, quantity);
   }
 
-  return Math.max(1, Math.min(quantity, Math.max(1, variant.stockQuantity)));
+  const productLimit = product.maxOrderQuantity ?? Infinity;
+  return Math.max(1, Math.min(quantity, productLimit, Math.max(1, variant.stockQuantity)));
 }
 
 type CartState = {

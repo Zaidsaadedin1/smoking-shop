@@ -476,9 +476,10 @@ export function ProductPageView({
   const optionsTotal = selectedOptionItems.reduce((sum, item) => sum + item.priceDelta, 0);
   const displayPrice = selectedVariant.price + optionsTotal;
   const discount = calculateDiscount(selectedVariant.price, selectedVariant.compareAtPrice);
-  const maxQuantity = selectedVariant.allowBackorder
-    ? 99
-    : Math.max(1, selectedVariant.stockQuantity);
+  const maxQuantity = Math.min(
+    product.maxOrderQuantity ?? 99,
+    selectedVariant.allowBackorder ? 99 : Math.max(1, selectedVariant.stockQuantity)
+  );
   const selectedOptionKey = optionGroups
     .map((group) => `${group.id}:${[...(selectedOptions[group.id] ?? [])].sort().join(',')}`)
     .sort()
@@ -695,7 +696,7 @@ export function ProductPageView({
                     }`}
                   >
                     <img
-                      src={image.url}
+                      src={image.url || undefined}
                       alt={image.alt}
                       className="h-24 w-24 rounded-md bg-[var(--background)] object-contain transition duration-500 group-hover:scale-[1.03] lg:h-24 lg:w-full lg:min-w-[96px]"
                     />
@@ -706,11 +707,13 @@ export function ProductPageView({
 
             <div className="order-1 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--card)] shadow-[0_24px_70px_rgba(24,18,17,0.12)] lg:order-2">
               <div className="relative bg-[var(--card)]">
-                <img
-                  src={galleryImages[selectedImageIndex]?.url ?? galleryImages[0].url}
-                  alt={galleryImages[selectedImageIndex]?.alt ?? galleryImages[0].alt}
-                  className="block h-auto w-full object-contain"
-                />
+                {galleryImages[selectedImageIndex]?.url ? (
+                  <img
+                    src={galleryImages[selectedImageIndex].url}
+                    alt={galleryImages[selectedImageIndex].alt}
+                    className="block h-auto w-full object-contain"
+                  />
+                ) : null}
               </div>
             </div>
           </div>

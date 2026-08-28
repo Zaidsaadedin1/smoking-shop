@@ -2421,6 +2421,7 @@ type ProductFormValues = {
   mainImage?: FileList;
   subImages?: FileList;
   basePrice: number;
+  maxOrderQuantity: number;
   compareAtPrice?: number | '';
   status: string;
   isFeatured: boolean;
@@ -2438,7 +2439,7 @@ function emptyVariantRow(): ProductVariantFormRow {
     barcode: '',
     price: '',
     compareAtPrice: '',
-    stockQuantity: 5,
+    stockQuantity: 10,
     lowStockThreshold: 5,
     trackInventory: true,
     allowBackorder: false,
@@ -2591,6 +2592,10 @@ function ProductCrudManager({
         mainImage: z.any().optional(),
         subImages: z.any().optional(),
         basePrice: requiredNumberField(t, 0),
+        maxOrderQuantity: requiredNumberField(t, 1).refine(
+          Number.isInteger,
+          t('Enter a whole number')
+        ),
         compareAtPrice: optionalNumberField(t, 0),
         status: z.string().trim().min(1, t('This field is required')),
         isFeatured: z.boolean().default(false),
@@ -2639,6 +2644,7 @@ function ProductCrudManager({
       mainImage: undefined,
       subImages: undefined,
       basePrice: 0,
+      maxOrderQuantity: 5,
       compareAtPrice: '',
       status: 'draft',
       isFeatured: false,
@@ -2720,6 +2726,7 @@ function ProductCrudManager({
         description: selected.description,
         descriptionAr: selected.description_ar,
         basePrice: selected.base_price,
+        maxOrderQuantity: selected.max_order_quantity ?? 5,
         compareAtPrice: selected.compare_at_price ?? '',
         status: selected.status,
         isFeatured: selected.is_featured,
@@ -2806,6 +2813,7 @@ function ProductCrudManager({
       ['description', values.description],
       ['descriptionAr', values.descriptionAr],
       ['basePrice', values.basePrice],
+      ['maxOrderQuantity', values.maxOrderQuantity],
       ['compareAtPrice', values.compareAtPrice],
       ['status', values.status],
       ['isFeatured', values.isFeatured],
@@ -2837,26 +2845,22 @@ function ProductCrudManager({
           )
         ),
       ],
-      ...(mode === 'create'
-        ? [
-            [
-              'variantsJson',
-              JSON.stringify(
-                [(values.variants as ProductVariantFormRow[])?.[0] ?? defaultVariantRows[0]].map(
-                  (variant: ProductVariantFormRow) => ({
-                    ...variant,
-                    sizeId: '',
-                    colorId: '',
-                    price: values.basePrice,
-                    compareAtPrice: values.compareAtPrice === '' ? null : values.compareAtPrice,
-                    weightGrams: variant.weightGrams === '' ? 300 : variant.weightGrams,
-                    isActive: true,
-                  })
-                )
-              ),
-            ] as [string, unknown],
-          ]
-        : []),
+      [
+        'variantsJson',
+        JSON.stringify(
+          [(values.variants as ProductVariantFormRow[])?.[0] ?? defaultVariantRows[0]].map(
+            (variant: ProductVariantFormRow) => ({
+              ...variant,
+              sizeId: '',
+              colorId: '',
+              price: values.basePrice,
+              compareAtPrice: values.compareAtPrice === '' ? null : values.compareAtPrice,
+              weightGrams: variant.weightGrams === '' ? 300 : variant.weightGrams,
+              isActive: true,
+            })
+          )
+        ),
+      ] as [string, unknown],
     ];
 
     for (const [key, value] of entries) {
@@ -3405,6 +3409,30 @@ function ProductCrudManager({
                   radius="xs"
                   styles={adminInputStyles}
                   {...register('compareAtPrice')}
+                />
+                <TextInput
+                  label={t('Stock quantity')}
+                  description={t('Available units for this product')}
+                  type="number"
+                  min={0}
+                  step={1}
+                  error={
+                    (errors.variants as any)?.[0]?.stockQuantity?.message as string | undefined
+                  }
+                  radius="xs"
+                  styles={adminInputStyles}
+                  {...register('variants.0.stockQuantity', { valueAsNumber: true })}
+                />
+                <TextInput
+                  label={t('Maximum per order')}
+                  description={t('Most units a customer can order at once')}
+                  type="number"
+                  min={1}
+                  step={1}
+                  error={errors.maxOrderQuantity?.message as string | undefined}
+                  radius="xs"
+                  styles={adminInputStyles}
+                  {...register('maxOrderQuantity', { valueAsNumber: true })}
                 />
                 <NativeSelect
                   label={t('Category')}

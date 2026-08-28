@@ -87,6 +87,7 @@ export type StoreProduct = {
   tags: string[];
   images: ProductImage[];
   variants: ProductVariant[];
+  maxOrderQuantity?: number | null;
   optionGroups?: ProductOptionGroup[];
   status: 'active' | 'draft' | 'inactive' | 'archived';
   isFeatured?: boolean;

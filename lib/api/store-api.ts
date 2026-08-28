@@ -88,6 +88,7 @@ type ProductApiRow = {
   category_id: string | null;
   brand_id?: string | null;
   created_at: string;
+  max_order_quantity?: number | null;
 };
 
 type VariantApiRow = {
@@ -501,7 +502,7 @@ export async function listProducts(
 ) {
   const query: Record<string, string | number | undefined> = {
     select:
-      'id,name,name_ar,slug,slug_ar,description,description_ar,short_description,short_description_ar,base_price,compare_at_price,status,currency,is_featured,category_id,brand_id,created_at',
+      'id,name,name_ar,slug,slug_ar,description,description_ar,short_description,short_description_ar,base_price,compare_at_price,status,currency,is_featured,category_id,brand_id,max_order_quantity,created_at',
     order: 'created_at.desc',
   };
 
@@ -565,7 +566,7 @@ export async function getProductById(idOrSlug: string, auth?: SupabaseRequestAut
     'products',
     {
       select:
-        'id,name,name_ar,slug,slug_ar,description,description_ar,short_description,short_description_ar,base_price,compare_at_price,status,currency,is_featured,category_id,brand_id,created_at',
+        'id,name,name_ar,slug,slug_ar,description,description_ar,short_description,short_description_ar,base_price,compare_at_price,status,currency,is_featured,category_id,brand_id,max_order_quantity,created_at',
       or: `(id.eq.${idOrSlug},slug.eq.${idOrSlug})`,
     },
     auth

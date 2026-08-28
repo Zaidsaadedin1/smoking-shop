@@ -86,6 +86,7 @@ export type AdminProductRecord = {
   sub_image_urls: string[];
   variant_count: number;
   total_stock: number;
+  max_order_quantity: number | null;
   created_at: string;
 };
 
@@ -307,6 +308,7 @@ export async function getAdminProducts(): Promise<AdminProductRecord[]> {
       (sum, variant) => sum + Number(variant.stock_quantity ?? 0),
       0
     ),
+    max_order_quantity: row.max_order_quantity ?? null,
     created_at: row.created_at,
   }));
 }

@@ -26,6 +26,14 @@ function parseOptionalNumber(value: unknown) {
   return Number.isNaN(parsed) ? null : parsed;
 }
 
+function parseNonNegativeInteger(value: unknown, field: string) {
+  const parsed = Number(value);
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    throw new Error(`${field} must be a positive whole number`);
+  }
+  return parsed;
+}
+
 function parseBoolean(value: unknown) {
   return value === true || value === 'true' || value === 'on' || value === '1';
 }
@@ -240,6 +248,7 @@ export async function POST(request: Request) {
         is_featured: parseBoolean(body.isFeatured),
         category_id: optionalString(body.categoryId),
         brand_id: optionalString(body.brandId),
+        max_order_quantity: parseNonNegativeInteger(body.maxOrderQuantity, 'maxOrderQuantity'),
       },
       auth
     );

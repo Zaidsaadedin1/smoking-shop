@@ -1,5 +1,6 @@
 import {
   createOrder,
+  getProductById,
   listActiveDeliveryZones,
   listActiveFlashSales,
   updateProfile,
@@ -22,7 +23,8 @@ export async function POST(request: Request) {
     const body = (await request.json()) as Record<string, unknown>;
     const items = Array.isArray(body.items) ? body.items : null;
     const subtotal = requireNumber(body.subtotal, 'subtotal');
-    const requestedShippingAmount = typeof body.shippingAmount === 'number' ? body.shippingAmount : 0;
+    const requestedShippingAmount =
+      typeof body.shippingAmount === 'number' ? body.shippingAmount : 0;
     const taxAmount = typeof body.taxAmount === 'number' ? body.taxAmount : 0;
     const couponCode = optionalString(body.couponCode);
     const customerPhone = requireString(body.customerPhone, 'customerPhone');
@@ -32,6 +34,40 @@ export async function POST(request: Request) {
 
     if (!items || items.length === 0) {
       return jsonError('items must be a non-empty array');
+    }
+
+    const validatedItems = items.map((item) => {
+      const row = item as Record<string, unknown>;
+      return {
+        productId: optionalString(row.productId),
+        variantId: optionalString(row.variantId),
+        quantity: requireNumber(row.quantity, 'items[].quantity'),
+      };
+    });
+    const products = await Promise.all(
+      validatedItems.map((item) => (item.productId ? getProductById(item.productId) : null))
+    );
+    for (const [index, item] of validatedItems.entries()) {
+      if (!Number.isInteger(item.quantity) || item.quantity < 1) {
+        return jsonError('Item quantities must be positive whole numbers.', 400);
+      }
+      const product = products[index]?.data;
+      if (!product) {
+        return jsonError('One or more products are no longer available.', 409);
+      }
+      const maxOrderQuantity = Number(product.max_order_quantity ?? 1);
+      if (item.quantity > maxOrderQuantity) {
+        return jsonError(`You can order at most ${maxOrderQuantity} of this product.`, 400);
+      }
+      const variant = product.variants.find((entry) => entry.id === item.variantId);
+      if (
+        variant &&
+        variant.track_inventory !== false &&
+        !variant.allow_backorder &&
+        item.quantity > Number(variant.stock_quantity ?? 0)
+      ) {
+        return jsonError('One or more products do not have enough stock.', 409);
+      }
     }
 
     const [activeFlashSaleRows, deliveryZones] = await Promise.all([
@@ -59,7 +95,10 @@ export async function POST(request: Request) {
     }
 
     if (Math.abs(requestedShippingAmount - shippingAmount) > 0.01) {
-      return jsonError('Checkout delivery fees changed. Please review your order and try again.', 409);
+      return jsonError(
+        'Checkout delivery fees changed. Please review your order and try again.',
+        409
+      );
     }
     const flashSaleDiscount = activeFlashSale
       ? calculateFlashSaleDiscount(
@@ -74,7 +113,9 @@ export async function POST(request: Request) {
       return jsonError('Coupon code is invalid or inactive.', 400);
     }
 
-    const couponDiscount = coupon ? calculateCouponDiscount(subtotal, buildCouponForOrder(coupon)) : 0;
+    const couponDiscount = coupon
+      ? calculateCouponDiscount(subtotal, buildCouponForOrder(coupon))
+      : 0;
     const discountAmount = Math.min(
       subtotal,
       flashSaleDiscount + Math.min(Math.max(0, subtotal - flashSaleDiscount), couponDiscount)
@@ -83,42 +124,48 @@ export async function POST(request: Request) {
     const requestedTotal = requireNumber(body.totalAmount, 'totalAmount');
 
     if (Math.abs(requestedTotal - totalAmount) > 0.01) {
-      return jsonError('Checkout totals are out of date. Please review your order and try again.', 409);
+      return jsonError(
+        'Checkout totals are out of date. Please review your order and try again.',
+        409
+      );
     }
 
-    const result = await createOrder({
-      userId: session.id,
-      paymentMethod: requireString(body.paymentMethod, 'paymentMethod'),
-      customerName: optionalString(body.customerName) ?? session.fullName,
-      customerEmail: optionalString(body.customerEmail) ?? session.email,
-      customerPhone,
-      shippingAddress,
-      billingAddress: (body.billingAddress as Record<string, unknown>) ?? null,
-      subtotal,
-      discountAmount,
-      shippingAmount,
-      taxAmount,
-      totalAmount,
-      currency: optionalString(body.currency) ?? 'JOD',
-      couponCode: coupon?.code ?? null,
-      notes: optionalString(body.notes),
-      items: items.map((item) => {
-        const row = item as Record<string, unknown>;
+    const result = await createOrder(
+      {
+        userId: session.id,
+        paymentMethod: requireString(body.paymentMethod, 'paymentMethod'),
+        customerName: optionalString(body.customerName) ?? session.fullName,
+        customerEmail: optionalString(body.customerEmail) ?? session.email,
+        customerPhone,
+        shippingAddress,
+        billingAddress: (body.billingAddress as Record<string, unknown>) ?? null,
+        subtotal,
+        discountAmount,
+        shippingAmount,
+        taxAmount,
+        totalAmount,
+        currency: optionalString(body.currency) ?? 'JOD',
+        couponCode: coupon?.code ?? null,
+        notes: optionalString(body.notes),
+        items: items.map((item) => {
+          const row = item as Record<string, unknown>;
 
-        return {
-          productId: optionalString(row.productId),
-          variantId: optionalString(row.variantId),
-          productName: requireString(row.productName, 'items[].productName'),
-          sku: optionalString(row.sku),
-          sizeName: optionalString(row.sizeName),
-          colorName: optionalString(row.colorName),
-          imageUrl: optionalString(row.imageUrl),
-          unitPrice: requireNumber(row.unitPrice, 'items[].unitPrice'),
-          quantity: requireNumber(row.quantity, 'items[].quantity'),
-          lineTotal: requireNumber(row.lineTotal, 'items[].lineTotal'),
-        };
-      }),
-    }, authHeaders ? { headers: authHeaders } : undefined);
+          return {
+            productId: optionalString(row.productId),
+            variantId: optionalString(row.variantId),
+            productName: requireString(row.productName, 'items[].productName'),
+            sku: optionalString(row.sku),
+            sizeName: optionalString(row.sizeName),
+            colorName: optionalString(row.colorName),
+            imageUrl: optionalString(row.imageUrl),
+            unitPrice: requireNumber(row.unitPrice, 'items[].unitPrice'),
+            quantity: requireNumber(row.quantity, 'items[].quantity'),
+            lineTotal: requireNumber(row.lineTotal, 'items[].lineTotal'),
+          };
+        }),
+      },
+      authHeaders ? { headers: authHeaders } : undefined
+    );
 
     if (result.error) {
       console.error('[Checkout] createOrder error:', result.error);
