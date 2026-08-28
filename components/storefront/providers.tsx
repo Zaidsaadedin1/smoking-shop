@@ -6,6 +6,7 @@ import { ApiActivityProvider } from '@/components/storefront/api-activity-provid
 import { LocaleProvider } from '@/components/storefront/locale-provider';
 import { NavigationLoader } from '@/components/storefront/navigation-loader';
 import { AppThemeProvider } from '@/components/storefront/theme-provider';
+import { RecoveryRedirect } from '@/components/storefront/recovery-redirect';
 
 export function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(() => new QueryClient());
@@ -13,6 +14,7 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <AppThemeProvider>
       <QueryClientProvider client={queryClient}>
+        <RecoveryRedirect />
         <LocaleProvider>
           <ApiActivityProvider>
             <NavigationLoader />
