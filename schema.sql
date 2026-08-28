@@ -1528,6 +1528,7 @@ CREATE TABLE IF NOT EXISTS "public"."order_items" (
     "size_name" "text",
     "color_name" "text",
     "image_url" "text",
+    "options" "jsonb" DEFAULT '{}'::jsonb NOT NULL,
     "unit_price" numeric(12,2) NOT NULL,
     "quantity" integer NOT NULL,
     "line_total" numeric(12,2) NOT NULL,

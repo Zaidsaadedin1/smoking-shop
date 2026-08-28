@@ -19,6 +19,7 @@ import {
   updateSize,
 } from '@/lib/api/store-api';
 import { jsonError, jsonOk, optionalString, requireString } from '@/lib/api/http';
+import { saveUploadedImage } from '@/lib/admin/uploads';
 
 function getAuthHeaders(accessToken: string | null) {
   return accessToken ? { headers: { Authorization: `Bearer ${accessToken}` } } : undefined;
@@ -28,9 +29,19 @@ type RouteAuth = ReturnType<typeof getAuthHeaders>;
 
 type EntityHandlers = {
   list: (auth?: RouteAuth) => Promise<unknown>;
-  create: (body: Record<string, unknown>, auth?: RouteAuth) => Promise<{ data: unknown; error: string | null; status: number }>;
-  update: (id: string, body: Record<string, unknown>, auth?: RouteAuth) => Promise<{ data: unknown; error: string | null; status: number }>;
-  remove: (id: string, auth?: RouteAuth) => Promise<{ data: unknown; error: string | null; status: number }>;
+  create: (
+    body: Record<string, unknown>,
+    auth?: RouteAuth
+  ) => Promise<{ data: unknown; error: string | null; status: number }>;
+  update: (
+    id: string,
+    body: Record<string, unknown>,
+    auth?: RouteAuth
+  ) => Promise<{ data: unknown; error: string | null; status: number }>;
+  remove: (
+    id: string,
+    auth?: RouteAuth
+  ) => Promise<{ data: unknown; error: string | null; status: number }>;
 };
 
 async function getEntityHandlers(entity: string): Promise<EntityHandlers | null> {
@@ -39,17 +50,20 @@ async function getEntityHandlers(entity: string): Promise<EntityHandlers | null>
       return {
         list: (auth?: RouteAuth) => listCategories(auth),
         create: (body: Record<string, unknown>, auth?: RouteAuth) =>
-          createCategory({
-            name: requireString(body.name, 'name'),
-            name_ar: optionalString(body.nameAr),
-            slug: requireString(body.slug, 'slug'),
-            slug_ar: optionalString(body.slugAr),
-            description: optionalString(body.description),
-            description_ar: optionalString(body.descriptionAr),
-            image_url: optionalString(body.imageUrl),
-            sort_order: typeof body.sortOrder === 'number' ? body.sortOrder : 0,
-            is_active: body.isActive ?? true,
-          }, auth),
+          createCategory(
+            {
+              name: requireString(body.name, 'name'),
+              name_ar: optionalString(body.nameAr),
+              slug: requireString(body.slug, 'slug'),
+              slug_ar: optionalString(body.slugAr),
+              description: optionalString(body.description),
+              description_ar: optionalString(body.descriptionAr),
+              image_url: optionalString(body.imageUrl),
+              sort_order: typeof body.sortOrder === 'number' ? body.sortOrder : 0,
+              is_active: body.isActive ?? true,
+            },
+            auth
+          ),
         update: (id: string, body: Record<string, unknown>, auth?: RouteAuth) =>
           updateCategory(
             id,
@@ -58,8 +72,12 @@ async function getEntityHandlers(entity: string): Promise<EntityHandlers | null>
               ...(body.nameAr !== undefined ? { name_ar: optionalString(body.nameAr) } : {}),
               ...(body.slug !== undefined ? { slug: optionalString(body.slug) } : {}),
               ...(body.slugAr !== undefined ? { slug_ar: optionalString(body.slugAr) } : {}),
-              ...(body.description !== undefined ? { description: optionalString(body.description) } : {}),
-              ...(body.descriptionAr !== undefined ? { description_ar: optionalString(body.descriptionAr) } : {}),
+              ...(body.description !== undefined
+                ? { description: optionalString(body.description) }
+                : {}),
+              ...(body.descriptionAr !== undefined
+                ? { description_ar: optionalString(body.descriptionAr) }
+                : {}),
               ...(body.imageUrl !== undefined ? { image_url: optionalString(body.imageUrl) } : {}),
               ...(typeof body.sortOrder === 'number' ? { sort_order: body.sortOrder } : {}),
               ...(typeof body.isActive === 'boolean' ? { is_active: body.isActive } : {}),
@@ -72,16 +90,19 @@ async function getEntityHandlers(entity: string): Promise<EntityHandlers | null>
       return {
         list: (auth?: RouteAuth) => listBrands(auth),
         create: (body: Record<string, unknown>, auth?: RouteAuth) =>
-          createBrand({
-            name: requireString(body.name, 'name'),
-            name_ar: optionalString(body.nameAr),
-            slug: requireString(body.slug, 'slug'),
-            slug_ar: optionalString(body.slugAr),
-            description: optionalString(body.description),
-            description_ar: optionalString(body.descriptionAr),
-            logo_url: optionalString(body.logoUrl),
-            is_active: body.isActive ?? true,
-          }, auth),
+          createBrand(
+            {
+              name: requireString(body.name, 'name'),
+              name_ar: optionalString(body.nameAr),
+              slug: requireString(body.slug, 'slug'),
+              slug_ar: optionalString(body.slugAr),
+              description: optionalString(body.description),
+              description_ar: optionalString(body.descriptionAr),
+              logo_url: optionalString(body.logoUrl),
+              is_active: body.isActive ?? true,
+            },
+            auth
+          ),
         update: (id: string, body: Record<string, unknown>, auth?: RouteAuth) =>
           updateBrand(
             id,
@@ -90,8 +111,12 @@ async function getEntityHandlers(entity: string): Promise<EntityHandlers | null>
               ...(body.nameAr !== undefined ? { name_ar: optionalString(body.nameAr) } : {}),
               ...(body.slug !== undefined ? { slug: optionalString(body.slug) } : {}),
               ...(body.slugAr !== undefined ? { slug_ar: optionalString(body.slugAr) } : {}),
-              ...(body.description !== undefined ? { description: optionalString(body.description) } : {}),
-              ...(body.descriptionAr !== undefined ? { description_ar: optionalString(body.descriptionAr) } : {}),
+              ...(body.description !== undefined
+                ? { description: optionalString(body.description) }
+                : {}),
+              ...(body.descriptionAr !== undefined
+                ? { description_ar: optionalString(body.descriptionAr) }
+                : {}),
               ...(body.logoUrl !== undefined ? { logo_url: optionalString(body.logoUrl) } : {}),
               ...(typeof body.isActive === 'boolean' ? { is_active: body.isActive } : {}),
             },
@@ -103,13 +128,16 @@ async function getEntityHandlers(entity: string): Promise<EntityHandlers | null>
       return {
         list: (auth?: RouteAuth) => listSizes(auth),
         create: (body: Record<string, unknown>, auth?: RouteAuth) =>
-          createSize({
-            code: requireString(body.code, 'code'),
-            name: requireString(body.name, 'name'),
-            name_ar: optionalString(body.nameAr),
-            sort_order: typeof body.sortOrder === 'number' ? body.sortOrder : 0,
-            is_active: body.isActive ?? true,
-          }, auth),
+          createSize(
+            {
+              code: requireString(body.code, 'code'),
+              name: requireString(body.name, 'name'),
+              name_ar: optionalString(body.nameAr),
+              sort_order: typeof body.sortOrder === 'number' ? body.sortOrder : 0,
+              is_active: body.isActive ?? true,
+            },
+            auth
+          ),
         update: (id: string, body: Record<string, unknown>, auth?: RouteAuth) =>
           updateSize(
             id,
@@ -128,14 +156,17 @@ async function getEntityHandlers(entity: string): Promise<EntityHandlers | null>
       return {
         list: (auth?: RouteAuth) => listColors(auth),
         create: (body: Record<string, unknown>, auth?: RouteAuth) =>
-          createColor({
-            code: requireString(body.code, 'code'),
-            name: requireString(body.name, 'name'),
-            name_ar: optionalString(body.nameAr),
-            hex_code: optionalString(body.hexCode),
-            sort_order: typeof body.sortOrder === 'number' ? body.sortOrder : 0,
-            is_active: body.isActive ?? true,
-          }, auth),
+          createColor(
+            {
+              code: requireString(body.code, 'code'),
+              name: requireString(body.name, 'name'),
+              name_ar: optionalString(body.nameAr),
+              hex_code: optionalString(body.hexCode),
+              sort_order: typeof body.sortOrder === 'number' ? body.sortOrder : 0,
+              is_active: body.isActive ?? true,
+            },
+            auth
+          ),
         update: (id: string, body: Record<string, unknown>, auth?: RouteAuth) =>
           updateColor(
             id,
@@ -191,7 +222,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ ent
       return jsonError('Unknown lookup entity', 404);
     }
 
-    const body = (await request.json()) as Record<string, unknown>;
+    const body = await readRequestBody(request, await getAdminAccessToken());
     const result = await handlers.create(body, auth);
 
     if (result.error) {
@@ -220,7 +251,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ en
       return jsonError('Unknown lookup entity', 404);
     }
 
-    const body = (await request.json()) as Record<string, unknown>;
+    const body = await readRequestBody(request, await getAdminAccessToken());
     const id = requireString(body.id, 'id');
     const result = await handlers.update(id, body, auth);
 
@@ -234,7 +265,28 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ en
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: Promise<{ entity: string }> }) {
+async function readRequestBody(request: Request, accessToken: string | null) {
+  if (!request.headers.get('content-type')?.includes('multipart/form-data')) {
+    return (await request.json()) as Record<string, unknown>;
+  }
+
+  const formData = await request.formData();
+  const body: Record<string, unknown> = Object.fromEntries(formData.entries());
+  const file = formData.get('logoUrl');
+
+  if (file instanceof File && file.size > 0) {
+    body.logoUrl = await saveUploadedImage(file, 'brands', accessToken);
+  } else {
+    body.logoUrl = formData.get('logoUrlUrl') ?? '';
+  }
+
+  return body;
+}
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ entity: string }> }
+) {
   const unauthorized = await ensureAdminApiAccess();
 
   if (unauthorized) {

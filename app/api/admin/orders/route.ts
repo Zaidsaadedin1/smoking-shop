@@ -73,6 +73,10 @@ export async function POST(request: Request) {
           sizeName: optionalString(item.sizeName),
           colorName: optionalString(item.colorName),
           imageUrl: optionalString(item.imageUrl),
+          options:
+            item.options && typeof item.options === 'object'
+              ? (item.options as Record<string, unknown>)
+              : {},
           unitPrice: Number(item.unitPrice) || 0,
           quantity: Math.max(1, Math.floor(Number(item.quantity) || 1)),
           lineTotal: Number(item.lineTotal) || 0,

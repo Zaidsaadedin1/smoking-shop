@@ -24,7 +24,14 @@ import {
   TextInput,
   Textarea,
 } from '@mantine/core';
-import { IconEye, IconEyeOff, IconPencil, IconPlus, IconTrash } from '@tabler/icons-react';
+import {
+  IconAdjustments,
+  IconEye,
+  IconEyeOff,
+  IconPencil,
+  IconPlus,
+  IconTrash,
+} from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
@@ -90,6 +97,7 @@ type AdminOrderDetail = {
     size_name: string | null;
     color_name: string | null;
     image_url: string | null;
+    options?: Record<string, unknown> | null;
     unit_price: string | number;
     quantity: number;
     line_total: string | number;
@@ -150,6 +158,7 @@ type CrudManagerProps<T extends { id: string }> = {
     selected: T | null;
     setFormValue: (name: string, value: unknown) => void;
   }) => ReactNode;
+  hideViewFields?: boolean;
   allowCreate?: boolean;
   allowDelete?: boolean;
 };
@@ -458,6 +467,9 @@ function AdminOrderDetailPanel({
   const [detail, setDetail] = useState<AdminOrderDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [optionLabels, setOptionLabels] = useState<
+    Record<string, { name: string; nameAr: string }>
+  >({});
 
   useEffect(() => {
     let active = true;
@@ -497,6 +509,28 @@ function AdminOrderDetailPanel({
       active = false;
     };
   }, [orderId]);
+
+  useEffect(() => {
+    if (!detail?.items?.length) return;
+    const productIds = Array.from(
+      new Set(detail.items.map((item) => item.product_id).filter(Boolean))
+    );
+    void Promise.all(
+      productIds.map(async (productId) => {
+        const response = await fetch(`/api/admin/products/${productId}/configuration`);
+        const payload = (await response.json()) as {
+          data?: { items?: Array<{ id: string; name: string; name_ar: string }> };
+        };
+        return payload.data?.items ?? [];
+      })
+    ).then((groups) =>
+      setOptionLabels(
+        Object.fromEntries(
+          groups.flat().map((item) => [item.id, { name: item.name, nameAr: item.name_ar }])
+        )
+      )
+    );
+  }, [detail]);
 
   if (loading) {
     return (
@@ -730,20 +764,56 @@ function AdminOrderDetailPanel({
                 />
                 <Stack gap={6} style={{ flex: 1 }}>
                   <Text fw={600}>{item.product_name}</Text>
-                  <SimpleGrid cols={{ base: 1, sm: 2 }}>
-                    <Text size="sm" c="dimmed">
-                      {t('Color')}: {item.color_name || '—'}
-                    </Text>
-                    <Text size="sm" c="dimmed">
-                      {t('Size')}: {item.size_name || '—'}
-                    </Text>
-                    <Text size="sm" c="dimmed">
-                      {t('Quantity')}: {item.quantity}
-                    </Text>
-                    <Text size="sm" c="dimmed">
-                      {t('SKU')}: {item.sku || '—'}
-                    </Text>
-                  </SimpleGrid>
+                  {item.color_name ||
+                  item.size_name ||
+                  item.sku ||
+                  (item.options && Object.keys(item.options).length) ? (
+                    <SimpleGrid cols={{ base: 1, sm: 2 }}>
+                      {item.color_name ? (
+                        <Text size="sm" c="dimmed">
+                          {t('Color')}: {item.color_name}
+                        </Text>
+                      ) : null}
+                      {item.size_name ? (
+                        <Text size="sm" c="dimmed">
+                          {t('Size')}: {item.size_name}
+                        </Text>
+                      ) : null}
+                      {item.sku ? (
+                        <Text size="sm" c="dimmed">
+                          {t('SKU')}: {item.sku}
+                        </Text>
+                      ) : null}
+                      {item.options && Object.keys(item.options).length ? (
+                        <Text size="sm" c="dimmed">
+                          {t('Options')}:{' '}
+                          {Object.values(item.options)
+                            .flatMap((values) => (Array.isArray(values) ? values : []))
+                            .map((option) =>
+                              typeof option === 'object' && option
+                                ? (optionLabels[
+                                    String((option as Record<string, unknown>).id ?? '')
+                                  ]?.[locale === 'ar' ? 'nameAr' : 'name'] ??
+                                  String(
+                                    (locale === 'ar'
+                                      ? (option as Record<string, unknown>).nameAr
+                                      : (option as Record<string, unknown>).name) ??
+                                      (option as Record<string, unknown>).id ??
+                                      ''
+                                  ))
+                                : (optionLabels[String(option)]?.[
+                                    locale === 'ar' ? 'nameAr' : 'name'
+                                  ] ?? String(option))
+                            )
+                            .filter(Boolean)
+                            .join(', ')}
+                        </Text>
+                      ) : null}
+                    </SimpleGrid>
+                  ) : null}
+                  <Text size="sm" c="dimmed">
+                    {t('Quantity')}: {item.quantity}
+                  </Text>
                   <Group justify="space-between">
                     <Text size="sm">
                       {t('Unit price')}: {formatCurrency(Number(item.unit_price), detail.currency)}
@@ -782,6 +852,11 @@ function AdminOrderItemsEditor({
   const [productId, setProductId] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [customizingItem, setCustomizingItem] = useState<AdminEditableOrderItem | null>(null);
+  const [configuration, setConfiguration] = useState<Record<string, any> | null>(null);
+  const [variantId, setVariantId] = useState('');
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string[]>>({});
+  const [optionAvailability, setOptionAvailability] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (!orderId) {
@@ -821,6 +896,28 @@ function AdminOrderItemsEditor({
   useEffect(() => {
     if (loading) return;
 
+    const productIds = Array.from(
+      new Set(items.map((item) => item.product_id).filter((id): id is string => Boolean(id)))
+    );
+    if (!productIds.length) return;
+
+    void Promise.all(
+      productIds.map(async (id) => {
+        const response = await fetch(`/api/admin/products/${id}/configuration`);
+        const payload = (await response.json()) as { data?: Record<string, any> };
+        return [
+          id,
+          Boolean((payload.data?.variants ?? []).length || (payload.data?.groups ?? []).length),
+        ] as const;
+      })
+    ).then((results) =>
+      setOptionAvailability((current) => ({ ...current, ...Object.fromEntries(results) }))
+    );
+  }, [items, loading]);
+
+  useEffect(() => {
+    if (loading) return;
+
     setFormValue(
       'items',
       items.map((item) => ({
@@ -831,6 +928,7 @@ function AdminOrderItemsEditor({
         sizeName: item.size_name,
         colorName: item.color_name,
         imageUrl: item.image_url,
+        options: item.options ?? {},
         unitPrice: Number(item.unit_price),
         quantity: item.quantity,
         lineTotal: Number(item.line_total),
@@ -911,11 +1009,73 @@ function AdminOrderItemsEditor({
         sizeName: item.size_name,
         colorName: item.color_name,
         imageUrl: item.image_url,
+        options: item.options ?? {},
         unitPrice: Number(item.unit_price),
         quantity: item.quantity,
         lineTotal: Number(item.line_total),
       }))
     );
+  }
+
+  async function openCustomization(item: AdminEditableOrderItem) {
+    setCustomizingItem(item);
+    setVariantId(item.variant_id ?? '');
+    setSelectedOptions(
+      Object.fromEntries(
+        Object.entries(item.options ?? {}).map(([groupId, values]) => [
+          groupId,
+          (Array.isArray(values) ? values : []).map((value) =>
+            typeof value === 'string' ? value : String((value as Record<string, unknown>).id ?? '')
+          ),
+        ])
+      )
+    );
+    const response = await fetch(`/api/admin/products/${item.product_id}/configuration`);
+    const payload = (await response.json()) as { data?: Record<string, any> };
+    setConfiguration(payload.data ?? null);
+  }
+
+  function saveCustomization() {
+    if (!customizingItem || !configuration) return;
+    const variant = (configuration.variants ?? []).find((entry: any) => entry.id === variantId);
+    const size = (configuration.sizes ?? []).find((entry: any) => entry.id === variant?.size_id);
+    const color = (configuration.colors ?? []).find((entry: any) => entry.id === variant?.color_id);
+    const optionItems = Object.values(selectedOptions)
+      .flat()
+      .map((id) => (configuration.items ?? []).find((entry: any) => entry.id === id))
+      .filter(Boolean);
+    const price =
+      Number(variant?.price ?? customizingItem.unit_price) +
+      optionItems.reduce((sum, item: any) => sum + Number(item.price_delta ?? 0), 0);
+    setItems((current) =>
+      current.map((item) =>
+        item.id === customizingItem.id
+          ? {
+              ...item,
+              variant_id: variant?.id ?? null,
+              size_name: size?.name ?? null,
+              color_name: color?.name ?? null,
+              unit_price: price,
+              line_total: price * item.quantity,
+              options: Object.fromEntries(
+                Object.entries(selectedOptions).map(([groupId, values]) => [
+                  groupId,
+                  values.map((id) => {
+                    const option = (configuration.items ?? []).find(
+                      (entry: any) => entry.id === id
+                    );
+                    return option
+                      ? { id: option.id, name: option.name, nameAr: option.name_ar }
+                      : { id };
+                  }),
+                ])
+              ),
+            }
+          : item
+      )
+    );
+    setCustomizingItem(null);
+    setConfiguration(null);
   }
 
   return (
@@ -1028,6 +1188,16 @@ function AdminOrderItemsEditor({
             </Group>
             <ActionIcon
               type="button"
+              variant="default"
+              color="gray"
+              onClick={() => void openCustomization(item)}
+              disabled={optionAvailability[item.product_id ?? ''] !== true}
+              aria-label={t('Customize product')}
+            >
+              <IconAdjustments size={16} />
+            </ActionIcon>
+            <ActionIcon
+              type="button"
               variant="subtle"
               color="red"
               onClick={(event) => {
@@ -1042,6 +1212,68 @@ function AdminOrderItemsEditor({
           </Group>
         ))}
       </Stack>
+      <Modal
+        opened={Boolean(customizingItem)}
+        onClose={() => setCustomizingItem(null)}
+        title={t('Customize product')}
+        centered
+      >
+        {!configuration ? (
+          <Text size="sm" c="dimmed">
+            {t('Loading product options')}
+          </Text>
+        ) : (
+          <Stack gap="md">
+            {(configuration.variants ?? []).length > 0 ? (
+              <NativeSelect
+                label={t('Variant')}
+                value={variantId}
+                onChange={(event) => setVariantId(event.currentTarget.value)}
+                data={(configuration.variants ?? []).map((entry: any) => ({
+                  label: `${entry.sku} · ${formatCurrency(entry.price ?? 0)}`,
+                  value: entry.id,
+                }))}
+                styles={adminSelectStyles}
+              />
+            ) : null}
+            {(configuration.groups ?? []).map((group: any) => {
+              const options = (configuration.itemLinks ?? [])
+                .filter((entry: any) => entry.option_group_id === group.id)
+                .map((entry: any) =>
+                  (configuration.items ?? []).find((item: any) => item.id === entry.option_item_id)
+                )
+                .filter(Boolean);
+              return (
+                <NativeSelect
+                  key={group.id}
+                  label={localize(group.name, group.name_ar)}
+                  value={selectedOptions[group.id]?.[0] ?? ''}
+                  onChange={(event) => {
+                    const value = event.currentTarget.value;
+                    setSelectedOptions((current) => ({
+                      ...current,
+                      [group.id]: [value],
+                    }));
+                  }}
+                  data={[
+                    { label: t('Select an option'), value: '' },
+                    ...options.map((item: any) => ({
+                      label: `${localize(item.name, item.name_ar)} · ${formatCurrency(item.price_delta ?? 0)}`,
+                      value: item.id,
+                    })),
+                  ]}
+                  styles={adminSelectStyles}
+                />
+              );
+            })}
+            <Group justify="flex-end">
+              <Button radius="xl" styles={adminPrimaryButtonStyles} onClick={saveCustomization}>
+                {t('Apply options')}
+              </Button>
+            </Group>
+          </Stack>
+        )}
+      </Modal>
     </Paper>
   );
 }
@@ -1105,6 +1337,7 @@ function CrudManager<T extends { id: string }>({
   updateRequest,
   deleteRequest,
   drawerExtras,
+  hideViewFields = false,
   allowCreate = true,
   allowDelete = true,
 }: CrudManagerProps<T>) {
@@ -1210,10 +1443,9 @@ function CrudManager<T extends { id: string }>({
         nextValues[field.name] = field.type === 'datetime' ? toDateTimeInputValue(value) : value;
 
         if (field.type === 'file') {
-          const existingUrl = getRowFieldValue(
-            selected as Record<string, unknown>,
-            `${field.name}Url`
-          );
+          const existingUrl =
+            getRowFieldValue(selected as Record<string, unknown>, field.name) ??
+            getRowFieldValue(selected as Record<string, unknown>, `${field.name}Url`);
 
           if (typeof existingUrl === 'string' && existingUrl.trim().length > 0) {
             nextFilePreviews[field.name] = [
@@ -1269,6 +1501,10 @@ function CrudManager<T extends { id: string }>({
     const request = mode === 'edit' && selected ? updateRequest(selected.id) : createRequest;
     const submittedValues = { ...values };
 
+    if (mode === 'edit' && selected) {
+      submittedValues.id = selected.id;
+    }
+
     if ('discountPercent' in submittedValues || 'taxPercent' in submittedValues) {
       const subtotal = Number(submittedValues.subtotal) || 0;
       submittedValues.discountAmount =
@@ -1283,6 +1519,10 @@ function CrudManager<T extends { id: string }>({
 
     if (hasFileFields) {
       const formData = new FormData();
+
+      if (mode === 'edit' && selected) {
+        formData.append('id', selected.id);
+      }
 
       for (const field of editableFields) {
         const value = submittedValues[field.name];
@@ -1525,6 +1765,29 @@ function CrudManager<T extends { id: string }>({
                   setFormValue: setFormValueForDrawer,
                 })
               : null}
+            {!hideViewFields ? (
+              <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+                {fields.map((field) => (
+                  <Paper
+                    key={field.name}
+                    p="sm"
+                    radius="xs"
+                    style={{
+                      background: 'var(--background)',
+                      border: '1px solid var(--border)',
+                      minHeight: 76,
+                    }}
+                  >
+                    <Text size="xs" c="dimmed" tt="uppercase" fw={700} mb={6}>
+                      {t(field.label)}
+                    </Text>
+                    <Text size="sm" fw={600} style={{ overflowWrap: 'anywhere' }}>
+                      {rowValue(selected as Record<string, unknown>, field, t)}
+                    </Text>
+                  </Paper>
+                ))}
+              </SimpleGrid>
+            ) : null}
           </Stack>
         ) : (
           <form onSubmit={handleSubmit(onSubmit, handleInvalidSubmit)}>
@@ -2574,22 +2837,26 @@ function ProductCrudManager({
           )
         ),
       ],
-      [
-        'variantsJson',
-        JSON.stringify(
-          [(values.variants as ProductVariantFormRow[])?.[0] ?? defaultVariantRows[0]].map(
-            (variant: ProductVariantFormRow) => ({
-              ...variant,
-              sizeId: '',
-              colorId: '',
-              price: values.basePrice,
-              compareAtPrice: values.compareAtPrice === '' ? null : values.compareAtPrice,
-              weightGrams: variant.weightGrams === '' ? 300 : variant.weightGrams,
-              isActive: true,
-            })
-          )
-        ),
-      ],
+      ...(mode === 'create'
+        ? [
+            [
+              'variantsJson',
+              JSON.stringify(
+                [(values.variants as ProductVariantFormRow[])?.[0] ?? defaultVariantRows[0]].map(
+                  (variant: ProductVariantFormRow) => ({
+                    ...variant,
+                    sizeId: '',
+                    colorId: '',
+                    price: values.basePrice,
+                    compareAtPrice: values.compareAtPrice === '' ? null : values.compareAtPrice,
+                    weightGrams: variant.weightGrams === '' ? 300 : variant.weightGrams,
+                    isActive: true,
+                  })
+                )
+              ),
+            ] as [string, unknown],
+          ]
+        : []),
     ];
 
     for (const [key, value] of entries) {
@@ -3879,6 +4146,7 @@ export function AdminOrdersScreen({
 
           return null;
         }}
+        hideViewFields
         createRequest={{ url: '/api/admin/orders', method: 'POST' }}
         updateRequest={(id) => ({
           url: `/api/admin/orders/${id}`,
@@ -5038,8 +5306,8 @@ export function AdminSettingsScreen({
               },
               {
                 name: 'logoUrl',
-                label: 'Logo URL',
-                type: 'text',
+                label: 'Brand logo',
+                type: 'file',
                 editableOn: ['create', 'edit'],
               },
               {
@@ -5068,6 +5336,20 @@ export function AdminSettingsScreen({
                 render: (row) => (row.is_active ? t('Yes') : t('No')),
               },
             ]}
+            drawerExtras={({ mode, selected }) =>
+              mode === 'view' && selected && selected.logo_url ? (
+                <Paper
+                  radius="xs"
+                  p="md"
+                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                >
+                  <Text size="xs" tt="uppercase" c="dimmed" mb="sm">
+                    {t('Brand logo')}
+                  </Text>
+                  <Image src={selected.logo_url} alt={selected.name} h={180} fit="contain" />
+                </Paper>
+              ) : null
+            }
             createRequest={{ url: '/api/admin/lookups/brands', method: 'POST' }}
             updateRequest={() => ({
               url: '/api/admin/lookups/brands',

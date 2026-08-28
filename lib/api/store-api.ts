@@ -327,6 +327,7 @@ type OrderItemRow = {
   size_name: string | null;
   color_name: string | null;
   image_url: string | null;
+  options?: Record<string, unknown> | null;
   unit_price: string | number;
   quantity: number;
   line_total: string | number;
@@ -1389,6 +1390,7 @@ export async function replaceOrderItems(
     sizeName?: string | null;
     colorName?: string | null;
     imageUrl?: string | null;
+    options?: Record<string, unknown> | null;
     unitPrice: number;
     quantity: number;
     lineTotal: number;
@@ -1417,6 +1419,7 @@ export async function replaceOrderItems(
       size_name: item.sizeName ?? null,
       color_name: item.colorName ?? null,
       image_url: item.imageUrl ?? null,
+      options: item.options ?? {},
       unit_price: item.unitPrice,
       quantity: item.quantity,
       line_total: item.lineTotal,
@@ -1451,7 +1454,7 @@ export async function getOrderById(id: string, auth?: SupabaseRequestAuth) {
   const items = await fetchSupabaseRest<OrderItemRow[]>('order_items', {
     query: {
       select:
-        'id,order_id,product_id,variant_id,product_name,sku,size_name,color_name,image_url,unit_price,quantity,line_total',
+        'id,order_id,product_id,variant_id,product_name,sku,size_name,color_name,image_url,options,unit_price,quantity,line_total',
       order_id: `eq.${order.data.id}`,
       order: 'created_at.asc',
     },
@@ -1494,6 +1497,7 @@ export async function createOrder(
       sizeName?: string | null;
       colorName?: string | null;
       imageUrl?: string | null;
+      options?: Record<string, unknown> | null;
       unitPrice: number;
       quantity: number;
       lineTotal: number;
@@ -1540,6 +1544,7 @@ export async function createOrder(
       size_name: item.sizeName ?? null,
       color_name: item.colorName ?? null,
       image_url: item.imageUrl ?? null,
+      options: item.options ?? {},
       unit_price: item.unitPrice,
       quantity: item.quantity,
       line_total: item.lineTotal,
