@@ -13,6 +13,7 @@ import { fetchSupabaseRest } from '@/lib/supabase/rest';
 
 type SupabaseCategory = {
   id: string;
+  parent_id?: string | null;
   slug: string;
   slug_ar?: string | null;
   name: string;
@@ -225,7 +226,7 @@ export async function getNavigationItems(): Promise<NavigationItem[]> {
 export async function getCategories(): Promise<StoreCategory[]> {
   const categories = await fetchSupabaseRest<SupabaseCategory[]>('categories', {
     query: {
-      select: 'id,slug,slug_ar,name,name_ar,description,description_ar,image_url',
+      select: 'id,parent_id,slug,slug_ar,name,name_ar,description,description_ar,image_url',
       is_active: 'eq.true',
       order: 'sort_order.asc',
     },
@@ -238,6 +239,7 @@ export async function getCategories(): Promise<StoreCategory[]> {
 
   return categories.map((category) => ({
     id: category.id,
+    parentId: category.parent_id ?? null,
     slug: category.slug,
     slugAr: category.slug_ar ?? '',
     name: category.name,

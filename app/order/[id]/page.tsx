@@ -18,11 +18,7 @@ export default async function OrderPage({
     authHeaders ? { headers: authHeaders } : undefined,
   );
 
-  // Allow viewing orders that belong to the user OR guest orders with null user_id
-  if (
-    !order.data ||
-    (order.data.user_id !== session.id && order.data.user_id !== null)
-  ) {
+  if (!order.data || order.data.user_id !== session.id) {
     return <OrderDetailPageView order={null} />;
   }
 
@@ -45,11 +41,7 @@ export default async function OrderPage({
       order={{
         id: orderData.id,
         number: orderData.order_number,
-        createdAt: new Intl.DateTimeFormat("en-US", {
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-        }).format(new Date(orderData.created_at)),
+        createdAt: orderData.created_at,
         status: orderData.status,
         paymentStatus: orderData.payment_status,
         paymentMethod: orderData.payment_method,

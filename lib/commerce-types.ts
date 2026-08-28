@@ -1,5 +1,6 @@
 export type StoreCategory = {
   id: string;
+  parentId?: string | null;
   slug: string;
   slugAr?: string;
   name: string;
@@ -142,7 +143,6 @@ export type StoreSettings = {
   supportPhone: string;
   socials: {
     instagram: string;
-    facebook: string;
   };
 };
 

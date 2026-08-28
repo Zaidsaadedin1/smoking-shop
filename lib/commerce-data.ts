@@ -7,13 +7,12 @@ import {
 } from '@/lib/commerce-types';
 
 export const storeSettings: StoreSettings = {
-  announcement: 'HOT SAJ, FAST DELIVERY, AND PICKUP FROM JORDAN BRANCHES',
-  brandName: 'Shawerma 3a Saj',
-  supportEmail: 'shawerma3asaj@gmail.com',
-  supportPhone: '(06) 566 0880',
+  announcement: 'PREMIUM VAPE GEAR, FAST DELIVERY, AND PICKUP ACROSS JORDAN',
+  brandName: 'Puff Jo',
+  supportEmail: 'support@puffjo.com',
+  supportPhone: '+962 79 256 0025',
   socials: {
-    instagram: 'https://www.instagram.com/shawerma_3a_saj/',
-    facebook: 'https://www.facebook.com/shawerma3aSaj/?locale=ar_AR',
+    instagram: 'https://www.instagram.com/puff.jor/?hl=en',
   },
 };
 

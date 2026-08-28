@@ -86,13 +86,12 @@ export function ApiActivityProvider({ children }: { children: ReactNode }) {
       >
         <div className="tc-api-overlay__panel" role="status" aria-live="polite">
           <div className="tc-api-overlay__mark" aria-hidden="true">
-            <span className="tc-api-overlay__steam tc-api-overlay__steam--left" />
-            <span className="tc-api-overlay__steam tc-api-overlay__steam--center" />
-            <span className="tc-api-overlay__steam tc-api-overlay__steam--right" />
-            <img src="/shawerma-3a-saj-logo.jpg" alt="" className="tc-api-overlay__logo" />
+            <span className="tc-api-overlay__dot tc-api-overlay__dot--one" />
+            <span className="tc-api-overlay__dot tc-api-overlay__dot--two" />
+            <span className="tc-api-overlay__dot tc-api-overlay__dot--three" />
           </div>
           <div className="tc-api-overlay__copy">
-            <span className="tc-api-overlay__eyebrow">Shawerma 3a Saj</span>
+            <span className="tc-api-overlay__eyebrow">Puff Jo</span>
             <span className="tc-api-overlay__label">Preparing Your Order</span>
           </div>
         </div>

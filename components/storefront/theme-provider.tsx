@@ -29,7 +29,7 @@ function readInitialColorScheme(): ThemeScheme {
     return stored;
   }
 
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  return 'dark';
 }
 
 export function AppThemeProvider({ children }: { children: ReactNode }) {

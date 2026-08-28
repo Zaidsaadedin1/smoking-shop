@@ -27,6 +27,10 @@ export async function POST(request: Request) {
     const email = requireString(body.email, 'email');
     const password = requireString(body.password, 'password');
 
+    if (password.length < 8 || password.length > 72) {
+      return jsonError('Password must be between 8 and 72 characters', 400);
+    }
+
     const result = await invokeSupabaseAuth<AuthResponse>('token?grant_type=password', {
       email,
       password,

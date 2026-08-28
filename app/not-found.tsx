@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Home, ShoppingBag } from 'lucide-react';
+import { ArrowRight, Home, ShoppingBag } from 'lucide-react';
 import { useLocale } from '@/components/storefront/locale-provider';
 
 export default function NotFound() {
@@ -14,22 +14,19 @@ export default function NotFound() {
       <div className="noise-overlay absolute inset-0 pointer-events-none" aria-hidden="true" />
 
       <section className="relative z-10 mx-auto grid min-h-screen w-full max-w-6xl items-center gap-10 px-5 py-12 sm:px-8 lg:grid-cols-[0.92fr_1.08fr] lg:px-12">
-        <div className="flex flex-col justify-center gap-7">
+        <div className="tc-not-found__content flex flex-col justify-center gap-7">
           <div className="tc-not-found__badge">
-            <img src="/shawerma-3a-saj-logo.jpg" alt="Shawerma 3a Saj" />
-            <span>{t('Kitchen route check')}</span>
+            <span>{t('PUFF JO / ERROR')}</span>
           </div>
 
           <div className="space-y-5">
             <p className="tc-not-found__code">404</p>
             <div className="space-y-3">
-              <h1 className="font-display text-5xl font-bold leading-[0.96] sm:text-6xl lg:text-7xl">
-                {t('This order rolled away.')}
+              <h1 className="max-w-2xl text-4xl font-black leading-[0.98] tracking-[-0.05em] sm:text-6xl lg:text-7xl">
+                {t('Looks like this page disappeared.')}
               </h1>
               <p className="max-w-xl text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
-                {t(
-                  "The page you opened is not on today's route. Head back to the menu and build a fresh shawerma order."
-                )}
+                {t("The page you're looking for doesn't exist or may have been moved.")}
               </p>
             </div>
           </div>
@@ -37,48 +34,31 @@ export default function NotFound() {
           <div className="flex flex-wrap gap-3">
             <Link href="/shop" className="tc-not-found__button tc-not-found__button--primary">
               <ShoppingBag size={18} aria-hidden="true" />
-              {t('Order now')}
+              {t('BACK TO SHOP')}
             </Link>
             <Link href="/" className="tc-not-found__button tc-not-found__button--secondary">
               <Home size={18} aria-hidden="true" />
-              {t('Go home')}
+              {t('GO HOME')}
             </Link>
           </div>
+          <Link href="/contact-us" className="tc-not-found__helper">
+            {t('Need help? Contact us')} <ArrowRight size={15} aria-hidden="true" />
+          </Link>
         </div>
 
-        <div className="tc-not-found__stage" aria-hidden="true">
-          <div className="tc-not-found__ticket">
-            <div className="tc-not-found__ticket-top">
-              <span>{t('Order ticket')}</span>
-              <strong>#0404</strong>
+        <div className="tc-not-found__visual" aria-hidden="true">
+          <div className="tc-not-found__glass-panel">
+            <div className="tc-not-found__panel-meta">
+              <span>{t('PUFF JO')}</span>
+              <span>{t('ROUTE / 404')}</span>
             </div>
-            <div className="tc-not-found__ticket-lines">
-              <span />
-              <span />
-              <span />
+            <div className="tc-not-found__package">
+              <div className="tc-not-found__package-top">{t('UNAVAILABLE DROP')}</div>
+              <div className="tc-not-found__package-mark">?</div>
+              <div className="tc-not-found__package-bottom">{t('NOT FOUND / TRY AGAIN')}</div>
             </div>
-            <div className="tc-not-found__stamp">{t('Not found')}</div>
+            <div className="tc-not-found__panel-line" />
           </div>
-
-          <div className="tc-not-found__tray">
-            <div className="tc-not-found__wrap">
-              <span className="tc-not-found__wrap-mark tc-not-found__wrap-mark--one" />
-              <span className="tc-not-found__wrap-mark tc-not-found__wrap-mark--two" />
-              <span className="tc-not-found__wrap-mark tc-not-found__wrap-mark--three" />
-              <div className="tc-not-found__filling">
-                <span />
-                <span />
-                <span />
-                <span />
-              </div>
-            </div>
-            <div className="tc-not-found__sauce" />
-          </div>
-
-          <div className="tc-not-found__pin">?</div>
-          <div className="tc-not-found__crumb tc-not-found__crumb--one" />
-          <div className="tc-not-found__crumb tc-not-found__crumb--two" />
-          <div className="tc-not-found__crumb tc-not-found__crumb--three" />
         </div>
       </section>
     </main>

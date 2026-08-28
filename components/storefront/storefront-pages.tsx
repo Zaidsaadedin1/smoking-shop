@@ -31,8 +31,8 @@ import { useUiStore } from '@/stores/use-ui-store';
 export function ShopPageView({
   products,
   categories,
-  title = 'MENU',
-  description = 'Fresh shawerma, saj rolls, complete meals, sides, and dips.',
+  title = 'SHOP',
+  description = 'Explore premium devices, e-liquids, pods, coils, and smoking accessories.',
   initialCategory,
   initialSort,
   initialSale = false,
@@ -47,7 +47,7 @@ export function ShopPageView({
   initialSale?: boolean;
   flashSale?: FlashSale | null;
 }) {
-  const { t, localize } = useLocale();
+  const { t, localize, dir } = useLocale();
   const [category, setCategory] = useState(initialCategory ?? 'all');
   const [sort, setSort] = useState<'newest' | 'price-asc' | 'price-desc' | 'featured'>(
     initialSort ?? 'newest'
@@ -62,48 +62,40 @@ export function ShopPageView({
       }),
     [category, initialSale, products, sort]
   );
+  const rootCategories = categories.filter((item) => !item.parentId);
+  const selectedCategory = categories.find((item) => item.slug === category);
+  const selectedParent = selectedCategory?.parentId
+    ? categories.find((item) => item.id === selectedCategory.parentId)
+    : selectedCategory;
+  const subcategories = selectedParent
+    ? categories.filter((item) => item.parentId === selectedParent.id)
+    : [];
+  const productCount = (slug: string) =>
+    products.filter((product) => product.categorySlug === slug).length;
 
   return (
     <div className="space-y-10 pb-16 md:space-y-16 md:pb-24">
       {flashSale ? <CatalogFlashSaleBanner flashSale={flashSale} /> : null}
       <CatalogHero title={title} description={description} />
-      <div className="border-y border-[var(--border)] bg-[var(--card)]">
-        <Container className="py-3">
-          <div className="grid gap-2 md:grid-cols-6 xl:grid-cols-7">
-            <button
-              type="button"
-              onClick={() => setCategory('all')}
-              className={`flex items-center justify-between border px-3 py-3 text-left text-[10px] uppercase tracking-[0.18em] ${
-                category === 'all'
-                  ? 'border-[var(--text)] bg-[var(--background)]'
-                  : 'border-[var(--border)]'
-              }`}
-            >
-              <span>{t('ALL')}</span>
-              <span className="text-[var(--muted)]">+</span>
-            </button>
-            {categories.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setCategory(item.slug)}
-                className={`flex items-center justify-between border px-3 py-3 text-left text-[10px] uppercase tracking-[0.18em] ${
-                  category === item.slug
-                    ? 'border-[var(--text)] bg-[var(--background)]'
-                    : 'border-[var(--border)]'
-                }`}
-              >
-                <span>{localize(item.name, item.nameAr)}</span>
-                <span className="text-[var(--muted)]">+</span>
-              </button>
-            ))}
-          </div>
-        </Container>
-      </div>
+      <CategoryFilterBar
+        categories={rootCategories}
+        subcategories={subcategories}
+        selectedCategory={category}
+        productCount={productCount}
+        dir={dir}
+        selectedLabel={
+          category === 'all' ? t('ALL') : localize(selectedCategory?.name, selectedCategory?.nameAr)
+        }
+        resultCount={filtered.length}
+        onSelect={setCategory}
+        allLabel={t('ALL')}
+        localize={localize}
+        t={t}
+      />
       <Container>
         <div className="mb-4 flex items-center justify-between border-b border-[var(--border)] py-3 text-[10px] uppercase tracking-[0.22em] text-[var(--muted)]">
           <div>
-            {filtered.length} {t('ITEMS')}
+            {t('Showing')} {filtered.length} {t('products')}
           </div>
           <div className="flex items-center gap-3">
             <button type="button" className="inline-flex items-center gap-2">
@@ -131,31 +123,137 @@ export function ShopPageView({
   );
 }
 
+function CategoryFilterBar({
+  categories,
+  subcategories,
+  selectedCategory,
+  productCount,
+  dir,
+  selectedLabel,
+  resultCount,
+  onSelect,
+  allLabel,
+  localize,
+  t,
+}: {
+  categories: StoreCategory[];
+  subcategories: StoreCategory[];
+  selectedCategory: string;
+  productCount: (slug: string) => number;
+  dir: 'ltr' | 'rtl';
+  selectedLabel: string;
+  resultCount: number;
+  onSelect: (slug: string) => void;
+  allLabel: string;
+  localize: (english?: string | null, arabic?: string | null) => string;
+  t: (text: string) => string;
+}) {
+  const hasSubcategories = subcategories.length > 0 && selectedCategory !== 'all';
+
+  return (
+    <section className="border-y border-[var(--border)] bg-[var(--background-secondary)]" dir={dir}>
+      <Container className="py-4 md:py-5">
+        <div className="relative">
+          <div className="scrollbar-hidden flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible">
+            <CategoryFilterButton
+              label={allLabel}
+              count={null}
+              active={selectedCategory === 'all'}
+              onClick={() => onSelect('all')}
+            />
+            {categories.map((item) => (
+              <CategoryFilterButton
+                key={item.id}
+                label={localize(item.name, item.nameAr)}
+                count={productCount(item.slug)}
+                active={
+                  selectedCategory === item.slug ||
+                  item.id === subcategories.find((sub) => sub.slug === selectedCategory)?.parentId
+                }
+                onClick={() => onSelect(item.slug)}
+              />
+            ))}
+          </div>
+        </div>
+        <div
+          className={`grid transition-all duration-300 ease-out ${hasSubcategories ? 'mt-3 max-h-20 translate-y-0 opacity-100' : 'max-h-0 -translate-y-1 overflow-hidden opacity-0'}`}
+        >
+          <div className="scrollbar-hidden flex gap-2 overflow-x-auto border-t border-[var(--border)] pt-3 md:flex-wrap md:overflow-visible">
+            {subcategories.map((item) => (
+              <CategoryFilterButton
+                key={item.id}
+                label={localize(item.name, item.nameAr)}
+                count={productCount(item.slug)}
+                active={selectedCategory === item.slug}
+                onClick={() => onSelect(item.slug)}
+                secondary
+              />
+            ))}
+          </div>
+        </div>
+        <div className="mt-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
+          {selectedLabel} · {resultCount}{' '}
+          {t(resultCount === 1 ? 'product' : 'products')}
+        </div>
+      </Container>
+    </section>
+  );
+}
+
+function CategoryFilterButton({
+  label,
+  count,
+  active,
+  onClick,
+  secondary = false,
+}: {
+  label: string;
+  count: number | null;
+  active: boolean;
+  onClick: () => void;
+  secondary?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex shrink-0 items-center gap-2 whitespace-nowrap border px-3.5 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.14em] transition duration-300 hover:-translate-y-0.5 ${secondary ? 'rounded-lg border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--card)]' : 'rounded-xl'} ${active ? 'border-[var(--text)] bg-[var(--text)] text-[var(--background)] shadow-[0_6px_16px_rgba(0,0,0,.14)]' : 'border-[var(--border)] bg-transparent text-[var(--text-secondary)] hover:border-[var(--text)] hover:bg-[var(--card)]'}`}
+    >
+      <span>{label}</span>
+      {count !== null ? (
+        <span className={`text-[9px] ${active ? 'opacity-60' : 'text-[var(--muted)]'}`}>
+          {count}
+        </span>
+      ) : null}
+    </button>
+  );
+}
+
 function CatalogFlashSaleBanner({ flashSale }: { flashSale: FlashSale }) {
   const { dir, t } = useLocale();
 
   return (
-    <section className="border-y border-[var(--border)] bg-[linear-gradient(135deg,rgba(103,24,48,0.9),rgba(18,10,13,0.98))] px-4 py-5 md:px-8">
+    <section className="border-y border-white/10 bg-[linear-gradient(135deg,#222525,#090a0a)] px-4 py-5 md:px-8">
       <Container className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <div className="text-[10px] uppercase tracking-[0.28em] text-white/62">
-            {flashSale.title}
+          <div className="text-[10px] uppercase tracking-[0.28em] text-white/60">
+            {t(flashSale.title)}
           </div>
-          <div className="mt-2 font-display text-4xl uppercase leading-none text-[#e4c2c2] md:text-5xl">
-            {flashSale.discountLabel}
+          <div className="mt-2 font-display text-4xl uppercase leading-none text-white md:text-5xl">
+            {t(flashSale.discountLabel)}
           </div>
           {flashSale.description ? (
             <div className="mt-2 text-[11px] uppercase tracking-[0.16em] text-white/74">
-              {flashSale.description}
+              {t(flashSale.description)}
             </div>
           ) : null}
         </div>
 
         <Link
           href={flashSale.ctaUrl || '/shop?sale=true'}
-          className="inline-flex items-center gap-2 self-start border border-white/15 bg-black/20 px-5 py-3 text-[11px] uppercase tracking-[0.24em] text-[#f3e7e7] md:self-center"
+          className="inline-flex items-center gap-2 self-start rounded-full border border-white/20 bg-white px-5 py-3 text-[11px] uppercase tracking-[0.24em] text-black md:self-center"
         >
-          <span className="text-[#f0a6b6]">{flashSale.ctaText || t('Shop sale')}</span>
+          <span className="text-black">{flashSale.ctaText ? t(flashSale.ctaText) : t('Shop sale')}</span>
           {dir === 'rtl' ? <ArrowLeft className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
         </Link>
       </Container>
@@ -340,7 +438,7 @@ export function ProductPageView({
     if (!customer) {
       pushToast({
         title: t('Sign in required'),
-        description: t('Sign in to save menu items to your favorites.'),
+        description: t('Sign in to save products to your favorites.'),
       });
       router.push('/login');
       return;
@@ -463,7 +561,7 @@ export function ProductPageView({
             className="inline-flex items-center gap-2 transition hover:text-[var(--accent)]"
           >
             {dir === 'rtl' ? <ArrowRight className="h-4 w-4" /> : <ArrowLeft className="h-4 w-4" />}
-            {t('BACK TO MENU')}
+            {t('BACK TO SHOP')}
           </Link>
           <span>{localize(product.categorySlug, product.categorySlug)}</span>
         </div>
@@ -632,13 +730,13 @@ export function ProductPageView({
                                 onChange={() =>
                                   handleOptionChange(group.id, item.id, group.selectionType)
                                 }
-                                className="h-4 w-4 accent-[#c7202f]"
+                                className="h-4 w-4 accent-black"
                               />
                               {item.imageUrl ? (
                                 <img
                                   src={item.imageUrl}
                                   alt={localize(item.name, item.nameAr)}
-                                  className="h-11 w-11 rounded-md bg-[#fff8f2] object-contain p-1"
+                                  className="h-11 w-11 rounded-md bg-[var(--background-secondary)] object-contain p-1"
                                 />
                               ) : null}
                               <span>
@@ -708,7 +806,7 @@ export function ProductPageView({
                     description: `${localize(product.name, product.nameAr)} • ${localize(selectedVariant.size, selectedVariant.sizeAr)}`,
                   });
                 }}
-                className="rounded-full bg-[#c7202f] px-6 py-4 text-sm font-semibold uppercase tracking-[0.14em] text-white shadow-[0_18px_34px_rgba(199,32,47,0.22)] disabled:cursor-not-allowed disabled:opacity-40"
+                className="rounded-full bg-black px-6 py-4 text-sm font-semibold uppercase tracking-[0.14em] text-white shadow-[0_18px_34px_rgba(0,0,0,0.22)] disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {t('AddToCartButton')}
               </button>
@@ -730,13 +828,11 @@ export function ProductPageView({
               </Accordion>
               <Accordion title="DELIVERY">
                 {t(
-                  'Delivery and pickup are available from Jordan branches. Hot-food timing depends on branch coverage and order volume.'
+                  'Fast delivery is available across Jordan. Dispatch timing depends on coverage and order volume.'
                 )}
               </Accordion>
               <Accordion title="ORDER NOTES">
-                {t(
-                  'Please add allergy notes, sauce preferences, and pickup instructions before checkout.'
-                )}
+                {t('Please add delivery notes and any setup preferences before checkout.')}
               </Accordion>
             </div>
 
@@ -866,7 +962,7 @@ export function ProductPageView({
               );
               openCart();
             }}
-            className="rounded-full bg-[#c7202f] px-6 py-4 text-sm font-semibold uppercase tracking-[0.14em] text-white"
+            className="rounded-full bg-black px-6 py-4 text-sm font-semibold uppercase tracking-[0.14em] text-white"
           >
             {t('AddToCartButton')}
           </button>
@@ -1105,7 +1201,7 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
                 <img
                   src={line.product.images[0]?.url}
                   alt={localize(line.product.name, line.product.nameAr)}
-                  className="h-32 w-full rounded-[20px] bg-[#fff8f2] object-contain p-2 sm:h-40 md:h-36 md:w-32 md:flex-none"
+                  className="h-32 w-full rounded-[20px] bg-[var(--background-secondary)] object-contain p-2 sm:h-40 md:h-36 md:w-32 md:flex-none"
                 />
                 <div className="flex flex-1 flex-col">
                   <div className="text-base sm:text-lg">
@@ -1207,14 +1303,14 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
         <div className="rounded-[32px] border border-white/8 bg-white/3 p-10 text-center">
           <div className="font-display text-4xl uppercase">{t('YOUR CART IS EMPTY.')}</div>
           <p className="mt-3 text-sm text-[var(--text-secondary)]">
-            {t('Start with a saj sandwich or a full arabi meal.')}
+            {t('Start with a device, a fresh flavor, or a new everyday essential.')}
           </p>
           <Link
             href="/shop"
             className="mt-6 inline-flex rounded-full bg-[var(--accent)] px-5 py-3 text-sm tracking-[0.2em]"
             style={{ color: 'var(--background)' }}
           >
-            {t('VIEW MENU')}
+            {t('VIEW SHOP')}
           </Link>
         </div>
       )}
@@ -1230,7 +1326,7 @@ export function FavoritesPageView({ products }: { products: StoreProduct[] }) {
     <Container className="py-8 md:py-14">
       <SectionHeading
         title="YOUR FAVORITES ARE EMPTY."
-        description="Save the meals worth ordering again."
+        description="Save the gear and flavors worth coming back to."
       />
       {favoriteProducts.length ? (
         <ProductGrid products={favoriteProducts} />
@@ -1241,7 +1337,7 @@ export function FavoritesPageView({ products }: { products: StoreProduct[] }) {
             href="/shop"
             className="mt-6 inline-flex rounded-full bg-[var(--text)] px-5 py-3 text-sm tracking-[0.2em] text-black"
           >
-            VIEW MENU
+            VIEW SHOP
           </Link>
         </div>
       )}
@@ -1263,7 +1359,7 @@ export function SearchPageView({ products }: { products: StoreProduct[] }) {
       <input
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        placeholder={t('Search the coven...')}
+        placeholder={t('Search devices, flavors, and accessories...')}
         className="h-14 w-full rounded-full border border-white/10 bg-white/3 px-6 text-sm outline-none"
       />
       <div className="mt-8">
@@ -1977,7 +2073,7 @@ export function CheckoutPageView({
                   <img
                     src={line.product.images[0]?.url ?? '/products/product-placeholder.svg'}
                     alt={localize(line.product.name, line.product.nameAr)}
-                    className="h-16 w-14 rounded-[14px] bg-[#fff8f2] object-contain p-1"
+                    className="h-16 w-14 rounded-[14px] bg-[var(--background-secondary)] object-contain p-1"
                   />
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm">
@@ -2137,7 +2233,7 @@ export function AuthPageView({ mode }: { mode: 'login' | 'register' | 'forgot-pa
           {mode === 'login'
             ? t('LOG IN')
             : mode === 'register'
-              ? t('JOIN THE COVEN')
+              ? t('JOIN THE PUFF CLUB')
               : t('RESET PASSWORD')}
         </h1>
         <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
@@ -2238,13 +2334,15 @@ export function OrderSuccessPageView({ orderId }: { orderId: string }) {
 function CatalogHero({ title, description }: { title: string; description: string }) {
   const { t } = useLocale();
   return (
-    <section className="relative overflow-hidden border-b border-[var(--border)] py-10 md:py-14">
+    <section className="relative overflow-hidden border-b border-[var(--border)] bg-[radial-gradient(circle_at_80%_20%,rgba(255,255,255,.08),transparent_25%),var(--background)] py-12 md:py-20">
       <Container className="relative">
-        <div className="text-[11px] tracking-[0.28em] text-[var(--muted)]">{t('STORE')}</div>
-        <h1 className="mt-3 text-2xl font-semibold uppercase tracking-[0.22em] md:text-4xl">
+        <div className="text-[11px] font-bold tracking-[0.3em] text-[var(--accent)]">
+          {t('PUFF JO / STORE')}
+        </div>
+        <h1 className="mt-4 max-w-3xl text-4xl font-black uppercase leading-none tracking-[-0.04em] md:text-7xl">
           {t(title)}
         </h1>
-        <p className="mt-3 max-w-2xl text-sm uppercase tracking-[0.12em] text-[var(--text-secondary)]">
+        <p className="mt-5 max-w-2xl text-sm leading-7 text-[var(--text-secondary)] md:text-base">
           {t(description)}
         </p>
       </Container>

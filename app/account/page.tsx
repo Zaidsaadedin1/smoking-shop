@@ -10,7 +10,7 @@ export default async function AccountPage() {
   const authHeaders = await getCustomerAuthHeaders();
   const auth = authHeaders ? { headers: authHeaders } : undefined;
   const [orders, favorites, addresses] = await Promise.all([
-    listOrders(undefined, auth),
+    listOrders(session.id, auth),
     listFavorites(session.id, auth),
     listAddresses(session.id, auth),
   ]);

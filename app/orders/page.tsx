@@ -9,7 +9,7 @@ export default async function OrdersPage() {
   const session = await requireCustomerSession();
   const authHeaders = await getCustomerAuthHeaders();
   const orders = await listOrders(
-    undefined,
+    session.id,
     authHeaders ? { headers: authHeaders } : undefined,
   );
 
@@ -18,11 +18,7 @@ export default async function OrdersPage() {
       orders={(orders ?? []).map((order) => ({
         id: order.id,
         number: order.order_number,
-        createdAt: new Intl.DateTimeFormat("en-US", {
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-        }).format(new Date(order.created_at)),
+        createdAt: order.created_at,
         status: order.status,
         paymentStatus: order.payment_status,
         paymentMethod: order.payment_method,

@@ -5,7 +5,7 @@ import { calculateCouponDiscount, getCouponByCode } from '@/lib/coupon-utils';
 import { getCustomerAuthHeaders, getCustomerSession } from '@/lib/customer/auth';
 import { resolveDeliveryFee } from '@/lib/delivery-zones';
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
   const session = await getCustomerSession();
 
   if (!session) {
@@ -13,8 +13,7 @@ export async function GET(request: Request) {
   }
 
   const authHeaders = await getCustomerAuthHeaders();
-  // Don't filter by user_id - let RLS policy handle it (returns user's orders + guest orders with null user_id)
-  const orders = await listOrders(undefined, authHeaders ? { headers: authHeaders } : undefined);
+  const orders = await listOrders(session.id, authHeaders ? { headers: authHeaders } : undefined);
   return jsonOk(orders ?? []);
 }
 
@@ -93,7 +92,7 @@ export async function POST(request: Request) {
     }
 
     const result = await createOrder({
-      userId: null,
+      userId: session.id,
       paymentMethod: requireString(body.paymentMethod, 'paymentMethod'),
       customerName: optionalString(body.customerName) ?? session.fullName,
       customerEmail: optionalString(body.customerEmail) ?? session.email,

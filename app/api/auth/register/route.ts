@@ -30,6 +30,18 @@ export async function POST(request: Request) {
     const fullName = requireString(body.fullName, 'fullName');
     const phone = requireString(body.phone, 'phone');
 
+    if (fullName.trim().length < 2 || fullName.trim().length > 80) {
+      return jsonError('Full name must be between 2 and 80 characters', 400);
+    }
+
+    if (!/^\+?\d{9,15}$/.test(phone.replace(/[\s()-]/g, ''))) {
+      return jsonError('Enter a valid phone number', 400);
+    }
+
+    if (password.length < 8 || password.length > 72) {
+      return jsonError('Password must be between 8 and 72 characters', 400);
+    }
+
     const result = await invokeSupabaseAuth<SignupResponse>('signup', {
       email,
       password,

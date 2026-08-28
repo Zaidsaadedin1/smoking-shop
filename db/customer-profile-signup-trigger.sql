@@ -38,3 +38,16 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
 AFTER INSERT ON auth.users
 FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- Fallback for signups that return a session before the auth trigger is present.
+DROP POLICY IF EXISTS profiles_insert_self ON public.profiles;
+
+CREATE POLICY profiles_insert_self
+ON public.profiles
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  id = auth.uid()
+  AND role = 'customer'
+  AND COALESCE(is_blocked, false) = false
+);

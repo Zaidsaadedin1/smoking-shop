@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from 'framer-motion';
 import {
-  ChefHat,
+  Cloud,
   Clock,
   Heart,
   Home,
@@ -11,33 +11,41 @@ import {
   Phone,
   Search,
   ShoppingBag,
-  Utensils,
+  Package,
   User,
   X,
-} from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { ReactNode, useEffect, useMemo, useState } from "react";
-import {
-  LocaleSwitcher,
-  useLocale,
-} from "@/components/storefront/locale-provider";
-import {
-  ThemeSwitcher,
-  useThemeMode,
-} from "@/components/storefront/theme-provider";
-import { FlashSale, NavigationItem, StoreSettings } from "@/lib/commerce-types";
-import { formatCurrency } from "@/lib/commerce-utils";
-import { getCartProducts, useCartStore } from "@/stores/use-cart-store";
-import { useUiStore } from "@/stores/use-ui-store";
+} from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { LocaleSwitcher, useLocale } from '@/components/storefront/locale-provider';
+import { ThemeSwitcher, useThemeMode } from '@/components/storefront/theme-provider';
+import { FlashSale, NavigationItem, StoreSettings } from '@/lib/commerce-types';
+import { formatCurrency } from '@/lib/commerce-utils';
+import { getCartProducts, useCartStore } from '@/stores/use-cart-store';
+import { useUiStore } from '@/stores/use-ui-store';
 
 const mobileNav = [
-  { label: "HOME", href: "/", icon: Home },
-  { label: "MENU", href: "/shop", icon: Utensils },
-  { label: "♡", href: "/favorites", icon: Heart },
-  { label: "CART", href: "/cart", icon: ShoppingBag },
-  { label: "YOU", href: "/account", icon: User },
+  { label: 'HOME', href: '/', icon: Home },
+  { label: 'SHOP', href: '/shop', icon: Package },
+  { label: '♡', href: '/favorites', icon: Heart },
+  { label: 'CART', href: '/cart', icon: ShoppingBag },
+  { label: 'YOU', href: '/account', icon: User },
 ];
+
+const storefrontBrandName = 'Puff Jo';
+
+function BrandLogo({ className, alt = '' }: { className: string; alt?: string }) {
+  const { isDark } = useThemeMode();
+
+  return (
+    <img
+      src={isDark ? '/puff-jordan-logo.png' : '/puff-jordan-logo-light.png'}
+      alt={alt}
+      className={className}
+    />
+  );
+}
 
 export function StorefrontShell({
   children,
@@ -55,17 +63,16 @@ export function StorefrontShell({
   useThemeMode();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { isCartOpen, openCart, closeCart, toasts, dismissToast, pushToast } =
-    useUiStore();
+  const { isCartOpen, openCart, closeCart, toasts, dismissToast, pushToast } = useUiStore();
   const items = useCartStore((state) => state.items);
-  const isCheckout = pathname.startsWith("/checkout");
-  const isAdmin = pathname.startsWith("/admin");
+  const isCheckout = pathname.startsWith('/checkout');
+  const isAdmin = pathname.startsWith('/admin');
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 24);
     handleScroll();
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   useEffect(() => {
@@ -96,9 +103,10 @@ export function StorefrontShell({
     <div className="min-h-screen bg-[var(--background)] text-[var(--text)]">
       <AnnouncementBar text={t(settings.announcement)} />
       <Header
-        brandName={settings.brandName}
+        brandName={storefrontBrandName}
+        currentPath={pathname}
         cartCount={items.reduce((sum, item) => sum + item.quantity, 0)}
-        scrolled={scrolled || pathname !== "/"}
+        scrolled={scrolled || pathname !== '/'}
         onMenu={() => setMenuOpen(true)}
         onCart={openCart}
         navigationItems={navigationItems}
@@ -106,7 +114,7 @@ export function StorefrontShell({
       <MobileMenu
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
-        brandName={settings.brandName}
+        brandName={storefrontBrandName}
         navigationItems={navigationItems}
       />
       <main className="pb-24 md:pb-10">{children}</main>
@@ -124,9 +132,8 @@ function AnnouncementBar({ text }: { text: string }) {
     <div
       className="border-b px-4 py-2 text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-white md:text-xs"
       style={{
-        borderColor: "rgba(0,0,0,0.08)",
-        background:
-          "linear-gradient(90deg, #111111 0%, #c7202f 48%, #111111 100%)",
+        borderColor: 'rgba(0,0,0,0.08)',
+        background: 'linear-gradient(90deg, #050505 0%, #333333 48%, #050505 100%)',
       }}
     >
       {text}
@@ -136,6 +143,7 @@ function AnnouncementBar({ text }: { text: string }) {
 
 function Header({
   brandName,
+  currentPath,
   cartCount,
   scrolled,
   onMenu,
@@ -143,6 +151,7 @@ function Header({
   navigationItems,
 }: {
   brandName: string;
+  currentPath: string;
   cartCount: number;
   scrolled: boolean;
   onMenu: () => void;
@@ -151,28 +160,22 @@ function Header({
 }) {
   const { localize, t } = useLocale();
   const { isDark } = useThemeMode();
-  const navHoverClassName = isDark
-    ? "hover:text-white"
-    : "hover:text-[#c7202f]";
-  const badgeTextColor = "#ffffff";
-  const controlBorderColor = isDark
-    ? "rgba(255,255,255,0.14)"
-    : "rgba(199,32,47,0.16)";
-  const controlBackground = isDark ? "rgba(255,255,255,0.06)" : "#fff8f2";
-  const headerBackground = isDark
-    ? "rgba(8,8,8,0.9)"
-    : "rgba(255,252,248,0.94)";
-  const headerTextColor = isDark ? "var(--text)" : "#181211";
-  const secondaryTextColor = isDark ? "var(--text-secondary)" : "#5f514b";
-  const badgeBackground = "var(--accent)";
+  const navHoverClassName = isDark ? 'hover:text-white' : 'hover:text-black';
+  const badgeTextColor = '#ffffff';
+  const controlBorderColor = isDark ? 'rgba(255,255,255,0.14)' : 'rgba(0,0,0,0.16)';
+  const controlBackground = isDark ? 'rgba(255,255,255,0.06)' : '#ffffff';
+  const headerBackground = isDark ? 'rgba(8,8,8,0.9)' : 'rgba(255,255,255,0.94)';
+  const headerTextColor = isDark ? 'var(--text)' : '#181211';
+  const secondaryTextColor = isDark ? 'var(--text-secondary)' : '#5f514b';
+  const badgeBackground = 'var(--accent)';
   return (
     <header
       className={`sticky top-0 z-40 transition duration-300 ${
-        scrolled ? "border-b backdrop-blur-xl" : "backdrop-blur-xl"
+        scrolled ? 'border-b backdrop-blur-xl' : 'backdrop-blur-xl'
       }`}
       style={{
-        borderColor: scrolled ? "var(--border)" : "transparent",
-        background: isDark && !scrolled ? "transparent" : headerBackground,
+        borderColor: scrolled ? 'var(--border)' : 'transparent',
+        background: isDark && !scrolled ? 'transparent' : headerBackground,
         color: headerTextColor,
       }}
     >
@@ -193,36 +196,29 @@ function Header({
 
           <Link
             href="/"
-            className="inline-flex h-14 w-14 items-center justify-center overflow-hidden rounded-full border bg-white p-1.5 shadow-[0_12px_30px_rgba(199,32,47,0.12)] transition hover:-translate-y-0.5 md:h-16 md:w-16"
-            style={{
-              borderColor: isDark
-                ? "rgba(255,255,255,0.12)"
-                : "rgba(199,32,47,0.16)",
-            }}
+            className="inline-flex h-14 w-24 items-center justify-start overflow-hidden transition hover:-translate-y-0.5 md:h-16 md:w-28"
             aria-label={brandName}
           >
-            <img
-              src="/shawerma-3a-saj-logo.jpg"
-              alt=""
-              className="h-full w-full object-contain"
-            />
+            <BrandLogo className="h-full w-full object-contain" />
             <span className="sr-only">{brandName}</span>
           </Link>
         </div>
 
         <nav
-          className="hidden max-w-[46rem] items-center justify-center gap-1 rounded-full border px-2 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] shadow-[0_18px_45px_rgba(24,18,17,0.06)] md:flex"
+          className="storefront-nav hidden min-w-0 max-w-[46rem] flex-1 items-center justify-start gap-1 overflow-visible text-[11px] font-bold uppercase tracking-[0.16em] md:flex"
           style={{
             color: secondaryTextColor,
-            borderColor: controlBorderColor,
-            background: controlBackground,
+            borderColor: 'transparent',
+            background: 'transparent',
           }}
         >
           {navigationItems.map((item) => (
             <div key={item.id} className="group relative">
               <Link
                 href={item.path}
-                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 transition ${navHoverClassName} hover:bg-white`}
+                aria-haspopup={item.children?.length ? 'menu' : undefined}
+                aria-current={currentPath === item.path ? 'page' : undefined}
+                className={`inline-flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-2 py-3 transition ${navHoverClassName} ${currentPath === item.path ? 'border-[var(--accent)] text-[var(--text)]' : 'border-transparent text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--text)]'}`}
               >
                 <span>{localize(item.label, item.labelAr)}</span>
                 {item.children?.length ? (
@@ -232,14 +228,14 @@ function Header({
                 ) : null}
               </Link>
               {item.children?.length ? (
-                <div className="invisible absolute left-0 top-full z-50 min-w-64 pt-3 opacity-0 transition duration-200 group-hover:visible group-hover:opacity-100">
+                <div className="invisible absolute left-0 top-[calc(100%-1px)] z-50 min-w-64 pt-2 opacity-0 transition duration-200 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
                   <div className="overflow-hidden rounded-[18px] border border-[var(--border)] bg-[var(--background)] shadow-[0_18px_40px_rgba(0,0,0,0.16)]">
                     <div className="space-y-0.5 p-2">
                       {item.children.map((child) => (
                         <Link
                           key={child.id}
                           href={child.path}
-                          className="block rounded-[12px] border border-transparent px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-[var(--text-secondary)] transition hover:border-[var(--border)] hover:bg-[var(--card)] hover:text-[var(--text)]"
+                          className="block whitespace-nowrap rounded-[12px] border border-transparent px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-[var(--text-secondary)] transition hover:border-[var(--border)] hover:bg-[var(--card)] hover:text-[var(--text)]"
                         >
                           {localize(child.label, child.labelAr)}
                         </Link>
@@ -252,10 +248,7 @@ function Header({
           ))}
         </nav>
 
-        <div
-          className="flex items-center gap-2 md:gap-3"
-          style={{ color: secondaryTextColor }}
-        >
+        <div className="flex items-center gap-2 md:gap-3" style={{ color: secondaryTextColor }}>
           <div className="hidden md:block">
             <LocaleSwitcher />
           </div>
@@ -312,12 +305,10 @@ function Header({
           </button>
           <Link
             href="/shop"
-            className={`hidden items-center gap-2 rounded-full bg-[#c7202f] px-5 py-2.5 text-xs font-black uppercase tracking-[0.16em] shadow-[0_14px_32px_rgba(199,32,47,0.28)] transition hover:-translate-y-0.5 hover:bg-[#a91624] lg:inline-flex ${
-              isDark ? "text-white" : "text-[#fffcfa]"
-            }`}
+            className="!text-black hidden shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-white px-5 py-2.5 text-xs font-black uppercase tracking-[0.16em] shadow-[0_14px_32px_rgba(255,255,255,0.14)] transition hover:-translate-y-0.5 hover:bg-neutral-200 lg:inline-flex"
           >
-            <ChefHat className="h-4 w-4" />
-            {t("ORDER NOW")}
+            <Cloud className="h-4 w-4" />
+            {t('ORDER NOW')}
           </Link>
         </div>
       </div>
@@ -338,9 +329,7 @@ function MobileMenu({
 }) {
   const { t, localize } = useLocale();
   const { isDark } = useThemeMode();
-  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(
-    {},
-  );
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
 
   const toggleItem = (id: string) => {
     setExpandedItems((current) => ({
@@ -362,28 +351,24 @@ function MobileMenu({
             exit={{ opacity: 0 }}
           />
           <motion.aside
-            initial={{ x: "-100%" }}
+            initial={{ x: '-100%' }}
             animate={{ x: 0 }}
-            exit={{ x: "-100%" }}
+            exit={{ x: '-100%' }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-y-0 left-0 z-50 flex w-[86%] max-w-sm flex-col border-r border-[var(--border)] px-5 py-5 shadow-[0_25px_60px_rgba(0,0,0,0.28)]"
-            style={{ background: isDark ? "#0d0d0f" : "#fffaf7" }}
+            className="storefront-nav fixed inset-y-0 left-0 z-50 flex w-[86%] max-w-sm flex-col border-r border-[var(--border)] px-5 py-5 shadow-[0_25px_60px_rgba(0,0,0,0.28)]"
+            style={{ background: isDark ? '#0d0d0f' : '#f5f5f3' }}
           >
             <div className="mb-6 flex items-center justify-between gap-4 border-b border-[var(--border)] pb-4">
               <div className="flex min-w-0 items-center gap-3">
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--border)] bg-[var(--card)] p-1.5 shadow-[0_12px_28px_rgba(199,32,47,0.15)]">
-                  <img
-                    src="/shawerma-3a-saj-logo.jpg"
-                    alt=""
-                    className="h-full w-full object-contain"
-                  />
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--border)] bg-[var(--card)] p-1.5 shadow-[0_12px_28px_rgba(0,0,0,0.2)]">
+                  <BrandLogo className="h-full w-full object-cover" />
                 </span>
                 <div className="min-w-0">
                   <div className="truncate text-base font-black uppercase text-[var(--text)]">
                     {brandName}
                   </div>
                   <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--accent)]">
-                    Saj & Shawerma
+                    Vape / Smoke / Repeat
                   </div>
                 </div>
               </div>
@@ -401,7 +386,7 @@ function MobileMenu({
               <ThemeSwitcher />
             </div>
 
-            <div className="space-y-2 text-base font-bold uppercase tracking-[0.12em]">
+            <div className="space-y-2 whitespace-nowrap text-base font-bold uppercase tracking-[0.12em]">
               {navigationItems.map((item) => {
                 const isExpanded = Boolean(expandedItems[item.id]);
 
@@ -420,7 +405,7 @@ function MobileMenu({
                           <span>{localize(item.label, item.labelAr)}</span>
                           <span
                             className={`text-[10px] transition-transform duration-200 ${
-                              isExpanded ? "rotate-180" : ""
+                              isExpanded ? 'rotate-180' : ''
                             }`}
                           >
                             ▾
@@ -430,7 +415,7 @@ function MobileMenu({
                           {isExpanded ? (
                             <motion.div
                               initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: "auto", opacity: 1 }}
+                              animate={{ height: 'auto', opacity: 1 }}
                               exit={{ height: 0, opacity: 0 }}
                               transition={{ duration: 0.2 }}
                               className="overflow-hidden"
@@ -469,7 +454,7 @@ function MobileMenu({
                 onClick={onClose}
                 className="mt-2 block rounded-[18px] border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-[var(--text)] transition hover:border-[var(--accent)] hover:bg-[color:color-mix(in_srgb,var(--accent)_12%,var(--card))] hover:text-[var(--accent)]"
               >
-                {t("ACCOUNT")}
+                {t('ACCOUNT')}
               </Link>
             </div>
           </motion.aside>
@@ -485,10 +470,10 @@ function MobileBottomNav() {
 
   return (
     <div
-      className="fixed inset-x-4 bottom-4 z-30 rounded-full border px-3 py-2 backdrop-blur-xl md:hidden"
+      className="storefront-nav fixed inset-x-4 bottom-4 z-30 rounded-full border px-3 py-2 backdrop-blur-xl md:hidden"
       style={{
-        borderColor: "var(--border)",
-        background: "color-mix(in srgb, var(--background) 78%, transparent)",
+        borderColor: 'var(--border)',
+        background: 'color-mix(in srgb, var(--background) 78%, transparent)',
       }}
     >
       <div className="grid grid-cols-5 gap-2">
@@ -500,8 +485,8 @@ function MobileBottomNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center gap-1 rounded-full py-1 text-[10px] tracking-[0.18em] transition ${
-                active ? "scale-105 text-white" : "text-[var(--muted)]"
+              className={`flex flex-col items-center gap-1 whitespace-nowrap rounded-full py-1 text-[10px] tracking-[0.18em] transition ${
+                active ? 'scale-105 text-white' : 'text-[var(--muted)]'
               }`}
             >
               <Icon className="h-4 w-4" />
@@ -524,89 +509,87 @@ function Footer({
   const { t, localize } = useLocale();
   return (
     <footer
-      className="border-t bg-[var(--background)] text-[var(--text)]"
+      className="tc-store-footer relative overflow-hidden border-t text-[var(--text)]"
       style={{
-        borderColor: "var(--border)",
-        boxShadow:
-          "inset 0 1px 0 color-mix(in srgb, var(--text) 6%, transparent)",
+        borderColor: 'var(--border)',
+        boxShadow: 'inset 0 1px 0 color-mix(in srgb, var(--text) 6%, transparent)',
       }}
     >
-      <div className="mx-auto max-w-[1440px] px-4 py-7 sm:py-10 md:px-8 md:py-12 lg:px-12">
-        <div className="grid gap-6 sm:gap-8 lg:grid-cols-[1.25fr_1fr_1fr_1fr]">
+      <div className="pointer-events-none absolute -right-28 -top-36 h-96 w-96 rounded-full border border-[var(--border)] opacity-50 blur-sm" />
+      <div className="pointer-events-none absolute -right-8 -top-16 h-72 w-72 rounded-full border border-[var(--border)]" />
+      <div className="relative mx-auto max-w-[1440px] px-4 py-10 sm:py-12 md:px-8 md:py-16 lg:px-12">
+        <div className="mb-10 flex flex-col gap-4 border-b border-[var(--border)] pb-8 md:flex-row md:items-end md:justify-between">
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--muted)]">
+              {t('Puff Jo / Jordan')}
+            </div>
+            <div className="mt-3 text-3xl font-black uppercase tracking-[-0.04em] md:text-5xl">
+              {t('Your trusted vape shop in Jordan.')}
+            </div>
+          </div>
+          <div className="max-w-xs text-sm leading-6 text-[var(--text-secondary)] md:text-right">
+            {t('Shop trusted devices, flavors, pods, coils, and accessories with delivery across Jordan.')}
+          </div>
+        </div>
+        <div className="grid gap-8 sm:gap-10 lg:grid-cols-[1.5fr_repeat(3,1fr)]">
           <div className="max-w-md text-center sm:text-left">
             <Link href="/" className="inline-flex items-center gap-3 sm:gap-4">
-              <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--border)] bg-white p-1 shadow-[0_14px_34px_rgba(199,32,47,0.12)] sm:h-14 sm:w-14 md:h-16 md:w-16">
-                <img
-                  src="/shawerma-3a-saj-logo.jpg"
-                  alt=""
-                  className="h-full w-full object-contain"
-                />
+              <span className="flex h-16 w-20 shrink-0 items-center justify-center overflow-hidden sm:h-20 sm:w-24">
+                <BrandLogo className="h-full w-full object-contain" />
               </span>
               <span>
                 <span className="block text-base font-black uppercase leading-tight sm:text-lg md:text-xl">
-                  {settings.brandName}
+                  {storefrontBrandName}
                 </span>
                 <span className="mt-1 block text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--accent)] sm:text-[10px] md:text-[11px]">
-                  {t("Saj wraps since lunch")}
+                  {t('Your vape setup, sorted')}
                 </span>
               </span>
             </Link>
             <p className="mt-4 max-w-md text-sm leading-6 text-[var(--text-secondary)] sm:mt-5 sm:leading-7">
-              {t(
-                "Fresh shawerma, saj meals, pickup, and delivery across Jordan.",
-              )}
+              {t('Genuine vape gear, popular flavors, and everyday accessories for customers across Jordan.')}
             </p>
             <div className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:flex lg:flex-wrap">
               <FooterInfo icon={Clock} label="Hours" value="12 PM - 2 AM" />
-              <FooterInfo
-                icon={Phone}
-                label="Phone"
-                value={settings.supportPhone}
-              />
-              <FooterInfo
-                icon={MapPin}
-                label="Delivery"
-                value="Jordan branches"
-              />
+              <FooterInfo icon={Phone} label="Phone" value={settings.supportPhone} />
+              <FooterInfo icon={MapPin} label="Delivery" value="Delivery across Jordan" />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-6 sm:gap-8 lg:block lg:space-y-0">
-            <FooterColumn
-              title="MENU"
-              links={navigationItems.map((item) => ({
-                label: localize(item.label, item.labelAr),
-                href: item.path,
-              }))}
-            />
-            <FooterColumn
-              title="HELP"
-              links={[
-                { label: "CONTACT", href: "/contact-us" },
-                { label: "DELIVERY", href: "/shipping" },
-                { label: "ORDER HELP", href: "/returns" },
-                { label: "FAQ", href: "/faq" },
-              ]}
-            />
-          </div>
+          <FooterColumn
+            title="SHOP"
+            links={navigationItems.map((item) => ({
+              label: localize(item.label, item.labelAr),
+              href: item.path,
+            }))}
+          />
+
+          <FooterColumn
+            title="HELP"
+            links={[
+              { label: 'CONTACT', href: '/contact-us' },
+              { label: 'DELIVERY', href: '/shipping' },
+              { label: 'ORDER HELP', href: '/returns' },
+              { label: 'FAQ', href: '/faq' },
+            ]}
+          />
 
           <div className="lg:pt-0">
             <FooterColumn
               title="FOLLOW"
               links={[
-                { label: "INSTAGRAM", href: settings.socials.instagram },
-                { label: "FACEBOOK", href: settings.socials.facebook },
-                { label: "PRIVACY POLICY", href: "/privacy-policy" },
-                { label: "TERMS", href: "/terms" },
+                { label: 'INSTAGRAM', href: settings.socials.instagram },
+                { label: 'PRIVACY POLICY', href: '/privacy-policy' },
+                { label: 'TERMS', href: '/terms' },
               ]}
             />
           </div>
         </div>
 
         <div className="mt-8 flex flex-col gap-2 border-t border-[var(--border)] pt-4 text-center text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)] sm:text-xs md:mt-12 md:flex-row md:items-center md:justify-between md:pt-6">
-          <span>© 2026 {settings.brandName}</span>
+          <span>© 2026 {storefrontBrandName}</span>
           <span className="text-[var(--accent)]">
-            {t("HOT SAJ, FAST DELIVERY, AND PICKUP FROM JORDAN BRANCHES")}
+            {t('BETTER CLOUDS, FAST DELIVERY, QUALITY GEAR')}
           </span>
         </div>
       </div>
@@ -674,10 +657,7 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const lines = useMemo(() => getCartProducts(items), [items]);
   const { t, localize } = useLocale();
   const { isDark } = useThemeMode();
-  const subtotal = lines.reduce(
-    (sum, line) => sum + line.variant.price * line.quantity,
-    0,
-  );
+  const subtotal = lines.reduce((sum, line) => sum + line.variant.price * line.quantity, 0);
 
   return (
     <AnimatePresence>
@@ -692,21 +672,19 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
             exit={{ opacity: 0 }}
           />
           <motion.aside
-            initial={{ x: "100%" }}
+            initial={{ x: '100%' }}
             animate={{ x: 0 }}
-            exit={{ x: "100%" }}
+            exit={{ x: '100%' }}
             transition={{ duration: 0.3 }}
             className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col p-6"
-            style={{ background: isDark ? "#0d0d0f" : "#fffaf7" }}
+            style={{ background: isDark ? '#0d0d0f' : '#f5f5f3' }}
           >
             <div className="mb-8 flex items-center justify-between">
               <div>
                 <div className="text-xs tracking-[0.25em] text-[var(--muted)]">
-                  {t("YOUR CART")}
+                  {t('YOUR CART')}
                 </div>
-                <div className="mt-1 font-display text-2xl uppercase">
-                  {t("ORDER")}
-                </div>
+                <div className="mt-1 font-display text-2xl uppercase">{t('ORDER')}</div>
               </div>
               <button
                 type="button"
@@ -726,7 +704,7 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                     <img
                       src={line.product.images[0]?.url}
                       alt={localize(line.product.name, line.product.nameAr)}
-                      className="h-28 w-24 rounded-[18px] bg-[#fff8f2] object-contain p-1"
+                      className="h-28 w-24 rounded-[18px] bg-[var(--background-secondary)] object-contain p-1"
                     />
                     <div className="flex-1">
                       <div className="text-sm uppercase tracking-[0.2em] text-[var(--muted)]">
@@ -746,47 +724,35 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                               className="rounded-[14px] border border-white/8 bg-white/4 px-3 py-2"
                             >
                               <div className="text-[10px] uppercase tracking-[0.18em] text-[var(--muted)]">
-                                {localize(
-                                  selection.groupName,
-                                  selection.groupNameAr,
-                                )}
+                                {localize(selection.groupName, selection.groupNameAr)}
                               </div>
                               <div className="mt-1 text-xs leading-5 text-[var(--text-secondary)]">
                                 {selection.items
                                   .map((item) => {
-                                    const label = localize(
-                                      item.name,
-                                      item.nameAr,
-                                    );
+                                    const label = localize(item.name, item.nameAr);
                                     return item.priceDelta > 0
                                       ? `${label} +${formatCurrency(item.priceDelta)}`
                                       : label;
                                   })
-                                  .join(", ")}
+                                  .join(', ')}
                               </div>
                             </div>
                           ))}
                         </div>
                       ) : null}
                       <div className="mt-3 flex items-center justify-between">
-                        <div className="text-sm">
-                          {formatCurrency(line.variant.price)}
-                        </div>
+                        <div className="text-sm">{formatCurrency(line.variant.price)}</div>
                         <div className="flex items-center gap-2 rounded-full border border-white/10 px-3 py-1">
                           <button
                             type="button"
-                            onClick={() =>
-                              updateQuantity(line.lineId, line.quantity - 1)
-                            }
+                            onClick={() => updateQuantity(line.lineId, line.quantity - 1)}
                           >
                             -
                           </button>
                           <span>{line.quantity}</span>
                           <button
                             type="button"
-                            onClick={() =>
-                              updateQuantity(line.lineId, line.quantity + 1)
-                            }
+                            onClick={() => updateQuantity(line.lineId, line.quantity + 1)}
                           >
                             +
                           </button>
@@ -797,35 +763,31 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                         onClick={() => removeItem(line.lineId)}
                         className="mt-3 text-xs tracking-[0.2em] text-[var(--muted)]"
                       >
-                        {t("REMOVE")}
+                        {t('REMOVE')}
                       </button>
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="rounded-[32px] border border-white/8 bg-white/3 p-8 text-center">
-                  <div className="font-display text-3xl uppercase">
-                    {t("YOUR CART IS EMPTY.")}
-                  </div>
+                  <div className="font-display text-3xl uppercase">{t('YOUR CART IS EMPTY.')}</div>
                   <p className="mt-3 text-sm text-[var(--text-secondary)]">
-                    {t("Start with a saj sandwich or a full arabi meal.")}
+                    {t('Start with a device, a fresh flavor, or a new everyday essential.')}
                   </p>
                   <Link
                     href="/shop"
                     onClick={onClose}
                     className="mt-6 inline-flex rounded-full bg-[var(--accent)] px-5 py-3 text-sm tracking-[0.2em]"
-                    style={{ color: "var(--background)" }}
+                    style={{ color: 'var(--background)' }}
                   >
-                    {t("VIEW MENU")}
+                    {t('VIEW SHOP')}
                   </Link>
                 </div>
               )}
             </div>
             <div className="mt-6 border-t border-white/8 pt-5">
               <div className="mb-4 flex items-center justify-between text-sm">
-                <span className="text-[var(--text-secondary)]">
-                  {t("Subtotal")}
-                </span>
+                <span className="text-[var(--text-secondary)]">{t('Subtotal')}</span>
                 <span>{formatCurrency(subtotal)}</span>
               </div>
               <div className="grid gap-3">
@@ -834,15 +796,15 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                   onClick={onClose}
                   className="rounded-full border border-white/10 px-5 py-3 text-center text-sm tracking-[0.2em]"
                 >
-                  {t("VIEW CART")}
+                  {t('VIEW CART')}
                 </Link>
                 <Link
                   href="/checkout"
                   onClick={onClose}
                   className="rounded-full bg-[var(--accent)] px-5 py-3 text-center text-sm tracking-[0.2em]"
-                  style={{ color: "var(--background)" }}
+                  style={{ color: 'var(--background)' }}
                 >
-                  {t("CHECKOUT")}
+                  {t('CHECKOUT')}
                 </Link>
               </div>
             </div>
@@ -877,16 +839,16 @@ function FlashSaleModal({ sale }: { sale: FlashSale | null }) {
   }
 
   const dismiss = () => {
-    sessionStorage.setItem(`flash-sale-dismissed:${sale.id}`, "true");
+    sessionStorage.setItem(`flash-sale-dismissed:${sale.id}`, 'true');
     setVisible(false);
   };
 
-  const modalKicker = t("HOT DEAL");
+  const modalKicker = t('HOT DEAL');
   const modalTitle = sale.modalTitle?.trim() || sale.title;
   const modalDescription = sale.modalDescription?.trim() || sale.description;
-  const ctaText = sale.ctaText?.trim() || t("ORDER THE DEAL");
-  const imageSrc = sale.image || "/products/product-placeholder.svg";
-  const ctaTextColor = isDark ? "#3a1d08" : "#fff7e8";
+  const ctaText = sale.ctaText?.trim() || t('ORDER THE DEAL');
+  const imageSrc = sale.image || '/products/product-placeholder.svg';
+  const ctaTextColor = isDark ? '#3a1d08' : '#fff7e8';
 
   return (
     <AnimatePresence>
@@ -907,15 +869,15 @@ function FlashSaleModal({ sale }: { sale: FlashSale | null }) {
             transition={{ duration: 0.35 }}
             className="fixed left-1/2 top-1/2 z-[60] w-[92vw] max-w-4xl -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[36px] border"
             style={{
-              borderColor: "var(--border)",
-              background: isDark ? "#111112" : "#fffaf7",
+              borderColor: 'var(--border)',
+              background: isDark ? '#111112' : '#f5f5f3',
             }}
           >
             <div className="grid md:grid-cols-[1.05fr_0.95fr]">
               <img
                 src={imageSrc}
                 alt={sale.title}
-                className="h-[260px] w-full bg-[#fff8f2] object-contain md:h-full"
+                className="h-[260px] w-full bg-[var(--background-secondary)] object-contain md:h-full"
               />
               <div className="relative flex min-h-[420px] flex-col justify-center p-8 md:p-10">
                 <button
@@ -925,9 +887,7 @@ function FlashSaleModal({ sale }: { sale: FlashSale | null }) {
                 >
                   <X className="h-4 w-4" />
                 </button>
-                <div className="text-xs tracking-[0.28em] text-[var(--muted)]">
-                  {modalKicker}
-                </div>
+                <div className="text-xs tracking-[0.28em] text-[var(--muted)]">{modalKicker}</div>
                 <div className="mt-4 font-display text-5xl uppercase leading-none">
                   {sale.discountLabel}
                 </div>
@@ -961,9 +921,7 @@ function ToastViewport({
   dismissToast: (id: string) => void;
 }) {
   useEffect(() => {
-    const timeouts = toasts.map((toast) =>
-      window.setTimeout(() => dismissToast(toast.id), 3200),
-    );
+    const timeouts = toasts.map((toast) => window.setTimeout(() => dismissToast(toast.id), 3200));
 
     return () => {
       timeouts.forEach((timeout) => window.clearTimeout(timeout));
@@ -981,8 +939,8 @@ function ToastViewport({
             exit={{ opacity: 0, y: 12 }}
             className="pointer-events-auto rounded-[24px] border p-4 shadow-2xl"
             style={{
-              borderColor: "var(--border)",
-              background: "var(--elevated)",
+              borderColor: 'var(--border)',
+              background: 'var(--elevated)',
             }}
           >
             <div className="text-sm">{toast.title}</div>

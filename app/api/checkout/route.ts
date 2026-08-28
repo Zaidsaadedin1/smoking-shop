@@ -87,7 +87,7 @@ export async function POST(request: Request) {
     }
 
     const result = await createOrder({
-      userId: null,
+      userId: session.id,
       paymentMethod: requireString(body.paymentMethod, 'paymentMethod'),
       customerName: optionalString(body.customerName) ?? session.fullName,
       customerEmail: optionalString(body.customerEmail) ?? session.email,

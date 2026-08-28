@@ -2898,6 +2898,9 @@ ALTER TABLE "public"."profiles" ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "profiles_select" ON "public"."profiles" FOR SELECT USING ((("id" = "auth"."uid"()) OR "public"."is_admin"()));
 
 
+CREATE POLICY "profiles_insert_self" ON "public"."profiles" FOR INSERT TO authenticated WITH CHECK ((("id" = "auth"."uid"()) AND ("role" = 'customer'::public.user_role) AND (COALESCE("is_blocked", false) = false)));
+
+
 
 CREATE POLICY "profiles_update" ON "public"."profiles" FOR UPDATE USING ((("id" = "auth"."uid"()) OR "public"."is_admin"())) WITH CHECK ((("id" = "auth"."uid"()) OR "public"."is_admin"()));
 
@@ -3436,7 +3439,6 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TAB
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "anon";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "authenticated";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "service_role";
-
 
 
 
