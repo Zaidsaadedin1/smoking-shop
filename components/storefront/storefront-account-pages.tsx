@@ -655,9 +655,13 @@ export function OrderDetailPageView({ order }: { order: OrderView | null }) {
         <SurfacePanel title={t('Delivery')}>
           <DetailRow label={t('Customer name')} value={order.customerName ?? '-'} />
           <DetailRow label={t('Customer phone')} value={order.customerPhone ?? '-'} />
-          <DetailRow label={t('Tracking number')} value={order.trackingNumber ?? '-'} />
-          <DetailRow label={t('Shipping carrier')} value={order.shippingCarrier ?? '-'} />
-          <DetailRow label={t('Notes')} value={order.notes ?? '-'} />
+          {order.trackingNumber ? (
+            <DetailRow label={t('Tracking number')} value={order.trackingNumber} />
+          ) : null}
+          {order.shippingCarrier ? (
+            <DetailRow label={t('Shipping carrier')} value={order.shippingCarrier} />
+          ) : null}
+          {order.notes ? <DetailRow label={t('Notes')} value={order.notes} /> : null}
         </SurfacePanel>
       </div>
       <div className="mt-4">
