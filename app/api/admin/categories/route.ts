@@ -54,17 +54,22 @@ export async function POST(request: Request) {
     const uploadedImage = imageFile
       ? await saveUploadedImage(imageFile, 'categories', accessToken)
       : null;
-    const result = await createCategory({
-      name: requireString(body.name, 'name'),
-      name_ar: optionalString(body.nameAr),
-      slug: requireString(body.slug, 'slug'),
-      slug_ar: optionalString(body.slugAr),
-      description: optionalString(body.description),
-      description_ar: optionalString(body.descriptionAr),
-      image_url: uploadedImage ?? optionalString(body.imageUrl),
-      is_active: body.isActive ?? true,
-      sort_order: typeof body.sortOrder === 'number' ? body.sortOrder : Number(body.sortOrder ?? 0),
-    }, auth);
+    const result = await createCategory(
+      {
+        name: requireString(body.name, 'name'),
+        name_ar: optionalString(body.nameAr),
+        slug: requireString(body.slug, 'slug'),
+        slug_ar: optionalString(body.slugAr),
+        parent_id: optionalString(body.parentId),
+        description: optionalString(body.description),
+        description_ar: optionalString(body.descriptionAr),
+        image_url: uploadedImage ?? optionalString(body.imageUrl),
+        is_active: body.isActive ?? true,
+        sort_order:
+          typeof body.sortOrder === 'number' ? body.sortOrder : Number(body.sortOrder ?? 0),
+      },
+      auth
+    );
 
     if (result.error) {
       return jsonError(result.error, result.status);

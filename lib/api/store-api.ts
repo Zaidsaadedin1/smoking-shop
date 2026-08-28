@@ -14,6 +14,7 @@ type SupabaseRequestAuth = {
 
 type CategoryApiRow = {
   id: string;
+  parent_id?: string | null;
   name: string;
   name_ar?: string | null;
   slug: string;
@@ -350,7 +351,7 @@ export async function listCategories(auth?: SupabaseRequestAuth) {
   return fetchSupabaseRest<CategoryApiRow[]>('categories', {
     query: {
       select:
-        'id,name,name_ar,slug,slug_ar,description,description_ar,image_url,is_active,sort_order',
+        'id,parent_id,name,name_ar,slug,slug_ar,description,description_ar,image_url,is_active,sort_order',
       order: 'sort_order.asc',
     },
     ...(auth?.headers ? { headers: auth.headers } : {}),

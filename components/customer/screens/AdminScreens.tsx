@@ -4331,6 +4331,12 @@ export function AdminSettingsScreen({
       value: item.id,
     }))
   );
+  const categoryParentOptions = [{ label: 'Top level category', value: '' }].concat(
+    categories.map((item) => ({
+      label: item.parent_id ? `↳ ${item.name}` : item.name,
+      value: item.id,
+    }))
+  );
 
   return (
     <AdminShell
@@ -4424,6 +4430,7 @@ export function AdminSettingsScreen({
               nameAr: '',
               slug: '',
               slugAr: '',
+              parentId: '',
               description: '',
               descriptionAr: '',
               image: undefined,
@@ -4455,6 +4462,13 @@ export function AdminSettingsScreen({
                 name: 'slugAr',
                 label: 'Arabic slug',
                 type: 'text',
+                editableOn: ['create', 'edit'],
+              },
+              {
+                name: 'parentId',
+                label: 'Parent category',
+                type: 'select',
+                options: categoryParentOptions,
                 editableOn: ['create', 'edit'],
               },
               {
@@ -4502,6 +4516,12 @@ export function AdminSettingsScreen({
                 key: 'slug_ar',
                 label: 'Arabic slug',
                 render: (row) => row.slug_ar || '—',
+              },
+              {
+                key: 'parent_id',
+                label: 'Parent category',
+                render: (row) =>
+                  categories.find((item) => item.id === row.parent_id)?.name || t('Top level'),
               },
               {
                 key: 'sort_order',

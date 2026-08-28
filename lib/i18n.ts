@@ -1749,6 +1749,8 @@ export const messages: Record<string, LocaleMessages> = {
   },
   'Parent item': { en: 'Parent item', ar: 'العنصر الأب' },
   'Top level': { en: 'Top level', ar: 'مستوى رئيسي' },
+  'Top level category': { en: 'Top level category', ar: 'فئة رئيسية' },
+  'Parent category': { en: 'Parent category', ar: 'الفئة الرئيسية' },
   Path: { en: 'Path', ar: 'المسار' },
   'Track payments, delivery state, totals, and customer contact details from one grid.': {
     en: 'Track payments, delivery state, totals, and customer contact details from one grid.',
@@ -2181,6 +2183,15 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'Browse fruit, mint, dessert, tobacco, and icy blends for your everyday setup.',
     ar: 'تصفح خلطات الفواكه والنعنع والحلويات والتبغ والبرودة لتشكيلتك اليومية.',
   },
+  'NO FLAVORS IN THIS FILTER': {
+    en: 'NO FLAVORS IN THIS FILTER',
+    ar: 'لا توجد نكهات ضمن هذا الفلتر',
+  },
+  'Try another flavor profile or return to the full collection.': {
+    en: 'Try another flavor profile or return to the full collection.',
+    ar: 'جرّب نوع نكهة آخر أو ارجع للتشكيلة كاملة.',
+  },
+  'SHOW ALL FLAVORS': { en: 'SHOW ALL FLAVORS', ar: 'عرض جميع النكهات' },
   'POPULAR IN JORDAN': { en: 'POPULAR IN JORDAN', ar: 'الأكثر طلباً في الأردن' },
   'What people are buying': { en: 'What people are buying', ar: 'شو الناس بتطلب' },
   'Reliable gear and flavors our customers keep coming back for.': {
@@ -2281,6 +2292,13 @@ export const messages: Record<string, LocaleMessages> = {
     ar: 'معدات فيب فاخرة، توصيل سريع، واستلام من فروعنا في الأردن',
   },
   'PUFF JO / STORE': { en: 'PUFF JO / STORE', ar: 'بف جو / المتجر' },
+  'PUFF JO / CATALOG': { en: 'PUFF JO / CATALOG', ar: 'بف جو / الكتالوج' },
+  'NO PRODUCTS MATCH': { en: 'NO PRODUCTS MATCH', ar: 'لا توجد منتجات مطابقة' },
+  'Try another category or clear your filters to see the full collection.': {
+    en: 'Try another category or clear your filters to see the full collection.',
+    ar: 'جرّب فئة أخرى أو امسح الفلاتر لعرض التشكيلة كاملة.',
+  },
+  'VIEW ALL PRODUCTS': { en: 'VIEW ALL PRODUCTS', ar: 'عرض جميع المنتجات' },
   'PUFF JO / BRANDS': { en: 'PUFF JO / BRANDS', ar: 'بف جو / العلامات' },
   BRANDS: { en: 'BRANDS', ar: 'العلامات التجارية' },
   'Shop trusted vape brands, devices, flavors, and accessories from one place.': {

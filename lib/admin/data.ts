@@ -23,6 +23,7 @@ import { getAdminAccessToken } from '@/lib/admin/auth';
 
 export type AdminCategoryRecord = {
   id: string;
+  parent_id: string;
   name: string;
   name_ar: string;
   slug: string;
@@ -539,6 +540,7 @@ export async function getAdminCategories(): Promise<AdminCategoryRecord[]> {
   const rows = await listCategories(auth);
   return (rows ?? []).map((row) => ({
     id: row.id,
+    parent_id: row.parent_id ?? '',
     name: row.name,
     name_ar: row.name_ar ?? '',
     slug: row.slug,

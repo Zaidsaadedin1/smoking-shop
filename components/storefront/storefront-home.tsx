@@ -1,15 +1,16 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Cloud, MapPin, Star, Timer, Zap } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Cloud, Zap } from 'lucide-react';
 import Link from 'next/link';
-import { ReactNode, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocale } from '@/components/storefront/locale-provider';
 import {
   Container,
   ProductGrid,
   SectionHeading,
 } from '@/components/storefront/storefront-sections';
+import { formatCurrency, getPrimaryPrice } from '@/lib/commerce-utils';
 import { FlashSale, HeroSlide, StoreCategory, StoreProduct } from '@/lib/commerce-types';
 
 export function StorefrontHome({
@@ -26,7 +27,7 @@ export function StorefrontHome({
   const { t, dir } = useLocale();
   const isRtl = dir === 'rtl';
   const quickPicks = products.slice(0, 4);
-  const refills = products.filter((product) => product.categorySlug !== 'meals').slice(0, 4);
+  const refills = products.filter((product) => product.categorySlug !== 'meals').slice(0, 8);
   const featured = products.filter((product) => product.isFeatured).slice(0, 4);
   const bestSellers = featured.length ? featured : products.slice(0, 4);
 
@@ -39,7 +40,7 @@ export function StorefrontHome({
       {categories.length ? <PopularCategories categories={categories.slice(0, 4)} /> : null}
 
       {quickPicks.length ? (
-        <Container className="py-12 md:py-16">
+        <Container className="py-20 md:py-32">
           <section>
             <SectionHeading
               eyebrow={t('FEATURED GEAR')}
@@ -63,7 +64,7 @@ export function StorefrontHome({
       ) : null}
 
       {refills.length ? (
-        <Container className="py-12 md:py-16">
+        <Container className="bg-[var(--background-secondary)] py-20 md:my-4 md:py-28">
           <section>
             <SectionHeading
               eyebrow={t('FLAVORS & E-LIQUIDS')}
@@ -72,20 +73,20 @@ export function StorefrontHome({
                 'Browse fruit, mint, dessert, tobacco, and icy blends for your everyday setup.'
               )}
             />
-            <ProductGrid products={refills} />
+            <FlavorRail products={refills} />
           </section>
         </Container>
       ) : null}
 
       {bestSellers.length ? (
-        <Container className="py-12 md:py-16">
+        <Container className="py-20 md:py-32">
           <section>
             <SectionHeading
               eyebrow={t('POPULAR IN JORDAN')}
               title={t('What people are buying')}
               description={t('Reliable gear and flavors our customers keep coming back for.')}
             />
-            <ProductGrid products={bestSellers} />
+            <RankingRail products={bestSellers} />
           </section>
         </Container>
       ) : null}
@@ -104,7 +105,9 @@ function Hero({ slides }: { slides: HeroSlide[] }) {
   const [imageRatio, setImageRatio] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!imageUrl) return;
+    if (!imageUrl) {
+      return;
+    }
     const image = new window.Image();
     image.onload = () => {
       if (image.naturalWidth && image.naturalHeight) {
@@ -128,12 +131,12 @@ function Hero({ slides }: { slides: HeroSlide[] }) {
 
   return (
     <section
-      className="relative isolate overflow-hidden bg-[#0b0c0c] text-[#f4f1e8]"
+      className="relative isolate min-h-[620px] overflow-hidden bg-[#0b0c0c] text-[#f4f1e8] md:min-h-[720px]"
       style={
         slide?.imageEnUrl || slide?.imageArUrl
           ? {
               backgroundImage: `linear-gradient(90deg, rgba(11,12,12,.9), rgba(11,12,12,.35)), url(${imageUrl})`,
-              backgroundSize: 'contain',
+              backgroundSize: 'cover',
               backgroundRepeat: 'no-repeat',
               backgroundPosition: 'center',
               aspectRatio: imageRatio ? `${imageRatio}` : undefined,
@@ -230,7 +233,8 @@ function Hero({ slides }: { slides: HeroSlide[] }) {
 }
 
 function PopularCategories({ categories }: { categories: StoreCategory[] }) {
-  const { t, localize } = useLocale();
+  const { t, localize, dir } = useLocale();
+  const isRtl = dir === 'rtl';
 
   return (
     <Container className="py-12 md:py-16">
@@ -248,14 +252,14 @@ function PopularCategories({ categories }: { categories: StoreCategory[] }) {
             {t('VIEW SHOP')}
           </Link>
         </div>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-5">
+        <div className="grid auto-rows-[180px] grid-cols-2 gap-2.5 md:auto-rows-[190px] md:grid-cols-4 md:gap-3">
           {categories.map((category) => (
             <Link
               key={category.id}
               href={`/shop?category=${category.slug}`}
-              className="group relative aspect-[0.86] overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] transition duration-300 hover:-translate-y-1 hover:border-[var(--accent)] md:rounded-[22px]"
+              className={`group relative overflow-hidden rounded-[4px] border border-white/10 bg-[var(--card)] transition duration-300 ease-[cubic-bezier(.22,1,.36,1)] hover:border-white/25 ${categories.indexOf(category) === 0 ? 'col-span-2 row-span-2' : categories.indexOf(category) === 1 ? 'row-span-1' : categories.indexOf(category) === 2 ? 'row-span-1' : 'col-span-2 md:col-span-2'}`}
             >
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,.12),transparent_35%),#171717]">
+              <div className="absolute inset-0 bg-[#171717]">
                 <img
                   src={category.image?.trim() || '/products/puff-jo-product-default.png'}
                   alt={localize(category.name, category.nameAr)}
@@ -263,16 +267,24 @@ function PopularCategories({ categories }: { categories: StoreCategory[] }) {
                     event.currentTarget.onerror = null;
                     event.currentTarget.src = '/products/puff-jo-product-default.png';
                   }}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="h-full w-full object-cover transition-transform duration-500 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-[1.04]"
                 />
               </div>
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/45 to-transparent px-3 pb-3 pt-12 md:px-4 md:pb-4">
-                <div className="text-sm font-bold leading-5 text-white md:text-lg">
-                  {localize(category.name, category.nameAr)}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent transition-colors duration-300 group-hover:from-black/80" />
+              <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 px-4 pb-4 pt-16 md:px-6 md:pb-6">
+                <div>
+                  <div className="text-lg font-bold leading-5 text-white transition-transform duration-300 group-hover:translate-x-[2px] md:text-2xl">
+                    {localize(category.name, category.nameAr)}
+                  </div>
+                  <p className="mt-1 line-clamp-2 text-[11px] leading-4 text-white/65 md:max-w-[300px] md:text-sm">
+                    {localize(category.description, category.descriptionAr)}
+                  </p>
                 </div>
-                <p className="mt-1 hidden line-clamp-1 text-xs text-white/70 md:block">
-                  {localize(category.description, category.descriptionAr)}
-                </p>
+                {isRtl ? (
+                  <ArrowLeft className="h-5 w-5 shrink-0 text-white transition-transform duration-300 group-hover:-translate-x-1" />
+                ) : (
+                  <ArrowRight className="h-5 w-5 shrink-0 text-white transition-transform duration-300 group-hover:translate-x-1" />
+                )}
               </div>
             </Link>
           ))}
@@ -282,57 +294,127 @@ function PopularCategories({ categories }: { categories: StoreCategory[] }) {
   );
 }
 
-function FeatureBand() {
-  const { t } = useLocale();
+function FlavorRail({ products }: { products: StoreProduct[] }) {
+  const { t, localize, dir } = useLocale();
+  const [filter, setFilter] = useState('ALL');
+  const filters = ['ALL', 'FRUITY', 'ICE', 'DESSERT', 'TOBACCO', 'BEVERAGE'];
+  const visible =
+    filter === 'ALL'
+      ? products
+      : products.filter((product) => {
+          const haystack =
+            `${product.name} ${product.nameAr || ''} ${product.shortDescription} ${product.tags.join(' ')}`.toLowerCase();
+          return haystack.includes(filter.toLowerCase());
+        });
 
   return (
-    <section className="bg-[var(--background-secondary)] py-12 md:py-16">
-      <Container>
-        <div className="grid items-center gap-8 md:grid-cols-[0.9fr_1.1fr]">
-          <div className="relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden rounded-[28px] bg-[#0b0c0c] shadow-[0_24px_60px_rgba(0,0,0,0.22)]">
-            <div className="absolute -left-10 top-8 h-44 w-44 rounded-full bg-white/15 blur-3xl" />
-            <div className="relative h-48 w-32 rounded-[2rem] border border-white/15 bg-gradient-to-br from-[#344438] to-[#101512] p-4 text-[#f4f1e8] shadow-2xl md:h-60 md:w-40">
-              <div className="text-[9px] font-bold tracking-[.2em] text-white">PUFF JORDAN</div>
-              <div className="mt-10 text-6xl font-black tracking-[-.14em]">V</div>
-              <div className="absolute bottom-4 left-4 right-4 h-1 rounded-full bg-white" />
-            </div>
-            <div className="absolute bottom-7 right-8 rounded-full border border-white/30 px-4 py-2 text-[10px] font-bold uppercase tracking-[.2em] text-white">
-              {t('Trusted gear in Jordan')}
-            </div>
-          </div>
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
-              {t('PUFF JO STANDARD')}
-            </div>
-            <h2 className="mt-3 text-4xl font-bold leading-tight text-[var(--text)] md:text-6xl">
-              {t('Everything for your vape setup')}
-            </h2>
-            <p className="mt-5 max-w-2xl text-base leading-8 text-[var(--text-secondary)]">
-              {t(
-                'Shop trusted devices, fresh e-liquids, pods, coils, and accessories with straightforward delivery across Jordan.'
-              )}
+    <div className="relative">
+      <div className="mb-7 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
+        {filters.map((item) => (
+          <button
+            key={item}
+            type="button"
+            onClick={() => setFilter(item)}
+            className={`min-h-11 shrink-0 rounded-full border px-4 text-[10px] font-bold tracking-[0.18em] transition ${filter === item ? 'border-[var(--text)] bg-[var(--text)] text-[var(--background)]' : 'border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--text-secondary)]'}`}
+          >
+            {t(item)}
+          </button>
+        ))}
+      </div>
+      <div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-3 [scrollbar-width:none] md:-mx-8 md:px-8">
+        {visible.length ? (
+          visible.map((product) => (
+            <Link
+              key={product.id}
+              href={`/product/${product.slug}`}
+              className="group relative min-w-[74vw] snap-start overflow-hidden rounded-[4px] border border-white/10 bg-[var(--background)] p-3 transition duration-300 hover:-translate-y-1 sm:min-w-[280px] md:min-w-[300px]"
+            >
+              <div className="flex h-52 items-center justify-center bg-[var(--background-secondary)]">
+                <img
+                  src={product.images[0]?.url?.trim() || '/products/puff-jo-product-default.png'}
+                  alt={localize(product.name, product.nameAr)}
+                  className="h-full w-full object-contain p-5 transition duration-500 group-hover:scale-[1.045]"
+                />
+              </div>
+              <div className="flex items-end justify-between gap-3 px-1 pb-1 pt-4">
+                <div>
+                  <div className="text-[9px] uppercase tracking-[.22em] text-[var(--muted)]">
+                    {localize(product.brand, product.brandAr)}
+                  </div>
+                  <div className="mt-1 text-base font-bold">
+                    {localize(product.name, product.nameAr)}
+                  </div>
+                </div>
+                <div className="shrink-0 text-sm font-bold">
+                  {formatCurrency(getPrimaryPrice(product))}{' '}
+                  {dir === 'rtl' ? (
+                    <ArrowLeft className="ml-1 inline h-4 w-4" />
+                  ) : (
+                    <ArrowRight className="ml-1 inline h-4 w-4" />
+                  )}
+                </div>
+              </div>
+            </Link>
+          ))
+        ) : (
+          <div className="min-w-full border border-dashed border-[var(--border)] bg-[var(--background)] px-6 py-14 text-center md:px-10">
+            <div className="mx-auto h-px w-12 bg-[var(--accent)]" />
+            <h3 className="mt-5 text-2xl font-black uppercase tracking-[-.03em]">
+              {t('NO FLAVORS IN THIS FILTER')}
+            </h3>
+            <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-[var(--text-secondary)]">
+              {t('Try another flavor profile or return to the full collection.')}
             </p>
-            <div className="mt-7 grid gap-3 sm:grid-cols-3">
-              <FeatureItem icon={<Timer className="h-5 w-5" />} title={t('Fast dispatch')} />
-              <FeatureItem icon={<MapPin className="h-5 w-5" />} title={t('Curated gear')} />
-              <FeatureItem icon={<Star className="h-5 w-5" />} title={t('Trusted quality')} />
-            </div>
+            <button
+              type="button"
+              onClick={() => setFilter('ALL')}
+              className="!text-white mt-6 min-h-11 rounded-full bg-[var(--accent)] px-5 py-3 text-[10px] font-bold uppercase tracking-[.18em] transition hover:opacity-85"
+            >
+              {t('SHOW ALL FLAVORS')}
+            </button>
           </div>
-        </div>
-      </Container>
-    </section>
+        )}
+      </div>
+    </div>
   );
 }
 
-function FeatureItem({ icon, title }: { icon: ReactNode; title: string }) {
-  const { t } = useLocale();
-
+function RankingRail({ products }: { products: StoreProduct[] }) {
+  const { t, localize, dir } = useLocale();
   return (
-    <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-4 text-[var(--text)] shadow-[0_14px_34px_rgba(0,0,0,0.12)]">
-      <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-[color:color-mix(in_srgb,var(--accent)_12%,var(--background))] text-[var(--accent)]">
-        {icon}
-      </div>
-      <div className="text-sm font-bold uppercase tracking-[0.12em]">{t(title)}</div>
+    <div className="grid gap-0 border-t border-[var(--border)] md:grid-cols-3">
+      {products.slice(0, 3).map((product) => (
+        <Link
+          key={product.id}
+          href={`/product/${product.slug}`}
+          className="group relative flex min-h-[250px] items-center gap-3 overflow-hidden border-b border-[var(--border)] py-5 md:min-h-[350px] md:border-b-0 md:border-r md:px-5 md:first:pl-0 md:last:border-r-0"
+        >
+          <div className="relative h-44 w-40 shrink-0 md:h-56 md:w-48">
+            <img
+              src={product.images[0]?.url?.trim() || '/products/puff-jo-product-default.png'}
+              alt={localize(product.name, product.nameAr)}
+              className="h-full w-full object-contain transition duration-500 group-hover:scale-[1.045]"
+            />
+          </div>
+          <div className="relative">
+            <div className="text-[9px] font-bold uppercase tracking-[.22em] text-[var(--accent)]">
+              {t('POPULAR')}
+            </div>
+            <h3 className="mt-3 text-xl font-bold leading-tight">
+              {localize(product.name, product.nameAr)}
+            </h3>
+            <p className="mt-2 line-clamp-2 text-sm text-[var(--text-secondary)]">
+              {localize(product.shortDescription, product.shortDescriptionAr)}
+            </p>
+            <div className="mt-5 text-sm font-bold">
+              {formatCurrency(getPrimaryPrice(product))}{' '}
+              <span className="ml-1 inline-block transition-transform group-hover:translate-x-1">
+                {dir === 'rtl' ? '←' : '→'}
+              </span>
+            </div>
+          </div>
+        </Link>
+      ))}
     </div>
   );
 }
@@ -355,18 +437,24 @@ function WhyVapor() {
   ];
 
   return (
-    <Container className="py-12 md:py-16">
-      <section className="grid gap-4 md:grid-cols-3">
-        {reasons.map((reason) => (
-          <div
-            key={reason.title}
-            className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-6"
-          >
-            <div className="mb-4 h-1.5 w-12 rounded-full bg-[var(--accent)]" />
-            <h3 className="text-2xl font-bold text-[var(--text)]">{t(reason.title)}</h3>
-            <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">{t(reason.body)}</p>
-          </div>
-        ))}
+    <Container className="py-20 md:py-32">
+      <section className="border-y border-[var(--border)] py-10 md:py-14">
+        <div className="mb-10 text-xs font-semibold uppercase tracking-[0.3em] text-[var(--accent)]">
+          {t('WHY PUFF JO')}
+        </div>
+        <div className="grid gap-8 md:grid-cols-3 md:gap-10">
+          {reasons.map((reason) => (
+            <div
+              key={reason.title}
+              className="relative border-l border-[var(--border)] pl-5 first:border-l-0 first:pl-0 md:pl-7"
+            >
+              <h3 className="text-2xl font-bold text-[var(--text)]">{t(reason.title)}</h3>
+              <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
+                {t(reason.body)}
+              </p>
+            </div>
+          ))}
+        </div>
       </section>
     </Container>
   );
@@ -397,17 +485,36 @@ function PromoRibbon({ flashSale }: { flashSale: FlashSale }) {
 }
 
 function HomeEmptyState() {
-  const { t } = useLocale();
+  const { t, dir } = useLocale();
 
   return (
-    <Container className="py-12">
-      <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-10 text-center">
-        <div className="text-4xl font-bold">{t('NO LIVE PRODUCTS YET.')}</div>
-        <p className="mt-3 text-sm text-[var(--text-secondary)]">
-          {t(
-            'We are updating the shelves. Check back soon for devices, flavors, pods, coils, and accessories.'
-          )}
-        </p>
+    <Container className="py-16 md:py-28">
+      <div className="relative isolate min-h-[430px] overflow-hidden rounded-[4px] border border-[var(--border)] bg-[var(--background-secondary)] px-6 py-14 md:px-16 md:py-20">
+        <div className="absolute -right-20 -top-24 -z-10 text-[19rem] font-black leading-none tracking-[-.16em] text-[var(--text)]/[.035]">
+          00
+        </div>
+        <div className="absolute bottom-0 left-0 -z-10 h-px w-2/3 bg-[var(--border)]" />
+        <div className="max-w-2xl">
+          <div className="mb-8 flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--accent)]">
+            <span className="h-px w-10 bg-[var(--accent)]" />
+            {t('PUFF JO / THE COLLECTION')}
+          </div>
+          <h2 className="max-w-xl text-4xl font-black uppercase leading-[.95] tracking-[-.05em] md:text-7xl">
+            {t('NO LIVE PRODUCTS YET.')}
+          </h2>
+          <p className="mt-6 max-w-lg text-sm leading-7 text-[var(--text-secondary)] md:text-base">
+            {t(
+              'We are updating the shelves. Check back soon for devices, flavors, pods, coils, and accessories.'
+            )}
+          </p>
+          <Link
+            href="/shop"
+            className="mt-8 inline-flex min-h-11 items-center gap-3 rounded-full bg-[var(--text)] px-6 py-3 text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--background)] transition hover:gap-4"
+          >
+            {t('BROWSE THE SHOP')}
+            {dir === 'rtl' ? <ArrowLeft className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
+          </Link>
+        </div>
       </div>
     </Container>
   );

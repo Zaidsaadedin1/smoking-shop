@@ -135,22 +135,22 @@ export function ProductCard({ product }: { product: StoreProduct }) {
   }
 
   return (
-    <div className="group flex h-full flex-col rounded-[22px] border border-[var(--border)] bg-[var(--card)] p-2.5 shadow-[0_18px_45px_rgba(0,0,0,.16)] transition duration-300 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[0_24px_60px_rgba(0,0,0,.25)] md:p-3">
+    <div className="group flex h-full flex-col rounded-[4px] border border-transparent bg-[var(--card)] p-2.5 shadow-[0_18px_45px_rgba(0,0,0,.12)] transition duration-300 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-1 hover:border-[var(--border)] hover:shadow-[0_24px_60px_rgba(0,0,0,.22)] md:p-3">
       <Link href={`/product/${product.slug}`} className="block">
-        <div className="relative aspect-square overflow-hidden rounded-[17px] border border-white/8 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,.12),transparent_35%),linear-gradient(145deg,#202020,#0a0a0a)]">
+        <div className="relative aspect-square overflow-hidden rounded-[3px] bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,.1),transparent_35%),linear-gradient(145deg,#202020,#0a0a0a)]">
           {primaryImageUrl ? (
             <img
               src={primaryImageUrl}
               alt={localize(product.name, product.nameAr)}
               onLoad={() => setImageLoaded(true)}
-              className={`absolute inset-0 h-full w-full object-cover transition duration-300 ease-out group-hover:scale-[1.05] ${imageLoaded ? 'scale-100 opacity-100' : 'scale-[.98] opacity-0'}`}
+              className={`absolute inset-0 h-full w-full object-contain p-4 transition duration-300 ease-out group-hover:scale-[1.045] ${imageLoaded ? 'scale-100 opacity-100' : 'scale-[.98] opacity-0'}`}
             />
           ) : null}
           {product.images[1]?.url ? (
             <img
               src={product.images[1].url}
               alt={localize(product.name, product.nameAr)}
-              className="absolute inset-0 h-full w-full bg-[#151515] object-cover opacity-0 transition duration-500 group-hover:opacity-100"
+              className="absolute inset-0 h-full w-full bg-[#151515] object-contain p-4 opacity-0 transition duration-500 group-hover:opacity-100"
             />
           ) : null}
           <div className="absolute left-2 top-2 flex gap-1">
@@ -257,7 +257,7 @@ export function ProductCard({ product }: { product: StoreProduct }) {
           type="button"
           onClick={handleAddToCart}
           disabled={!canPurchase}
-          className="mt-auto flex min-h-10 w-full items-center justify-center gap-1 whitespace-nowrap rounded-full bg-[var(--accent)] px-1.5 py-2.5 !text-[8px] font-bold uppercase leading-none tracking-[.02em] text-white transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-45 sm:gap-2 sm:px-3 sm:tracking-[.08em]"
+          className="mt-auto flex min-h-10 w-full items-center justify-center gap-1 whitespace-nowrap rounded-full bg-[var(--accent)] px-1.5 py-2.5 !text-[8px] font-bold uppercase leading-none tracking-[.02em] text-white transition hover:bg-[var(--accent-hover)] disabled:cursor-not-allowed disabled:opacity-45 sm:gap-2 sm:px-3 sm:tracking-[.08em] md:!text-xs md:tracking-[.1em]"
         >
           {canPurchase ? (
             added ? (

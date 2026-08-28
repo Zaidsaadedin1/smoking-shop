@@ -8,6 +8,7 @@ import {
   ArrowUpRight,
   Heart,
   Minus,
+  PackageOpen,
   Plus,
   SlidersHorizontal,
   Star,
@@ -134,12 +135,50 @@ export function ShopPageView({
             </select>
           </div>
         </div>
-        <ProductGrid products={filtered} />
+        {filtered.length ? (
+          <ProductGrid products={filtered} />
+        ) : (
+          <ShopEmptyState onClearFilters={() => setCategory('all')} />
+        )}
       </Container>
       <Container>
         <NewsletterSection />
       </Container>
     </div>
+  );
+}
+
+function ShopEmptyState({ onClearFilters }: { onClearFilters: () => void }) {
+  const { t, dir } = useLocale();
+
+  return (
+    <section className="relative isolate overflow-hidden border-y border-[var(--border)] bg-[var(--background-secondary)] px-6 py-16 md:px-14 md:py-24">
+      <div className="pointer-events-none absolute -right-10 -top-16 -z-10 text-[15rem] font-black leading-none tracking-[-.16em] text-[var(--text)]/[.035]">
+        00
+      </div>
+      <div className="mx-auto max-w-2xl text-center">
+        <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full border border-[var(--border)] text-[var(--accent)]">
+          <PackageOpen className="h-6 w-6" />
+        </div>
+        <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--accent)]">
+          {t('PUFF JO / CATALOG')}
+        </div>
+        <h2 className="mt-4 text-3xl font-black uppercase leading-none tracking-[-.04em] md:text-5xl">
+          {t('NO PRODUCTS MATCH')}
+        </h2>
+        <p className="mx-auto mt-4 max-w-md text-sm leading-7 text-[var(--text-secondary)]">
+          {t('Try another category or clear your filters to see the full collection.')}
+        </p>
+        <button
+          type="button"
+          onClick={onClearFilters}
+          className="!text-white mt-7 inline-flex min-h-11 items-center gap-3 rounded-full bg-[var(--accent)] px-6 py-3 text-[10px] font-bold uppercase tracking-[0.18em] transition hover:gap-4"
+        >
+          {t('VIEW ALL PRODUCTS')}
+          {dir === 'rtl' ? <ArrowLeft className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
+        </button>
+      </div>
+    </section>
   );
 }
 
@@ -393,7 +432,7 @@ export function ProductPageView({
     authorName: string;
   }>;
 }) {
-  const { t, localize, dir } = useLocale();
+  const { t, localize } = useLocale();
   const router = useRouter();
   const addItem = useCartStore((state) => state.addItem);
   const toggleFavorite = useCartStore((state) => state.toggleFavorite);
@@ -673,7 +712,7 @@ export function ProductPageView({
             href="/shop"
             className="inline-flex items-center gap-2 transition hover:text-[var(--accent)]"
           >
-            {dir === 'rtl' ? <ArrowRight className="h-4 w-4" /> : <ArrowLeft className="h-4 w-4" />}
+            <ArrowLeft className="h-4 w-4" />
             {t('BACK TO SHOP')}
           </Link>
           <span>{localize(product.categorySlug, product.categorySlug)}</span>

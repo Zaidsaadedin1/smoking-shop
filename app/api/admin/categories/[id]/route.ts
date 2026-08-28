@@ -28,10 +28,7 @@ async function parseCategoryRequest(request: Request) {
   };
 }
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const unauthorized = await ensureAdminApiAccess();
 
   if (unauthorized) {
@@ -49,8 +46,10 @@ export async function PATCH(
     if (body.nameAr !== undefined) payload.name_ar = optionalString(body.nameAr);
     if (body.slug !== undefined) payload.slug = optionalString(body.slug);
     if (body.slugAr !== undefined) payload.slug_ar = optionalString(body.slugAr);
+    if (body.parentId !== undefined) payload.parent_id = optionalString(body.parentId);
     if (body.description !== undefined) payload.description = optionalString(body.description);
-    if (body.descriptionAr !== undefined) payload.description_ar = optionalString(body.descriptionAr);
+    if (body.descriptionAr !== undefined)
+      payload.description_ar = optionalString(body.descriptionAr);
     if (imageFile) {
       payload.image_url = await saveUploadedImage(imageFile, 'categories', accessToken);
     } else if (body.imageUrl !== undefined) {
@@ -71,10 +70,7 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const unauthorized = await ensureAdminApiAccess();
 
   if (unauthorized) {
