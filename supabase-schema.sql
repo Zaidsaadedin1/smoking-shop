@@ -1073,6 +1073,22 @@ $$;
 
 ALTER FUNCTION "public"."handle_new_user"() OWNER TO "postgres";
 
+DROP TRIGGER IF EXISTS "on_auth_user_created" ON "auth"."users";
+
+CREATE OR REPLACE TRIGGER "on_auth_user_created"
+AFTER INSERT ON "auth"."users"
+FOR EACH ROW EXECUTE FUNCTION "public"."handle_new_user"();
+
+INSERT INTO public.profiles (id, full_name, phone)
+SELECT
+  users.id,
+  COALESCE(users.raw_user_meta_data->>'full_name', users.raw_user_meta_data->>'name'),
+  COALESCE(NULLIF(users.phone, ''), users.raw_user_meta_data->>'phone')
+FROM auth.users AS users
+LEFT JOIN public.profiles AS profiles ON profiles.id = users.id
+WHERE profiles.id IS NULL
+ON CONFLICT (id) DO NOTHING;
+
 
 CREATE OR REPLACE FUNCTION "public"."is_admin"() RETURNS boolean
     LANGUAGE "sql" STABLE SECURITY DEFINER
@@ -3439,7 +3455,6 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TAB
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "anon";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "authenticated";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "service_role";
-
 
 
 

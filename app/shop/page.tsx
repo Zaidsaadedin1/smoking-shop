@@ -8,6 +8,7 @@ export default async function ShopPage({
 }) {
   const params = await searchParams;
   const category = typeof params.category === 'string' ? params.category : undefined;
+  const brand = typeof params.brand === 'string' ? params.brand : undefined;
   const sort = typeof params.sort === 'string' ? params.sort : undefined;
   const sale = params.sale === 'true' ? true : undefined;
   const { products, categories, flashSale } = await getStorefrontData();
@@ -17,7 +18,8 @@ export default async function ShopPage({
       products={products}
       categories={categories}
       flashSale={flashSale}
-      initialCategory={category}
+    initialCategory={category}
+    initialBrand={brand}
       initialSort={sort === 'price-asc' || sort === 'price-desc' || sort === 'featured' || sort === 'newest' ? sort : undefined}
       initialSale={sale}
     />

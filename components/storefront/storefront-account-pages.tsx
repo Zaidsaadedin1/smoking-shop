@@ -106,7 +106,8 @@ function CountryCodeSelect({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const selectedCountry = phoneCountries.find((country) => country.code === value) ?? phoneCountries[0];
+  const selectedCountry =
+    phoneCountries.find((country) => country.code === value) ?? phoneCountries[0];
 
   useEffect(() => {
     if (!isOpen) {
@@ -135,9 +136,13 @@ function CountryCodeSelect({
       >
         <span className="min-w-0 truncate">
           <span className="font-semibold">{selectedCountry.code}</span>
-          <span className="ml-1 text-xs text-[var(--text-secondary)]">{selectedCountry.nameAr}</span>
+          <span className="ml-1 text-xs text-[var(--text-secondary)]">
+            {selectedCountry.nameAr}
+          </span>
         </span>
-        <ChevronDown className={`h-4 w-4 shrink-0 text-[var(--muted)] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown
+          className={`h-4 w-4 shrink-0 text-[var(--muted)] transition-transform ${isOpen ? 'rotate-180' : ''}`}
+        />
       </button>
       {isOpen ? (
         <div
@@ -194,18 +199,29 @@ export function AuthPageView({
   const schema = z.object({
     fullName:
       mode === 'register'
-        ? z.string().trim().min(2, 'Full name must be at least 2 characters').max(80, 'Full name is too long')
+        ? z
+            .string()
+            .trim()
+            .min(2, 'Full name must be at least 2 characters')
+            .max(80, 'Full name is too long')
         : z.string().optional(),
     phone:
       mode === 'register'
-        ? z.string().trim().regex(/^\d{7,12}$/, 'Enter a valid phone number')
+        ? z
+            .string()
+            .trim()
+            .regex(/^\d{7,12}$/, 'Enter a valid phone number')
         : z.string().optional(),
-    phoneCountry: mode === 'register' ? z.string().min(1, 'Select a country') : z.string().optional(),
+    phoneCountry:
+      mode === 'register' ? z.string().min(1, 'Select a country') : z.string().optional(),
     email: z.string().trim().email('Enter a valid email').max(254, 'Email is too long'),
     password:
       mode === 'forgot-password'
         ? z.string().optional()
-        : z.string().min(8, 'Password must be at least 8 characters').max(72, 'Password is too long'),
+        : z
+            .string()
+            .min(8, 'Password must be at least 8 characters')
+            .max(72, 'Password is too long'),
   });
 
   type FormValues = z.infer<typeof schema>;
@@ -322,7 +338,9 @@ export function AuthPageView({
                   <input type="hidden" {...register('phoneCountry')} />
                   <CountryCodeSelect
                     value={watch('phoneCountry') ?? '+962'}
-                    onChange={(value) => setValue('phoneCountry', value, { shouldValidate: true, shouldTouch: true })}
+                    onChange={(value) =>
+                      setValue('phoneCountry', value, { shouldValidate: true, shouldTouch: true })
+                    }
                   />
                   <input
                     {...register('phone')}
@@ -381,7 +399,9 @@ export function AuthPageView({
             </Field>
           ) : null}
           {serverError ? <p className="text-sm text-[var(--error)]">{t(serverError)}</p> : null}
-          {serverMessage ? <p className="text-sm text-[var(--success)]">{t(serverMessage)}</p> : null}
+          {serverMessage ? (
+            <p className="text-sm text-[var(--success)]">{t(serverMessage)}</p>
+          ) : null}
           <button
             type="submit"
             disabled={isSubmitting}
@@ -527,48 +547,59 @@ export function OrdersPageView({ orders }: { orders: OrderView[] }) {
   const { t, locale } = useLocale();
 
   return (
-    <Container className="py-8 md:py-14">
-      <SectionHeading
-        title={t('MY ORDERS')}
-        description={t('Keep track of your Puff Jo orders, payment status, and delivery updates.')}
-        action={<BackToAccountButton />}
-      />
+    <Container className="orders-page py-7 md:py-12">
+      <div className="orders-hero mb-8 flex flex-col justify-between gap-6 border-b border-[var(--border)] pb-8 md:mb-10 md:flex-row md:items-end">
+        <div>
+          <div className="mb-3 text-[10px] uppercase tracking-[0.28em] text-[var(--muted)]">
+            PUFF JO / {t('ACCOUNT')}
+          </div>
+          <h1 className="font-display text-5xl uppercase leading-none md:text-7xl">
+            {t('MY ORDERS')}
+          </h1>
+          <p className="mt-4 max-w-xl text-sm leading-7 text-[var(--text-secondary)]">
+            {t('Keep track of your Puff Jo orders, payment status, and delivery updates.')}
+          </p>
+        </div>
+        <div className="flex items-center justify-between gap-5 sm:justify-end">
+          <div className="orders-count">
+            <span>{orders.length}</span> {t(orders.length === 1 ? 'order' : 'orders')}
+          </div>
+          <BackToAccountButton />
+        </div>
+      </div>
       {orders.length ? (
-        <div className="grid gap-4">
-          {orders.map((order) => (
-            <Link
-              key={order.id}
-              href={`/order/${order.id}`}
-              className={`${accountPanelClassName} group hover:-translate-y-0.5`}
-            >
-              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <div className="text-xs tracking-[0.24em] text-[var(--muted)]">
+        <div className="orders-list grid gap-3">
+          {orders.map((order, index) => (
+            <Link key={order.id} href={`/order/${order.id}`} className="order-row group">
+              <div className="order-index">{String(index + 1).padStart(2, '0')}</div>
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-xs font-semibold tracking-[0.18em] text-[var(--muted)]">
                     {order.number}
-                  </div>
-                  <div className="mt-3 flex flex-wrap items-center gap-3">
-                    <div className="text-2xl font-semibold uppercase text-[var(--text)]">
-                      {t(order.status.replaceAll('_', ' '))}
-                    </div>
-                    <span className="rounded-full border border-[var(--border)] px-3 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--muted)]">
-                      {t('View details')}
-                    </span>
-                  </div>
-                  <div className="mt-2 text-sm text-[var(--text-secondary)]">
-                    {formatOrderDate(order.createdAt, locale)}
-                  </div>
+                  </span>
+                  <span className="order-status">{t(order.status.replaceAll('_', ' '))}</span>
                 </div>
-                <div className="grid gap-2 text-sm text-[var(--text-secondary)] md:text-right">
-                  <div>
-                    {t('Payment status')}: {t(order.paymentStatus ?? 'pending')}
-                  </div>
-                  <div>
-                    {t('Payment method')}: {t(order.paymentMethod ?? 'cash_on_delivery')}
-                  </div>
-                  <div className="text-[var(--text)]">
-                    {formatMoney(order.total, order.currency)}
-                  </div>
+                <div className="mt-3 text-sm text-[var(--text-secondary)]">
+                  {formatOrderDate(order.createdAt, locale)}
                 </div>
+              </div>
+              <div className="order-meta hidden text-right text-xs text-[var(--text-secondary)] sm:block">
+                <div>
+                  {t('Payment status')}: <span>{t(order.paymentStatus ?? 'pending')}</span>
+                </div>
+                <div className="mt-1">
+                  {t('Payment method')}: <span>{t(order.paymentMethod ?? 'cash_on_delivery')}</span>
+                </div>
+              </div>
+              <div className="order-total">
+                <span>{formatMoney(order.total, order.currency)}</span>
+                <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+              </div>
+              <div className="order-mobile-meta mt-2 w-full text-xs text-[var(--text-secondary)] sm:hidden">
+                {t('Payment status')}: {t(order.paymentStatus ?? 'pending')}
+              </div>
+              <div className="order-row-arrow">
+                <ArrowLeft className="h-4 w-4" />
               </div>
             </Link>
           ))}
@@ -576,7 +607,9 @@ export function OrdersPageView({ orders }: { orders: OrderView[] }) {
       ) : (
         <EmptyState
           title={t('No orders yet.')}
-          body={t('When you place your first Puff Jo order, its delivery updates will show up here.')}
+          body={t(
+            'When you place your first Puff Jo order, its delivery updates will show up here.'
+          )}
           actionHref="/shop"
           actionLabel={t('SHOP NOW')}
         />
@@ -637,7 +670,7 @@ export function OrderDetailPageView({ order }: { order: OrderView | null }) {
                   className="flex flex-col gap-4 rounded-[24px] border border-[var(--border)] bg-[color:color-mix(in_srgb,var(--card)_84%,var(--background)_16%)] p-4 md:flex-row"
                 >
                   <img
-                    src={item.imageUrl || '/products/product-placeholder.svg'}
+                    src={item.imageUrl || '/products/puff-jo-product-default.png'}
                     alt={item.productName}
                     className="h-32 w-full rounded-[18px] bg-[var(--background-secondary)] object-contain p-2 md:w-24"
                   />
@@ -695,7 +728,9 @@ export function FavoritesPageView({ products }: { products: StoreProduct[] }) {
       ) : (
         <EmptyState
           title={t('Nothing saved yet.')}
-          body={t('Nothing saved yet. Tap the heart on a device or flavor to find it here next time.')}
+          body={t(
+            'Nothing saved yet. Tap the heart on a device or flavor to find it here next time.'
+          )}
           actionHref="/shop"
           actionLabel={t('VIEW MENU')}
         />
@@ -1098,7 +1133,9 @@ export function CreateAddressPageView({
                   return;
                 }
 
-                router.push('/addresses');
+                // The addresses page is server-rendered, so replacing the form route
+                // ensures the newly created address is loaded from Supabase.
+                router.replace('/addresses');
                 router.refresh();
               })
             )}

@@ -4,6 +4,7 @@ import {
   FlashSale,
   HeroSlide,
   NavigationItem,
+  StoreBrand,
   StoreCategory,
   StoreProduct,
   StoreSettings,
@@ -45,6 +46,11 @@ type SupabaseBrand = {
   id: string;
   name: string;
   name_ar?: string | null;
+  slug: string;
+  slug_ar?: string | null;
+  description?: string | null;
+  description_ar?: string | null;
+  logo_url?: string | null;
 };
 
 type SupabaseVariant = {
@@ -248,7 +254,7 @@ export async function getCategories(): Promise<StoreCategory[]> {
     descriptionAr: category.description_ar ?? '',
     accent: category.name,
     accentAr: category.name_ar ?? '',
-    image: category.image_url ?? '',
+    image: category.image_url ?? '/products/puff-jo-product-default.png',
   }));
 }
 
@@ -532,7 +538,7 @@ export async function getHeroSlides(): Promise<HeroSlide[]> {
 }
 
 export async function getStorefrontData(filters: CatalogFilters = {}) {
-  const [settings, categories, products, flashSale, heroSlides, navigationItems] =
+  const [settings, categories, products, flashSale, heroSlides, navigationItems, brands] =
     await Promise.all([
       getStoreSettings(),
       getCategories(),
@@ -540,6 +546,7 @@ export async function getStorefrontData(filters: CatalogFilters = {}) {
       getFlashSale(),
       getHeroSlides(),
       getNavigationItems(),
+      getBrands(),
     ]);
 
   return {
@@ -550,7 +557,30 @@ export async function getStorefrontData(filters: CatalogFilters = {}) {
     flashSale,
     heroSlides,
     navigationItems,
+    brands,
   };
+}
+
+async function getBrands(): Promise<StoreBrand[]> {
+  const rows = await fetchSupabaseRest<SupabaseBrand[]>('brands', {
+    query: {
+      select: 'id,name,name_ar,slug,slug_ar,description,description_ar,logo_url',
+      is_active: 'eq.true',
+      order: 'name.asc',
+    },
+    revalidate: 60,
+  });
+
+  return (rows ?? []).map((brand) => ({
+    id: brand.id,
+    name: brand.name,
+    nameAr: brand.name_ar ?? '',
+    slug: brand.slug,
+    slugAr: brand.slug_ar ?? '',
+    description: brand.description ?? '',
+    descriptionAr: brand.description_ar ?? '',
+    image: brand.logo_url ?? '',
+  }));
 }
 
 export async function getProductBySlug(slug: string) {

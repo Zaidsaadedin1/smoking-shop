@@ -702,7 +702,7 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                     className="flex gap-4 rounded-[24px] border border-white/8 bg-white/3 p-3"
                   >
                     <img
-                      src={line.product.images[0]?.url}
+                      src={line.product.images[0]?.url || '/products/puff-jo-product-default.png'}
                       alt={localize(line.product.name, line.product.nameAr)}
                       className="h-28 w-24 rounded-[18px] bg-[var(--background-secondary)] object-contain p-1"
                     />

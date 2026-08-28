@@ -690,7 +690,7 @@ function AdminOrderDetailPanel({
                 }}
               >
                 <Image
-                  src={item.image_url || '/products/product-placeholder.svg'}
+                  src={item.image_url || '/products/puff-jo-product-default.png'}
                   alt={item.product_name}
                   w={72}
                   h={92}

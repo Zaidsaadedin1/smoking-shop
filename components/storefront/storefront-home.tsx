@@ -207,13 +207,11 @@ function PopularCategories({ categories }: { categories: StoreCategory[] }) {
               className="group rounded-[22px] border border-[var(--border)] bg-[var(--card)] p-2.5 shadow-[0_14px_35px_rgba(0,0,0,.14)] transition duration-300 hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[0_22px_50px_rgba(0,0,0,.22)] md:p-4"
             >
               <div className="aspect-square w-full overflow-hidden rounded-[17px] border border-white/8 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,.12),transparent_35%),#171717] md:rounded-[18px]">
-                {category.image ? (
-                  <img
-                    src={category.image}
-                    alt={localize(category.name, category.nameAr)}
-                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                ) : null}
+                <img
+                  src={category.image || '/products/puff-jo-product-default.png'}
+                  alt={localize(category.name, category.nameAr)}
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
               </div>
 
               <div className="mt-2 text-center text-sm font-bold leading-5 text-[var(--text)] md:mt-4 md:text-lg">

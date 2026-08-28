@@ -1,7 +1,17 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowLeft, ArrowRight, Heart, Minus, Plus, SlidersHorizontal, Star } from 'lucide-react';
+import { motion } from 'framer-motion';
+import {
+  ArrowLeft,
+  ArrowRight,
+  ArrowUpRight,
+  Heart,
+  Minus,
+  Plus,
+  SlidersHorizontal,
+  Star,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ReactNode, useEffect, useMemo, useState } from 'react';
@@ -15,7 +25,13 @@ import {
   Rating,
   SectionHeading,
 } from '@/components/storefront/storefront-sections';
-import { DeliveryZone, FlashSale, StoreCategory, StoreProduct } from '@/lib/commerce-types';
+import {
+  DeliveryZone,
+  FlashSale,
+  StoreBrand,
+  StoreCategory,
+  StoreProduct,
+} from '@/lib/commerce-types';
 import {
   calculateDiscount,
   calculateDiscountAmount,
@@ -34,6 +50,7 @@ export function ShopPageView({
   title = 'SHOP',
   description = 'Explore premium devices, e-liquids, pods, coils, and smoking accessories.',
   initialCategory,
+  initialBrand,
   initialSort,
   initialSale = false,
   flashSale,
@@ -43,12 +60,14 @@ export function ShopPageView({
   title?: string;
   description?: string;
   initialCategory?: string;
+  initialBrand?: string;
   initialSort?: 'newest' | 'price-asc' | 'price-desc' | 'featured';
   initialSale?: boolean;
   flashSale?: FlashSale | null;
 }) {
   const { t, localize, dir } = useLocale();
   const [category, setCategory] = useState(initialCategory ?? 'all');
+  const [brand] = useState(initialBrand ?? '');
   const [sort, setSort] = useState<'newest' | 'price-asc' | 'price-desc' | 'featured'>(
     initialSort ?? 'newest'
   );
@@ -57,10 +76,11 @@ export function ShopPageView({
     () =>
       filterProducts(products, {
         category: category !== 'all' ? category : undefined,
+        brand: brand || undefined,
         sort,
         sale: initialSale || undefined,
       }),
-    [category, initialSale, products, sort]
+    [brand, category, initialSale, products, sort]
   );
   const rootCategories = categories.filter((item) => !item.parentId);
   const selectedCategory = categories.find((item) => item.slug === category);
@@ -120,6 +140,97 @@ export function ShopPageView({
         <NewsletterSection />
       </Container>
     </div>
+  );
+}
+
+export function BrandsPageView({
+  brands,
+  products,
+}: {
+  brands: StoreBrand[];
+  products: StoreProduct[];
+}) {
+  const { localize, t } = useLocale();
+  const brandCards = brands.length
+    ? brands
+    : Array.from(new Map(products.map((product) => [product.brand, product])).values()).map(
+        (product) => ({
+          id: product.brand,
+          slug: product.brand.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+          name: product.brand,
+          nameAr: product.brandAr,
+          image: product.images[0]?.url,
+        })
+      );
+
+  return (
+    <Container className="py-10 md:py-16">
+      <motion.section
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        className="relative overflow-hidden rounded-[32px] border border-[var(--border)] bg-[var(--card)] p-7 md:p-12"
+      >
+        <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full border border-[var(--border)] opacity-60" />
+        <div className="relative max-w-2xl">
+          <div className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--accent)]">
+            {t('PUFF JO / BRANDS')}
+          </div>
+          <h1 className="mt-4 text-5xl font-black uppercase leading-none tracking-[-0.05em] text-[var(--text)] md:text-7xl">
+            {t('BRANDS')}
+          </h1>
+          <p className="mt-5 max-w-xl text-base leading-8 text-[var(--text-secondary)]">
+            {t('Shop trusted vape brands, devices, flavors, and accessories from one place.')}
+          </p>
+        </div>
+      </motion.section>
+
+      {brandCards.length ? (
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={{ visible: { transition: { staggerChildren: 0.07 } } }}
+          className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        >
+          {brandCards.map((brand) => (
+            <motion.div
+              key={brand.id}
+              variants={{ hidden: { opacity: 0, y: 14 }, visible: { opacity: 1, y: 0 } }}
+              transition={{ duration: 0.4 }}
+            >
+              <Link
+                href={`/shop?brand=${encodeURIComponent(brand.name)}`}
+                className="group relative block aspect-[1.15] overflow-hidden rounded-[26px] border border-[var(--border)] bg-[var(--card)]"
+              >
+                {brand.image ? (
+                  <img
+                    src={brand.image}
+                    alt={localize(brand.name, brand.nameAr)}
+                    className="absolute inset-0 h-full w-full object-cover opacity-75 transition duration-500 group-hover:scale-105 group-hover:opacity-100"
+                  />
+                ) : null}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-5 text-white">
+                  <div>
+                    <div className="text-xl font-black uppercase tracking-[-0.02em]">
+                      {localize(brand.name, brand.nameAr)}
+                    </div>
+                    <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/65">
+                      {t('View products')}
+                    </div>
+                  </div>
+                  <ArrowUpRight className="h-5 w-5 shrink-0 transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" />
+                </div>
+              </Link>
+            </motion.div>
+          ))}
+        </motion.div>
+      ) : (
+        <div className="mt-6 rounded-[26px] border border-[var(--border)] bg-[var(--card)] p-10 text-center text-[var(--text-secondary)]">
+          {t('No brands available yet.')}
+        </div>
+      )}
+    </Container>
   );
 }
 
@@ -192,8 +303,7 @@ function CategoryFilterBar({
           </div>
         </div>
         <div className="mt-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
-          {selectedLabel} · {resultCount}{' '}
-          {t(resultCount === 1 ? 'product' : 'products')}
+          {selectedLabel} · {resultCount} {t(resultCount === 1 ? 'product' : 'products')}
         </div>
       </Container>
     </section>
@@ -253,7 +363,9 @@ function CatalogFlashSaleBanner({ flashSale }: { flashSale: FlashSale }) {
           href={flashSale.ctaUrl || '/shop?sale=true'}
           className="inline-flex items-center gap-2 self-start rounded-full border border-white/20 bg-white px-5 py-3 text-[11px] uppercase tracking-[0.24em] text-black md:self-center"
         >
-          <span className="text-black">{flashSale.ctaText ? t(flashSale.ctaText) : t('Shop sale')}</span>
+          <span className="text-black">
+            {flashSale.ctaText ? t(flashSale.ctaText) : t('Shop sale')}
+          </span>
           {dir === 'rtl' ? <ArrowLeft className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
         </Link>
       </Container>
@@ -294,7 +406,7 @@ export function ProductPageView({
     : [
         {
           id: 'fallback-image',
-          url: '/products/product-placeholder.svg',
+          url: '/products/puff-jo-product-default.png',
           alt: product.name,
         },
       ];
@@ -1199,7 +1311,7 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
                 className="flex flex-col gap-4 rounded-[24px] border border-white/8 bg-white/3 p-3 sm:p-4 md:flex-row"
               >
                 <img
-                  src={line.product.images[0]?.url}
+                  src={line.product.images[0]?.url || '/products/puff-jo-product-default.png'}
                   alt={localize(line.product.name, line.product.nameAr)}
                   className="h-32 w-full rounded-[20px] bg-[var(--background-secondary)] object-contain p-2 sm:h-40 md:h-36 md:w-32 md:flex-none"
                 />
@@ -1441,7 +1553,7 @@ export function CheckoutPageView({
   addresses: CheckoutAddressView[];
   deliveryZones: DeliveryZone[];
 }) {
-  const { t, localize } = useLocale();
+  const { t, localize, locale, dir } = useLocale();
   const router = useRouter();
   const items = useCartStore((state) => state.items);
   const appliedCoupon = useCartStore((state) => state.appliedCoupon);
@@ -1455,6 +1567,7 @@ export function CheckoutPageView({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [couponCode, setCouponCode] = useState(appliedCoupon?.code ?? '');
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+  const [isCouponOpen, setIsCouponOpen] = useState(Boolean(appliedCoupon));
   const [activeFlashSale, setActiveFlashSale] = useState<ActiveFlashSaleView | null>(null);
   const defaultAddress = addresses.find((address) => address.isDefault) ?? addresses[0] ?? null;
   const [selectedAddressId, setSelectedAddressId] = useState(defaultAddress?.id ?? '');
@@ -1850,56 +1963,46 @@ export function CheckoutPageView({
   }
 
   return (
-    <Container className="py-6 md:py-14">
-      <section className="relative overflow-hidden rounded-[24px] border border-white/8 bg-[linear-gradient(135deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] px-4 py-5 sm:px-6 md:rounded-[34px] md:px-8 md:py-10">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(140,36,71,0.24),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(214,180,180,0.08),transparent_28%)]" />
-        <div className="relative flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <Container className="checkout-page py-6 md:py-12">
+      <header className="checkout-entrance mb-8 border-b border-[var(--border)] pb-7 md:mb-10 md:pb-8">
+        <div className="flex items-end justify-between gap-5">
           <div>
-            <div className="text-[10px] uppercase tracking-[0.28em] text-[var(--muted)] md:text-[11px]">
-              {t('Secure checkout')}
+            <div className="text-[10px] uppercase tracking-[0.28em] text-[var(--muted)]">
+              PUFF JO / {t('CHECKOUT')}
             </div>
-            <h1 className="mt-2 font-display text-3xl uppercase leading-none md:mt-3 md:text-6xl">
-              {t('CHECKOUT')}
+            <h1 className="mt-3 font-display text-4xl uppercase leading-none md:text-6xl">
+              {t('Complete your order')}
             </h1>
-            <p className="mt-3 max-w-2xl text-[10px] uppercase tracking-[0.12em] text-[var(--text-secondary)] md:mt-4 md:text-sm md:tracking-[0.14em]">
-              {t(
-                'Cash on Delivery is supported. Card checkout requires a configured payment provider.'
-              )}
+            <p className="mt-3 text-sm text-[var(--text-secondary)]">
+              {t('Secure checkout · Fast delivery across Jordan')}
             </p>
           </div>
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
-            {[
-              { label: 'Bag lines', value: String(lines.length || 0) },
-              {
-                label: 'Discount',
-                value: discountAmount > 0 ? formatCurrency(discountAmount) : '—',
-              },
-              { label: 'Total', value: formatCurrency(total) },
-            ].map((metric) => (
-              <div
-                key={metric.label}
-                className="rounded-[16px] border border-white/10 bg-black/16 px-2.5 py-3 backdrop-blur-sm md:rounded-[22px] md:px-4 md:py-4"
-              >
-                <div className="text-[8px] uppercase tracking-[0.2em] text-[var(--muted)] md:text-[10px]">
-                  {t(metric.label)}
-                </div>
-                <div className="mt-1 text-sm uppercase tracking-[0.04em] text-[var(--text)] md:mt-2 md:text-lg md:tracking-[0.08em]">
-                  {metric.value}
-                </div>
-              </div>
-            ))}
+          <div className="hidden text-right text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] sm:block">
+            {lines.length} {t('items')} <span className="mx-2">·</span>{' '}
+            {new Intl.NumberFormat(locale === 'ar' ? 'ar-JO' : 'en-JO', {
+              style: 'currency',
+              currency: 'JOD',
+              maximumFractionDigits: 2,
+            }).format(total)}
           </div>
         </div>
-      </section>
-      <div className="mt-6 grid gap-5 lg:grid-cols-[1fr_360px] lg:mt-8">
-        <div className="space-y-4 rounded-[24px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-4 md:rounded-[30px] md:p-7">
-          <div className="rounded-[18px] border border-white/8 bg-black/10 px-4 py-3 md:rounded-[22px] md:px-5 md:py-4">
-            <div className="text-[9px] uppercase tracking-[0.22em] text-[var(--muted)] md:text-[10px]">
-              {t('Single-page checkout')}
-            </div>
-            <div className="mt-2 text-[11px] uppercase tracking-[0.12em] text-[var(--text-secondary)] md:text-sm md:tracking-[0.14em]">
-              {t('Delivery, payment, and review are handled on this one screen.')}
-            </div>
+        <div className="mt-8 flex max-w-2xl items-center gap-2 text-[10px] uppercase tracking-[0.16em] text-[var(--muted)] md:gap-3">
+          <span className="font-semibold text-[var(--text)]">01 {t('Cart')}</span>
+          <span className="h-px flex-1 bg-[var(--border)]" />
+          <span>02 {t('Delivery')}</span>
+          <span className="h-px flex-1 bg-[var(--border)]" /> <span>03 {t('Confirm')}</span>
+        </div>
+      </header>
+      <div className="checkout-layout mt-8 grid w-full gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(390px,30vw)] lg:gap-16">
+        <div className="checkout-form checkout-form-shell space-y-5 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 md:p-8">
+          <div className="checkout-section border-b border-[var(--border)] pb-7">
+            <div className="checkout-section-kicker">01</div>
+            <h2 className="mt-2 text-xl font-semibold uppercase tracking-[0.08em]">
+              {t('CONTACT')}
+            </h2>
+            <p className="mt-2 text-sm text-[var(--text-secondary)]">
+              {t('Who should we contact about this order?')}
+            </p>
           </div>
           {!lines.length ? (
             <div className="rounded-[24px] border border-white/8 bg-black/10 p-5 text-sm text-[var(--text-secondary)]">
@@ -1907,7 +2010,7 @@ export function CheckoutPageView({
             </div>
           ) : null}
           {addresses.length ? (
-            <div className="space-y-3 rounded-[20px] border border-white/8 bg-black/10 p-3 md:rounded-[24px] md:p-4">
+            <div className="space-y-3 border-b border-[var(--border)] pb-7">
               <div className="text-[10px] tracking-[0.22em] text-[var(--muted)] md:text-xs">
                 {t('Saved addresses')}
               </div>
@@ -1963,7 +2066,7 @@ export function CheckoutPageView({
               </div>
             </div>
           ) : (
-            <div className="rounded-[24px] border border-white/8 bg-black/10 p-5 text-sm text-[var(--text-secondary)]">
+            <div className="border-b border-[var(--border)] pb-7 text-sm text-[var(--text-secondary)]">
               <div>{t('No saved addresses.')}</div>
               <Link
                 href="/addresses/new"
@@ -1973,70 +2076,108 @@ export function CheckoutPageView({
               </Link>
             </div>
           )}
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <select
-              value={form.country}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  country: event.target.value,
-                  city: '',
-                }))
-              }
-              className="h-11 rounded-full border border-white/10 bg-black/20 px-4 text-sm outline-none md:h-12 md:rounded-[0.25rem] md:px-5"
-            >
-              <option value="">{t('Select a country')}</option>
-              {countryOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <select
-              value={form.city}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  city: event.target.value,
-                }))
-              }
-              className="h-11 rounded-full border border-white/10 bg-black/20 px-4 text-sm outline-none md:h-12 md:rounded-[0.25rem] md:px-5"
-            >
-              <option value="">{t('Select a city')}</option>
-              {cityOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            {checkoutFields.map((field) => (
-              <input
-                key={field.key}
-                value={form[field.key]}
+          <div className="checkout-section border-b border-[var(--border)] pb-8">
+            <div className="mb-5">
+              <div className="checkout-section-kicker">02</div>
+              <h2 className="mt-2 text-xl font-semibold uppercase tracking-[0.08em]">
+                {t('DELIVERY ADDRESS')}
+              </h2>
+              <p className="mt-2 text-sm text-[var(--text-secondary)]">
+                {t('Where should we deliver your order?')}
+              </p>
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <select
+                value={form.country}
                 onChange={(event) =>
                   setForm((current) => ({
                     ...current,
-                    [field.key]: event.target.value,
+                    country: event.target.value,
+                    city: '',
                   }))
                 }
-                placeholder={t(field.label)}
-                className="h-11 rounded-full border border-white/10 bg-black/20 px-4 text-sm outline-none md:h-12 md:rounded-[0.25rem] md:px-5"
-              />
-            ))}
+                className="checkout-input"
+              >
+                <option value="">{t('Select a country')}</option>
+                {countryOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={form.city}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    city: event.target.value,
+                  }))
+                }
+                className="checkout-input"
+              >
+                <option value="">{t('Select a city')}</option>
+                {cityOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              {checkoutFields.map((field) => (
+                <label key={field.key} className={field.key === 'street' ? 'md:col-span-2' : ''}>
+                  <span className="checkout-label">{t(field.label)}</span>
+                  <input
+                    value={form[field.key]}
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, [field.key]: event.target.value }))
+                    }
+                    className="checkout-input"
+                  />
+                </label>
+              ))}
+            </div>
+            {form.city && hasConfiguredDelivery ? (
+              <div className="mt-4 text-xs text-[var(--success)]">
+                ✓ {t('Delivery available')} · {t('Estimated fee')}: {formatCurrency(shippingAmount)}
+              </div>
+            ) : null}
           </div>
-          <select
-            value={form.paymentMethod}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                paymentMethod: event.target.value,
-              }))
-            }
-            className="h-11 rounded-full border border-white/10 bg-black/20 px-4 text-sm outline-none md:h-12 md:rounded-[0.25rem] md:px-5"
-          >
-            <option value="cash_on_delivery">{t('Cash on Delivery')}</option>
-            <option disabled>{t('Card (not configured)')}</option>
-          </select>
+          <div className="checkout-section border-b border-[var(--border)] pb-8">
+            <div className="mb-5">
+              <div className="checkout-section-kicker">03</div>
+              <h2 className="mt-2 text-xl font-semibold uppercase tracking-[0.08em]">
+                {t('PAYMENT')}
+              </h2>
+              <p className="mt-2 text-sm text-[var(--text-secondary)]">
+                {t('Choose how you would like to pay.')}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() =>
+                setForm((current) => ({ ...current, paymentMethod: 'cash_on_delivery' }))
+              }
+              className={`flex w-full items-center justify-between rounded-xl border p-4 text-left transition ${form.paymentMethod === 'cash_on_delivery' ? 'border-[var(--text)] bg-[var(--surface)]' : 'border-[var(--border)]'}`}
+            >
+              <span className="flex items-center gap-3">
+                <span
+                  className={`flex h-5 w-5 items-center justify-center rounded-full border ${form.paymentMethod === 'cash_on_delivery' ? 'border-[var(--text)]' : 'border-[var(--muted)]'}`}
+                >
+                  <span
+                    className={`h-2.5 w-2.5 rounded-full bg-[var(--text)] ${form.paymentMethod === 'cash_on_delivery' ? '' : 'scale-0'}`}
+                  />
+                </span>
+                <span>
+                  <span className="block text-sm font-semibold">{t('Cash on Delivery')}</span>
+                  <span className="mt-1 block text-xs text-[var(--text-secondary)]">
+                    {t('Pay when your order arrives')}
+                  </span>
+                </span>
+              </span>
+              <span className="text-sm">
+                {form.paymentMethod === 'cash_on_delivery' ? '✓' : ''}
+              </span>
+            </button>
+          </div>
           <div>
             <label
               htmlFor="checkout-notes"
@@ -2059,7 +2200,7 @@ export function CheckoutPageView({
             />
           </div>
         </div>
-        <div className="rounded-[24px] border border-white/8 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-4 md:rounded-[30px] md:p-6">
+        <aside className="checkout-summary h-fit rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 md:p-7 lg:sticky lg:top-[120px]">
           <div className="mb-4 text-[10px] tracking-[0.22em] text-[var(--muted)] md:text-xs">
             {t('ORDER SUMMARY')}
           </div>
@@ -2067,13 +2208,13 @@ export function CheckoutPageView({
             {lines.map((line) => (
               <div
                 key={line.lineId}
-                className="rounded-[18px] border border-white/8 bg-black/10 p-2.5 md:rounded-[24px] md:p-3"
+                className="checkout-product rounded-xl border border-[var(--border)] bg-[var(--background-secondary)]/30 p-3"
               >
                 <div className="flex items-center gap-3">
                   <img
-                    src={line.product.images[0]?.url ?? '/products/product-placeholder.svg'}
+                    src={line.product.images[0]?.url || '/products/puff-jo-product-default.png'}
                     alt={localize(line.product.name, line.product.nameAr)}
-                    className="h-16 w-14 rounded-[14px] bg-[var(--background-secondary)] object-contain p-1"
+                    className="h-[76px] w-[68px] rounded-xl bg-[var(--background-secondary)] object-contain p-1.5"
                   />
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm">
@@ -2143,43 +2284,56 @@ export function CheckoutPageView({
               value={`-${formatCurrency(couponDiscountAmount)}`}
             />
           ) : null}
-          <div className="mt-5 grid gap-3">
-            <input
-              value={couponCode}
-              onChange={(event) => setCouponCode(event.target.value)}
-              placeholder={t('Enter promo code')}
-              className="h-11 rounded-full border border-white/10 bg-black/20 px-4 text-sm outline-none md:h-12 md:rounded-[0.25rem] md:px-5"
-            />
-            {appliedCoupon ? (
-              <button
-                type="button"
-                onClick={clearAppliedCoupon}
-                className="rounded-full border border-white/10 px-4 py-2.5 text-sm tracking-[0.2em] md:px-5 md:py-3"
-              >
-                {t('REMOVE COUPON')}
-              </button>
-            ) : (
-              <button
-                type="button"
-                disabled={!lines.length || isApplyingCoupon}
-                onClick={applyCoupon}
-                className="rounded-full border border-white/10 px-4 py-2.5 text-sm tracking-[0.2em] disabled:cursor-not-allowed disabled:opacity-40 md:px-5 md:py-3"
-              >
-                {isApplyingCoupon ? t('APPLYING') : t('Apply')}
-              </button>
-            )}
-            {appliedCoupon?.description ? (
-              <div className="text-xs text-[var(--text-secondary)]">
-                {appliedCoupon.description}
+          <div className="mt-6 border-t border-[var(--border)] pt-5">
+            <button
+              type="button"
+              onClick={() => setIsCouponOpen((open) => !open)}
+              className="text-sm text-[var(--text-secondary)]"
+            >
+              {isCouponOpen ? '−' : '+'} {t('Have a discount code?')}
+            </button>
+            <div
+              className={`overflow-hidden transition-all duration-200 ${isCouponOpen ? 'mt-3 max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}
+            >
+              <div className="grid gap-3">
+                <input
+                  value={couponCode}
+                  onChange={(event) => setCouponCode(event.target.value)}
+                  placeholder={t('Enter discount code')}
+                  className="checkout-input"
+                />
+                {appliedCoupon ? (
+                  <button
+                    type="button"
+                    onClick={clearAppliedCoupon}
+                    className="rounded-full border border-white/10 px-4 py-2.5 text-sm tracking-[0.2em] md:px-5 md:py-3"
+                  >
+                    {t('REMOVE COUPON')}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={!lines.length || isApplyingCoupon}
+                    onClick={applyCoupon}
+                    className="rounded-full border border-white/10 px-4 py-2.5 text-sm tracking-[0.2em] disabled:cursor-not-allowed disabled:opacity-40 md:px-5 md:py-3"
+                  >
+                    {isApplyingCoupon ? t('APPLYING') : t('Apply')}
+                  </button>
+                )}
+                {appliedCoupon?.description ? (
+                  <div className="text-xs text-[var(--text-secondary)]">
+                    {appliedCoupon.description}
+                  </div>
+                ) : null}
               </div>
-            ) : null}
+            </div>
           </div>
           <SummaryRow
             label={t('Delivery')}
             value={
               hasConfiguredDelivery
                 ? formatCurrency(shippingAmount)
-                : t('Select a supported country and city')
+                : t('Calculated after selecting your city')
             }
           />
           <SummaryRow label={t('Total')} value={formatCurrency(total)} emphasis />
@@ -2188,20 +2342,34 @@ export function CheckoutPageView({
               {t('No delivery fee is configured for the selected location.')}
             </p>
           ) : null}
-          <p className="mt-5 text-sm leading-7 text-[var(--text-secondary)]">
-            {t(
-              'Final pricing should be confirmed by a Supabase checkout RPC before production launch.'
-            )}
-          </p>
           <button
             type="button"
             disabled={!lines.length || isSubmitting || !hasConfiguredDelivery}
             onClick={placeOrder}
-            className="mt-6 w-full rounded-full bg-[var(--text)] px-5 py-3 text-sm tracking-[0.2em] text-[var(--background)] disabled:cursor-not-allowed disabled:opacity-40 md:py-3"
+            className="checkout-order-button mt-7 w-full rounded-xl bg-[var(--text)] px-5 py-4 text-sm font-semibold tracking-[0.16em] text-[var(--background)] disabled:cursor-not-allowed disabled:opacity-40"
           >
-            {isSubmitting ? t('PLEASE WAIT') : t('PLACE ORDER')}
+            {isSubmitting ? (
+              <span className="inline-flex items-center gap-2">
+                <span className="checkout-spinner" />
+                {t('PLACING ORDER')}...
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-3">
+                {t('PLACE ORDER')}{' '}
+                {dir === 'rtl' ? (
+                  <ArrowLeft className="h-4 w-4" />
+                ) : (
+                  <ArrowRight className="h-4 w-4" />
+                )}
+              </span>
+            )}
           </button>
-        </div>
+          <p className="mt-4 text-center text-xs leading-6 text-[var(--text-secondary)]">
+            🔒 {t('Secure checkout')}
+            <br />
+            {t('Your order is only created after confirmation.')}
+          </p>
+        </aside>
       </div>
     </Container>
   );

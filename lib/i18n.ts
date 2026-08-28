@@ -79,6 +79,43 @@ export const messages: Record<string, LocaleMessages> = {
       ar: 'أزياء أنثوية داكنة وإكسسوارات قوطية وقطع مستوحاة من الطقوس ضمن متجر فاخر.',
     },
   'Secure checkout': { en: 'Secure checkout', ar: 'دفع آمن' },
+  items: { en: 'items', ar: 'منتجات' },
+  order: { en: 'order', ar: 'طلب' },
+  orders: { en: 'orders', ar: 'طلبات' },
+  'Complete your order': { en: 'Complete your order', ar: 'أتمم طلبك' },
+  'Secure checkout · Fast delivery across Jordan': {
+    en: 'Secure checkout · Fast delivery across Jordan',
+    ar: 'دفع آمن · توصيل سريع داخل الأردن',
+  },
+  'Who should we contact about this order?': {
+    en: 'Who should we contact about this order?',
+    ar: 'مع من يمكننا التواصل بخصوص هذا الطلب؟',
+  },
+  'Where should we deliver your order?': {
+    en: 'Where should we deliver your order?',
+    ar: 'أين نوصّل طلبك؟',
+  },
+  'Choose how you would like to pay.': {
+    en: 'Choose how you would like to pay.',
+    ar: 'اختر طريقة الدفع المناسبة لك.',
+  },
+  'Pay when your order arrives': {
+    en: 'Pay when your order arrives',
+    ar: 'ادفع عند استلام طلبك',
+  },
+  'Delivery available': { en: 'Delivery available', ar: 'التوصيل متاح' },
+  'Estimated fee': { en: 'Estimated fee', ar: 'رسوم التوصيل المتوقعة' },
+  'Have a discount code?': { en: 'Have a discount code?', ar: 'هل لديك رمز خصم؟' },
+  'Enter discount code': { en: 'Enter discount code', ar: 'أدخل رمز الخصم' },
+  'Calculated after selecting your city': {
+    en: 'Calculated after selecting your city',
+    ar: 'يُحتسب بعد اختيار مدينتك',
+  },
+  'Your order is only created after confirmation.': {
+    en: 'Your order is only created after confirmation.',
+    ar: 'لن يتم إنشاء طلبك إلا بعد التأكيد.',
+  },
+  'PLACING ORDER': { en: 'PLACING ORDER', ar: 'جارٍ إرسال الطلب' },
   'Delivery instructions (optional)': {
     en: 'Delivery instructions (optional)',
     ar: 'تعليمات التوصيل (اختياري)',
@@ -94,6 +131,8 @@ export const messages: Record<string, LocaleMessages> = {
   LEGAL: { en: 'LEGAL', ar: 'القانونية' },
   Contact: { en: 'Contact', ar: 'تواصل' },
   CONTACT: { en: 'CONTACT', ar: 'اتصل بنا' },
+  'DELIVERY ADDRESS': { en: 'DELIVERY ADDRESS', ar: 'عنوان التوصيل' },
+  PAYMENT: { en: 'PAYMENT', ar: 'الدفع' },
   FAQ: { en: 'FAQ', ar: 'الأسئلة الشائعة' },
   'PRIVACY POLICY': { en: 'PRIVACY POLICY', ar: 'سياسة الخصوصية' },
   TERMS: { en: 'TERMS', ar: 'الشروط' },
@@ -342,7 +381,7 @@ export const messages: Record<string, LocaleMessages> = {
   Email: { en: 'Email', ar: 'البريد الإلكتروني' },
   Phone: { en: 'Phone', ar: 'الهاتف' },
   Password: { en: 'Password', ar: 'كلمة المرور' },
-  'Enter your password': { en: 'Enter your password', ar: 'أدخلي كلمة المرور' },
+  'Enter your password': { en: 'Enter your password', ar: 'أدخل كلمة المرور' },
   'Password strength': { en: 'Password strength', ar: 'قوة كلمة المرور' },
   'name@example.com': { en: 'name@example.com', ar: 'name@example.com' },
   '+962...': { en: '+962...', ar: '+962...' },
@@ -352,7 +391,7 @@ export const messages: Record<string, LocaleMessages> = {
   CartItemInfo: { en: 'Product details', ar: 'تفاصيل المنتج' },
   RemoveCartItem: { en: 'Remove', ar: 'إزالة' },
   CouponInput: { en: 'Promo code', ar: 'رمز الخصم' },
-  'Enter promo code': { en: 'Enter promo code', ar: 'أدخلي رمز الخصم' },
+  'Enter promo code': { en: 'Enter promo code', ar: 'أدخل رمز الخصم' },
   SubtotalRow: { en: 'Subtotal', ar: 'المجموع الفرعي' },
   DiscountRow: { en: 'Discount', ar: 'الخصم' },
   ShippingRow: { en: 'Shipping', ar: 'الشحن' },
@@ -533,10 +572,11 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'Guidance for incorrect, delayed, or changed product orders.',
     ar: 'إرشادات للطلبات الخاطئة أو المتأخرة أو التي تحتاج إلى تعديل.',
   },
-  'Last updated: August 15, 2026. This policy explains how Puff Jo handles customer data for online ordering, delivery, accounts, and support.': {
-    en: 'Last updated: August 15, 2026. This policy explains how Puff Jo handles customer data for online ordering, delivery, accounts, and support.',
-    ar: 'آخر تحديث: 15 آب 2026. توضّح هذه السياسة كيف يتعامل بف جو مع بيانات العملاء للطلبات الإلكترونية والتوصيل والحسابات والدعم.',
-  },
+  'Last updated: August 15, 2026. This policy explains how Puff Jo handles customer data for online ordering, delivery, accounts, and support.':
+    {
+      en: 'Last updated: August 15, 2026. This policy explains how Puff Jo handles customer data for online ordering, delivery, accounts, and support.',
+      ar: 'آخر تحديث: 15 آب 2026. توضّح هذه السياسة كيف يتعامل بف جو مع بيانات العملاء للطلبات الإلكترونية والتوصيل والحسابات والدعم.',
+    },
   'PUFF JO / ONLINE SUPPORT': { en: 'PUFF JO / ONLINE SUPPORT', ar: 'بف جو / دعم أونلاين' },
   'Need a hand with a product or order? We are here online across Jordan.': {
     en: 'Need a hand with a product or order? We are here online across Jordan.',
@@ -681,10 +721,11 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'How we use your information',
     ar: 'كيف نستخدم معلوماتك',
   },
-  'We use customer information to create and secure accounts, confirm orders, calculate delivery fees, contact you about an order, deliver to the correct address, provide support, prevent misuse, and improve the shopping experience.': {
-    en: 'We use customer information to create and secure accounts, confirm orders, calculate delivery fees, contact you about an order, deliver to the correct address, provide support, prevent misuse, and improve the shopping experience.',
-    ar: 'نستخدم معلومات العملاء لإنشاء الحسابات وتأمينها، وتأكيد الطلبات، واحتساب رسوم التوصيل، والتواصل بخصوص الطلب، والتوصيل إلى العنوان الصحيح، وتقديم الدعم، ومنع سوء الاستخدام، وتحسين تجربة التسوق.',
-  },
+  'We use customer information to create and secure accounts, confirm orders, calculate delivery fees, contact you about an order, deliver to the correct address, provide support, prevent misuse, and improve the shopping experience.':
+    {
+      en: 'We use customer information to create and secure accounts, confirm orders, calculate delivery fees, contact you about an order, deliver to the correct address, provide support, prevent misuse, and improve the shopping experience.',
+      ar: 'نستخدم معلومات العملاء لإنشاء الحسابات وتأمينها، وتأكيد الطلبات، واحتساب رسوم التوصيل، والتواصل بخصوص الطلب، والتوصيل إلى العنوان الصحيح، وتقديم الدعم، ومنع سوء الاستخدام، وتحسين تجربة التسوق.',
+    },
   'We use customer information to create and secure accounts, confirm orders, prepare food, calculate delivery fees, contact you about an order, deliver to the correct address, provide support, prevent misuse, and improve the ordering experience.':
     {
       en: 'We use customer information to create and secure accounts, confirm orders, prepare food, calculate delivery fees, contact you about an order, deliver to the correct address, provide support, prevent misuse, and improve the ordering experience.',
@@ -707,10 +748,11 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'Orders, delivery, and online operations',
     ar: 'الطلبات والتوصيل والعمليات أونلاين',
   },
-  'Order and delivery details may be visible to authorized Puff Jo team members who need them for dispatch, customer service, refunds, complaints, or operational reporting.': {
-    en: 'Order and delivery details may be visible to authorized Puff Jo team members who need them for dispatch, customer service, refunds, complaints, or operational reporting.',
-    ar: 'قد تكون تفاصيل الطلب والتوصيل متاحة لأعضاء فريق بف جو المصرح لهم ممن يحتاجونها للإرسال وخدمة العملاء والاسترداد والشكاوى أو التقارير التشغيلية.',
-  },
+  'Order and delivery details may be visible to authorized Puff Jo team members who need them for dispatch, customer service, refunds, complaints, or operational reporting.':
+    {
+      en: 'Order and delivery details may be visible to authorized Puff Jo team members who need them for dispatch, customer service, refunds, complaints, or operational reporting.',
+      ar: 'قد تكون تفاصيل الطلب والتوصيل متاحة لأعضاء فريق بف جو المصرح لهم ممن يحتاجونها للإرسال وخدمة العملاء والاسترداد والشكاوى أو التقارير التشغيلية.',
+    },
   'Order and delivery details may be visible to authorized Shawerma 3a Saj team members who need them for kitchen preparation, dispatch, branch coordination, customer service, refunds, complaints, or operational reporting.':
     {
       en: 'Order and delivery details may be visible to authorized Shawerma 3a Saj team members who need them for kitchen preparation, dispatch, branch coordination, customer service, refunds, complaints, or operational reporting.',
@@ -754,11 +796,10 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'For privacy questions, contact Puff Jo at support@puffjo.com.',
     ar: 'لأسئلة الخصوصية، تواصل مع بف جو عبر support@puffjo.com.',
   },
-  'For privacy questions, contact Puff Jo at support@puffjo.com or call +962 79 256 0025.':
-    {
-      en: 'For privacy questions, contact Puff Jo at support@puffjo.com or call +962 79 256 0025.',
-      ar: 'لأسئلة الخصوصية، تواصل مع بف جو عبر support@puffjo.com أو اتصل على +962 79 256 0025.',
-    },
+  'For privacy questions, contact Puff Jo at support@puffjo.com or call +962 79 256 0025.': {
+    en: 'For privacy questions, contact Puff Jo at support@puffjo.com or call +962 79 256 0025.',
+    ar: 'لأسئلة الخصوصية، تواصل مع بف جو عبر support@puffjo.com أو اتصل على +962 79 256 0025.',
+  },
   'Orders and pricing': { en: 'Orders and pricing', ar: 'الطلبات والأسعار' },
   'Published prices, availability, and catalog content may change before an order is confirmed.': {
     en: 'Published prices, availability, and catalog content may change before an order is confirmed.',
@@ -1059,6 +1100,7 @@ export const messages: Record<string, LocaleMessages> = {
   'Added to your bag': { en: 'Added to your cart', ar: 'تمت الإضافة إلى السلة' },
   'Added to your cart': { en: 'Added to your cart', ar: 'تمت الإضافة إلى السلة' },
   'ADDED TO CART': { en: 'Added to cart', ar: 'تمت الإضافة للسلة' },
+  ADDED: { en: 'ADDED', ar: 'تمت الإضافة' },
   'SHOP NOW': { en: 'ORDER NOW', ar: 'اطلب الآن' },
   piece: { en: 'item', ar: 'صنف' },
   pieces: { en: 'items', ar: 'أصناف' },
@@ -1174,6 +1216,15 @@ export const messages: Record<string, LocaleMessages> = {
   'Delivery across Jordan. Orders in Amman usually arrive within 1-3 business days.': {
     en: 'Delivery across Jordan. Orders in Amman usually arrive within 1-3 business days.',
     ar: 'التوصيل متاح في جميع أنحاء الأردن. طلبات عمّان تصل عادة خلال 1-3 أيام عمل.',
+  },
+  'Fast delivery is available across Jordan. Dispatch timing depends on coverage and order volume.':
+    {
+      en: 'Fast delivery is available across Jordan. Dispatch timing depends on coverage and order volume.',
+      ar: 'التوصيل السريع متاح في جميع أنحاء الأردن. يعتمد وقت تجهيز وإرسال الطلب على التغطية وحجم الطلبات.',
+    },
+  'Please add delivery notes and any setup preferences before checkout.': {
+    en: 'Please add delivery notes and any setup preferences before checkout.',
+    ar: 'يرجى إضافة ملاحظات التوصيل وأي تفضيلات خاصة بالتجهيز قبل إتمام الطلب.',
   },
   'Return eligibility depends on item type. Nail sets and intimate items remain final sale unless faulty.':
     {
@@ -1425,10 +1476,11 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'Customer account is active and ready for orders.',
     ar: 'حساب العميل نشط وجاهز للطلبات.',
   },
-  'Reorder your favorite devices and flavors, manage delivery addresses, and track every order from one place.': {
-    en: 'Reorder your favorite devices and flavors, manage delivery addresses, and track every order from one place.',
-    ar: 'ارجع اطلب أجهزتك ونكهاتك المفضلة، ورتّب عناوين التوصيل، وتابع كل طلب من مكان واحد.',
-  },
+  'Reorder your favorite devices and flavors, manage delivery addresses, and track every order from one place.':
+    {
+      en: 'Reorder your favorite devices and flavors, manage delivery addresses, and track every order from one place.',
+      ar: 'ارجع اطلب أجهزتك ونكهاتك المفضلة، ورتّب عناوين التوصيل، وتابع كل طلب من مكان واحد.',
+    },
   'Update your contact details and account identity.': {
     en: 'Update your contact details and account identity.',
     ar: 'حدّثي بيانات التواصل وهوية الحساب.',
@@ -1891,78 +1943,94 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'Our order line is available daily from 12:00 PM to 2:00 AM for product and delivery support.',
     ar: 'خط الطلبات متاح يومياً من 12 ظهراً حتى 2 فجراً لدعم المنتجات والتوصيل.',
   },
-  'Orders are checked and packed after confirmation. Preparation time can change with product availability and live order volume.': {
-    en: 'Orders are checked and packed after confirmation. Preparation time can change with product availability and live order volume.',
-    ar: 'يتم تدقيق الطلبات وتجهيزها بعد التأكيد. قد يختلف وقت التجهيز حسب توفر المنتجات وحجم الطلبات الحالي.',
-  },
-  'Amman delivery timing depends on your area, traffic, courier availability, and current order volume. We confirm the delivery details before dispatch.': {
-    en: 'Amman delivery timing depends on your area, traffic, courier availability, and current order volume. We confirm the delivery details before dispatch.',
-    ar: 'يعتمد وقت التوصيل داخل عمان على منطقتك والازدحام وتوفر المندوبين وحجم الطلبات. نؤكد تفاصيل التوصيل قبل الإرسال.',
-  },
-  'Coverage and product availability vary by city and delivery zone. Enter your address at checkout to see the available option and fee.': {
-    en: 'Coverage and product availability vary by city and delivery zone. Enter your address at checkout to see the available option and fee.',
-    ar: 'يختلف نطاق التوصيل وتوفر المنتجات حسب المدينة والمنطقة. أدخل عنوانك عند الدفع لمعرفة الخيار والرسوم المتاحة.',
-  },
-  'Choose pickup when it is available at checkout. Keep your order confirmation ready and wait for the pickup notice before visiting the branch.': {
-    en: 'Choose pickup when it is available at checkout. Keep your order confirmation ready and wait for the pickup notice before visiting the branch.',
-    ar: 'اختر الاستلام عند توفره في صفحة الدفع. احتفظ بتأكيد الطلب وانتظر إشعار الجاهزية قبل زيارة الفرع.',
-  },
-  'Add clear building, street, and contact details at checkout. Our team may call the number on the order if the location needs confirmation.': {
-    en: 'Add clear building, street, and contact details at checkout. Our team may call the number on the order if the location needs confirmation.',
-    ar: 'أضف تفاصيل واضحة للمبنى والشارع ووسيلة التواصل عند الدفع. قد يتصل فريقنا بالرقم الموجود في الطلب لتأكيد الموقع.',
-  },
-  'Contact support as soon as possible with your order number if you need to change an address, phone number, flavor, or delivery note. Changes cannot be guaranteed after dispatch.': {
-    en: 'Contact support as soon as possible with your order number if you need to change an address, phone number, flavor, or delivery note. Changes cannot be guaranteed after dispatch.',
-    ar: 'تواصل مع الدعم بأسرع وقت مع رقم الطلب إذا احتجت لتعديل العنوان أو الرقم أو النكهة أو ملاحظة التوصيل. لا يمكن ضمان التعديلات بعد الإرسال.',
-  },
-  'Unopened, unused products may be eligible for a return review. Contact support before sending anything back so we can confirm eligibility and next steps.': {
-    en: 'Unopened, unused products may be eligible for a return review. Contact support before sending anything back so we can confirm eligibility and next steps.',
-    ar: 'قد تكون المنتجات غير المفتوحة وغير المستخدمة مؤهلة لمراجعة الاسترجاع. تواصل مع الدعم قبل إرسال أي شيء لتأكيد الأهلية والخطوات التالية.',
-  },
-  'Check your package when it arrives and contact us promptly if an item is missing, incorrect, leaking, or damaged.': {
-    en: 'Check your package when it arrives and contact us promptly if an item is missing, incorrect, leaking, or damaged.',
-    ar: 'افحص شحنتك عند وصولها وتواصل معنا فوراً إذا كان هناك منتج مفقود أو غير صحيح أو متسرب أو تالف.',
-  },
-  'Send your order number, a short description, and clear photos of the package or product. We will review the issue and guide you through the available resolution.': {
-    en: 'Send your order number, a short description, and clear photos of the package or product. We will review the issue and guide you through the available resolution.',
-    ar: 'أرسل رقم الطلب ووصفاً مختصراً وصوراً واضحة للعبوة أو المنتج. سنراجع المشكلة ونرشدك إلى الحل المتاح.',
-  },
-  'Cancellation requests are handled case by case and depend on whether the order has entered preparation or dispatch. Call the order line rather than sending a delayed message.': {
-    en: 'Cancellation requests are handled case by case and depend on whether the order has entered preparation or dispatch. Call the order line rather than sending a delayed message.',
-    ar: 'تتم مراجعة طلبات الإلغاء كل حالة على حدة حسب دخول الطلب مرحلة التجهيز أو الإرسال. اتصل بخط الطلبات بدلاً من إرسال رسالة متأخرة.',
-  },
+  'Orders are checked and packed after confirmation. Preparation time can change with product availability and live order volume.':
+    {
+      en: 'Orders are checked and packed after confirmation. Preparation time can change with product availability and live order volume.',
+      ar: 'يتم تدقيق الطلبات وتجهيزها بعد التأكيد. قد يختلف وقت التجهيز حسب توفر المنتجات وحجم الطلبات الحالي.',
+    },
+  'Amman delivery timing depends on your area, traffic, courier availability, and current order volume. We confirm the delivery details before dispatch.':
+    {
+      en: 'Amman delivery timing depends on your area, traffic, courier availability, and current order volume. We confirm the delivery details before dispatch.',
+      ar: 'يعتمد وقت التوصيل داخل عمان على منطقتك والازدحام وتوفر المندوبين وحجم الطلبات. نؤكد تفاصيل التوصيل قبل الإرسال.',
+    },
+  'Coverage and product availability vary by city and delivery zone. Enter your address at checkout to see the available option and fee.':
+    {
+      en: 'Coverage and product availability vary by city and delivery zone. Enter your address at checkout to see the available option and fee.',
+      ar: 'يختلف نطاق التوصيل وتوفر المنتجات حسب المدينة والمنطقة. أدخل عنوانك عند الدفع لمعرفة الخيار والرسوم المتاحة.',
+    },
+  'Choose pickup when it is available at checkout. Keep your order confirmation ready and wait for the pickup notice before visiting the branch.':
+    {
+      en: 'Choose pickup when it is available at checkout. Keep your order confirmation ready and wait for the pickup notice before visiting the branch.',
+      ar: 'اختر الاستلام عند توفره في صفحة الدفع. احتفظ بتأكيد الطلب وانتظر إشعار الجاهزية قبل زيارة الفرع.',
+    },
+  'Add clear building, street, and contact details at checkout. Our team may call the number on the order if the location needs confirmation.':
+    {
+      en: 'Add clear building, street, and contact details at checkout. Our team may call the number on the order if the location needs confirmation.',
+      ar: 'أضف تفاصيل واضحة للمبنى والشارع ووسيلة التواصل عند الدفع. قد يتصل فريقنا بالرقم الموجود في الطلب لتأكيد الموقع.',
+    },
+  'Contact support as soon as possible with your order number if you need to change an address, phone number, flavor, or delivery note. Changes cannot be guaranteed after dispatch.':
+    {
+      en: 'Contact support as soon as possible with your order number if you need to change an address, phone number, flavor, or delivery note. Changes cannot be guaranteed after dispatch.',
+      ar: 'تواصل مع الدعم بأسرع وقت مع رقم الطلب إذا احتجت لتعديل العنوان أو الرقم أو النكهة أو ملاحظة التوصيل. لا يمكن ضمان التعديلات بعد الإرسال.',
+    },
+  'Unopened, unused products may be eligible for a return review. Contact support before sending anything back so we can confirm eligibility and next steps.':
+    {
+      en: 'Unopened, unused products may be eligible for a return review. Contact support before sending anything back so we can confirm eligibility and next steps.',
+      ar: 'قد تكون المنتجات غير المفتوحة وغير المستخدمة مؤهلة لمراجعة الاسترجاع. تواصل مع الدعم قبل إرسال أي شيء لتأكيد الأهلية والخطوات التالية.',
+    },
+  'Check your package when it arrives and contact us promptly if an item is missing, incorrect, leaking, or damaged.':
+    {
+      en: 'Check your package when it arrives and contact us promptly if an item is missing, incorrect, leaking, or damaged.',
+      ar: 'افحص شحنتك عند وصولها وتواصل معنا فوراً إذا كان هناك منتج مفقود أو غير صحيح أو متسرب أو تالف.',
+    },
+  'Send your order number, a short description, and clear photos of the package or product. We will review the issue and guide you through the available resolution.':
+    {
+      en: 'Send your order number, a short description, and clear photos of the package or product. We will review the issue and guide you through the available resolution.',
+      ar: 'أرسل رقم الطلب ووصفاً مختصراً وصوراً واضحة للعبوة أو المنتج. سنراجع المشكلة ونرشدك إلى الحل المتاح.',
+    },
+  'Cancellation requests are handled case by case and depend on whether the order has entered preparation or dispatch. Call the order line rather than sending a delayed message.':
+    {
+      en: 'Cancellation requests are handled case by case and depend on whether the order has entered preparation or dispatch. Call the order line rather than sending a delayed message.',
+      ar: 'تتم مراجعة طلبات الإلغاء كل حالة على حدة حسب دخول الطلب مرحلة التجهيز أو الإرسال. اتصل بخط الطلبات بدلاً من إرسال رسالة متأخرة.',
+    },
   'What products does Puff Jo sell?': {
     en: 'What products does Puff Jo sell?',
     ar: 'ما المنتجات التي يبيعها بف جو؟',
   },
-  'Puff Jo carries vape devices, disposable vapes, pod systems, e-liquids, pods, coils, chargers, cases, and other smoking accessories. Availability changes by product and delivery area.': {
-    en: 'Puff Jo carries vape devices, disposable vapes, pod systems, e-liquids, pods, coils, chargers, cases, and other smoking accessories. Availability changes by product and delivery area.',
-    ar: 'يوفر بف جو أجهزة الفيب والفيب disposable وأنظمة البود والجوس والبودات والكويلات والشواحن والحقائب وإكسسوارات التدخين. يختلف التوفر حسب المنتج ومنطقة التوصيل.',
-  },
+  'Puff Jo carries vape devices, disposable vapes, pod systems, e-liquids, pods, coils, chargers, cases, and other smoking accessories. Availability changes by product and delivery area.':
+    {
+      en: 'Puff Jo carries vape devices, disposable vapes, pod systems, e-liquids, pods, coils, chargers, cases, and other smoking accessories. Availability changes by product and delivery area.',
+      ar: 'يوفر بف جو أجهزة الفيب والفيب disposable وأنظمة البود والجوس والبودات والكويلات والشواحن والحقائب وإكسسوارات التدخين. يختلف التوفر حسب المنتج ومنطقة التوصيل.',
+    },
   'Do you sell to minors?': { en: 'Do you sell to minors?', ar: 'هل تبيعون للقاصرين؟' },
-  'No. Puff Jo products are intended for adults of legal smoking age only. We may request age or identity confirmation before completing an order or delivery.': {
-    en: 'No. Puff Jo products are intended for adults of legal smoking age only. We may request age or identity confirmation before completing an order or delivery.',
-    ar: 'لا. منتجات بف جو مخصصة للبالغين ممن بلغوا السن القانوني للتدخين فقط. قد نطلب تأكيد العمر أو الهوية قبل إتمام الطلب أو التوصيل.',
-  },
-  'We use access controls and service providers designed to protect account and order information. No online service can guarantee absolute security, so keep your password private and contact us if you notice suspicious activity.': {
-    en: 'We use access controls and service providers designed to protect account and order information. No online service can guarantee absolute security, so keep your password private and contact us if you notice suspicious activity.',
-    ar: 'نستخدم ضوابط وصول ومزودي خدمة مصممين لحماية معلومات الحساب والطلب. لا يمكن لأي خدمة إلكترونية ضمان أمان مطلق، لذلك حافظ على سرية كلمة المرور وتواصل معنا عند ملاحظة نشاط مريب.',
-  },
+  'No. Puff Jo products are intended for adults of legal smoking age only. We may request age or identity confirmation before completing an order or delivery.':
+    {
+      en: 'No. Puff Jo products are intended for adults of legal smoking age only. We may request age or identity confirmation before completing an order or delivery.',
+      ar: 'لا. منتجات بف جو مخصصة للبالغين ممن بلغوا السن القانوني للتدخين فقط. قد نطلب تأكيد العمر أو الهوية قبل إتمام الطلب أو التوصيل.',
+    },
+  'We use access controls and service providers designed to protect account and order information. No online service can guarantee absolute security, so keep your password private and contact us if you notice suspicious activity.':
+    {
+      en: 'We use access controls and service providers designed to protect account and order information. No online service can guarantee absolute security, so keep your password private and contact us if you notice suspicious activity.',
+      ar: 'نستخدم ضوابط وصول ومزودي خدمة مصممين لحماية معلومات الحساب والطلب. لا يمكن لأي خدمة إلكترونية ضمان أمان مطلق، لذلك حافظ على سرية كلمة المرور وتواصل معنا عند ملاحظة نشاط مريب.',
+    },
   'Age requirement': { en: 'Age requirement', ar: 'شرط العمر' },
-  'You must be an adult of legal smoking age in your location to browse and purchase age-restricted products. We may request age or identity verification at checkout or delivery.': {
-    en: 'You must be an adult of legal smoking age in your location to browse and purchase age-restricted products. We may request age or identity verification at checkout or delivery.',
-    ar: 'يجب أن تكون بالغاً بالسن القانوني للتدخين في منطقتك لتصفح وشراء المنتجات المقيدة بالعمر. قد نطلب التحقق من العمر أو الهوية عند الدفع أو التوصيل.',
-  },
+  'You must be an adult of legal smoking age in your location to browse and purchase age-restricted products. We may request age or identity verification at checkout or delivery.':
+    {
+      en: 'You must be an adult of legal smoking age in your location to browse and purchase age-restricted products. We may request age or identity verification at checkout or delivery.',
+      ar: 'يجب أن تكون بالغاً بالسن القانوني للتدخين في منطقتك لتصفح وشراء المنتجات المقيدة بالعمر. قد نطلب التحقق من العمر أو الهوية عند الدفع أو التوصيل.',
+    },
   'Responsible use': { en: 'Responsible use', ar: 'الاستخدام المسؤول' },
-  'Use every device, e-liquid, pod, coil, and accessory according to its manufacturer instructions. Keep products away from children, pets, heat, and open flames.': {
-    en: 'Use every device, e-liquid, pod, coil, and accessory according to its manufacturer instructions. Keep products away from children, pets, heat, and open flames.',
-    ar: 'استخدم كل جهاز وجوس وبود وكويل وإكسسوار وفق تعليمات الشركة المصنعة. احفظ المنتجات بعيداً عن الأطفال والحيوانات والحرارة واللهب.',
-  },
+  'Use every device, e-liquid, pod, coil, and accessory according to its manufacturer instructions. Keep products away from children, pets, heat, and open flames.':
+    {
+      en: 'Use every device, e-liquid, pod, coil, and accessory according to its manufacturer instructions. Keep products away from children, pets, heat, and open flames.',
+      ar: 'استخدم كل جهاز وجوس وبود وكويل وإكسسوار وفق تعليمات الشركة المصنعة. احفظ المنتجات بعيداً عن الأطفال والحيوانات والحرارة واللهب.',
+    },
   'Account responsibility': { en: 'Account responsibility', ar: 'مسؤولية الحساب' },
-  'Keep your account details and delivery information accurate. You are responsible for activity made through your account and for being available at the delivery address.': {
-    en: 'Keep your account details and delivery information accurate. You are responsible for activity made through your account and for being available at the delivery address.',
-    ar: 'حافظ على دقة بيانات حسابك ومعلومات التوصيل. أنت مسؤول عن النشاط الذي يتم عبر حسابك وعن التواجد على عنوان التوصيل.',
-  },
+  'Keep your account details and delivery information accurate. You are responsible for activity made through your account and for being available at the delivery address.':
+    {
+      en: 'Keep your account details and delivery information accurate. You are responsible for activity made through your account and for being available at the delivery address.',
+      ar: 'حافظ على دقة بيانات حسابك ومعلومات التوصيل. أنت مسؤول عن النشاط الذي يتم عبر حسابك وعن التواجد على عنوان التوصيل.',
+    },
   'Your next daily ritual': { en: 'Your next daily ritual', ar: 'طقسك اليومي القادم' },
   'Premium devices, standout flavors, and essentials selected for a smoother session.': {
     en: 'Premium devices, standout flavors, and essentials selected for a smoother session.',
@@ -1976,10 +2044,11 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'Make room for better clouds.',
     ar: 'اترك مساحة لغيوم أفضل.',
   },
-  'A sharper vape shop for considered hardware, standout flavors, and the little things that make every session better.': {
-    en: 'A sharper vape shop for considered hardware, standout flavors, and the little things that make every session better.',
-    ar: 'متجر فيب متطور لأجهزة مختارة ونكهات مميزة وتفاصيل تجعل كل جلسة أفضل.',
-  },
+  'A sharper vape shop for considered hardware, standout flavors, and the little things that make every session better.':
+    {
+      en: 'A sharper vape shop for considered hardware, standout flavors, and the little things that make every session better.',
+      ar: 'متجر فيب متطور لأجهزة مختارة ونكهات مميزة وتفاصيل تجعل كل جلسة أفضل.',
+    },
   'THE NEW SMOKE SHOP': { en: 'THE NEW SMOKE SHOP', ar: 'متجر التدخين الجديد' },
   'Cloud culture': { en: 'Cloud culture', ar: 'ثقافة الغيوم' },
   'every draw': { en: 'every draw', ar: 'مع كل سحبة' },
@@ -1989,18 +2058,20 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'Everything you need for a cleaner setup',
     ar: 'كل ما تحتاجه لإعداد أنظف',
   },
-  'Shop dependable hardware, fresh e-liquid, coils, pods, and accessories with a straightforward delivery experience.': {
-    en: 'Shop dependable hardware, fresh e-liquid, coils, pods, and accessories with a straightforward delivery experience.',
-    ar: 'تسوق أجهزة موثوقة وجوس إلكتروني وكويلات وبودات وإكسسوارات مع تجربة توصيل واضحة.',
-  },
+  'Shop dependable hardware, fresh e-liquid, coils, pods, and accessories with a straightforward delivery experience.':
+    {
+      en: 'Shop dependable hardware, fresh e-liquid, coils, pods, and accessories with a straightforward delivery experience.',
+      ar: 'تسوق أجهزة موثوقة وجوس إلكتروني وكويلات وبودات وإكسسوارات مع تجربة توصيل واضحة.',
+    },
   'Fast dispatch': { en: 'Fast dispatch', ar: 'إرسال سريع' },
   'Curated gear': { en: 'Curated gear', ar: 'معدات مختارة' },
   'Trusted quality': { en: 'Trusted quality', ar: 'جودة موثوقة' },
   'Better hardware': { en: 'Better hardware', ar: 'أجهزة أفضل' },
-  'Reliable devices and thoughtful accessories for daily use, weekend drops, and everything between.': {
-    en: 'Reliable devices and thoughtful accessories for daily use, weekend drops, and everything between.',
-    ar: 'أجهزة موثوقة وإكسسوارات مختارة للاستخدام اليومي والإصدارات الجديدة وكل ما بينهما.',
-  },
+  'Reliable devices and thoughtful accessories for daily use, weekend drops, and everything between.':
+    {
+      en: 'Reliable devices and thoughtful accessories for daily use, weekend drops, and everything between.',
+      ar: 'أجهزة موثوقة وإكسسوارات مختارة للاستخدام اليومي والإصدارات الجديدة وكل ما بينهما.',
+    },
   'Flavor, your way': { en: 'Flavor, your way', ar: 'نكهتك بطريقتك' },
   'Explore crisp fruit, cool menthol, rich desserts, and the blends worth coming back to.': {
     en: 'Explore crisp fruit, cool menthol, rich desserts, and the blends worth coming back to.',
@@ -2037,10 +2108,11 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'Your go-to vape shop in Jordan.',
     ar: 'متجر الفيب اللي بتعتمد عليه بالأردن.',
   },
-  'Shop trusted vape devices, e-liquids, pods, coils, and accessories with delivery across Amman and Jordan.': {
-    en: 'Shop trusted vape devices, e-liquids, pods, coils, and accessories with delivery across Amman and Jordan.',
-    ar: 'تسوق أجهزة فيب وجوس وبودات وكويلات وإكسسوارات موثوقة مع توصيل داخل عمان ومختلف مناطق الأردن.',
-  },
+  'Shop trusted vape devices, e-liquids, pods, coils, and accessories with delivery across Amman and Jordan.':
+    {
+      en: 'Shop trusted vape devices, e-liquids, pods, coils, and accessories with delivery across Amman and Jordan.',
+      ar: 'تسوق أجهزة فيب وجوس وبودات وكويلات وإكسسوارات موثوقة مع توصيل داخل عمان ومختلف مناطق الأردن.',
+    },
   'PUFF JO / VAPE SHOP IN JORDAN': {
     en: 'PUFF JO / VAPE SHOP IN JORDAN',
     ar: 'بف جو / متجر فيب في الأردن',
@@ -2054,15 +2126,17 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'Everything for your vape setup',
     ar: 'كل ما تحتاجه لتشكيلة الفيب',
   },
-  'Shop trusted devices, fresh e-liquids, pods, coils, and accessories with straightforward delivery across Jordan.': {
-    en: 'Shop trusted devices, fresh e-liquids, pods, coils, and accessories with straightforward delivery across Jordan.',
-    ar: 'تسوق أجهزة موثوقة وجوس جديد وبودات وكويلات وإكسسوارات مع توصيل واضح داخل الأردن.',
-  },
+  'Shop trusted devices, fresh e-liquids, pods, coils, and accessories with straightforward delivery across Jordan.':
+    {
+      en: 'Shop trusted devices, fresh e-liquids, pods, coils, and accessories with straightforward delivery across Jordan.',
+      ar: 'تسوق أجهزة موثوقة وجوس جديد وبودات وكويلات وإكسسوارات مع توصيل واضح داخل الأردن.',
+    },
   'Reliable devices': { en: 'Reliable devices', ar: 'أجهزة موثوقة' },
-  'Dependable vape devices and accessories for your daily setup, whether you are starting fresh or upgrading.': {
-    en: 'Dependable vape devices and accessories for your daily setup, whether you are starting fresh or upgrading.',
-    ar: 'أجهزة فيب وإكسسوارات تعتمد عليها لتشكيلتك اليومية، سواء كنت تبدأ من جديد أو تطور معداتك.',
-  },
+  'Dependable vape devices and accessories for your daily setup, whether you are starting fresh or upgrading.':
+    {
+      en: 'Dependable vape devices and accessories for your daily setup, whether you are starting fresh or upgrading.',
+      ar: 'أجهزة فيب وإكسسوارات تعتمد عليها لتشكيلتك اليومية، سواء كنت تبدأ من جديد أو تطور معداتك.',
+    },
   'Flavors for every mood': { en: 'Flavors for every mood', ar: 'نكهات لكل مزاج' },
   'Choose from fruit, mint, dessert, tobacco, and icy blends stocked for different tastes.': {
     en: 'Choose from fruit, mint, dessert, tobacco, and icy blends stocked for different tastes.',
@@ -2086,14 +2160,16 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'Nothing saved yet. Tap the heart on a device or flavor to find it here next time.',
     ar: 'لسا ما حفظت أي منتج. اضغط على القلب جنب أي جهاز أو نكهة عشان تلاقيها هون.',
   },
-  'Order online, confirm your address, and get your everyday vape essentials delivered to your door.': {
-    en: 'Order online, confirm your address, and get your everyday vape essentials delivered to your door.',
-    ar: 'اطلب أونلاين وأكد عنوانك وخلي مستلزمات الفيب اليومية توصلك لباب البيت.',
-  },
-  'We are updating the shelves. Check back soon for devices, flavors, pods, coils, and accessories.': {
-    en: 'We are updating the shelves. Check back soon for devices, flavors, pods, coils, and accessories.',
-    ar: 'نحن نجهز الرفوف. ارجع قريباً لتشوف الأجهزة والنكهات والبودات والكويلات والإكسسوارات.',
-  },
+  'Order online, confirm your address, and get your everyday vape essentials delivered to your door.':
+    {
+      en: 'Order online, confirm your address, and get your everyday vape essentials delivered to your door.',
+      ar: 'اطلب أونلاين وأكد عنوانك وخلي مستلزمات الفيب اليومية توصلك لباب البيت.',
+    },
+  'We are updating the shelves. Check back soon for devices, flavors, pods, coils, and accessories.':
+    {
+      en: 'We are updating the shelves. Check back soon for devices, flavors, pods, coils, and accessories.',
+      ar: 'نحن نجهز الرفوف. ارجع قريباً لتشوف الأجهزة والنكهات والبودات والكويلات والإكسسوارات.',
+    },
   'Vape essentials': { en: 'Vape essentials', ar: 'مستلزمات الفيب' },
   'Ready for pickup': { en: 'Ready for pickup', ar: 'جاهز للاستلام' },
   'in Jordan': { en: 'in Jordan', ar: 'في الأردن' },
@@ -2122,6 +2198,17 @@ export const messages: Record<string, LocaleMessages> = {
     ar: 'معدات فيب فاخرة، توصيل سريع، واستلام من فروعنا في الأردن',
   },
   'PUFF JO / STORE': { en: 'PUFF JO / STORE', ar: 'بف جو / المتجر' },
+  'PUFF JO / BRANDS': { en: 'PUFF JO / BRANDS', ar: 'بف جو / العلامات' },
+  BRANDS: { en: 'BRANDS', ar: 'العلامات التجارية' },
+  'Shop trusted vape brands, devices, flavors, and accessories from one place.': {
+    en: 'Shop trusted vape brands, devices, flavors, and accessories from one place.',
+    ar: 'تسوق أشهر علامات الفيب والأجهزة والنكهات والإكسسوارات من مكان واحد.',
+  },
+  'View products': { en: 'View products', ar: 'عرض المنتجات' },
+  'No brands available yet.': {
+    en: 'No brands available yet.',
+    ar: 'لا توجد علامات تجارية متاحة حالياً.',
+  },
   'Explore premium devices, e-liquids, pods, coils, and smoking accessories.': {
     en: 'Explore premium devices, e-liquids, pods, coils, and smoking accessories.',
     ar: 'اكتشف أجهزة الفيب والجوس والبودات والكويلات وإكسسوارات التدخين المميزة.',

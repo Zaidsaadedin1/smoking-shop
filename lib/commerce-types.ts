@@ -12,6 +12,17 @@ export type StoreCategory = {
   image: string;
 };
 
+export type StoreBrand = {
+  id: string;
+  slug: string;
+  slugAr?: string;
+  name: string;
+  nameAr?: string;
+  description?: string;
+  descriptionAr?: string;
+  image?: string;
+};
+
 export type ProductImage = {
   id: string;
   url: string;

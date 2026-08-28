@@ -74,7 +74,7 @@ export function CategoryMoodCard({ category }: { category: StoreCategory }) {
       className="group relative min-h-[360px] overflow-hidden rounded-[22px] border border-[var(--border)] bg-[var(--card)] shadow-[0_20px_60px_rgba(0,0,0,.2)] transition duration-300 hover:-translate-y-1 hover:border-[var(--accent)]"
     >
       <img
-        src={category.image}
+        src={category.image || '/products/puff-jo-product-default.png'}
         alt={localize(category.name, category.nameAr)}
         className="absolute inset-0 h-full w-full bg-[#171717] object-contain mix-blend-screen opacity-80 transition duration-500 group-hover:scale-[1.04] group-hover:opacity-100"
       />
@@ -137,14 +137,12 @@ export function ProductCard({ product }: { product: StoreProduct }) {
     <div className="group flex h-full flex-col rounded-[22px] border border-[var(--border)] bg-[var(--card)] p-2.5 shadow-[0_18px_45px_rgba(0,0,0,.16)] transition duration-300 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[0_24px_60px_rgba(0,0,0,.25)] md:p-3">
       <Link href={`/product/${product.slug}`} className="block">
         <div className="relative aspect-square overflow-hidden rounded-[17px] border border-white/8 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,.12),transparent_35%),linear-gradient(145deg,#202020,#0a0a0a)]">
-          {product.images[0]?.url ? (
-            <img
-              src={product.images[0].url}
-              alt={localize(product.name, product.nameAr)}
-              onLoad={() => setImageLoaded(true)}
-              className={`absolute inset-0 h-full w-full object-cover transition duration-300 ease-out group-hover:scale-[1.05] ${imageLoaded ? 'scale-100 opacity-100' : 'scale-[.98] opacity-0'}`}
-            />
-          ) : null}
+          <img
+            src={product.images[0]?.url || '/products/puff-jo-product-default.png'}
+            alt={localize(product.name, product.nameAr)}
+            onLoad={() => setImageLoaded(true)}
+            className={`absolute inset-0 h-full w-full object-cover transition duration-300 ease-out group-hover:scale-[1.05] ${imageLoaded ? 'scale-100 opacity-100' : 'scale-[.98] opacity-0'}`}
+          />
           {product.images[1]?.url ? (
             <img
               src={product.images[1].url}
