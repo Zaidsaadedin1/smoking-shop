@@ -2720,6 +2720,9 @@ CREATE POLICY "order_items_select" ON "public"."order_items" FOR SELECT USING ((
   WHERE (("o"."id" = "order_items"."order_id") AND (("o"."user_id" = "auth"."uid"()) OR "public"."is_admin"())))));
 
 
+CREATE POLICY "order_items_admin_manage" ON "public"."order_items" FOR ALL USING ("public"."is_admin"()) WITH CHECK ("public"."is_admin"());
+
+
 
 ALTER TABLE "public"."order_status_history" ENABLE ROW LEVEL SECURITY;
 

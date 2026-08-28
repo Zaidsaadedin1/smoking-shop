@@ -1379,6 +1379,53 @@ export async function updateOrder(
   return updateSupabaseRow<OrderRow>('orders', payload, { id: `eq.${id}` }, true, auth);
 }
 
+export async function replaceOrderItems(
+  orderId: string,
+  items: Array<{
+    productId?: string | null;
+    variantId?: string | null;
+    productName: string;
+    sku?: string | null;
+    sizeName?: string | null;
+    colorName?: string | null;
+    imageUrl?: string | null;
+    unitPrice: number;
+    quantity: number;
+    lineTotal: number;
+  }>,
+  auth?: SupabaseRequestAuth
+) {
+  const removed = await deleteSupabaseRow<OrderItemRow>(
+    'order_items',
+    { order_id: `eq.${orderId}` },
+    false,
+    auth
+  );
+
+  if (removed.error) {
+    return removed;
+  }
+
+  return requestSupabaseRest<OrderItemRow[]>('order_items', {
+    method: 'POST',
+    body: items.map((item) => ({
+      order_id: orderId,
+      product_id: item.productId ?? null,
+      variant_id: item.variantId ?? null,
+      product_name: item.productName,
+      sku: item.sku ?? null,
+      size_name: item.sizeName ?? null,
+      color_name: item.colorName ?? null,
+      image_url: item.imageUrl ?? null,
+      unit_price: item.unitPrice,
+      quantity: item.quantity,
+      line_total: item.lineTotal,
+    })),
+    prefer: ['return=representation'],
+    ...(auth?.headers ? { headers: auth.headers } : {}),
+  });
+}
+
 export async function deleteOrder(id: string, auth?: SupabaseRequestAuth) {
   return deleteSupabaseRow<OrderRow>('orders', { id: `eq.${id}` }, true, auth);
 }
@@ -1391,7 +1438,10 @@ export async function getOrderById(id: string, auth?: SupabaseRequestAuth) {
         'id,order_number,user_id,status,payment_status,payment_method,customer_name,customer_email,customer_phone,shipping_address,billing_address,subtotal,discount_amount,shipping_amount,tax_amount,total_amount,currency,coupon_code,notes,tracking_number,shipping_carrier,created_at',
       id: `eq.${id}`,
     },
-    auth
+    {
+      ...(auth?.headers ? { headers: auth.headers } : {}),
+      revalidate: 0,
+    }
   );
 
   if (!order.data) {

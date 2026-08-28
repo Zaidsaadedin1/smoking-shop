@@ -873,6 +873,37 @@ img {
   pointer-events: all;
 }
 
+.tc-api-overlay--admin {
+  background: rgba(5, 5, 5, 0.58);
+  backdrop-filter: blur(3px);
+}
+
+.tc-api-overlay--admin .tc-api-overlay__panel {
+  min-width: 15rem;
+  border-color: rgba(199, 32, 47, 0.42);
+  border-radius: 0.75rem;
+  background: linear-gradient(180deg, rgba(199, 32, 47, 0.96), rgba(12, 12, 12, 0.98));
+  color: #fff;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.3);
+}
+
+.tc-api-overlay--admin .tc-api-overlay__mark {
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.tc-api-overlay--admin .tc-api-overlay__dot {
+  background: #ffffff;
+}
+
+.tc-api-overlay--admin .tc-api-overlay__eyebrow {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.tc-api-overlay--admin .tc-api-overlay__label {
+  color: #fff;
+}
+
 .tc-api-overlay__panel {
   display: inline-flex;
   align-items: center;

@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Cloud,
+  CircleHelp,
   Clock,
   Heart,
   Home,
@@ -12,18 +13,32 @@ import {
   Search,
   ShoppingBag,
   Package,
+  LogOut,
+  Languages,
+  MapPinned,
+  Settings2,
   User,
+  UserRound,
   X,
 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import {
+  ComponentType,
+  ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from 'react';
 import { LocaleSwitcher, useLocale } from '@/components/storefront/locale-provider';
 import { ThemeSwitcher, useThemeMode } from '@/components/storefront/theme-provider';
 import { FlashSale, NavigationItem, StoreSettings } from '@/lib/commerce-types';
 import { formatCurrency } from '@/lib/commerce-utils';
 import { getCartProducts, useCartStore } from '@/stores/use-cart-store';
 import { useUiStore } from '@/stores/use-ui-store';
+import type { CustomerSession } from '@/lib/customer/auth';
 
 const mobileNav = [
   { label: 'HOME', href: '/', icon: Home },
@@ -52,16 +67,19 @@ export function StorefrontShell({
   settings,
   flashSale,
   navigationItems,
+  customerSession,
 }: {
   children: ReactNode;
   settings: StoreSettings;
   flashSale: FlashSale | null;
   navigationItems: NavigationItem[];
+  customerSession: CustomerSession | null;
 }) {
   const pathname = usePathname();
   const { t } = useLocale();
   useThemeMode();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { isCartOpen, openCart, closeCart, toasts, dismissToast, pushToast } = useUiStore();
   const items = useCartStore((state) => state.items);
@@ -109,6 +127,7 @@ export function StorefrontShell({
         scrolled={scrolled || pathname !== '/'}
         onMenu={() => setMenuOpen(true)}
         onCart={openCart}
+        onAccount={() => setAccountOpen(true)}
         navigationItems={navigationItems}
       />
       <MobileMenu
@@ -118,9 +137,14 @@ export function StorefrontShell({
         navigationItems={navigationItems}
       />
       <main className="pb-24 md:pb-10">{children}</main>
-      {!isCheckout ? <MobileBottomNav /> : null}
+      {!isCheckout ? <MobileBottomNav onAccount={() => setAccountOpen(true)} /> : null}
       <Footer settings={settings} navigationItems={navigationItems} />
       <CartDrawer open={isCartOpen} onClose={closeCart} />
+      <AccountDrawer
+        open={accountOpen}
+        onClose={() => setAccountOpen(false)}
+        session={customerSession}
+      />
       <FlashSaleModal sale={flashSale} />
       <ToastViewport toasts={toasts} dismissToast={dismissToast} />
     </div>
@@ -148,6 +172,7 @@ function Header({
   scrolled,
   onMenu,
   onCart,
+  onAccount,
   navigationItems,
 }: {
   brandName: string;
@@ -156,6 +181,7 @@ function Header({
   scrolled: boolean;
   onMenu: () => void;
   onCart: () => void;
+  onAccount: () => void;
   navigationItems: NavigationItem[];
 }) {
   const { localize, t } = useLocale();
@@ -275,6 +301,10 @@ function Header({
           </Link>
           <Link
             href="/account"
+            onClick={(event) => {
+              event.preventDefault();
+              onAccount();
+            }}
             className={`hidden rounded-full border p-2 transition md:inline-flex ${navHoverClassName}`}
             style={{
               borderColor: controlBorderColor,
@@ -464,7 +494,7 @@ function MobileMenu({
   );
 }
 
-function MobileBottomNav() {
+function MobileBottomNav({ onAccount }: { onAccount: () => void }) {
   const pathname = usePathname();
   const { t } = useLocale();
 
@@ -481,7 +511,19 @@ function MobileBottomNav() {
           const Icon = item.icon;
           const active = pathname === item.href;
 
-          return (
+          return item.href === '/account' ? (
+            <button
+              key={item.href}
+              type="button"
+              onClick={onAccount}
+              className={`flex flex-col items-center gap-1 whitespace-nowrap rounded-full py-1 text-[10px] tracking-[0.18em] transition ${
+                active ? 'scale-105 text-white' : 'text-[var(--muted)]'
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              <span>{t(item.label)}</span>
+            </button>
+          ) : (
             <Link
               key={item.href}
               href={item.href}
@@ -528,7 +570,9 @@ function Footer({
             </div>
           </div>
           <div className="max-w-xs text-sm leading-6 text-[var(--text-secondary)] md:text-right">
-            {t('Shop trusted devices, flavors, pods, coils, and accessories with delivery across Jordan.')}
+            {t(
+              'Shop trusted devices, flavors, pods, coils, and accessories with delivery across Jordan.'
+            )}
           </div>
         </div>
         <div className="grid gap-8 sm:gap-10 lg:grid-cols-[1.5fr_repeat(3,1fr)]">
@@ -547,7 +591,9 @@ function Footer({
               </span>
             </Link>
             <p className="mt-4 max-w-md text-sm leading-6 text-[var(--text-secondary)] sm:mt-5 sm:leading-7">
-              {t('Genuine vape gear, popular flavors, and everyday accessories for customers across Jordan.')}
+              {t(
+                'Genuine vape gear, popular flavors, and everyday accessories for customers across Jordan.'
+              )}
             </p>
             <div className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:flex lg:flex-wrap">
               <FooterInfo icon={Clock} label="Hours" value="12 PM - 2 AM" />
@@ -647,6 +693,304 @@ function FooterColumn({
         ))}
       </div>
     </div>
+  );
+}
+
+function AccountDrawer({
+  open,
+  onClose,
+  session,
+}: {
+  open: boolean;
+  onClose: () => void;
+  session: CustomerSession | null;
+}) {
+  const { t, locale } = useLocale();
+  const { isDark } = useThemeMode();
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const isRtl = locale === 'ar';
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    closeButtonRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [open, onClose]);
+
+  const initials =
+    session?.fullName
+      ?.split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join('')
+      .toUpperCase() || 'PU';
+
+  const accountLinks = [
+    { label: 'My Profile', href: '/profile', icon: UserRound },
+    { label: 'My Orders', href: '/orders', icon: Package },
+    { label: 'Saved Addresses', href: '/addresses', icon: MapPinned },
+    { label: 'Favorites', href: '/favorites', icon: Heart },
+  ];
+
+  const supportLinks = [
+    { label: 'Contact Us', href: '/contact-us', icon: CircleHelp },
+    { label: 'Help / FAQ', href: '/faq', icon: CircleHelp },
+  ];
+
+  return (
+    <AnimatePresence>
+      {open ? (
+        <>
+          <motion.button
+            type="button"
+            onClick={onClose}
+            aria-label={t('Close account drawer')}
+            className="fixed inset-0 z-[60] bg-black/[.35] backdrop-blur-[4px]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.26, ease: 'easeOut' }}
+          />
+          <motion.aside
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="account-drawer-title"
+            dir={locale === 'ar' ? 'rtl' : 'ltr'}
+            initial={{ opacity: 0, x: isRtl ? -24 : 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: isRtl ? -24 : 24 }}
+            transition={{ duration: 0.29, ease: 'easeOut' }}
+            className={`fixed inset-y-0 z-[70] flex w-[min(92vw,440px)] flex-col border-[var(--border)] p-5 sm:p-7 ${isRtl ? 'left-0 border-r' : 'right-0 border-l'}`}
+            style={{
+              background: isDark
+                ? 'color-mix(in srgb, var(--background) 94%, white 6%)'
+                : 'color-mix(in srgb, var(--card) 96%, black 4%)',
+              boxShadow: isRtl ? '12px 0 40px rgba(0,0,0,0.18)' : '-12px 0 40px rgba(0,0,0,0.18)',
+            }}
+          >
+            <div className="flex items-start justify-between gap-4 border-b border-[var(--border)] pb-6">
+              <div>
+                <div className="text-[10px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">
+                  {t('YOUR ACCOUNT')}
+                </div>
+                <h2
+                  id="account-drawer-title"
+                  className="mt-2 font-display text-3xl uppercase leading-none"
+                >
+                  {session ? t('Account') : t('Welcome')}
+                </h2>
+              </div>
+              <button
+                ref={closeButtonRef}
+                type="button"
+                onClick={onClose}
+                aria-label={t('Close account drawer')}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)] transition hover:border-[var(--text)] hover:text-[var(--text)]"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {session ? (
+              <div className="border-b border-[var(--border)] py-7">
+                <div className="flex items-center gap-4">
+                  {session.avatarUrl ? (
+                    <img
+                      src={session.avatarUrl}
+                      alt=""
+                      className="h-16 w-16 rounded-full border border-[var(--border)] object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--card)] text-sm font-bold tracking-[0.12em] text-[var(--text)]">
+                      {initials}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <div className="truncate text-xl font-bold text-[var(--text)]">
+                      {session.fullName}
+                    </div>
+                    <div className="mt-1 truncate text-sm text-[var(--text-secondary)]">
+                      {session.email}
+                    </div>
+                    {session.phone ? (
+                      <div className="mt-0.5 text-xs text-[var(--muted)]">{session.phone}</div>
+                    ) : null}
+                  </div>
+                </div>
+                <Link
+                  href="/profile"
+                  onClick={onClose}
+                  className="group mt-6 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.23em] text-[var(--text-secondary)] transition hover:text-[var(--text)]"
+                >
+                  {t('VIEW PROFILE')}{' '}
+                  <span className="transition-transform duration-200 group-hover:translate-x-0.5 rtl:rotate-180">
+                    →
+                  </span>
+                </Link>
+              </div>
+            ) : (
+              <div className="border-b border-[var(--border)] py-9">
+                <p className="max-w-xs text-lg font-semibold leading-7 text-[var(--text)]">
+                  {t('Sign in to view orders, favorites and manage your profile.')}
+                </p>
+                <div className="mt-7 grid gap-3">
+                  <Link
+                    href="/login"
+                    onClick={onClose}
+                    className="inline-flex h-12 items-center justify-center rounded-full bg-[var(--text)] px-5 text-xs font-bold uppercase tracking-[0.2em]"
+                    style={{ color: 'var(--background)' }}
+                  >
+                    {t('SIGN IN')}
+                  </Link>
+                  <Link
+                    href="/register"
+                    onClick={onClose}
+                    className="inline-flex h-12 items-center justify-center rounded-full border border-[var(--border)] px-5 text-xs font-bold uppercase tracking-[0.2em] text-[var(--text)] transition hover:bg-[var(--surface)]"
+                  >
+                    {t('CREATE ACCOUNT')}
+                  </Link>
+                </div>
+              </div>
+            )}
+
+            {session ? (
+              <div className="min-h-0 flex-1 overflow-y-auto py-6">
+                <AccountDrawerSection label={t('ACCOUNT')} links={accountLinks} onClose={onClose} />
+                <div className="mt-7">
+                  <div className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--muted)]">
+                    {t('SETTINGS')}
+                  </div>
+                  <AccountDrawerRow
+                    icon={Languages}
+                    label={t('Language')}
+                    value={locale === 'ar' ? 'العربية' : 'English'}
+                  >
+                    <LocaleSwitcher />
+                  </AccountDrawerRow>
+                  <AccountDrawerRow
+                    icon={Settings2}
+                    label={t('Theme')}
+                    value={isDark ? t('Dark') : t('Light')}
+                  >
+                    <ThemeSwitcher />
+                  </AccountDrawerRow>
+                </div>
+                <div className="mt-7">
+                  <AccountDrawerSection
+                    label={t('SUPPORT')}
+                    links={supportLinks}
+                    onClose={onClose}
+                  />
+                </div>
+              </div>
+            ) : null}
+
+            <div className="mt-auto border-t border-[var(--border)] pt-4">
+              {session ? <AccountDrawerLogoutButton /> : null}
+              <div className="mt-4 flex items-center justify-between text-[10px] uppercase tracking-[0.24em] text-[var(--muted)]">
+                <span>PUFF JO</span>
+                <span>Jordan</span>
+              </div>
+            </div>
+          </motion.aside>
+        </>
+      ) : null}
+    </AnimatePresence>
+  );
+}
+
+function AccountDrawerSection({
+  label,
+  links,
+  onClose,
+}: {
+  label: string;
+  links: Array<{ label: string; href: string; icon: ComponentType<{ className?: string }> }>;
+  onClose: () => void;
+}) {
+  return (
+    <div>
+      <div className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--muted)]">
+        {label}
+      </div>
+      {links.map((link) => {
+        const Icon = link.icon;
+        return (
+          <Link
+            key={link.href}
+            href={link.href}
+            onClick={onClose}
+            className="group flex h-14 items-center gap-3 border-b border-[var(--border)] text-sm font-semibold text-[var(--text)] transition first:border-t hover:bg-[var(--surface)]"
+          >
+            <Icon className="h-4 w-4 shrink-0 text-[var(--muted)] transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-[var(--text)]" />
+            <span className="flex-1">{link.label}</span>
+            <span className="text-lg font-normal text-[var(--muted)] transition-transform duration-200 group-hover:translate-x-0.5">
+              →
+            </span>
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
+function AccountDrawerRow({
+  icon: Icon,
+  label,
+  value,
+  children,
+}: {
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex min-h-14 items-center gap-3 border-b border-[var(--border)] text-sm font-semibold text-[var(--text)]">
+      <Icon className="h-4 w-4 shrink-0 text-[var(--muted)]" />
+      <span className="flex-1">{label}</span>
+      <span className="mr-1 text-xs font-normal text-[var(--muted)]">{value}</span>
+      {children}
+    </div>
+  );
+}
+
+function AccountDrawerLogoutButton() {
+  const { t } = useLocale();
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  return (
+    <button
+      type="button"
+      disabled={isPending}
+      onClick={() =>
+        startTransition(async () => {
+          await fetch('/api/auth/logout', { method: 'POST' });
+          router.push('/login');
+          router.refresh();
+        })
+      }
+      className="group flex h-12 w-full items-center gap-3 text-sm font-semibold text-[var(--text-secondary)] transition hover:text-[var(--error)] disabled:opacity-50"
+    >
+      <LogOut className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+      <span>{isPending ? t('PLEASE WAIT') : t('SIGN OUT')}</span>
+    </button>
   );
 }
 

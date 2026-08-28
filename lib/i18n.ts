@@ -140,6 +140,7 @@ export const messages: Record<string, LocaleMessages> = {
   FACEBOOK: { en: 'FACEBOOK', ar: 'فيسبوك' },
   'Admin panel': { en: 'Admin panel', ar: 'لوحة الإدارة' },
   'Restaurant operations': { en: 'Restaurant operations', ar: 'عمليات المطعم' },
+  'Store operations': { en: 'Store operations', ar: 'عمليات المتجر' },
   'Operations dashboard': { en: 'Operations dashboard', ar: 'لوحة العمليات' },
   'Admin is split from the customer app and has its own navigation, metrics, and management screens.':
     {
@@ -150,7 +151,8 @@ export const messages: Record<string, LocaleMessages> = {
   Logout: { en: 'Logout', ar: 'تسجيل الخروج' },
   'Admin navigation': { en: 'Admin navigation', ar: 'تنقل الإدارة' },
   'Toggle navigation': { en: 'Toggle navigation', ar: 'تبديل التنقل' },
-  'Restaurant control room': { en: 'Restaurant control room', ar: 'غرفة تحكم المطعم' },
+  'Restaurant control room': { en: 'PUFF Jordan control room', ar: 'غرفة تحكم بف جو الأردن' },
+  'PUFF Jordan control room': { en: 'PUFF Jordan control room', ar: 'غرفة تحكم بف جو الأردن' },
   'Kitchen control': { en: 'Kitchen control', ar: 'تحكم المطبخ' },
   'Syncing admin updates': { en: 'Syncing admin updates', ar: 'مزامنة تحديثات الإدارة' },
   'Product management': { en: 'Product management', ar: 'إدارة المنتجات' },
@@ -223,7 +225,6 @@ export const messages: Record<string, LocaleMessages> = {
   Slug: { en: 'Slug', ar: 'المعرف' },
   Price: { en: 'Price', ar: 'السعر' },
   Created: { en: 'Created', ar: 'تاريخ الإنشاء' },
-  'Catalog products': { en: 'Catalog products', ar: 'منتجات الكتالوج' },
   'Manage multilingual product records, pricing, status, and catalog assignments.': {
     en: 'Manage multilingual product records, pricing, status, and catalog assignments.',
     ar: 'إدارة سجلات المنتجات متعددة اللغات والتسعير والحالة وربطها بالكتالوج.',
@@ -286,6 +287,30 @@ export const messages: Record<string, LocaleMessages> = {
   'Shipping carrier': { en: 'Shipping carrier', ar: 'شركة الشحن' },
   Notes: { en: 'Notes', ar: 'ملاحظات' },
   'Customer profiles': { en: 'Customer profiles', ar: 'ملفات العملاء' },
+  'Active food catalog records': {
+    en: 'Active food catalog records',
+    ar: 'سجلات قائمة الطعام النشطة',
+  },
+  'Catalog products': { en: 'Catalog products', ar: 'منتجات الكتالوج' },
+  'Active catalog records': { en: 'Active catalog records', ar: 'سجلات الكتالوج النشطة' },
+  'Kitchen and delivery queue': {
+    en: 'Kitchen and delivery queue',
+    ar: 'قائمة المطبخ والتوصيل',
+  },
+  'Order fulfillment queue': { en: 'Order fulfillment queue', ar: 'قائمة تجهيز الطلبات' },
+  'Customer profiles and roles': {
+    en: 'Customer profiles and roles',
+    ar: 'ملفات العملاء والأدوار',
+  },
+  'Catalog groups': { en: 'Catalog groups', ar: 'مجموعات الكتالوج' },
+  'Categories, collections, and brands': {
+    en: 'Categories, collections, and brands',
+    ar: 'الفئات والمجموعات والعلامات التجارية',
+  },
+  'Categories, sauces, and brands': {
+    en: 'Categories, sauces, and brands',
+    ar: 'الفئات والصلصات والعلامات التجارية',
+  },
   'Each row supports view, edit, and delete, with role and block status controls.': {
     en: 'Each row supports view, edit, and delete, with role and block status controls.',
     ar: 'كل صف يدعم العرض والتعديل والحذف مع التحكم في الدور وحالة الحظر.',
@@ -1137,8 +1162,6 @@ export const messages: Record<string, LocaleMessages> = {
   'options available': { en: 'options available', ar: 'خيارات متاحة' },
   'Add to favorites': { en: 'Add to favorites', ar: 'أضف إلى المفضلة' },
   'Remove from favorites': { en: 'Remove from favorites', ar: 'أزل من المفضلة' },
-  'Show password': { en: 'Show password', ar: 'إظهار كلمة المرور' },
-  'Hide password': { en: 'Hide password', ar: 'إخفاء كلمة المرور' },
   'Country code': { en: 'Country code', ar: 'رمز الدولة' },
   'Phone number': { en: 'Phone number', ar: 'رقم الهاتف' },
   'Full name must be at least 2 characters': {
@@ -1244,6 +1267,42 @@ export const messages: Record<string, LocaleMessages> = {
   'Nothing saved yet.': { en: 'Nothing saved yet.', ar: 'لا توجد عناصر محفوظة بعد.' },
   'VIEW PRODUCTS': { en: 'VIEW PRODUCTS', ar: 'عرض المنتجات' },
   SEARCH: { en: 'SEARCH', ar: 'البحث' },
+  'YOUR ACCOUNT': { en: 'YOUR ACCOUNT', ar: 'حسابك' },
+  SUPPORT: { en: 'SUPPORT', ar: 'الدعم' },
+  Account: { en: 'Account', ar: 'الحساب' },
+  Welcome: { en: 'Welcome', ar: 'مرحباً' },
+  'VIEW PROFILE': { en: 'VIEW PROFILE', ar: 'عرض الملف الشخصي' },
+  'My Profile': { en: 'My Profile', ar: 'ملفي الشخصي' },
+  'Saved Addresses': { en: 'Saved Addresses', ar: 'العناوين المحفوظة' },
+  'Contact Us': { en: 'Contact Us', ar: 'تواصل معنا' },
+  'Help / FAQ': { en: 'Help / FAQ', ar: 'المساعدة والأسئلة الشائعة' },
+  Language: { en: 'Language', ar: 'اللغة' },
+  Theme: { en: 'Theme', ar: 'المظهر' },
+  Dark: { en: 'Dark', ar: 'داكن' },
+  Light: { en: 'Light', ar: 'فاتح' },
+  'Close account drawer': { en: 'Close account drawer', ar: 'إغلاق لوحة الحساب' },
+  'Updating Puff Jo': { en: 'Updating Puff Jo', ar: 'جارٍ تحديث بَف جو' },
+  'Authenticating access': { en: 'Authenticating access', ar: 'جارٍ التحقق من الدخول' },
+  'PUFF JORDAN': { en: 'PUFF JORDAN', ar: 'بف جو الأردن' },
+  'PUFF JO / ADMIN': { en: 'PUFF JO / ADMIN', ar: 'بف جو / الإدارة' },
+  'Manage the PUFF Jordan storefront, from products and orders to customers and settings.': {
+    en: 'Manage the PUFF Jordan storefront, from products and orders to customers and settings.',
+    ar: 'أدر متجر بف جو الأردن، من المنتجات والطلبات إلى العملاء والإعدادات.',
+  },
+  'Catalog control': { en: 'Catalog control', ar: 'إدارة المنتجات' },
+  'Orders and customers': { en: 'Orders and customers', ar: 'الطلبات والعملاء' },
+  'Store settings': { en: 'Store settings', ar: 'إعدادات المتجر' },
+  'Use your admin credentials to access the PUFF Jordan dashboard.': {
+    en: 'Use your admin credentials to access the PUFF Jordan dashboard.',
+    ar: 'استخدم بيانات دخول الإدارة للوصول إلى لوحة تحكم بف جو الأردن.',
+  },
+  'Show password': { en: 'Show password', ar: 'إظهار كلمة المرور' },
+  'Hide password': { en: 'Hide password', ar: 'إخفاء كلمة المرور' },
+  'Sign in to view orders, favorites and manage your profile.': {
+    en: 'Sign in to view orders, favorites and manage your profile.',
+    ar: 'سجّل الدخول لعرض الطلبات والمفضلة وإدارة ملفك الشخصي.',
+  },
+  'SIGN IN': { en: 'SIGN IN', ar: 'تسجيل الدخول' },
   'Search by name, mood, or product detail.': {
     en: 'Search by name, mood, or product detail.',
     ar: 'ابحثي بالاسم أو المزاج أو تفاصيل المنتج.',
@@ -1879,6 +1938,15 @@ export const messages: Record<string, LocaleMessages> = {
       en: 'Manage Shawerma 3a Saj menu items, kitchen orders, customers, delivery zones, offers, and storefront settings.',
       ar: 'إدارة أصناف شاورما عالصاج وطلبات المطبخ والعملاء ومناطق التوصيل والعروض وإعدادات المتجر.',
     },
+  'Manage PUFF Jordan products, orders, customers, delivery zones, offers, and storefront settings.':
+    {
+      en: 'Manage PUFF Jordan products, orders, customers, delivery zones, offers, and storefront settings.',
+      ar: 'إدارة منتجات وطلبات وعملاء ومناطق توصيل وعروض وإعدادات متجر بف جو الأردن.',
+    },
+  'Control storefront catalog products, nested sub-navigation, and explicit paths.': {
+    en: 'Control storefront catalog products, nested sub-navigation, and explicit paths.',
+    ar: 'تحكم في منتجات كتالوج المتجر والتنقل المتداخل والمسارات المحددة.',
+  },
   'Menu groups': { en: 'Menu groups', ar: 'مجموعات القائمة' },
   'Menu items': { en: 'Menu items', ar: 'أصناف القائمة' },
   'No add-ons selected for this option.': {
@@ -1888,6 +1956,10 @@ export const messages: Record<string, LocaleMessages> = {
   'No food options attached.': {
     en: 'No food options attached.',
     ar: 'لا توجد خيارات طعام مرتبطة.',
+  },
+  'No product options attached.': {
+    en: 'No product options attached.',
+    ar: 'لا توجد خيارات مرتبطة بالمنتج.',
   },
   'Only selected add-ons will appear on the product page.': {
     en: 'Only selected add-ons will appear on the product page.',
@@ -2217,6 +2289,19 @@ export const messages: Record<string, LocaleMessages> = {
   Showing: { en: 'Showing', ar: 'عرض' },
   product: { en: 'product', ar: 'منتج' },
   products: { en: 'products', ar: 'منتجات' },
+  'Discount (%)': { en: 'Discount (%)', ar: 'قيمة الخصم (%)' },
+  'Tax (%)': { en: 'Tax (%)', ar: 'قيمة الضريبة (%)' },
+  'Order products': { en: 'Order products', ar: 'منتجات الطلب' },
+  'Select a product': { en: 'Select a product', ar: 'اختر منتجاً' },
+  'Add product': { en: 'Add product', ar: 'إضافة منتج' },
+  'Loading products': { en: 'Loading products', ar: 'جارٍ تحميل المنتجات' },
+  'No products in this order': {
+    en: 'No products in this order',
+    ar: 'لا توجد منتجات في هذا الطلب',
+  },
+  'Remove product': { en: 'Remove product', ar: 'إزالة المنتج' },
+  'Increase quantity': { en: 'Increase quantity', ar: 'زيادة الكمية' },
+  'Decrease quantity': { en: 'Decrease quantity', ar: 'تقليل الكمية' },
   'Shop sale': { en: 'Shop sale', ar: 'تسوق العرض' },
 };
 

@@ -5,6 +5,7 @@ import '@/app/globals.css';
 import { Providers } from '@/components/storefront/providers';
 import { StorefrontShell } from '@/components/storefront/storefront-shell';
 import { getFlashSale, getNavigationItems, getStoreSettings } from '@/lib/commerce-server';
+import { getCustomerSession } from '@/lib/customer/auth';
 
 export const metadata: Metadata = {
   title: {
@@ -25,6 +26,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     getFlashSale(),
     getNavigationItems(),
   ]);
+  const customerSession = await getCustomerSession();
 
   return (
     <html lang="en" data-theme="dark" suppressHydrationWarning>
@@ -37,6 +39,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             settings={settings}
             flashSale={flashSale}
             navigationItems={navigationItems}
+            customerSession={customerSession}
           >
             {children}
           </StorefrontShell>

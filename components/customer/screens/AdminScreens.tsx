@@ -24,9 +24,9 @@ import {
   TextInput,
   Textarea,
 } from '@mantine/core';
-import { IconEye, IconPencil, IconPlus, IconTrash } from '@tabler/icons-react';
+import { IconEye, IconEyeOff, IconPencil, IconPlus, IconTrash } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
-import { ReactNode, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { z } from 'zod';
 import { AdminShell } from '@/components/customer/AdminShell';
@@ -83,6 +83,8 @@ type AdminOrderDetail = {
   created_at: string;
   items?: Array<{
     id: string;
+    product_id?: string | null;
+    variant_id?: string | null;
     product_name: string;
     sku: string | null;
     size_name: string | null;
@@ -93,6 +95,8 @@ type AdminOrderDetail = {
     line_total: string | number;
   }>;
 };
+
+type AdminEditableOrderItem = NonNullable<AdminOrderDetail['items']>[number];
 
 type Option = {
   label: string;
@@ -144,6 +148,7 @@ type CrudManagerProps<T extends { id: string }> = {
   drawerExtras?: (args: {
     mode: 'create' | 'edit' | 'view' | null;
     selected: T | null;
+    setFormValue: (name: string, value: unknown) => void;
   }) => ReactNode;
   allowCreate?: boolean;
   allowDelete?: boolean;
@@ -151,16 +156,26 @@ type CrudManagerProps<T extends { id: string }> = {
 
 const adminInputStyles = {
   input: {
-    borderRadius: '0.5rem',
+    minHeight: 48,
+    borderRadius: '0.35rem',
     background: 'var(--background)',
     borderColor: 'var(--border)',
     color: 'var(--text)',
+    paddingInline: '0.9rem',
+    fontWeight: 600,
+    transition: 'border-color 180ms ease, box-shadow 180ms ease',
+    '&:focus': {
+      borderColor: 'var(--accent)',
+      boxShadow: '0 0 0 1px var(--accent)',
+    },
   },
   label: {
-    marginBottom: 6,
+    marginBottom: 8,
     color: 'var(--text)',
-    fontSize: '0.82rem',
-    letterSpacing: '0.04em',
+    fontSize: '0.7rem',
+    fontWeight: 800,
+    letterSpacing: '0.14em',
+    textTransform: 'uppercase',
   },
   error: {
     marginTop: 4,
@@ -169,16 +184,27 @@ const adminInputStyles = {
 
 const adminSelectStyles = {
   input: {
-    borderRadius: '0.5rem',
+    minHeight: 48,
+    borderRadius: '0.35rem',
     background: 'var(--background)',
     borderColor: 'var(--border)',
     color: 'var(--text)',
+    paddingInline: '0.9rem',
+    fontWeight: 600,
+    cursor: 'pointer',
+    transition: 'border-color 180ms ease, box-shadow 180ms ease',
+    '&:focus': {
+      borderColor: 'var(--accent)',
+      boxShadow: '0 0 0 1px var(--accent)',
+    },
   },
   label: {
-    marginBottom: 6,
+    marginBottom: 8,
     color: 'var(--text)',
-    fontSize: '0.82rem',
-    letterSpacing: '0.04em',
+    fontSize: '0.7rem',
+    fontWeight: 800,
+    letterSpacing: '0.14em',
+    textTransform: 'uppercase',
   },
   section: {
     color: 'var(--muted)',
@@ -309,6 +335,11 @@ function buildSchema(fields: CrudField[], t: (value: string) => string) {
       ? base.trim().min(1, t('This field is required'))
       : base.optional();
   });
+
+  // Order editing stores its product changes in a hidden form field.
+  // Keep it in the resolver output so additions, removals, and quantities
+  // are included in the PATCH payload.
+  shape.items = z.any().optional();
 
   return z.object(shape);
 }
@@ -731,16 +762,287 @@ function AdminOrderDetailPanel({
           )}
         </Stack>
       </Paper>
-
-      <Group justify="space-between">
-        <Text size="sm" c="dimmed">
-          {t('Placed on')}: {formatDate(detail.created_at)}
-        </Text>
-        <Badge color="gray" radius={0}>
-          {detail.order_number}
-        </Badge>
-      </Group>
     </Stack>
+  );
+}
+
+function AdminOrderItemsEditor({
+  orderId,
+  order,
+  products,
+  setFormValue,
+}: {
+  orderId?: string;
+  order?: AdminOrderRecord | null;
+  products: AdminProductRecord[];
+  setFormValue: (name: string, value: unknown) => void;
+}) {
+  const { t, localize } = useLocale();
+  const [items, setItems] = useState<AdminEditableOrderItem[]>([]);
+  const [productId, setProductId] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!orderId) {
+      setItems([]);
+      setError(null);
+      setLoading(false);
+      return;
+    }
+
+    let active = true;
+
+    async function loadItems() {
+      try {
+        const response = await fetch(`/api/admin/orders/${orderId}`);
+        const payload = (await response.json()) as { data?: AdminOrderDetail; error?: string };
+        if (!response.ok || !payload.data) {
+          throw new Error(payload.error ?? 'Something went wrong');
+        }
+        if (active) {
+          setItems(payload.data.items ?? []);
+        }
+      } catch (requestError) {
+        if (active) {
+          setError(requestError instanceof Error ? requestError.message : 'Something went wrong');
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    void loadItems();
+    return () => {
+      active = false;
+    };
+  }, [orderId]);
+
+  useEffect(() => {
+    if (loading) return;
+
+    setFormValue(
+      'items',
+      items.map((item) => ({
+        productId: item.product_id,
+        variantId: item.variant_id,
+        productName: item.product_name,
+        sku: item.sku,
+        sizeName: item.size_name,
+        colorName: item.color_name,
+        imageUrl: item.image_url,
+        unitPrice: Number(item.unit_price),
+        quantity: item.quantity,
+        lineTotal: Number(item.line_total),
+      }))
+    );
+    const subtotal = items.reduce((sum, item) => sum + Number(item.unit_price) * item.quantity, 0);
+    setFormValue('subtotal', subtotal);
+    setFormValue(
+      'totalAmount',
+      Math.max(
+        0,
+        subtotal -
+          Number(order?.discount_amount ?? 0) +
+          Number(order?.shipping_amount ?? 0) +
+          Number(order?.tax_amount ?? 0)
+      )
+    );
+  }, [items, loading, order, setFormValue]);
+
+  function addProduct() {
+    const product = products.find((entry) => entry.id === productId);
+    if (!product) return;
+
+    setItems((current) => {
+      const existing = current.find((item) => item.product_id === product.id);
+      if (existing) {
+        return current.map((item) =>
+          item.id === existing.id
+            ? {
+                ...item,
+                quantity: item.quantity + 1,
+                line_total: Number(item.unit_price) * (item.quantity + 1),
+              }
+            : item
+        );
+      }
+
+      return [
+        ...current,
+        {
+          id: `new-${product.id}-${Date.now()}`,
+          product_id: product.id,
+          variant_id: null,
+          product_name: product.name,
+          sku: null,
+          size_name: null,
+          color_name: null,
+          image_url: product.primary_image_url || null,
+          unit_price: product.base_price,
+          quantity: 1,
+          line_total: product.base_price,
+        },
+      ];
+    });
+    setProductId('');
+  }
+
+  function updateQuantity(itemId: string, quantity: number) {
+    setItems((current) =>
+      current.map((item) =>
+        item.id === itemId
+          ? { ...item, quantity, line_total: Number(item.unit_price) * quantity }
+          : item
+      )
+    );
+  }
+
+  function removeProduct(itemId: string) {
+    const nextItems = items.filter((item) => item.id !== itemId);
+    setItems(nextItems);
+    setFormValue(
+      'items',
+      nextItems.map((item) => ({
+        productId: item.product_id,
+        variantId: item.variant_id,
+        productName: item.product_name,
+        sku: item.sku,
+        sizeName: item.size_name,
+        colorName: item.color_name,
+        imageUrl: item.image_url,
+        unitPrice: Number(item.unit_price),
+        quantity: item.quantity,
+        lineTotal: Number(item.line_total),
+      }))
+    );
+  }
+
+  return (
+    <Paper
+      p="md"
+      radius="sm"
+      style={{ background: 'var(--surface)', border: '1px solid var(--surface-border)' }}
+    >
+      <Group justify="space-between" align="center" mb="sm">
+        <Text size="xs" tt="uppercase" c="var(--accent)" fw={800} style={{ letterSpacing: 2 }}>
+          {t('Order products')}
+        </Text>
+        <Text size="xs" c="dimmed">
+          {items.length} {t('products')}
+        </Text>
+      </Group>
+      <Group align="end" wrap="wrap" mb="md">
+        <NativeSelect
+          value={productId}
+          onChange={(event) => setProductId(event.currentTarget.value)}
+          label={t('Select a product')}
+          data={[
+            { label: t('Select a product'), value: '' },
+            ...products.map((product) => ({
+              label: `${localize(product.name, product.name_ar)} · ${formatCurrency(product.base_price)}`,
+              value: product.id,
+            })),
+          ]}
+          styles={adminSelectStyles}
+          style={{ flex: '1 1 220px' }}
+        />
+        <Button
+          type="button"
+          radius="xl"
+          onClick={addProduct}
+          disabled={!productId}
+          styles={adminPrimaryButtonStyles}
+          style={{ minHeight: 48 }}
+        >
+          {t('Add product')}
+        </Button>
+      </Group>
+      {loading ? (
+        <Text size="sm" c="dimmed">
+          {t('Loading products')}
+        </Text>
+      ) : null}
+      {error ? (
+        <Text size="sm" c="red">
+          {t(error)}
+        </Text>
+      ) : null}
+      {!loading && !items.length ? (
+        <Text size="sm" c="dimmed">
+          {t('No products in this order')}
+        </Text>
+      ) : null}
+      <Stack gap="xs">
+        {items.map((item) => (
+          <Group key={item.id} wrap="nowrap" align="center" className="admin-order-item-row">
+            <Image
+              src={item.image_url || '/products/puff-jo-product-default.png'}
+              alt=""
+              w={44}
+              h={54}
+              fit="cover"
+              radius="xs"
+            />
+            <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
+              <Text size="sm" fw={700} truncate>
+                {item.product_name}
+              </Text>
+              <Text size="xs" c="dimmed">
+                {formatCurrency(Number(item.unit_price))} ·{' '}
+                {formatCurrency(Number(item.line_total))}
+              </Text>
+            </Stack>
+            <Group gap={4} wrap="nowrap">
+              <ActionIcon
+                type="button"
+                variant="default"
+                color="gray"
+                size="lg"
+                onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1))}
+                aria-label={t('Decrease quantity')}
+              >
+                −
+              </ActionIcon>
+              <TextInput
+                type="number"
+                min={1}
+                value={String(item.quantity)}
+                onChange={(event) =>
+                  updateQuantity(item.id, Math.max(1, Number(event.currentTarget.value) || 1))
+                }
+                styles={adminInputStyles}
+                style={{ width: 62 }}
+                aria-label={t('Quantity')}
+              />
+              <ActionIcon
+                type="button"
+                variant="default"
+                color="gray"
+                size="lg"
+                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                aria-label={t('Increase quantity')}
+              >
+                +
+              </ActionIcon>
+            </Group>
+            <ActionIcon
+              type="button"
+              variant="subtle"
+              color="red"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                removeProduct(item.id);
+              }}
+              aria-label={t('Remove product')}
+            >
+              <IconTrash size={16} />
+            </ActionIcon>
+          </Group>
+        ))}
+      </Stack>
+    </Paper>
   );
 }
 
@@ -838,6 +1140,39 @@ function CrudManager<T extends { id: string }>({
     mode: 'onTouched',
     reValidateMode: 'onChange',
   });
+  const watchedValues = useWatch({ control });
+  const watchedSubtotal = watchedValues.subtotal;
+  const watchedDiscount = watchedValues.discountPercent;
+  const watchedShipping = watchedValues.shippingAmount;
+  const watchedTax = watchedValues.taxPercent;
+  const hasOrderTotals =
+    fields.some((field) => field.name === 'subtotal') &&
+    fields.some((field) => field.name === 'totalAmount');
+  const setFormValueForDrawer = useCallback(
+    (name: string, value: unknown) => setValue(name, value),
+    [setValue]
+  );
+
+  useEffect(() => {
+    if (!mode || mode === 'view' || !hasOrderTotals) {
+      return;
+    }
+
+    const subtotal = Number(watchedSubtotal) || 0;
+    const discount = (subtotal * (Number(watchedDiscount) || 0)) / 100;
+    const shipping = Number(watchedShipping) || 0;
+    const tax = (subtotal * (Number(watchedTax) || 0)) / 100;
+
+    setValue('totalAmount', Math.max(0, subtotal - discount + shipping + tax));
+  }, [
+    hasOrderTotals,
+    mode,
+    setValue,
+    watchedDiscount,
+    watchedShipping,
+    watchedSubtotal,
+    watchedTax,
+  ]);
 
   useEffect(() => {
     if (!mode) {
@@ -860,8 +1195,18 @@ function CrudManager<T extends { id: string }>({
       const nextFilePreviews: Record<string, FilePreviewItem[]> = {};
 
       for (const field of fields) {
-        const value =
+        let value =
           getRowFieldValue(selected as Record<string, unknown>, field.name) ?? defaults[field.name];
+
+        if (field.name === 'discountPercent' || field.name === 'taxPercent') {
+          const subtotal =
+            Number(getRowFieldValue(selected as Record<string, unknown>, 'subtotal')) || 0;
+          const amountField = field.name === 'discountPercent' ? 'discount_amount' : 'tax_amount';
+          const amount =
+            Number(getRowFieldValue(selected as Record<string, unknown>, amountField)) || 0;
+          value = subtotal > 0 ? (amount / subtotal) * 100 : 0;
+        }
+
         nextValues[field.name] = field.type === 'datetime' ? toDateTimeInputValue(value) : value;
 
         if (field.type === 'file') {
@@ -922,6 +1267,17 @@ function CrudManager<T extends { id: string }>({
     setModalError(null);
 
     const request = mode === 'edit' && selected ? updateRequest(selected.id) : createRequest;
+    const submittedValues = { ...values };
+
+    if ('discountPercent' in submittedValues || 'taxPercent' in submittedValues) {
+      const subtotal = Number(submittedValues.subtotal) || 0;
+      submittedValues.discountAmount =
+        (subtotal * (Number(submittedValues.discountPercent) || 0)) / 100;
+      submittedValues.taxAmount = (subtotal * (Number(submittedValues.taxPercent) || 0)) / 100;
+      delete submittedValues.discountPercent;
+      delete submittedValues.taxPercent;
+    }
+
     const hasFileFields = editableFields.some((field) => field.type === 'file');
     let response: Response;
 
@@ -929,7 +1285,7 @@ function CrudManager<T extends { id: string }>({
       const formData = new FormData();
 
       for (const field of editableFields) {
-        const value = values[field.name];
+        const value = submittedValues[field.name];
 
         if (field.type === 'file') {
           const files = value instanceof FileList ? Array.from(value) : [];
@@ -982,7 +1338,7 @@ function CrudManager<T extends { id: string }>({
         },
         body: JSON.stringify(
           Object.fromEntries(
-            Object.entries(values).map(([key, value]) => {
+            Object.entries(submittedValues).map(([key, value]) => {
               const field = editableFields.find((item) => item.name === key);
 
               if (field?.type === 'datetime' && typeof value === 'string' && value) {
@@ -1136,204 +1492,223 @@ function CrudManager<T extends { id: string }>({
         }
         styles={{
           content: {
-            background: 'var(--card)',
+            background: 'var(--background)',
             color: 'var(--text)',
+            borderLeft: '1px solid var(--border)',
+            boxShadow: '-24px 0 70px rgba(0, 0, 0, 0.22)',
           },
           header: {
-            background: 'var(--card)',
+            background:
+              'linear-gradient(135deg, var(--card), color-mix(in srgb, var(--card) 84%, #c7202f 16%))',
             borderBottom: '1px solid var(--border)',
+            padding: '1.15rem 1.25rem',
           },
           title: {
             textTransform: 'uppercase',
-            letterSpacing: '0.16em',
+            letterSpacing: '0.2em',
             fontWeight: 700,
+            fontSize: '0.78rem',
+            color: 'var(--text)',
+          },
+          body: {
+            padding: '1.25rem',
           },
         }}
       >
         <ErrorModal error={modalError} onClose={() => setModalError(null)} />
         {mode === 'view' && selected ? (
           <Stack gap="sm">
-            {drawerExtras ? drawerExtras({ mode, selected }) : null}
-            {fields.map((field) => (
-              <Box key={field.name}>
-                <Text size="xs" tt="uppercase" c="var(--muted)" fw={700} mb={4}>
-                  {t(field.label)}
-                </Text>
-                <Text c="var(--text)">
-                  {rowValue(selected as Record<string, unknown>, field, t)}
-                </Text>
-              </Box>
-            ))}
+            {drawerExtras
+              ? drawerExtras({
+                  mode,
+                  selected,
+                  setFormValue: setFormValueForDrawer,
+                })
+              : null}
           </Stack>
         ) : (
           <form onSubmit={handleSubmit(onSubmit, handleInvalidSubmit)}>
-            <Stack gap="md">
-              {drawerExtras ? drawerExtras({ mode, selected }) : null}
-              {editableFields.map((field) => {
-                const errorMessage = errors[field.name]?.message
-                  ? String(errors[field.name]?.message)
-                  : undefined;
+            <Stack gap="lg" style={{ maxWidth: 620, margin: '0 auto' }}>
+              {drawerExtras
+                ? drawerExtras({
+                    mode,
+                    selected,
+                    setFormValue: setFormValueForDrawer,
+                  })
+                : null}
+              <input type="hidden" {...register('items')} />
+              <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
+                {editableFields.map((field) => {
+                  const errorMessage = errors[field.name]?.message
+                    ? String(errors[field.name]?.message)
+                    : undefined;
 
-                if (field.type === 'textarea') {
+                  if (field.type === 'textarea') {
+                    return (
+                      <Textarea
+                        key={field.name}
+                        label={t(field.label)}
+                        placeholder={field.placeholder ? t(field.placeholder) : undefined}
+                        minRows={4}
+                        error={errorMessage}
+                        radius="xs"
+                        styles={adminInputStyles}
+                        style={{ gridColumn: '1 / -1' }}
+                        {...register(field.name)}
+                      />
+                    );
+                  }
+
+                  if (field.type === 'select') {
+                    return (
+                      <NativeSelect
+                        key={field.name}
+                        label={t(field.label)}
+                        error={errorMessage}
+                        radius="xs"
+                        styles={adminSelectStyles}
+                        data={field.options?.map((option) => ({
+                          label: t(option.label),
+                          value: option.value,
+                        }))}
+                        {...register(field.name)}
+                      />
+                    );
+                  }
+
+                  if (field.type === 'switch') {
+                    return (
+                      <Controller
+                        key={field.name}
+                        control={control}
+                        name={field.name}
+                        render={({ field: controllerField }) => (
+                          <Switch
+                            checked={Boolean(controllerField.value)}
+                            label={t(field.label)}
+                            onChange={(event) =>
+                              controllerField.onChange(event.currentTarget.checked)
+                            }
+                            radius="xs"
+                            size="md"
+                            color="red"
+                          />
+                        )}
+                      />
+                    );
+                  }
+
+                  if (field.type === 'file') {
+                    const previewItems = filePreviews[field.name] ?? [];
+                    const fileRegistration = register(field.name);
+
+                    return (
+                      <Box key={field.name} style={{ gridColumn: '1 / -1' }}>
+                        <Text size="sm" mb={6}>
+                          {t(field.label)}
+                        </Text>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple={field.multiple}
+                          name={fileRegistration.name}
+                          ref={fileRegistration.ref}
+                          onBlur={fileRegistration.onBlur}
+                          onChange={(event) => {
+                            const files = Array.from(event.currentTarget.files ?? []);
+                            fileRegistration.onChange(event);
+                            setFieldPreviews(
+                              field.name,
+                              files.map((file, index) => ({
+                                id: `${field.name}-${file.name}-${file.lastModified}-${index}`,
+                                url: URL.createObjectURL(file),
+                                name: file.name,
+                                isExisting: false,
+                              }))
+                            );
+                          }}
+                        />
+                        {errorMessage ? (
+                          <Text c="red" size="xs" mt={4}>
+                            {errorMessage}
+                          </Text>
+                        ) : null}
+                        {previewItems.length > 0 ? (
+                          <Stack gap="xs" mt="sm">
+                            {previewItems.map((item) => (
+                              <Paper
+                                key={item.id}
+                                p="xs"
+                                radius="md"
+                                style={{
+                                  background: 'var(--background)',
+                                  border: '1px solid var(--border)',
+                                }}
+                              >
+                                <Group justify="space-between" align="start" wrap="wrap">
+                                  <Group align="start" wrap="nowrap">
+                                    <Image
+                                      src={item.url}
+                                      alt={item.name}
+                                      w={72}
+                                      h={72}
+                                      fit="cover"
+                                      radius="md"
+                                    />
+                                    <Stack gap={2} style={{ minWidth: 0 }}>
+                                      <Text size="sm" fw={600}>
+                                        {item.isExisting ? t('Current image') : t('Selected image')}
+                                      </Text>
+                                      <Text
+                                        size="xs"
+                                        c="#80716d"
+                                        style={{ wordBreak: 'break-word' }}
+                                      >
+                                        {item.name}
+                                      </Text>
+                                    </Stack>
+                                  </Group>
+                                  <Button
+                                    type="button"
+                                    size="xs"
+                                    variant="default"
+                                    radius="xl"
+                                    styles={adminSecondaryButtonStyles}
+                                    onClick={() => clearFileField(field.name)}
+                                  >
+                                    {t('Remove')}
+                                  </Button>
+                                </Group>
+                              </Paper>
+                            ))}
+                          </Stack>
+                        ) : null}
+                      </Box>
+                    );
+                  }
+
                   return (
-                    <Textarea
+                    <TextInput
                       key={field.name}
                       label={t(field.label)}
                       placeholder={field.placeholder ? t(field.placeholder) : undefined}
-                      minRows={4}
+                      type={
+                        field.type === 'number'
+                          ? 'number'
+                          : field.type === 'datetime'
+                            ? 'datetime-local'
+                            : 'text'
+                      }
+                      step={field.step}
+                      min={field.min}
                       error={errorMessage}
                       radius="xs"
                       styles={adminInputStyles}
                       {...register(field.name)}
                     />
                   );
-                }
-
-                if (field.type === 'select') {
-                  return (
-                    <NativeSelect
-                      key={field.name}
-                      label={t(field.label)}
-                      error={errorMessage}
-                      radius="xs"
-                      styles={adminSelectStyles}
-                      data={field.options?.map((option) => ({
-                        label: t(option.label),
-                        value: option.value,
-                      }))}
-                      {...register(field.name)}
-                    />
-                  );
-                }
-
-                if (field.type === 'switch') {
-                  return (
-                    <Controller
-                      key={field.name}
-                      control={control}
-                      name={field.name}
-                      render={({ field: controllerField }) => (
-                        <Switch
-                          checked={Boolean(controllerField.value)}
-                          label={t(field.label)}
-                          onChange={(event) =>
-                            controllerField.onChange(event.currentTarget.checked)
-                          }
-                          radius="xs"
-                          size="md"
-                          color="red"
-                        />
-                      )}
-                    />
-                  );
-                }
-
-                if (field.type === 'file') {
-                  const previewItems = filePreviews[field.name] ?? [];
-                  const fileRegistration = register(field.name);
-
-                  return (
-                    <Box key={field.name}>
-                      <Text size="sm" mb={6}>
-                        {t(field.label)}
-                      </Text>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        multiple={field.multiple}
-                        name={fileRegistration.name}
-                        ref={fileRegistration.ref}
-                        onBlur={fileRegistration.onBlur}
-                        onChange={(event) => {
-                          const files = Array.from(event.currentTarget.files ?? []);
-                          fileRegistration.onChange(event);
-                          setFieldPreviews(
-                            field.name,
-                            files.map((file, index) => ({
-                              id: `${field.name}-${file.name}-${file.lastModified}-${index}`,
-                              url: URL.createObjectURL(file),
-                              name: file.name,
-                              isExisting: false,
-                            }))
-                          );
-                        }}
-                      />
-                      {errorMessage ? (
-                        <Text c="red" size="xs" mt={4}>
-                          {errorMessage}
-                        </Text>
-                      ) : null}
-                      {previewItems.length > 0 ? (
-                        <Stack gap="xs" mt="sm">
-                          {previewItems.map((item) => (
-                            <Paper
-                              key={item.id}
-                              p="xs"
-                              radius="md"
-                              style={{
-                                background: 'var(--background)',
-                                border: '1px solid var(--border)',
-                              }}
-                            >
-                              <Group justify="space-between" align="start" wrap="wrap">
-                                <Group align="start" wrap="nowrap">
-                                  <Image
-                                    src={item.url}
-                                    alt={item.name}
-                                    w={72}
-                                    h={72}
-                                    fit="cover"
-                                    radius="md"
-                                  />
-                                  <Stack gap={2} style={{ minWidth: 0 }}>
-                                    <Text size="sm" fw={600}>
-                                      {item.isExisting ? t('Current image') : t('Selected image')}
-                                    </Text>
-                                    <Text size="xs" c="#80716d" style={{ wordBreak: 'break-word' }}>
-                                      {item.name}
-                                    </Text>
-                                  </Stack>
-                                </Group>
-                                <Button
-                                  type="button"
-                                  size="xs"
-                                  variant="default"
-                                  radius="xl"
-                                  styles={adminSecondaryButtonStyles}
-                                  onClick={() => clearFileField(field.name)}
-                                >
-                                  {t('Remove')}
-                                </Button>
-                              </Group>
-                            </Paper>
-                          ))}
-                        </Stack>
-                      ) : null}
-                    </Box>
-                  );
-                }
-
-                return (
-                  <TextInput
-                    key={field.name}
-                    label={t(field.label)}
-                    placeholder={field.placeholder ? t(field.placeholder) : undefined}
-                    type={
-                      field.type === 'number'
-                        ? 'number'
-                        : field.type === 'datetime'
-                          ? 'datetime-local'
-                          : 'text'
-                    }
-                    step={field.step}
-                    min={field.min}
-                    error={errorMessage}
-                    radius="xs"
-                    styles={adminInputStyles}
-                    {...register(field.name)}
-                  />
-                );
-              })}
+                })}
+              </SimpleGrid>
 
               <Group justify="flex-end" mt="md" wrap="wrap">
                 <Button
@@ -1441,14 +1816,14 @@ export function AdminDashboardScreen({
   const { t, locale } = useLocale();
   const cards = [
     {
-      label: 'Menu items',
+      label: 'Catalog products',
       value: products.length,
-      detail: 'Active food catalog records',
+      detail: 'Active catalog records',
     },
     {
       label: 'Orders',
       value: orders.length,
-      detail: 'Kitchen and delivery queue',
+      detail: 'Order fulfillment queue',
     },
     {
       label: 'Customers',
@@ -1456,17 +1831,17 @@ export function AdminDashboardScreen({
       detail: 'Customer profiles and roles',
     },
     {
-      label: 'Menu groups',
+      label: 'Catalog groups',
       value: categories.length + brands.length,
-      detail: 'Categories, sauces, and brands',
+      detail: 'Categories, collections, and brands',
     },
   ];
 
   return (
     <AdminShell
       session={session}
-      title="Restaurant control room"
-      subtitle="Manage Shawerma 3a Saj menu items, kitchen orders, customers, delivery zones, offers, and storefront settings."
+      title="PUFF Jordan control room"
+      subtitle="Manage PUFF Jordan products, orders, customers, delivery zones, offers, and storefront settings."
       active="Dashboard"
     >
       <SimpleGrid cols={{ base: 1, md: 2, xl: 4 }} spacing="lg">
@@ -1485,7 +1860,7 @@ export function AdminDashboardScreen({
               {t(card.label)}
             </Text>
             <Text fw={800} size="2.4rem" mt={8} c="var(--accent)">
-              {card.value}
+              {card.value.toLocaleString(locale === 'ar' ? 'ar-JO' : 'en-US')}
             </Text>
             <Text size="sm" c="var(--text-secondary)" mt={6}>
               {t(card.detail)}
@@ -1546,7 +1921,7 @@ export function AdminDashboardScreen({
           }}
         >
           <Text fw={800} c="var(--text)" mb="md">
-            {t('Recent menu items')}
+            {t('Recent products')}
           </Text>
           <ScrollArea type="auto" offsetScrollbars>
             <Table striped miw={520}>
@@ -2688,7 +3063,7 @@ function ProductCrudManager({
                 ) : (
                   <Paper p="md" radius="md" withBorder>
                     <Text size="sm" c="dimmed" ta="center">
-                      {t('No food options attached.')}
+                      {t('No product options attached.')}
                     </Text>
                   </Paper>
                 )}
@@ -3244,10 +3619,12 @@ export function AdminOrdersScreen({
   session,
   orders,
   enumLabels,
+  products,
 }: {
   session: AdminSessionInfo;
   orders: AdminOrderRecord[];
   enumLabels: AdminEnumLabels;
+  products: AdminProductRecord[];
 }) {
   const { locale } = useLocale();
 
@@ -3271,9 +3648,9 @@ export function AdminOrdersScreen({
           paymentStatus: 'pending',
           paymentMethod: 'cash_on_delivery',
           subtotal: 0,
-          discountAmount: 0,
+          discountPercent: 0,
           shippingAmount: 0,
-          taxAmount: 0,
+          taxPercent: 0,
           totalAmount: 0,
           currency: 'JOD',
           couponCode: '',
@@ -3373,8 +3750,8 @@ export function AdminOrdersScreen({
             editableOn: ['create', 'edit'],
           },
           {
-            name: 'discountAmount',
-            label: 'Discount amount',
+            name: 'discountPercent',
+            label: 'Discount (%)',
             type: 'number',
             min: 0,
             step: 0.01,
@@ -3389,8 +3766,8 @@ export function AdminOrdersScreen({
             editableOn: ['create', 'edit'],
           },
           {
-            name: 'taxAmount',
-            label: 'Tax amount',
+            name: 'taxPercent',
+            label: 'Tax (%)',
             type: 'number',
             min: 0,
             step: 0.01,
@@ -3478,11 +3855,30 @@ export function AdminOrdersScreen({
             render: (row) => formatCurrency(row.total_amount),
           },
         ]}
-        drawerExtras={({ mode, selected }) =>
-          mode === 'view' && selected ? (
-            <AdminOrderDetailPanel orderId={selected.id} enumLabels={enumLabels} locale={locale} />
-          ) : null
-        }
+        drawerExtras={({ mode, selected, setFormValue }) => {
+          if (mode === 'view' && selected) {
+            return (
+              <AdminOrderDetailPanel
+                orderId={selected.id}
+                enumLabels={enumLabels}
+                locale={locale}
+              />
+            );
+          }
+
+          if (mode === 'create' || (mode === 'edit' && selected)) {
+            return (
+              <AdminOrderItemsEditor
+                orderId={selected?.id}
+                order={selected}
+                products={products}
+                setFormValue={setFormValue}
+              />
+            );
+          }
+
+          return null;
+        }}
         createRequest={{ url: '/api/admin/orders', method: 'POST' }}
         updateRequest={(id) => ({
           url: `/api/admin/orders/${id}`,
@@ -3990,7 +4386,7 @@ export function AdminSettingsScreen({
         <Tabs.Panel value="navigation">
           <CrudManager
             title="Navigation"
-            description="Control storefront menu items, nested sub-navigation, and explicit paths."
+            description="Control storefront catalog products, nested sub-navigation, and explicit paths."
             records={navigationItems}
             defaults={{
               parentId: '',
@@ -4855,8 +5251,9 @@ export function AdminSettingsScreen({
 
 export function AdminLoginScreen() {
   const router = useRouter();
-  const { t } = useLocale();
+  const { t, dir } = useLocale();
   const [modalError, setModalError] = useState<ModalErrorState | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const schema = z.object({
     email: z.string().email(t('Enter a valid email')),
     password: z.string().min(1, t('This field is required')),
@@ -4906,16 +5303,66 @@ export function AdminLoginScreen() {
 
   return (
     <Box
+      dir={dir}
       style={{
         minHeight: '100vh',
         display: 'grid',
         placeItems: 'center',
         padding: '1rem',
-        background: 'var(--admin-background)',
+        position: 'relative',
+        overflow: 'hidden',
+        background:
+          'radial-gradient(circle at 12% 18%, rgba(210,235,245,0.12), transparent 24%), radial-gradient(circle at 88% 78%, rgba(199,32,47,0.14), transparent 28%), var(--admin-background)',
       }}
     >
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          width: '58vw',
+          height: '34vw',
+          minWidth: 360,
+          minHeight: 220,
+          top: '-12vw',
+          left: '-10vw',
+          borderRadius: '50%',
+          background: 'radial-gradient(ellipse, rgba(225,242,248,0.16), rgba(225,242,248,0) 70%)',
+          filter: 'blur(30px)',
+          transform: 'rotate(-16deg)',
+          pointerEvents: 'none',
+        }}
+      />
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          width: '52vw',
+          height: '38vw',
+          minWidth: 340,
+          minHeight: 250,
+          right: '-12vw',
+          bottom: '-14vw',
+          borderRadius: '50%',
+          background: 'radial-gradient(ellipse, rgba(199,32,47,0.18), rgba(199,32,47,0) 70%)',
+          filter: 'blur(36px)',
+          transform: 'rotate(18deg)',
+          pointerEvents: 'none',
+        }}
+      />
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          inset: '8% 22%',
+          border: '1px solid rgba(215,239,246,0.08)',
+          borderRadius: '46% 54% 52% 48%',
+          transform: 'rotate(-9deg)',
+          boxShadow: 'inset 0 0 100px rgba(210,240,248,0.035), 0 0 70px rgba(210,240,248,0.03)',
+          pointerEvents: 'none',
+        }}
+      />
       <ErrorModal error={modalError} onClose={() => setModalError(null)} />
-      <Box maw={1080} w="100%">
+      <Box maw={1080} w="100%" style={{ position: 'relative', zIndex: 1 }}>
         <SimpleGrid cols={{ base: 1, md: 2 }} spacing={0}>
           <Paper
             radius="md"
@@ -4925,15 +5372,77 @@ export function AdminLoginScreen() {
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              background: 'linear-gradient(180deg, rgba(199,32,47,0.92), rgba(12,12,12,0.98))',
+              position: 'relative',
+              overflow: 'hidden',
+              background: 'linear-gradient(145deg, #080909 0%, #151718 62%, #c7202f 180%)',
               color: '#ffffff',
               border: '1px solid var(--border)',
               borderRight: 'none',
-              boxShadow: '0 30px 90px rgba(0,0,0,0.22)',
+              boxShadow: '0 30px 90px rgba(0,0,0,0.28)',
             }}
           >
-            <Group justify="space-between" align="start">
-              <div>
+            <div
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                width: 360,
+                height: 360,
+                top: -150,
+                right: -120,
+                borderRadius: '50%',
+                background:
+                  'radial-gradient(circle, rgba(220,245,255,0.18), rgba(220,245,255,0) 68%)',
+                filter: 'blur(8px)',
+                pointerEvents: 'none',
+              }}
+            />
+            <div
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                width: 420,
+                height: 190,
+                left: -150,
+                bottom: 80,
+                borderRadius: '50%',
+                background:
+                  'radial-gradient(ellipse, rgba(230,238,240,0.14), rgba(230,238,240,0) 70%)',
+                filter: 'blur(22px)',
+                transform: 'rotate(-18deg)',
+                pointerEvents: 'none',
+              }}
+            />
+            <div
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                width: 220,
+                height: 440,
+                top: 120,
+                right: 38,
+                border: '1px solid rgba(210,240,248,0.1)',
+                borderRadius: '48% 52% 42% 58%',
+                transform: 'rotate(22deg)',
+                boxShadow: 'inset 0 0 50px rgba(208,239,248,0.06), 0 0 50px rgba(208,239,248,0.04)',
+                pointerEvents: 'none',
+              }}
+            />
+            <Group
+              justify="space-between"
+              align="start"
+              style={{ position: 'relative', zIndex: 1 }}
+            >
+              <Group gap="sm" align="center">
+                <img
+                  src="/puff-jordan-logo-light.png"
+                  alt="Puff Jo"
+                  style={{
+                    width: 76,
+                    height: 42,
+                    objectFit: 'contain',
+                    objectPosition: 'left center',
+                  }}
+                />
                 <Text
                   size="xs"
                   tt="uppercase"
@@ -4942,31 +5451,33 @@ export function AdminLoginScreen() {
                 >
                   {t('Admin panel')}
                 </Text>
-              </div>
+              </Group>
               <LocaleSwitcher />
             </Group>
-            <div>
+            <div style={{ position: 'relative', zIndex: 1 }}>
               <Text
                 fw={800}
-                size="3rem"
+                size="clamp(2.4rem, 8vw, 3.4rem)"
                 mt="md"
                 tt="uppercase"
                 style={{ lineHeight: 0.95, letterSpacing: 1.4 }}
               >
-                {t('Restaurant control room')}
+                {t('PUFF JORDAN')}
               </Text>
-              <Text mt="lg" c="rgba(255,255,255,0.78)" maw={420} style={{ lineHeight: 1.8 }}>
-                {t('Use an admin or super admin account to access the dashboard.')}
+              <Text
+                mt="lg"
+                c="rgba(255,255,255,0.78)"
+                maw={420}
+                style={{ lineHeight: 1.8, overflowWrap: 'anywhere' }}
+              >
+                {t(
+                  'Manage the PUFF Jordan storefront, from products and orders to customers and settings.'
+                )}
               </Text>
             </div>
 
-            <Stack gap="sm">
-              {[
-                'Connected admin dashboard with live catalog, customer, order, and settings control.',
-                'Trackable orders',
-                'Profiles and roles',
-                'Taxonomy and brands',
-              ].map((item) => (
+            <Stack gap="sm" style={{ position: 'relative', zIndex: 1 }}>
+              {['Catalog control', 'Orders and customers', 'Store settings'].map((item) => (
                 <Paper
                   key={item}
                   radius="md"
@@ -4998,7 +5509,7 @@ export function AdminLoginScreen() {
           >
             <Box w="100%">
               <Text size="xs" tt="uppercase" c="#c7202f" fw={700} style={{ letterSpacing: 3 }}>
-                {t('Restaurant operations')}
+                {t('PUFF JO / ADMIN')}
               </Text>
               <Text
                 fw={800}
@@ -5010,8 +5521,8 @@ export function AdminLoginScreen() {
               >
                 {t('Sign in to continue')}
               </Text>
-              <Text c="var(--text-secondary)" mt="sm">
-                {t('Use an admin or super admin account to access the dashboard.')}
+              <Text c="var(--text-secondary)" mt="sm" style={{ overflowWrap: 'anywhere' }}>
+                {t('Use your admin credentials to access the PUFF Jordan dashboard.')}
               </Text>
 
               <Divider my="xl" color="var(--border)" />
@@ -5026,11 +5537,22 @@ export function AdminLoginScreen() {
                     {...register('email')}
                   />
                   <TextInput
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     label={t('Password')}
                     error={errors.password?.message}
                     radius="md"
                     styles={adminInputStyles}
+                    rightSection={
+                      <ActionIcon
+                        variant="subtle"
+                        color="gray"
+                        onClick={() => setShowPassword((value) => !value)}
+                        aria-label={t(showPassword ? 'Hide password' : 'Show password')}
+                      >
+                        {showPassword ? <IconEyeOff size={18} /> : <IconEye size={18} />}
+                      </ActionIcon>
+                    }
+                    rightSectionPointerEvents="auto"
                     {...register('password')}
                   />
                   <Button

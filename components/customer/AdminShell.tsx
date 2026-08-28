@@ -117,7 +117,7 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
               {t('Admin panel')}
             </Text>
             <Text size="xs" tt="uppercase" style={{ color: 'var(--muted)', letterSpacing: 3 }}>
-              {t('Restaurant operations')}
+              {t('Store operations')}
             </Text>
           </Stack>
         ) : null}
@@ -221,7 +221,7 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
               {t('Admin panel')}
             </Text>
             <Text size="xs" tt="uppercase" style={{ color: 'var(--muted)', letterSpacing: 2.6 }}>
-              {t('Restaurant operations')}
+              {t('Store operations')}
             </Text>
           </div>
           <Burger
@@ -299,7 +299,7 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
               <Group justify="space-between" align="start" wrap="wrap" gap="md">
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <Text size="xs" tt="uppercase" c="var(--muted)" style={{ letterSpacing: 2.6 }}>
-                    {t('Restaurant control room')}
+                    {t('PUFF Jordan control room')}
                   </Text>
                   <Text
                     fw={800}
@@ -328,46 +328,24 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
         </div>
       </Box>
       {requestCount > 0 || isNavigating ? (
-        <Box
+        <div
           aria-busy="true"
           aria-live="polite"
           role="status"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 1000,
-            display: 'grid',
-            placeItems: 'center',
-            background: isDark ? 'rgba(0, 0, 0, 0.55)' : 'rgba(255, 255, 255, 0.72)',
-            backdropFilter: 'blur(3px)',
-          }}
+          className="tc-api-overlay tc-api-overlay--admin tc-api-overlay--visible"
         >
-          <Stack
-            align="center"
-            gap="sm"
-            p="lg"
-            style={{
-              minWidth: 240,
-              background: 'var(--card)',
-              border: '1px solid var(--border)',
-              borderRadius: 16,
-              boxShadow: '0 24px 64px rgba(24,18,17,0.24)',
-            }}
-          >
+          <div className="tc-api-overlay__panel">
             <div className="tc-api-overlay__mark" aria-hidden="true">
-              <span className="tc-api-overlay__steam tc-api-overlay__steam--left" />
-              <span className="tc-api-overlay__steam tc-api-overlay__steam--center" />
-              <span className="tc-api-overlay__steam tc-api-overlay__steam--right" />
-              <img src="/shawerma-3a-saj-logo.jpg" alt="" className="tc-api-overlay__logo" />
+              <span className="tc-api-overlay__dot tc-api-overlay__dot--one" />
+              <span className="tc-api-overlay__dot tc-api-overlay__dot--two" />
+              <span className="tc-api-overlay__dot tc-api-overlay__dot--three" />
             </div>
-            <Text size="xs" tt="uppercase" fw={800} c="var(--accent)" style={{ letterSpacing: 2 }}>
-              {t('Kitchen control')}
-            </Text>
-            <Text size="sm" fw={800} tt="uppercase" c="var(--text)" style={{ letterSpacing: 1.4 }}>
-              {t('Syncing admin updates')}
-            </Text>
-          </Stack>
-        </Box>
+            <div className="tc-api-overlay__copy">
+              <span className="tc-api-overlay__eyebrow">{t('Admin panel')}</span>
+              <span className="tc-api-overlay__label">{t('Authenticating access')}</span>
+            </div>
+          </div>
+        </div>
       ) : null}
     </Box>
   );

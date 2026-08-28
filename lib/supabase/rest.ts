@@ -17,7 +17,8 @@ type RestRequestOptions = RestOptions & {
 function getSupabaseConfig() {
   const projectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SERVICE_KEY ?? null;
+  const serviceRoleKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SERVICE_KEY ?? null;
 
   if (!projectUrl || !anonKey) {
     return null;
@@ -110,7 +111,11 @@ export async function requestSupabaseRest<T>(
       let error = `Supabase request failed with status ${response.status}`;
 
       try {
-        const payload = (await response.json()) as { message?: string; error?: string; details?: string };
+        const payload = (await response.json()) as {
+          message?: string;
+          error?: string;
+          details?: string;
+        };
         error = payload.message ?? payload.error ?? payload.details ?? error;
       } catch {
         // Keep generic message when Supabase does not return JSON.
@@ -129,12 +134,20 @@ export async function requestSupabaseRest<T>(
   }
 }
 
-export async function fetchSupabaseRest<T>(path: string, options: RestRequestOptions = {}): Promise<T | null> {
+export async function fetchSupabaseRest<T>(
+  path: string,
+  options: RestRequestOptions = {}
+): Promise<T | null> {
   const result = await requestSupabaseRest<T>(path, options);
   return result.data;
 }
 
-export async function insertSupabaseRow<T>(path: string, body: unknown, single = false, extra?: { headers?: Record<string, string> }) {
+export async function insertSupabaseRow<T>(
+  path: string,
+  body: unknown,
+  single = false,
+  extra?: { headers?: Record<string, string> }
+) {
   return requestSupabaseRest<T>(path, {
     method: 'POST',
     body,
@@ -191,11 +204,16 @@ export async function upsertSupabaseRow<T>(
   });
 }
 
-export async function fetchSupabaseSingle<T>(path: string, query: RestOptions['query'], extra?: { headers?: Record<string, string> }) {
+export async function fetchSupabaseSingle<T>(
+  path: string,
+  query: RestOptions['query'],
+  extra?: { headers?: Record<string, string>; revalidate?: number }
+) {
   return requestSupabaseRest<T>(path, {
     query,
     single: true,
     headers: extra?.headers,
+    revalidate: extra?.revalidate,
   });
 }
 
@@ -210,21 +228,28 @@ export async function invokeSupabaseAuth<T>(
   }
 
   try {
-    const response = await fetch(`${config.restUrl.replace('/rest/v1', '')}/auth/v1/${path.replace(/^\//, '')}`, {
-      method: 'POST',
-      headers: {
-        apikey: config.anonKey,
-        Authorization: `Bearer ${config.anonKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
+    const response = await fetch(
+      `${config.restUrl.replace('/rest/v1', '')}/auth/v1/${path.replace(/^\//, '')}`,
+      {
+        method: 'POST',
+        headers: {
+          apikey: config.anonKey,
+          Authorization: `Bearer ${config.anonKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      }
+    );
 
     if (!response.ok) {
       let error = `Supabase auth request failed with status ${response.status}`;
 
       try {
-        const payload = (await response.json()) as { msg?: string; error_description?: string; error?: string };
+        const payload = (await response.json()) as {
+          msg?: string;
+          error_description?: string;
+          error?: string;
+        };
         error = payload.msg ?? payload.error_description ?? payload.error ?? error;
       } catch {
         // Ignore parse failures.

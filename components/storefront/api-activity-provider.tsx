@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode, useEffect, useRef, useState } from 'react';
+import { useLocale } from '@/components/storefront/locale-provider';
 
 function resolveRequestUrl(input: RequestInfo | URL): string | null {
   if (typeof input === 'string') {
@@ -25,7 +26,7 @@ function isApiRequest(input: RequestInfo | URL): boolean {
     return false;
   }
 
-  if (url.startsWith('/api/')) {
+  if (url === '/api' || url.startsWith('/api/')) {
     return true;
   }
 
@@ -35,13 +36,17 @@ function isApiRequest(input: RequestInfo | URL): boolean {
 
   try {
     const parsed = new URL(url, window.location.origin);
-    return parsed.origin === window.location.origin && parsed.pathname.startsWith('/api/');
+    return (
+      parsed.origin === window.location.origin &&
+      (parsed.pathname === '/api' || parsed.pathname.startsWith('/api/'))
+    );
   } catch {
     return false;
   }
 }
 
 export function ApiActivityProvider({ children }: { children: ReactNode }) {
+  const { t } = useLocale();
   const [activeRequests, setActiveRequests] = useState(0);
   const originalFetchRef = useRef<typeof window.fetch | null>(null);
 
@@ -92,7 +97,7 @@ export function ApiActivityProvider({ children }: { children: ReactNode }) {
           </div>
           <div className="tc-api-overlay__copy">
             <span className="tc-api-overlay__eyebrow">Puff Jo</span>
-            <span className="tc-api-overlay__label">Preparing Your Order</span>
+            <span className="tc-api-overlay__label">{t('Updating Puff Jo')}</span>
           </div>
         </div>
       </div>
