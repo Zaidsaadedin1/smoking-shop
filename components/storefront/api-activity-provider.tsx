@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode, useEffect, useRef, useState } from 'react';
-import { useLocale } from '@/components/storefront/locale-provider';
+import { LoaderBars } from '@/components/ui/loaders-bars';
 
 function resolveRequestUrl(input: RequestInfo | URL): string | null {
   if (typeof input === 'string') {
@@ -46,7 +46,6 @@ function isApiRequest(input: RequestInfo | URL): boolean {
 }
 
 export function ApiActivityProvider({ children }: { children: ReactNode }) {
-  const { t } = useLocale();
   const [activeRequests, setActiveRequests] = useState(0);
   const originalFetchRef = useRef<typeof window.fetch | null>(null);
 
@@ -87,19 +86,11 @@ export function ApiActivityProvider({ children }: { children: ReactNode }) {
       {children}
       <div
         aria-hidden={activeRequests === 0}
-        className={`tc-api-overlay${activeRequests > 0 ? ' tc-api-overlay--visible' : ''}`}
+        aria-busy={activeRequests > 0}
+        aria-label="Loading"
+        className={`fixed inset-0 z-[9998] flex items-center justify-center bg-background/95 text-foreground backdrop-blur-sm transition-opacity ${activeRequests > 0 ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'}`}
       >
-        <div className="tc-api-overlay__panel" role="status" aria-live="polite">
-          <div className="tc-api-overlay__mark" aria-hidden="true">
-            <span className="tc-api-overlay__dot tc-api-overlay__dot--one" />
-            <span className="tc-api-overlay__dot tc-api-overlay__dot--two" />
-            <span className="tc-api-overlay__dot tc-api-overlay__dot--three" />
-          </div>
-          <div className="tc-api-overlay__copy">
-            <span className="tc-api-overlay__eyebrow">Puff Jo</span>
-            <span className="tc-api-overlay__label">{t('Updating Puff Jo')}</span>
-          </div>
-        </div>
+        <LoaderBars barWidth={6} barHeight={46} gap={6} count={5} />
       </div>
     </>
   );

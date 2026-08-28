@@ -1,5 +1,10 @@
 @import 'tailwindcss';
 
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--text);
+}
+
 @font-face {
   font-family: 'Mirza';
   src: url('/fonts/mirza/Mirza-Regular.ttf') format('truetype');

@@ -1,8 +1,9 @@
 'use client';
 
-import { Badge, Button, Group, Loader, Select, SimpleGrid, Stack, Text } from '@mantine/core';
+import { Badge, Button, Group, Select, SimpleGrid, Stack, Text } from '@mantine/core';
 import Link from 'next/link';
 import { useLocale } from '@/components/storefront/locale-provider';
+import { LoaderBars } from '@/components/ui/loaders-bars';
 import { Category, Product } from '@/lib/storefront-types';
 import { SearchInput, SectionEyebrow, SurfaceCard } from '../shared/SharedComponents';
 
@@ -90,12 +91,10 @@ export function ProductCard({ product }: { product: Product }) {
 }
 
 export function ProductSkeleton() {
-  const { t } = useLocale();
   return (
     <SurfaceCard>
-      <Stack gap="md">
-        <Loader color="grape" size="sm" />
-        <Text c="rgba(255,255,255,0.58)">{t('Loading product...')}</Text>
+      <Stack align="center" justify="center" mih={120}>
+        <LoaderBars aria-label="Loading product" barHeight={34} color="var(--blush)" />
       </Stack>
     </SurfaceCard>
   );

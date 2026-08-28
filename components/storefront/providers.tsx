@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode, useState } from 'react';
 import { ApiActivityProvider } from '@/components/storefront/api-activity-provider';
 import { LocaleProvider } from '@/components/storefront/locale-provider';
+import { NavigationLoader } from '@/components/storefront/navigation-loader';
 import { AppThemeProvider } from '@/components/storefront/theme-provider';
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -13,7 +14,10 @@ export function Providers({ children }: { children: ReactNode }) {
     <AppThemeProvider>
       <QueryClientProvider client={queryClient}>
         <LocaleProvider>
-          <ApiActivityProvider>{children}</ApiActivityProvider>
+          <ApiActivityProvider>
+            <NavigationLoader />
+            {children}
+          </ApiActivityProvider>
         </LocaleProvider>
       </QueryClientProvider>
     </AppThemeProvider>

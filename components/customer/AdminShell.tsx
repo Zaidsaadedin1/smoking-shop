@@ -19,6 +19,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { PropsWithChildren, useEffect, useState, useTransition } from 'react';
 import { LocaleSwitcher, useLocale } from '@/components/storefront/locale-provider';
 import { ThemeSwitcher, useThemeMode } from '@/components/storefront/theme-provider';
+import { LoaderBars } from '@/components/ui/loaders-bars';
 
 const adminLinks = [
   { label: 'Dashboard', href: '/admin' },
@@ -330,21 +331,11 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
       {requestCount > 0 || isNavigating ? (
         <div
           aria-busy="true"
-          aria-live="polite"
           role="status"
-          className="tc-api-overlay tc-api-overlay--admin tc-api-overlay--visible"
+          aria-label="Loading"
+          className="fixed inset-0 z-[9998] flex items-center justify-center bg-background/95 text-foreground backdrop-blur-sm"
         >
-          <div className="tc-api-overlay__panel">
-            <div className="tc-api-overlay__mark" aria-hidden="true">
-              <span className="tc-api-overlay__dot tc-api-overlay__dot--one" />
-              <span className="tc-api-overlay__dot tc-api-overlay__dot--two" />
-              <span className="tc-api-overlay__dot tc-api-overlay__dot--three" />
-            </div>
-            <div className="tc-api-overlay__copy">
-              <span className="tc-api-overlay__eyebrow">{t('Admin panel')}</span>
-              <span className="tc-api-overlay__label">{t('Authenticating access')}</span>
-            </div>
-          </div>
+          <LoaderBars barWidth={6} barHeight={46} gap={6} count={5} />
         </div>
       ) : null}
     </Box>
