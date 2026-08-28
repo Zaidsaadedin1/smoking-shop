@@ -5,7 +5,7 @@ export async function POST(request: Request) {
   try {
     const body = (await request.json()) as Record<string, unknown>;
     const email = requireString(body.email, 'email');
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin;
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.puffjo.site';
     const redirectTo = `${siteUrl.replace(/\/$/, '')}/auth/reset-password`;
 
     const result = await invokeSupabaseAuth('recover', {

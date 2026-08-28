@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       return jsonError('Password must be between 8 and 72 characters', 400);
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.puffjo.site';
     const result = await invokeSupabaseAuth<SignupResponse>(
       'signup',
       {
