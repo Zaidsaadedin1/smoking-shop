@@ -219,7 +219,8 @@ export async function fetchSupabaseSingle<T>(
 
 export async function invokeSupabaseAuth<T>(
   path: string,
-  body: unknown
+  body: unknown,
+  query?: Record<string, string | number | boolean | undefined>
 ): Promise<{ data: T | null; error: string | null; status: number }> {
   const config = getSupabaseConfig();
 
@@ -229,7 +230,15 @@ export async function invokeSupabaseAuth<T>(
 
   try {
     const response = await fetch(
-      `${config.restUrl.replace('/rest/v1', '')}/auth/v1/${path.replace(/^\//, '')}`,
+      (() => {
+        const url = new URL(
+          `${config.restUrl.replace('/rest/v1', '')}/auth/v1/${path.replace(/^\//, '')}`
+        );
+        Object.entries(query ?? {}).forEach(([key, value]) => {
+          if (value !== undefined) url.searchParams.set(key, String(value));
+        });
+        return url;
+      })(),
       {
         method: 'POST',
         headers: {

@@ -1,7 +1,10 @@
 import { cookies } from 'next/headers';
 import { jsonError, jsonOk, requireString } from '@/lib/api/http';
 import { upsertProfile } from '@/lib/api/store-api';
-import { CUSTOMER_ACCESS_TOKEN_COOKIE, CUSTOMER_SESSION_MAX_AGE_SECONDS } from '@/lib/customer/auth';
+import {
+  CUSTOMER_ACCESS_TOKEN_COOKIE,
+  CUSTOMER_SESSION_MAX_AGE_SECONDS,
+} from '@/lib/customer/auth';
 import { getSupabaseServiceRoleHeaders, invokeSupabaseAuth } from '@/lib/supabase/rest';
 
 type SignupResponse = {
@@ -42,14 +45,19 @@ export async function POST(request: Request) {
       return jsonError('Password must be between 8 and 72 characters', 400);
     }
 
-    const result = await invokeSupabaseAuth<SignupResponse>('signup', {
-      email,
-      password,
-      data: {
-        full_name: fullName,
-        phone,
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+    const result = await invokeSupabaseAuth<SignupResponse>(
+      'signup',
+      {
+        email,
+        password,
+        data: {
+          full_name: fullName,
+          phone,
+        },
       },
-    });
+      { redirect_to: `${siteUrl.replace(/\/$/, '')}/auth/confirmed` }
+    );
 
     if (result.error || !result.data?.user?.id) {
       return jsonError(result.error ?? 'Unable to create account', result.status || 400);
