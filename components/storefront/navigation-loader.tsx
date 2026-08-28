@@ -1,51 +1,30 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { LoaderBars } from '@/components/ui/loaders-bars';
 
-const NAVIGATION_FALLBACK_MS = 1200;
-const INITIAL_LOAD_MINIMUM_MS = 650;
-
 export function NavigationLoader() {
-  const pathname = usePathname();
-  const isFirstPathname = useRef(true);
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    const startedAt = Date.now();
-    let fallbackTimer: ReturnType<typeof setTimeout> | undefined;
-
-    const finishInitialLoad = () => {
-      const remaining = Math.max(0, INITIAL_LOAD_MINIMUM_MS - (Date.now() - startedAt));
-      fallbackTimer = setTimeout(() => setVisible(false), remaining);
-    };
-
-    if (document.readyState === 'complete') {
-      finishInitialLoad();
-    } else {
-      window.addEventListener('load', finishInitialLoad, { once: true });
-      fallbackTimer = setTimeout(() => setVisible(false), NAVIGATION_FALLBACK_MS);
-    }
+    const handleRouteReady = () => setVisible(false);
+    window.addEventListener('storefront:route-ready', handleRouteReady);
 
     return () => {
-      window.removeEventListener('load', finishInitialLoad);
-      if (fallbackTimer) clearTimeout(fallbackTimer);
+      window.removeEventListener('storefront:route-ready', handleRouteReady);
     };
   }, []);
 
   useEffect(() => {
-    if (isFirstPathname.current) {
-      isFirstPathname.current = false;
-      return;
-    }
-
-    setVisible(false);
-  }, [pathname]);
-
-  useEffect(() => {
     const handleNavigationStart = (event: MouseEvent) => {
-      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      if (
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      ) {
         return;
       }
 
@@ -56,7 +35,8 @@ export function NavigationLoader() {
       if (!link || link.target === '_blank' || link.hasAttribute('download')) return;
 
       const url = new URL(link.href, window.location.href);
-      if (url.origin !== window.location.origin || url.pathname === window.location.pathname) return;
+      if (url.origin !== window.location.origin || url.pathname === window.location.pathname)
+        return;
 
       setVisible(true);
     };

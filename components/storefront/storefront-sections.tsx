@@ -26,7 +26,7 @@ export function Container({
   children: ReactNode;
   className?: string;
 }) {
-  return <div className={`w-full px-4 md:px-8 lg:px-12 ${className}`}>{children}</div>;
+  return <div className={`min-w-0 w-full px-4 md:px-8 lg:px-12 ${className}`}>{children}</div>;
 }
 
 export function SectionHeading({
@@ -50,7 +50,7 @@ export function SectionHeading({
             {t(eyebrow)}
           </div>
         ) : null}
-        <h2 className="mt-2 text-3xl font-semibold uppercase tracking-[0.18em] md:text-5xl">
+        <h2 className="mt-2 break-words text-2xl font-semibold uppercase leading-[1.05] tracking-[0.12em] sm:text-3xl md:text-5xl md:tracking-[0.18em]">
           {t(title)}
         </h2>
         {description ? (
@@ -135,7 +135,7 @@ export function ProductCard({ product }: { product: StoreProduct }) {
   }
 
   return (
-    <div className="group flex h-full flex-col rounded-[4px] border border-transparent bg-[var(--card)] p-2.5 shadow-[0_18px_45px_rgba(0,0,0,.12)] transition duration-300 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-1 hover:border-[var(--border)] hover:shadow-[0_24px_60px_rgba(0,0,0,.22)] md:p-3">
+    <div className="group flex min-w-0 h-full flex-col rounded-[4px] border border-transparent bg-[var(--card)] p-2.5 shadow-[0_18px_45px_rgba(0,0,0,.12)] transition duration-300 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-1 hover:border-[var(--border)] hover:shadow-[0_24px_60px_rgba(0,0,0,.22)] md:p-3">
       <Link href={`/product/${product.slug}`} className="block">
         <div className="relative aspect-square overflow-hidden rounded-[3px] bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,.1),transparent_35%),linear-gradient(145deg,#202020,#0a0a0a)]">
           {primaryImageUrl ? (
@@ -296,7 +296,7 @@ export function ProductCard({ product }: { product: StoreProduct }) {
 
 export function ProductGrid({ products }: { products: StoreProduct[] }) {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3 md:gap-4 xl:grid-cols-4">
+    <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4 xl:grid-cols-4">
       {products.map((product) => (
         <ProductCard key={product.id} product={product} />
       ))}

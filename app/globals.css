@@ -5,6 +5,33 @@
   --color-foreground: var(--text);
 }
 
+.hero-backdrop {
+  background-size: cover;
+}
+
+@media (max-width: 1023px) {
+  .hero-backdrop {
+    background-position: center top;
+    background-size: contain;
+  }
+
+  .hero-backdrop.has-slide {
+    min-height: 0 !important;
+    background-position: center top;
+    background-size: contain;
+  }
+
+  .hero-backdrop.has-slide .hero-slide-content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    max-width: none;
+    flex-direction: column;
+    justify-content: center;
+    padding: 1.25rem;
+  }
+}
+
 @font-face {
   font-family: 'Mirza';
   src: url('/fonts/mirza/Mirza-Regular.ttf') format('truetype');

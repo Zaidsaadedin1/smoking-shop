@@ -32,7 +32,7 @@ export function StorefrontHome({
   const bestSellers = featured.length ? featured : products.slice(0, 4);
 
   return (
-    <div className="bg-[var(--background)] pb-16 md:pb-24">
+    <div className="overflow-x-clip bg-[var(--background)] pb-16 md:pb-24">
       <Hero slides={heroSlides} />
 
       {flashSale ? <PromoRibbon flashSale={flashSale} /> : null}
@@ -131,26 +131,24 @@ function Hero({ slides }: { slides: HeroSlide[] }) {
 
   return (
     <section
-      className="relative isolate min-h-[620px] overflow-hidden bg-[#0b0c0c] text-[#f4f1e8] md:min-h-[720px]"
+      className={`hero-backdrop relative isolate w-full min-w-0 min-h-[560px] overflow-hidden bg-[#0b0c0c] text-[#f4f1e8] md:min-h-[720px] ${slide ? 'has-slide' : ''}`}
       style={
         slide?.imageEnUrl || slide?.imageArUrl
           ? {
               backgroundImage: `linear-gradient(90deg, rgba(11,12,12,.9), rgba(11,12,12,.35)), url(${imageUrl})`,
-              backgroundSize: 'cover',
               backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'center',
               aspectRatio: imageRatio ? `${imageRatio}` : undefined,
             }
           : undefined
       }
     >
       <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-white/10 blur-3xl" />
-      <div className="mx-auto grid max-w-[1440px] items-center gap-10 px-6 py-20 md:grid-cols-[1.05fr_.95fr] md:px-12 md:py-28">
+      <div className="mx-auto grid min-w-0 max-w-[1440px] grid-cols-1 items-center gap-8 px-5 py-16 sm:px-6 sm:py-20 md:grid-cols-[1.05fr_.95fr] md:gap-10 md:px-12 md:py-28">
         <motion.div
           initial={{ opacity: 0, x: dir === 'rtl' ? 30 : -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.7 }}
-          className="relative z-10 max-w-2xl"
+          className={`relative z-10 max-w-2xl ${slide ? 'hero-slide-content' : ''}`}
         >
           {!slide ? (
             <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[0.28em] text-white">
@@ -158,7 +156,7 @@ function Hero({ slides }: { slides: HeroSlide[] }) {
             </div>
           ) : null}
           {title ? (
-            <h1 className="max-w-xl text-5xl font-black leading-[0.95] tracking-[-0.06em] md:text-8xl">
+            <h1 className="max-w-full text-4xl font-black leading-[0.96] tracking-[-0.05em] sm:text-5xl md:max-w-xl md:text-6xl lg:text-8xl md:tracking-[-0.06em]">
               {title}
             </h1>
           ) : null}
@@ -244,7 +242,7 @@ function PopularCategories({ categories }: { categories: StoreCategory[] }) {
             <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
               {t('SHOP BY CATEGORY')}
             </div>
-            <h2 className="mt-2 text-3xl font-bold text-[var(--text)] md:text-5xl">
+            <h2 className="mt-2 max-w-full text-3xl font-bold leading-tight text-[var(--text)] md:text-5xl">
               {t('Find what fits your setup')}
             </h2>
           </div>
@@ -252,12 +250,12 @@ function PopularCategories({ categories }: { categories: StoreCategory[] }) {
             {t('VIEW SHOP')}
           </Link>
         </div>
-        <div className="grid auto-rows-[180px] grid-cols-2 gap-2.5 md:auto-rows-[190px] md:grid-cols-4 md:gap-3">
+        <div className="grid auto-rows-[150px] grid-cols-2 gap-2.5 sm:auto-rows-[180px] lg:auto-rows-[190px] lg:grid-cols-4 lg:gap-3">
           {categories.map((category) => (
             <Link
               key={category.id}
               href={`/shop?category=${category.slug}`}
-              className={`group relative overflow-hidden rounded-[4px] border border-white/10 bg-[var(--card)] transition duration-300 ease-[cubic-bezier(.22,1,.36,1)] hover:border-white/25 ${categories.indexOf(category) === 0 ? 'col-span-2 row-span-2' : categories.indexOf(category) === 1 ? 'row-span-1' : categories.indexOf(category) === 2 ? 'row-span-1' : 'col-span-2 md:col-span-2'}`}
+              className={`group relative min-w-0 overflow-hidden rounded-[4px] border border-white/10 bg-[var(--card)] transition duration-300 ease-[cubic-bezier(.22,1,.36,1)] hover:border-white/25 ${categories.indexOf(category) === 0 ? 'col-span-2 row-span-2' : categories.indexOf(category) === 1 ? 'row-span-1' : categories.indexOf(category) === 2 ? 'row-span-1' : 'col-span-2 md:col-span-2'}`}
             >
               <div className="absolute inset-0 bg-[#171717]">
                 <img
@@ -321,7 +319,7 @@ function FlavorRail({ products }: { products: StoreProduct[] }) {
           </button>
         ))}
       </div>
-      <div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-3 [scrollbar-width:none] md:-mx-8 md:px-8">
+      <div className="-mx-4 flex min-w-0 snap-x gap-3 overflow-x-auto px-4 pb-3 [scrollbar-width:none] md:-mx-8 md:px-8">
         {visible.length ? (
           visible.map((product) => (
             <Link
@@ -382,21 +380,21 @@ function FlavorRail({ products }: { products: StoreProduct[] }) {
 function RankingRail({ products }: { products: StoreProduct[] }) {
   const { t, localize, dir } = useLocale();
   return (
-    <div className="grid gap-0 border-t border-[var(--border)] md:grid-cols-3">
+    <div className="grid min-w-0 gap-0 border-t border-[var(--border)] lg:grid-cols-3">
       {products.slice(0, 3).map((product) => (
         <Link
           key={product.id}
           href={`/product/${product.slug}`}
-          className="group relative flex min-h-[250px] items-center gap-3 overflow-hidden border-b border-[var(--border)] py-5 md:min-h-[350px] md:border-b-0 md:border-r md:px-5 md:first:pl-0 md:last:border-r-0"
+          className="group relative flex min-w-0 min-h-[220px] items-center gap-2 overflow-hidden border-b border-[var(--border)] py-4 lg:min-h-[350px] lg:gap-3 lg:border-b-0 lg:border-r lg:px-5 lg:first:pl-0 lg:last:border-r-0"
         >
-          <div className="relative h-44 w-40 shrink-0 md:h-56 md:w-48">
+          <div className="relative h-32 w-28 shrink-0 sm:h-36 sm:w-32 lg:h-56 lg:w-48">
             <img
               src={product.images[0]?.url?.trim() || '/products/puff-jo-product-default.png'}
               alt={localize(product.name, product.nameAr)}
               className="h-full w-full object-contain transition duration-500 group-hover:scale-[1.045]"
             />
           </div>
-          <div className="relative">
+          <div className="relative min-w-0">
             <div className="text-[9px] font-bold uppercase tracking-[.22em] text-[var(--accent)]">
               {t('POPULAR')}
             </div>

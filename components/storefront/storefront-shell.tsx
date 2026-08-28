@@ -94,6 +94,10 @@ export function StorefrontShell({
   }, []);
 
   useEffect(() => {
+    window.dispatchEvent(new Event('storefront:route-ready'));
+  }, [pathname]);
+
+  useEffect(() => {
     if (!flashSale?.showAsModal) {
       return;
     }
@@ -210,7 +214,7 @@ function Header({
           <button
             type="button"
             onClick={onMenu}
-            className="rounded-full border p-2 text-[var(--text)] md:hidden"
+            className="rounded-full border p-2 text-[var(--text)] lg:hidden"
             style={{
               borderColor: controlBorderColor,
               background: controlBackground,
@@ -231,7 +235,7 @@ function Header({
         </div>
 
         <nav
-          className="storefront-nav hidden min-w-0 max-w-[46rem] flex-1 items-center justify-start gap-1 overflow-visible text-[11px] font-bold uppercase tracking-[0.16em] md:flex"
+          className="storefront-nav hidden min-w-0 max-w-[46rem] flex-1 items-center justify-start gap-1 overflow-visible text-[11px] font-bold uppercase tracking-[0.16em] lg:flex"
           style={{
             color: secondaryTextColor,
             borderColor: 'transparent',
@@ -275,7 +279,7 @@ function Header({
         </nav>
 
         <div className="flex items-center gap-2 md:gap-3" style={{ color: secondaryTextColor }}>
-          <div className="hidden md:block">
+          <div className="hidden lg:block">
             <LocaleSwitcher />
           </div>
           <ThemeSwitcher />
@@ -291,7 +295,7 @@ function Header({
           </Link>
           <Link
             href="/favorites"
-            className={`hidden rounded-full border p-2 transition md:inline-flex ${navHoverClassName}`}
+            className={`hidden rounded-full border p-2 transition lg:inline-flex ${navHoverClassName}`}
             style={{
               borderColor: controlBorderColor,
               background: controlBackground,
@@ -305,7 +309,7 @@ function Header({
               event.preventDefault();
               onAccount();
             }}
-            className={`hidden rounded-full border p-2 transition md:inline-flex ${navHoverClassName}`}
+            className={`hidden rounded-full border p-2 transition lg:inline-flex ${navHoverClassName}`}
             style={{
               borderColor: controlBorderColor,
               background: controlBackground,
@@ -560,12 +564,12 @@ function Footer({
       <div className="pointer-events-none absolute -right-28 -top-36 h-96 w-96 rounded-full border border-[var(--border)] opacity-50 blur-sm" />
       <div className="pointer-events-none absolute -right-8 -top-16 h-72 w-72 rounded-full border border-[var(--border)]" />
       <div className="relative mx-auto max-w-[1440px] px-4 py-10 sm:py-12 md:px-8 md:py-16 lg:px-12">
-        <div className="mb-10 flex flex-col gap-4 border-b border-[var(--border)] pb-8 md:flex-row md:items-end md:justify-between">
+        <div className="mb-10 flex flex-col gap-4 border-b border-[var(--border)] pb-8 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--muted)]">
               {t('Puff Jo / Jordan')}
             </div>
-            <div className="mt-3 text-3xl font-black uppercase tracking-[-0.04em] md:text-5xl">
+            <div className="mt-3 max-w-2xl text-3xl font-black uppercase leading-[0.98] tracking-[-0.04em] xl:text-5xl">
               {t('Your trusted vape shop in Jordan.')}
             </div>
           </div>
@@ -575,8 +579,8 @@ function Footer({
             )}
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-3 sm:gap-10 lg:grid-cols-[1.5fr_repeat(3,1fr)]">
-          <div className="col-span-3 max-w-md text-center sm:text-left lg:col-span-1">
+        <div className="grid min-w-0 grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-x-12 sm:gap-y-12 xl:grid-cols-[1.5fr_repeat(3,1fr)] xl:gap-10">
+          <div className="col-span-1 max-w-md text-center sm:col-span-2 sm:text-left xl:col-span-1">
             <Link href="/" className="inline-flex items-center gap-3 sm:gap-4">
               <span className="flex h-16 w-20 shrink-0 items-center justify-center overflow-hidden sm:h-20 sm:w-24">
                 <BrandLogo className="h-full w-full object-contain" />
@@ -595,7 +599,7 @@ function Footer({
                 'Genuine vape gear, popular flavors, and everyday accessories for customers across Jordan.'
               )}
             </p>
-            <div className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:flex lg:flex-wrap">
+            <div className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-3 xl:flex xl:flex-wrap">
               <FooterInfo icon={Clock} label="Hours" value="12 PM - 2 AM" />
               <FooterInfo icon={Phone} label="Phone" value={settings.supportPhone} />
               <FooterInfo icon={MapPin} label="Delivery" value="Delivery across Jordan" />
@@ -620,7 +624,7 @@ function Footer({
             ]}
           />
 
-          <div className="lg:col-span-1 lg:pt-0">
+          <div className="sm:col-span-2 xl:col-span-1 xl:pt-0">
             <FooterColumn
               title="FOLLOW"
               links={[
@@ -632,7 +636,7 @@ function Footer({
           </div>
         </div>
 
-        <div className="mt-8 flex flex-col gap-2 border-t border-[var(--border)] pt-4 text-center text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)] sm:text-xs md:mt-12 md:flex-row md:items-center md:justify-between md:pt-6">
+        <div className="mt-8 flex flex-col gap-2 border-t border-[var(--border)] pt-4 text-center text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)] sm:text-xs xl:mt-12 xl:flex-row xl:items-center xl:justify-between xl:pt-6">
           <span>© 2026 {storefrontBrandName}</span>
           <span className="text-[var(--accent)]">
             {t('BETTER CLOUDS, FAST DELIVERY, QUALITY GEAR')}
