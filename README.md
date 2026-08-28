@@ -37,3 +37,4 @@ This template comes with the following features:
 - `format:write` – formats all files with oxfmt
 # e-commerce-website
 # food-ordering-website
+# smoking-shop
