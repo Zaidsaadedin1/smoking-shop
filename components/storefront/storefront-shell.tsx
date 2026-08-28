@@ -305,6 +305,7 @@ function Header({
           </Link>
           <Link
             href="/account"
+            data-no-route-loader
             onClick={(event) => {
               event.preventDefault();
               onAccount();

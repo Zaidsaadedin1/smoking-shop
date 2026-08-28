@@ -32,7 +32,14 @@ export function NavigationLoader() {
       if (!(target instanceof Element)) return;
 
       const link = target.closest('a');
-      if (!link || link.target === '_blank' || link.hasAttribute('download')) return;
+      if (
+        !link ||
+        link.target === '_blank' ||
+        link.hasAttribute('download') ||
+        link.hasAttribute('data-no-route-loader')
+      ) {
+        return;
+      }
 
       const url = new URL(link.href, window.location.href);
       if (url.origin !== window.location.origin || url.pathname === window.location.pathname)
