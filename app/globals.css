@@ -275,35 +275,6 @@ body {
   letter-spacing: 0.22em;
 }
 
-.checkout-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: var(--muted);
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-}
-
-.checkout-input {
-  width: 100%;
-  min-height: 3.35rem;
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  background: color-mix(in srgb, var(--card) 72%, transparent);
-  padding: 0 1rem;
-  color: var(--text);
-  outline: none;
-  transition:
-    border-color 200ms ease,
-    box-shadow 200ms ease,
-    background 200ms ease;
-}
-
-.checkout-input:focus {
-  border-color: var(--text);
-  background: var(--card);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--text) 10%, transparent);
-}
-
 .checkout-order-button {
   transition:
     transform 200ms ease,
@@ -359,7 +330,6 @@ body {
   .checkout-summary {
     animation: none;
   }
-  .checkout-input,
   .checkout-order-button {
     transition: none;
   }

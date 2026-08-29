@@ -1,5 +1,7 @@
 'use client';
 
+import { Box } from '@mantine/core';
+
 import { ReactNode, useEffect, useRef, useState } from 'react';
 import { LoaderBars } from '@/components/ui/loaders-bars';
 
@@ -84,14 +86,15 @@ export function ApiActivityProvider({ children }: { children: ReactNode }) {
   return (
     <>
       {children}
-      <div
+      <Box
+        component="div"
         aria-hidden={activeRequests === 0}
         aria-busy={activeRequests > 0}
         aria-label="Loading"
         className={`fixed inset-0 z-[9998] flex items-center justify-center bg-background/95 text-foreground backdrop-blur-sm transition-opacity ${activeRequests > 0 ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'}`}
       >
         <LoaderBars barWidth={6} barHeight={46} gap={6} count={5} />
-      </div>
+      </Box>
     </>
   );
 }

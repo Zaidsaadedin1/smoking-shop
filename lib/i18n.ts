@@ -8,6 +8,24 @@ export const localeLabelMap: Record<Locale, string> = {
 };
 
 export const messages: Record<string, LocaleMessages> = {
+  'ACCOUNT RECOVERY': { en: 'ACCOUNT RECOVERY', ar: 'استعادة الحساب' },
+  'Reset password': { en: 'Reset password', ar: 'إعادة تعيين كلمة المرور' },
+  'New password': { en: 'New password', ar: 'كلمة المرور الجديدة' },
+  'Preparing your secure password reset…': {
+    en: 'Preparing your secure password reset…',
+    ar: 'جارٍ تجهيز إعادة تعيين كلمة المرور بأمان…',
+  },
+  'Password updated. You can now sign in with your new password.': {
+    en: 'Password updated. You can now sign in with your new password.',
+    ar: 'تم تحديث كلمة المرور. يمكنك الآن تسجيل الدخول باستخدام كلمة المرور الجديدة.',
+  },
+  'This reset link is invalid or expired. Request a new one to continue.': {
+    en: 'This reset link is invalid or expired. Request a new one to continue.',
+    ar: 'رابط إعادة التعيين غير صالح أو منتهي الصلاحية. اطلب رابطاً جديداً للمتابعة.',
+  },
+  'Request a new link': { en: 'Request a new link', ar: 'طلب رابط جديد' },
+  'Update password': { en: 'Update password', ar: 'تحديث كلمة المرور' },
+  'Updating…': { en: 'Updating…', ar: 'جارٍ التحديث…' },
   EN: { en: 'EN', ar: 'الإنجليزية' },
   AR: { en: 'AR', ar: 'العربية' },
   Home: { en: 'Home', ar: 'الرئيسية' },
@@ -1282,6 +1300,10 @@ export const messages: Record<string, LocaleMessages> = {
   Dark: { en: 'Dark', ar: 'داكن' },
   Light: { en: 'Light', ar: 'فاتح' },
   'Close account drawer': { en: 'Close account drawer', ar: 'إغلاق لوحة الحساب' },
+  'Change language': { en: 'Change language', ar: 'تغيير اللغة' },
+  'Current language': { en: 'Current language', ar: 'اللغة الحالية' },
+  'Switch to light theme': { en: 'Switch to light theme', ar: 'التبديل إلى المظهر الفاتح' },
+  'Switch to dark theme': { en: 'Switch to dark theme', ar: 'التبديل إلى المظهر الداكن' },
   'Updating Puff Jo': { en: 'Updating Puff Jo', ar: 'جارٍ تحديث بَف جو' },
   'Authenticating access': { en: 'Authenticating access', ar: 'جارٍ التحقق من الدخول' },
   'PUFF JORDAN': { en: 'PUFF JORDAN', ar: 'بف جو الأردن' },
@@ -1682,6 +1704,21 @@ export const messages: Record<string, LocaleMessages> = {
   'Request failed': { en: 'Request failed', ar: 'فشل الطلب' },
   'Delete failed': { en: 'Delete failed', ar: 'فشل الحذف' },
   'Login failed': { en: 'Login failed', ar: 'فشل تسجيل الدخول' },
+  'Invalid email or password.': {
+    en: 'Invalid email or password.',
+    ar: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
+  },
+  'Email not confirmed.': {
+    en: 'Email not confirmed.',
+    ar: 'لم يتم تأكيد البريد الإلكتروني.',
+  },
+  'An account with this email already exists.': {
+    en: 'An account with this email already exists.',
+    ar: 'يوجد حساب بهذا البريد الإلكتروني مسبقاً.',
+  },
+  'Unable to sign in.': { en: 'Unable to sign in.', ar: 'تعذر تسجيل الدخول.' },
+  'Unable to create account.': { en: 'Unable to create account.', ar: 'تعذر إنشاء الحساب.' },
+  'Invalid request.': { en: 'Invalid request.', ar: 'الطلب غير صالح.' },
   Coupons: { en: 'Coupons', ar: 'القسائم' },
   'Hero slides': { en: 'Hero slides', ar: 'شرائح البطل' },
   'Flash sales': { en: 'Flash sales', ar: 'العروض السريعة' },
@@ -2341,6 +2378,33 @@ export const messages: Record<string, LocaleMessages> = {
 
 export function translateText(text: string, locale: Locale) {
   return messages[text]?.[locale] ?? text;
+}
+
+const authErrorKeys: Array<{ match: RegExp; key: string }> = [
+  { match: /invalid login credentials/i, key: 'Invalid email or password.' },
+  { match: /email not confirmed/i, key: 'Email not confirmed.' },
+  {
+    match: /user already registered|already been registered/i,
+    key: 'An account with this email already exists.',
+  },
+  { match: /unable to sign in/i, key: 'Unable to sign in.' },
+  { match: /unable to create account/i, key: 'Unable to create account.' },
+  { match: /invalid request body/i, key: 'Invalid request.' },
+  { match: /is required$/i, key: 'This field is required' },
+  {
+    match: /full name must be between 2 and 80 characters/i,
+    key: 'Full name must be between 2 and 80 characters',
+  },
+  { match: /enter a valid phone number/i, key: 'Enter a valid phone number' },
+  {
+    match: /password must be between 8 and 72 characters/i,
+    key: 'Password must be between 8 and 72 characters',
+  },
+];
+
+export function translateAuthError(text: string, locale: Locale) {
+  const key = authErrorKeys.find(({ match }) => match.test(text))?.key;
+  return translateText(key ?? text, locale);
 }
 
 export function localizeCount(

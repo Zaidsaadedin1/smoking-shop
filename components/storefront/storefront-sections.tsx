@@ -1,6 +1,8 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { Box, Image } from '@mantine/core';
+import { MotionBox } from '@/components/storefront/ui/motion-box';
+
 import { ArrowLeft, ArrowRight, Check, Heart, ShoppingCart, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -26,7 +28,11 @@ export function Container({
   children: ReactNode;
   className?: string;
 }) {
-  return <div className={`min-w-0 w-full px-4 md:px-8 lg:px-12 ${className}`}>{children}</div>;
+  return (
+    <Box component="div" className={`min-w-0 w-full px-4 md:px-8 lg:px-12 ${className}`}>
+      {children}
+    </Box>
+  );
 }
 
 export function SectionHeading({
@@ -43,24 +49,36 @@ export function SectionHeading({
   const { t } = useLocale();
 
   return (
-    <div className="mb-6 flex flex-col gap-4 border-b border-[var(--border)] pb-5 md:mb-8 md:flex-row md:items-end md:justify-between">
-      <div>
+    <Box
+      component="div"
+      className="mb-6 flex flex-col gap-4 border-b border-[var(--border)] pb-5 md:mb-8 md:flex-row md:items-end md:justify-between"
+    >
+      <Box component="div">
         {eyebrow ? (
-          <div className="text-[11px] font-medium tracking-[0.3em] text-[var(--muted)]">
+          <Box
+            component="div"
+            className="text-[11px] font-medium tracking-[0.3em] text-[var(--muted)]"
+          >
             {t(eyebrow)}
-          </div>
+          </Box>
         ) : null}
-        <h2 className="mt-2 break-words text-2xl font-semibold uppercase leading-[1.05] tracking-[0.12em] sm:text-3xl md:text-5xl md:tracking-[0.18em]">
+        <Box
+          component="h2"
+          className="mt-2 break-words text-2xl font-semibold uppercase leading-[1.05] tracking-[0.12em] sm:text-3xl md:text-5xl md:tracking-[0.18em]"
+        >
           {t(title)}
-        </h2>
+        </Box>
         {description ? (
-          <p className="mt-3 max-w-xl text-sm leading-7 text-[var(--text-secondary)]">
+          <Box
+            component="p"
+            className="mt-3 max-w-xl text-sm leading-7 text-[var(--text-secondary)]"
+          >
             {t(description)}
-          </p>
+          </Box>
         ) : null}
-      </div>
+      </Box>
       {action}
-    </div>
+    </Box>
   );
 }
 
@@ -73,27 +91,36 @@ export function CategoryMoodCard({ category }: { category: StoreCategory }) {
       href={`/shop?category=${category.slug}`}
       className="group relative min-h-[360px] overflow-hidden rounded-[22px] border border-[var(--border)] bg-[var(--card)] shadow-[0_20px_60px_rgba(0,0,0,.2)] transition duration-300 hover:-translate-y-1 hover:border-[var(--accent)]"
     >
-      <img
+      <Image
         src={category.image || '/products/puff-jo-product-default.png'}
         alt={localize(category.name, category.nameAr)}
         className="absolute inset-0 h-full w-full bg-[#171717] object-contain mix-blend-screen opacity-80 transition duration-500 group-hover:scale-[1.04] group-hover:opacity-100"
       />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(255,255,255,.12),transparent_35%),linear-gradient(to_top,#000_0%,rgba(0,0,0,.2)_65%,transparent_100%)]" />
-      <div className="absolute bottom-0 left-0 right-0 flex items-end justify-between p-5">
-        <div>
-          <div className="text-[11px] tracking-[0.3em] text-[var(--text-secondary)]">
+      <Box
+        component="div"
+        className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(255,255,255,.12),transparent_35%),linear-gradient(to_top,#000_0%,rgba(0,0,0,.2)_65%,transparent_100%)]"
+      />
+      <Box
+        component="div"
+        className="absolute bottom-0 left-0 right-0 flex items-end justify-between p-5"
+      >
+        <Box component="div">
+          <Box
+            component="div"
+            className="text-[11px] tracking-[0.3em] text-[var(--text-secondary)]"
+          >
             {localize(category.accent, category.accentAr)}
-          </div>
-          <div className="mt-2 text-2xl font-semibold uppercase tracking-[0.18em]">
+          </Box>
+          <Box component="div" className="mt-2 text-2xl font-semibold uppercase tracking-[0.18em]">
             {localize(category.name, category.nameAr)}
-          </div>
-        </div>
+          </Box>
+        </Box>
         {isRtl ? (
           <ArrowLeft className="h-5 w-5 transition duration-500 group-hover:-translate-x-1" />
         ) : (
           <ArrowRight className="h-5 w-5 transition duration-500 group-hover:translate-x-1" />
         )}
-      </div>
+      </Box>
     </Link>
   );
 }
@@ -135,35 +162,42 @@ export function ProductCard({ product }: { product: StoreProduct }) {
   }
 
   return (
-    <div className="group flex min-w-0 h-full flex-col rounded-[4px] border border-transparent bg-[var(--card)] p-2.5 shadow-[0_18px_45px_rgba(0,0,0,.12)] transition duration-300 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-1 hover:border-[var(--border)] hover:shadow-[0_24px_60px_rgba(0,0,0,.22)] md:p-3">
+    <Box
+      component="div"
+      className="group flex h-full min-w-0 flex-col rounded-[4px] border border-white/10 bg-[var(--background)] p-3 shadow-none transition duration-300 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-1 hover:border-white/25"
+    >
       <Link href={`/product/${product.slug}`} className="block">
-        <div className="relative aspect-square overflow-hidden rounded-[3px] bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,.1),transparent_35%),linear-gradient(145deg,#202020,#0a0a0a)]">
+        <Box
+          component="div"
+          className="relative h-52 overflow-hidden rounded-[3px] bg-[var(--background-secondary)]"
+        >
           {primaryImageUrl ? (
-            <img
+            <Image
               src={primaryImageUrl}
               alt={localize(product.name, product.nameAr)}
               onLoad={() => setImageLoaded(true)}
-              className={`absolute inset-0 h-full w-full object-contain p-4 transition duration-300 ease-out group-hover:scale-[1.045] ${imageLoaded ? 'scale-100 opacity-100' : 'scale-[.98] opacity-0'}`}
+              className={`absolute inset-0 h-full w-full object-cover transition duration-300 ease-out group-hover:scale-[1.045] ${imageLoaded ? 'scale-100 opacity-100' : 'scale-[.98] opacity-0'}`}
             />
           ) : null}
           {product.images[1]?.url ? (
-            <img
+            <Image
               src={product.images[1].url}
               alt={localize(product.name, product.nameAr)}
-              className="absolute inset-0 h-full w-full bg-[#151515] object-contain p-4 opacity-0 transition duration-500 group-hover:opacity-100"
+              className="absolute inset-0 h-full w-full bg-[var(--background-secondary)] object-cover opacity-0 transition duration-500 group-hover:opacity-100"
             />
           ) : null}
-          <div className="absolute left-2 top-2 flex gap-1">
+          <Box component="div" className="absolute left-2 top-2 flex gap-1">
             {product.isNew ? <MiniFlag label="NEW" /> : null}
             {discount > 0 ? <MiniFlag label="SALE" /> : null}
             {!canPurchase ? <MiniFlag label="OUT OF STOCK" /> : null}
-          </div>
-          <div className="absolute right-2 top-2">
-            <motion.button
+          </Box>
+          <Box component="div" className="absolute right-2 top-2">
+            <MotionBox
+              component="button"
               type="button"
               whileTap={{ scale: 0.85 }}
               animate={favorite ? { scale: [1, 1.3, 1] } : undefined}
-              onClick={async (event) => {
+              onClick={async (event: MouseEvent<HTMLButtonElement>) => {
                 event.preventDefault();
 
                 try {
@@ -216,14 +250,17 @@ export function ProductCard({ product }: { product: StoreProduct }) {
               aria-label={t(favorite ? 'Remove from favorites' : 'Add to favorites')}
             >
               <Heart className={`h-4 w-4 ${favorite ? 'fill-current text-black' : ''}`} />
-            </motion.button>
-          </div>
-        </div>
+            </MotionBox>
+          </Box>
+        </Box>
       </Link>
-      <div className="flex flex-1 flex-col px-1 pt-3 md:px-1 md:pt-4">
-        <div className="text-[8px] uppercase tracking-[0.2em] text-[var(--muted)] md:text-[9px]">
+      <Box component="div" className="flex flex-1 flex-col px-1 pt-3 md:px-1 md:pt-4">
+        <Box
+          component="div"
+          className="text-[8px] uppercase tracking-[0.2em] text-[var(--muted)] md:text-[9px]"
+        >
           {localize(product.brand, product.brandAr)}
-        </div>
+        </Box>
         <Link
           href={`/product/${product.slug}`}
           className="mt-1 line-clamp-2 min-h-10 block text-sm font-bold text-[var(--text)] md:text-base"
@@ -231,29 +268,49 @@ export function ProductCard({ product }: { product: StoreProduct }) {
           {localize(product.name, product.nameAr)}
         </Link>
         {product.shortDescription ? (
-          <p className="mt-1.5 line-clamp-2 min-h-10 text-xs leading-5 text-[var(--text-secondary)] md:mt-2 md:min-h-12 md:text-sm md:leading-6">
+          <Box
+            component="p"
+            className="mt-1.5 line-clamp-2 min-h-10 text-xs leading-5 text-[var(--text-secondary)] md:mt-2 md:min-h-12 md:text-sm md:leading-6"
+          >
             {localize(product.shortDescription, product.shortDescriptionAr)}
-          </p>
+          </Box>
         ) : null}
-        <div className="mt-3 flex items-center justify-between gap-2 text-xs md:mt-4 md:text-sm">
-          <div className="flex items-center gap-1.5 font-bold text-[var(--text)] md:gap-2">
-            <span>{formatCurrency(price)}</span>
+        <Box
+          component="div"
+          className="mt-3 flex min-w-0 items-center justify-between gap-2 text-xs md:mt-4 md:text-sm"
+        >
+          <Box
+            component="div"
+            className="flex min-w-0 flex-wrap items-center gap-1.5 font-bold text-[var(--text)] md:gap-2"
+          >
+            <Box component="span" className="shrink-0">
+              {formatCurrency(price)}
+            </Box>
             {compareAtPrice ? (
-              <span className="text-[var(--muted)] line-through">
+              <Box
+                component="span"
+                className="max-w-full truncate text-[var(--muted)] line-through"
+              >
                 {formatCurrency(compareAtPrice)}
-              </span>
+              </Box>
             ) : null}
             {discount > 0 ? (
-              <span className="text-[10px] font-bold text-[var(--muted)]">-{discount}%</span>
+              <Box component="span" className="shrink-0 text-[10px] font-bold text-[var(--muted)]">
+                -{discount}%
+              </Box>
             ) : null}
-          </div>
-        </div>
+          </Box>
+        </Box>
         {(needsOptions || product.variants.length > 1) && canPurchase ? (
-          <div className="mt-2 text-[9px] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
+          <Box
+            component="div"
+            className="mt-2 text-[9px] font-semibold uppercase tracking-[0.16em] text-[var(--muted)]"
+          >
             {product.variants.length} {t('options available')}
-          </div>
+          </Box>
         ) : null}
-        <button
+        <Box
+          component="button"
           type="button"
           onClick={handleAddToCart}
           disabled={!canPurchase}
@@ -273,34 +330,41 @@ export function ProductCard({ product }: { product: StoreProduct }) {
                 ? t('CHOOSE OPTIONS')
                 : t('ADD TO CART')
             : t('OUT OF STOCK')}
-        </button>
-        <div className="mt-3 flex items-center justify-between gap-2 md:mt-4">
-          <div className="flex items-center gap-1.5">
+        </Box>
+        <Box component="div" className="mt-3 flex items-center justify-between gap-2 md:mt-4">
+          <Box component="div" className="flex items-center gap-1.5">
             {getProductColors(product).map((color) => (
-              <span
+              <Box
+                component="span"
                 key={color.name}
                 title={localize(color.name, color.nameAr)}
                 className="h-2.5 w-2.5 rounded-full border border-white/20 grayscale md:h-2.5 md:w-2.5"
                 style={{ background: color.hex }}
               />
             ))}
-          </div>
-          <div className="text-[7px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)] md:text-[9px]">
+          </Box>
+          <Box
+            component="div"
+            className="text-[7px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)] md:text-[9px]"
+          >
             {inventory > 0 && inventory <= 2 ? `${t('ONLY')} ${inventory}` : t('HOT NOW')}
-          </div>
-        </div>
-      </div>
-    </div>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 
 export function ProductGrid({ products }: { products: StoreProduct[] }) {
   return (
-    <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4 xl:grid-cols-4">
+    <Box
+      component="div"
+      className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4 xl:grid-cols-4"
+    >
       {products.map((product) => (
         <ProductCard key={product.id} product={product} />
       ))}
-    </div>
+    </Box>
   );
 }
 
@@ -308,26 +372,35 @@ export function EditorialBanner() {
   const { t, dir } = useLocale();
 
   return (
-    <section className="relative overflow-hidden border border-[var(--border)]">
-      <img
+    <Box component="section" className="relative overflow-hidden border border-[var(--border)]">
+      <Image
         src="https://images.unsplash.com/photo-1529006557810-274b9b2fc783?auto=format&fit=crop&w=1600&q=80"
         alt="Puff Jo vape collection"
         className="h-[440px] w-full bg-[#181211] object-contain md:h-[560px]"
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-black via-black/60 to-transparent" />
-      <div className="absolute inset-0 flex items-end p-6 md:p-12">
-        <div className="max-w-xl">
-          <div className="text-xs tracking-[0.3em] text-[var(--text-secondary)]">
+      <Box
+        component="div"
+        className="absolute inset-0 bg-gradient-to-r from-black via-black/60 to-transparent"
+      />
+      <Box component="div" className="absolute inset-0 flex items-end p-6 md:p-12">
+        <Box component="div" className="max-w-xl">
+          <Box component="div" className="text-xs tracking-[0.3em] text-[var(--text-secondary)]">
             {t('FROM THE CLOUD')}
-          </div>
-          <div className="mt-4 text-4xl font-semibold uppercase tracking-[0.18em] leading-none md:text-6xl">
+          </Box>
+          <Box
+            component="div"
+            className="mt-4 text-4xl font-semibold uppercase tracking-[0.18em] leading-none md:text-6xl"
+          >
             {t('DEVICES, FLAVOR, CLOUDS.')}
-          </div>
-          <p className="mt-4 max-w-lg text-sm leading-7 text-[var(--text-secondary)]">
+          </Box>
+          <Box
+            component="p"
+            className="mt-4 max-w-lg text-sm leading-7 text-[var(--text-secondary)]"
+          >
             {t(
               'Reliable hardware, standout flavor, and everything you need for the perfect setup.'
             )}
-          </p>
+          </Box>
           <Link
             href="/shop"
             className="mt-6 inline-flex items-center gap-2 text-sm tracking-[0.2em] text-white"
@@ -335,9 +408,9 @@ export function EditorialBanner() {
             {t('SHOP THE COLLECTION')}{' '}
             {dir === 'rtl' ? <ArrowLeft className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
           </Link>
-        </div>
-      </div>
-    </section>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 
@@ -390,41 +463,50 @@ export function NewsletterSection() {
   }
 
   return (
-    <section className="border border-[var(--border)] bg-[var(--card)] p-8 md:p-10">
-      <div className="max-w-xl">
-        <div className="text-xs tracking-[0.28em] text-[var(--muted)]">{t('OFFERS')}</div>
-        <div className="mt-4 font-display text-4xl uppercase md:text-5xl">
+    <Box component="section" className="border border-[var(--border)] bg-[var(--card)] p-8 md:p-10">
+      <Box component="div" className="max-w-xl">
+        <Box component="div" className="text-xs tracking-[0.28em] text-[var(--muted)]">
+          {t('OFFERS')}
+        </Box>
+        <Box component="div" className="mt-4 font-display text-4xl uppercase md:text-5xl">
           {t('GET THE LATEST DROPS.')}
-        </div>
-        <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
+        </Box>
+        <Box component="p" className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
           {t('New releases, flavor drops, and limited offers in your inbox.')}
-        </p>
-      </div>
-      <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-3 md:flex-row">
-        <input
+        </Box>
+      </Box>
+      <Box
+        component="form"
+        onSubmit={handleSubmit}
+        className="mt-8 flex flex-col gap-3 md:flex-row"
+      >
+        <Box
+          component="input"
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           placeholder={t('Email address')}
           className="h-14 flex-1 rounded-full border border-white/10 bg-black/20 px-6 text-sm outline-none placeholder:text-[var(--muted)]"
         />
-        <button
+        <Box
+          component="button"
           type="submit"
           disabled={isSubmitting}
           className="h-14 rounded-full bg-[var(--accent)] px-8 text-sm tracking-[0.2em] disabled:opacity-40"
           style={{ color: 'var(--background)' }}
         >
           {isSubmitting ? t('PLEASE WAIT') : t('JOIN')}
-        </button>
-      </form>
+        </Box>
+      </Box>
       {message ? (
-        <p
+        <Box
+          component="p"
           className={`mt-4 text-sm ${message.type === 'success' ? 'text-[var(--text)]' : 'text-[var(--blush)]'}`}
         >
           {message.text}
-        </p>
+        </Box>
       ) : null}
-    </section>
+    </Box>
   );
 }
 
@@ -439,27 +521,31 @@ export function SocialGallery() {
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+    <Box component="div" className="grid grid-cols-2 gap-4 md:grid-cols-3">
       {images.map((image) => (
-        <div key={image} className="overflow-hidden rounded-[28px] border border-white/8">
-          <img
+        <Box
+          component="div"
+          key={image}
+          className="overflow-hidden rounded-[28px] border border-white/8"
+        >
+          <Image
             src={image}
             alt="Puff Jo product"
             className="aspect-square w-full bg-[#171717] object-contain grayscale transition duration-500 hover:scale-[1.03]"
           />
-        </div>
+        </Box>
       ))}
-    </div>
+    </Box>
   );
 }
 
 export function Rating({ rating, reviewCount }: { rating: number; reviewCount: number }) {
   return (
-    <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+    <Box component="div" className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
       <Star className="h-4 w-4 fill-current text-[var(--blush)]" />
-      <span>{rating.toFixed(1)}</span>
-      <span>({reviewCount})</span>
-    </div>
+      <Box component="span">{rating.toFixed(1)}</Box>
+      <Box component="span">({reviewCount})</Box>
+    </Box>
   );
 }
 
@@ -467,8 +553,11 @@ function MiniFlag({ label }: { label: string }) {
   const { t } = useLocale();
 
   return (
-    <span className="bg-black px-2 py-1 text-[8px] font-medium tracking-[0.24em] text-white">
+    <Box
+      component="span"
+      className="bg-black px-2 py-1 text-[8px] font-medium tracking-[0.24em] text-white"
+    >
       {t(label)}
-    </span>
+    </Box>
   );
 }

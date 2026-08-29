@@ -1,7 +1,19 @@
 'use client';
 
-import { ArrowUpRight, ChevronDown, Clock, Mail, MapPin, MessageCircle, Phone, Sparkles } from 'lucide-react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { Box, Image } from '@mantine/core';
+import { MotionBox } from '@/components/storefront/ui/motion-box';
+
+import {
+  ArrowUpRight,
+  ChevronDown,
+  Clock,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Phone,
+  Sparkles,
+} from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useState } from 'react';
 import { Container, SectionHeading } from '@/components/storefront/storefront-sections';
@@ -91,28 +103,47 @@ function SupportLayout({
           ) : null
         }
       />
-      <div className={legal ? 'grid gap-3' : 'grid gap-4 lg:grid-cols-2'}>
+      <Box component="div" className={legal ? 'grid gap-3' : 'grid gap-4 lg:grid-cols-2'}>
         {sections.map((section, index) => (
-          <motion.div
+          <MotionBox
             key={section.title}
             initial={legal ? { opacity: 0, y: 14 } : undefined}
             whileInView={legal ? { opacity: 1, y: 0 } : undefined}
             viewport={legal ? { once: true, amount: 0.15 } : undefined}
             transition={legal ? { delay: index * 0.04, duration: 0.4 } : undefined}
-            className={legal
-              ? 'group grid gap-4 border-b border-[var(--border)] bg-[var(--card)] px-4 py-5 transition hover:bg-[var(--surface)] md:grid-cols-[4rem_0.55fr_1.45fr] md:items-start md:px-6'
-              : 'rounded-[28px] border border-[var(--border)] bg-[var(--card)] p-6 shadow-[0_14px_36px_rgba(0,0,0,0.08)] transition hover:-translate-y-0.5 hover:border-[var(--accent)]'}
+            className={
+              legal
+                ? 'group grid gap-4 border-b border-[var(--border)] bg-[var(--card)] px-4 py-5 transition hover:bg-[var(--surface)] md:grid-cols-[4rem_0.55fr_1.45fr] md:items-start md:px-6'
+                : 'rounded-[28px] border border-[var(--border)] bg-[var(--card)] p-6 shadow-[0_14px_36px_rgba(0,0,0,0.08)] transition hover:-translate-y-0.5 hover:border-[var(--accent)]'
+            }
           >
-            {legal ? <div className="text-2xl font-black tracking-[-0.04em] text-[var(--muted)]">{String(index + 1).padStart(2, '0')}</div> : null}
-            <div className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--accent)]">
+            {legal ? (
+              <Box
+                component="div"
+                className="text-2xl font-black tracking-[-0.04em] text-[var(--muted)]"
+              >
+                {String(index + 1).padStart(2, '0')}
+              </Box>
+            ) : null}
+            <Box
+              component="div"
+              className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--accent)]"
+            >
               {t(section.title)}
-            </div>
-            <p className={legal ? 'text-sm leading-8 text-[var(--text-secondary)] md:max-w-3xl' : 'mt-4 text-sm leading-7 text-[var(--text-secondary)]'}>
+            </Box>
+            <Box
+              component="p"
+              className={
+                legal
+                  ? 'text-sm leading-8 text-[var(--text-secondary)] md:max-w-3xl'
+                  : 'mt-4 text-sm leading-7 text-[var(--text-secondary)]'
+              }
+            >
               {t(section.body)}
-            </p>
-          </motion.div>
+            </Box>
+          </MotionBox>
         ))}
-      </div>
+      </Box>
     </Container>
   );
 }
@@ -128,34 +159,43 @@ export function ContactSupportPage() {
 
   return (
     <Container className="py-8 md:py-14">
-      <motion.section
+      <MotionBox
+        component="section"
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
         className="relative isolate overflow-hidden rounded-[36px] border border-[var(--border)] bg-[var(--card)] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.14)] md:p-10 lg:p-14"
       >
-        <div className="pointer-events-none absolute -right-28 -top-32 -z-10 h-80 w-80 rounded-full border border-[var(--border)] opacity-60" />
-        <div className="pointer-events-none absolute -right-10 top-8 -z-10 h-56 w-56 rounded-full bg-[color:color-mix(in_srgb,var(--accent)_12%,transparent)] blur-3xl" />
-        <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
-          <div>
-            <motion.div
+        <Box
+          component="div"
+          className="pointer-events-none absolute -right-28 -top-32 -z-10 h-80 w-80 rounded-full border border-[var(--border)] opacity-60"
+        />
+        <Box
+          component="div"
+          className="pointer-events-none absolute -right-10 top-8 -z-10 h-56 w-56 rounded-full bg-[color:color-mix(in_srgb,var(--accent)_12%,transparent)] blur-3xl"
+        />
+        <Box component="div" className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
+          <Box component="div">
+            <MotionBox
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.08, duration: 0.45 }}
               className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--accent)]"
             >
-              <span className="h-px w-8 bg-[var(--accent)]" />
+              <Box component="span" className="h-px w-8 bg-[var(--accent)]" />
               {localize('PUFF JO / ONLINE SUPPORT', 'بف جو / دعم أونلاين')}
-            </motion.div>
-            <motion.h1
+            </MotionBox>
+            <MotionBox
+              component="h1"
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.14, duration: 0.55 }}
               className="mt-6 max-w-2xl text-5xl font-black uppercase leading-[0.94] tracking-[-0.04em] text-[var(--text)] md:text-7xl"
             >
               {localize('Talk to Puff Jo.', 'احكي مع بف جو.')}
-            </motion.h1>
-            <motion.p
+            </MotionBox>
+            <MotionBox
+              component="p"
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.5 }}
@@ -165,8 +205,8 @@ export function ContactSupportPage() {
                 'We are an online-only vape shop in Jordan. Reach us for product advice, order updates, delivery questions, or help choosing your next setup.',
                 'إحنا متجر فيب أونلاين فقط بالأردن. تواصل معنا لنساعدك باختيار المنتجات، وتحديثات الطلب، وأسئلة التوصيل، أو تجهيزتك الجاية.'
               )}
-            </motion.p>
-            <motion.div
+            </MotionBox>
+            <MotionBox
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.28, duration: 0.5 }}
@@ -189,84 +229,128 @@ export function ContactSupportPage() {
                 {localize('Email us', 'راسلنا')}
                 <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </Link>
-            </motion.div>
-          </div>
+            </MotionBox>
+          </Box>
 
-          <motion.div
+          <MotionBox
             initial={{ opacity: 0, scale: 0.94 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.18, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
             className="relative mx-auto w-full max-w-md"
           >
-            <motion.div
+            <MotionBox
               animate={{ y: [-7, 7, -7], rotate: [-1, 1, -1] }}
               transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
               className="relative aspect-[0.9] overflow-hidden rounded-[30px] border border-[var(--border)] bg-[color:color-mix(in_srgb,var(--background)_76%,var(--accent)_10%)] p-5 shadow-[0_24px_60px_rgba(0,0,0,0.22)]"
             >
-              <div className="absolute inset-4 rounded-[23px] border border-[var(--border)]" />
-              <div className="absolute -left-10 top-1/2 h-48 w-48 -translate-y-1/2 rounded-full border border-[var(--border)] opacity-60" />
-              <div className="absolute -right-16 bottom-0 h-56 w-56 rounded-full bg-[color:color-mix(in_srgb,var(--accent)_10%,transparent)] blur-3xl" />
-              <div className="relative flex h-full flex-col justify-between rounded-[22px] bg-[color:color-mix(in_srgb,var(--card)_68%,transparent)] p-6 backdrop-blur-sm md:p-8">
-                <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--muted)]">
-                  <span>PUFF JO</span>
-                  <span>ONLINE / 01</span>
-                </div>
-                <div>
-                  <motion.div
+              <Box
+                component="div"
+                className="absolute inset-4 rounded-[23px] border border-[var(--border)]"
+              />
+              <Box
+                component="div"
+                className="absolute -left-10 top-1/2 h-48 w-48 -translate-y-1/2 rounded-full border border-[var(--border)] opacity-60"
+              />
+              <Box
+                component="div"
+                className="absolute -right-16 bottom-0 h-56 w-56 rounded-full bg-[color:color-mix(in_srgb,var(--accent)_10%,transparent)] blur-3xl"
+              />
+              <Box
+                component="div"
+                className="relative flex h-full flex-col justify-between rounded-[22px] bg-[color:color-mix(in_srgb,var(--card)_68%,transparent)] p-6 backdrop-blur-sm md:p-8"
+              >
+                <Box
+                  component="div"
+                  className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--muted)]"
+                >
+                  <Box component="span">PUFF JO</Box>
+                  <Box component="span">ONLINE / 01</Box>
+                </Box>
+                <Box component="div">
+                  <MotionBox
                     animate={{ rotate: [0, 6, 0] }}
                     transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
                     className="mx-auto flex h-32 w-24 items-center justify-center rounded-[18px] border border-[var(--border)] bg-[var(--background)] shadow-[10px_16px_0_color-mix(in_srgb,var(--accent)_18%,transparent)] md:h-40 md:w-28"
                   >
-                    <div className="text-center">
+                    <Box component="div" className="text-center">
                       <Sparkles className="mx-auto h-6 w-6 text-[var(--accent)]" />
-                      <div className="mt-3 text-2xl font-black tracking-[-0.08em] text-[var(--text)]">PUFF</div>
-                      <div className="mt-1 text-[8px] font-bold uppercase tracking-[0.25em] text-[var(--muted)]">JORDAN</div>
-                    </div>
-                  </motion.div>
-                  <div className="mt-8 text-center text-sm font-semibold text-[var(--text-secondary)]">
+                      <Box
+                        component="div"
+                        className="mt-3 text-2xl font-black tracking-[-0.08em] text-[var(--text)]"
+                      >
+                        PUFF
+                      </Box>
+                      <Box
+                        component="div"
+                        className="mt-1 text-[8px] font-bold uppercase tracking-[0.25em] text-[var(--muted)]"
+                      >
+                        JORDAN
+                      </Box>
+                    </Box>
+                  </MotionBox>
+                  <Box
+                    component="div"
+                    className="mt-8 text-center text-sm font-semibold text-[var(--text-secondary)]"
+                  >
                     {localize('Your setup, sorted.', 'تجهيزتك صارت جاهزة.')}
-                  </div>
-                </div>
-                <div className="flex items-center justify-between border-t border-[var(--border)] pt-4 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]">
-                  <span>{localize('Online shop', 'متجر أونلاين')}</span>
-                  <span>AMMAN / JO</span>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        </div>
-      </motion.section>
+                  </Box>
+                </Box>
+                <Box
+                  component="div"
+                  className="flex items-center justify-between border-t border-[var(--border)] pt-4 text-[10px] font-bold uppercase tracking-[0.18em] text-[var(--muted)]"
+                >
+                  <Box component="span">{localize('Online shop', 'متجر أونلاين')}</Box>
+                  <Box component="span">AMMAN / JO</Box>
+                </Box>
+              </Box>
+            </MotionBox>
+          </MotionBox>
+        </Box>
+      </MotionBox>
 
-      <motion.div
+      <MotionBox
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
         variants={{ visible: { transition: { staggerChildren: 0.08 } } }}
         className="mt-5 grid gap-4 md:grid-cols-3"
       >
-        <ContactCard icon={<Phone className="h-5 w-5" />} title="Order hotline" body={hotline} href={`tel:${hotline.replace(/\D/g, '')}`} />
-        <ContactCard icon={<Mail className="h-5 w-5" />} title="Email" body={email} href={`mailto:${email}`} />
+        <ContactCard
+          icon={<Phone className="h-5 w-5" />}
+          title="Order hotline"
+          body={hotline}
+          href={`tel:${hotline.replace(/\D/g, '')}`}
+        />
+        <ContactCard
+          icon={<Mail className="h-5 w-5" />}
+          title="Email"
+          body={email}
+          href={`mailto:${email}`}
+        />
         <ContactCard
           icon={<Clock className="h-5 w-5" />}
           title="Hours"
           body={localize('Daily, 12:00 PM – 2:00 AM', 'يومياً، من 12 الظهر – 2 الفجر')}
         />
-      </motion.div>
+      </MotionBox>
 
-      <section className="mt-5 grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
-        <motion.div
+      <Box component="section" className="mt-5 grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
+        <MotionBox
           initial={{ opacity: 0, x: -16 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true, amount: 0.2 }}
           className="rounded-[28px] border border-[var(--border)] bg-[var(--accent)] p-6 text-[var(--background)] md:p-8"
         >
           <MessageCircle className="h-7 w-7" />
-          <h2 className="mt-12 text-3xl font-black uppercase leading-none">
+          <Box component="h2" className="mt-12 text-3xl font-black uppercase leading-none">
             {localize('Need a quick answer?', 'بدك جواب سريع؟')}
-          </h2>
-          <p className="mt-4 text-sm leading-7 opacity-75">
-            {localize('Send us your order number or product question and we will get back to you.', 'ابعث رقم طلبك أو سؤالك عن أي منتج، وإحنا بنرجعلك.')}
-          </p>
+          </Box>
+          <Box component="p" className="mt-4 text-sm leading-7 opacity-75">
+            {localize(
+              'Send us your order number or product question and we will get back to you.',
+              'ابعث رقم طلبك أو سؤالك عن أي منتج، وإحنا بنرجعلك.'
+            )}
+          </Box>
           <Link
             href={whatsappHref}
             target="_blank"
@@ -275,13 +359,21 @@ export function ContactSupportPage() {
           >
             {localize('Start a conversation', 'ابدأ محادثة')} <MessageCircle className="h-4 w-4" />
           </Link>
-        </motion.div>
-        <div className="grid gap-4 sm:grid-cols-2">
+        </MotionBox>
+        <Box component="div" className="grid gap-4 sm:grid-cols-2">
           {[
-            ['Product guidance', 'Not sure which device, pod, or flavor fits you? We can help.', 'مش عارف أي جهاز أو بود أو نكهة تناسبك؟ بنساعدك.'],
-            ['Order support', 'Questions about payment, delivery, or an order already on its way?', 'عندك سؤال عن الدفع أو التوصيل أو طلبك الحالي؟'],
+            [
+              'Product guidance',
+              'Not sure which device, pod, or flavor fits you? We can help.',
+              'مش عارف أي جهاز أو بود أو نكهة تناسبك؟ بنساعدك.',
+            ],
+            [
+              'Order support',
+              'Questions about payment, delivery, or an order already on its way?',
+              'عندك سؤال عن الدفع أو التوصيل أو طلبك الحالي؟',
+            ],
           ].map(([title, body, bodyAr], index) => (
-            <motion.div
+            <MotionBox
               key={title}
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -289,15 +381,24 @@ export function ContactSupportPage() {
               transition={{ delay: index * 0.08, duration: 0.45 }}
               className="group rounded-[28px] border border-[var(--border)] bg-[var(--card)] p-6 transition duration-300 hover:-translate-y-1 hover:border-[var(--accent)]"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] text-[var(--accent)] transition group-hover:bg-[var(--accent)] group-hover:text-[var(--background)]">
-                <span className="text-sm font-black">0{index + 1}</span>
-              </div>
-              <h3 className="mt-10 text-xl font-bold uppercase text-[var(--text)]">{localize(title, index === 0 ? 'مساعدة بالمنتجات' : 'مساعدة بالطلبات')}</h3>
-              <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">{localize(body, bodyAr)}</p>
-            </motion.div>
+              <Box
+                component="div"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] text-[var(--accent)] transition group-hover:bg-[var(--accent)] group-hover:text-[var(--background)]"
+              >
+                <Box component="span" className="text-sm font-black">
+                  0{index + 1}
+                </Box>
+              </Box>
+              <Box component="h3" className="mt-10 text-xl font-bold uppercase text-[var(--text)]">
+                {localize(title, index === 0 ? 'مساعدة بالمنتجات' : 'مساعدة بالطلبات')}
+              </Box>
+              <Box component="p" className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
+                {localize(body, bodyAr)}
+              </Box>
+            </MotionBox>
           ))}
-        </div>
-      </section>
+        </Box>
+      </Box>
     </Container>
   );
 }
@@ -321,39 +422,51 @@ export function AboutSupportPage() {
         }
       />
 
-      <div className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
-        <section className="overflow-hidden rounded-[32px] border border-[var(--border)] bg-[var(--card)]">
-          <div className="bg-black p-6 text-white md:p-8">
-            <div className="text-xs font-semibold uppercase tracking-[0.24em] text-white/72">
+      <Box component="div" className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
+        <Box
+          component="section"
+          className="overflow-hidden rounded-[32px] border border-[var(--border)] bg-[var(--card)]"
+        >
+          <Box component="div" className="bg-black p-6 text-white md:p-8">
+            <Box
+              component="div"
+              className="text-xs font-semibold uppercase tracking-[0.24em] text-white/72"
+            >
               {localize('Official positioning', 'هوية المطعم')}
-            </div>
-            <h2 className="mt-3 text-4xl font-black uppercase leading-none md:text-6xl">
+            </Box>
+            <Box
+              component="h2"
+              className="mt-3 text-4xl font-black uppercase leading-none md:text-6xl"
+            >
               {localize('Premium vape essentials', 'مستلزمات فيب مميزة')}
-            </h2>
-          </div>
-          <div className="space-y-4 p-6 text-sm leading-8 text-[var(--text-secondary)] md:p-8">
-            <p>
+            </Box>
+          </Box>
+          <Box
+            component="div"
+            className="space-y-4 p-6 text-sm leading-8 text-[var(--text-secondary)] md:p-8"
+          >
+            <Box component="p">
               {localize(
                 'Puff Jo brings together reliable hardware, considered flavor, and everyday smoking essentials in one clean storefront.',
                 'تصف القوائم العامة شاورما ع صاج كمطعم شرقي من عمان يركز على وجبات وسندويشات الشاورما المحضرة على خبز الصاج بلمسة عصرية.'
               )}
-            </p>
-            <p>
+            </Box>
+            <Box component="p">
               {localize(
                 'Our focus is simple: clear product information, dependable quality, and fast access to the latest drops across Jordan.',
                 'تؤكد صفحة التطبيق الرسمية على النكهة الأصلية والجودة الثابتة وسهولة الوصول إلى المنيو وخدمات التوصيل والاستلام عبر فروع الأردن.'
               )}
-            </p>
-            <p>
+            </Box>
+            <Box component="p">
               {localize(
                 'Shop disposable and reusable devices, e-liquids, pods, coils, chargers, cases, and smoking accessories.',
                 'اتجاه المنيو واضح: شاورما دجاج ولحم، سندويشات صاج، وجبات عربي، رز، فتات، بطاطا، سلطات، صوصات ومشروبات.'
               )}
-            </p>
-          </div>
-        </section>
+            </Box>
+          </Box>
+        </Box>
 
-        <section className="grid gap-4">
+        <Box component="section" className="grid gap-4">
           <AboutFact title="Order hotline" titleAr="رقم الطلبات" value={hotline} />
           <AboutFact title="Email" titleAr="البريد الإلكتروني" value={email} />
           <AboutFact
@@ -372,28 +485,37 @@ export function AboutSupportPage() {
               'القوائم العامة تظهر 10 صباحاً - 4 فجراً'
             )}
           />
-        </section>
-      </div>
+        </Box>
+      </Box>
 
-      <section className="mt-10 rounded-[28px] border border-[var(--border)] bg-[var(--card)] p-5 md:p-7">
-        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--accent)]">
+      <Box
+        component="section"
+        className="mt-10 rounded-[28px] border border-[var(--border)] bg-[var(--card)] p-5 md:p-7"
+      >
+        <Box
+          component="div"
+          className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between"
+        >
+          <Box component="div">
+            <Box
+              component="div"
+              className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--accent)]"
+            >
               {t('BRANCHES')}
-            </div>
-            <h2 className="mt-2 text-3xl font-black uppercase text-[var(--text)]">
+            </Box>
+            <Box component="h2" className="mt-2 text-3xl font-black uppercase text-[var(--text)]">
               {localize('Branches from their latest artwork', 'الفروع حسب آخر تصميم منشور')}
-            </h2>
-          </div>
+            </Box>
+          </Box>
           <Link
             href={`tel:${hotline.replace(/\D/g, '')}`}
             className="w-fit rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold tracking-[0.14em] text-[var(--background)] transition hover:-translate-y-0.5 hover:bg-[var(--accent-hover)]"
           >
             {hotline}
           </Link>
-        </div>
+        </Box>
         <BranchGrid />
-      </section>
+      </Box>
     </Container>
   );
 }
@@ -413,31 +535,40 @@ function ContactCard({
 
   const content = (
     <>
-      <div className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[color:color-mix(in_srgb,var(--accent)_14%,transparent)] text-[var(--accent)]">
+      <Box
+        component="div"
+        className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[color:color-mix(in_srgb,var(--accent)_14%,transparent)] text-[var(--accent)]"
+      >
         {icon}
-      </div>
-      <div className="mt-5 text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]">
+      </Box>
+      <Box
+        component="div"
+        className="mt-5 text-xs font-semibold uppercase tracking-[0.22em] text-[var(--muted)]"
+      >
         {t(title)}
-      </div>
-      <div className="mt-2 text-lg font-bold text-[var(--text)]">{body}</div>
+      </Box>
+      <Box component="div" className="mt-2 text-lg font-bold text-[var(--text)]">
+        {body}
+      </Box>
     </>
   );
 
   return href ? (
-    <motion.a
+    <MotionBox
+      component="a"
       href={href}
       variants={{ hidden: { opacity: 0, y: 14 }, visible: { opacity: 1, y: 0 } }}
       className="group rounded-[28px] border border-[var(--border)] bg-[var(--card)] p-6 shadow-[0_14px_36px_rgba(0,0,0,0.08)] transition duration-300 hover:-translate-y-1 hover:border-[var(--accent)]"
     >
       {content}
-    </motion.a>
+    </MotionBox>
   ) : (
-    <motion.div
+    <MotionBox
       variants={{ hidden: { opacity: 0, y: 14 }, visible: { opacity: 1, y: 0 } }}
       className="rounded-[28px] border border-[var(--border)] bg-[var(--card)] p-6 shadow-[0_14px_36px_rgba(0,0,0,0.08)]"
     >
       {content}
-    </motion.div>
+    </MotionBox>
   );
 }
 
@@ -445,12 +576,20 @@ function AboutFact({ title, titleAr, value }: { title: string; titleAr: string; 
   const { localize } = useLocale();
 
   return (
-    <div className="rounded-[28px] border border-[var(--border)] bg-[var(--card)] p-6">
-      <div className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--accent)]">
+    <Box
+      component="div"
+      className="rounded-[28px] border border-[var(--border)] bg-[var(--card)] p-6"
+    >
+      <Box
+        component="div"
+        className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--accent)]"
+      >
         {localize(title, titleAr)}
-      </div>
-      <div className="mt-3 text-lg font-bold leading-7 text-[var(--text)]">{value}</div>
-    </div>
+      </Box>
+      <Box component="div" className="mt-3 text-lg font-bold leading-7 text-[var(--text)]">
+        {value}
+      </Box>
+    </Box>
   );
 }
 
@@ -458,34 +597,43 @@ function BranchGrid() {
   const { localize } = useLocale();
 
   return (
-    <div className="mt-6 grid gap-4 lg:grid-cols-3">
+    <Box component="div" className="mt-6 grid gap-4 lg:grid-cols-3">
       {branchGroups.map((group) => (
-        <div
+        <Box
+          component="div"
           key={group.area}
           className="rounded-[24px] border border-[var(--border)] bg-[color:color-mix(in_srgb,var(--background)_78%,transparent)] p-4"
         >
-          <div className="mb-4 flex items-center gap-3">
-            <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-black text-white">
+          <Box component="div" className="mb-4 flex items-center gap-3">
+            <Box
+              component="span"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-black text-white"
+            >
               <MapPin className="h-4 w-4" />
-            </span>
-            <div className="font-bold text-[var(--text)]">{localize(group.area, group.areaAr)}</div>
-          </div>
-          <div className="grid gap-2">
+            </Box>
+            <Box component="div" className="font-bold text-[var(--text)]">
+              {localize(group.area, group.areaAr)}
+            </Box>
+          </Box>
+          <Box component="div" className="grid gap-2">
             {group.branches.map(([en, ar], index) => (
-              <div
+              <Box
+                component="div"
                 key={en}
                 className="flex items-center justify-between gap-3 rounded-[16px] border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm"
               >
-                <span className="font-semibold text-[var(--text)]">{localize(en, ar)}</span>
-                <span className="text-[10px] font-bold text-[var(--muted)]">
+                <Box component="span" className="font-semibold text-[var(--text)]">
+                  {localize(en, ar)}
+                </Box>
+                <Box component="span" className="text-[10px] font-bold text-[var(--muted)]">
                   {String(index + 1).padStart(2, '0')}
-                </span>
-              </div>
+                </Box>
+              </Box>
             ))}
-          </div>
-        </div>
+          </Box>
+        </Box>
       ))}
-    </div>
+    </Box>
   );
 }
 
@@ -562,95 +710,146 @@ export function FaqSupportPage() {
   const { t } = useLocale();
   const [openIndex, setOpenIndex] = useState(0);
   const questions = [
-    ['How do I track my order?', 'Open your account orders page to see the latest order status, tracking number when available, and delivery updates.'],
-    ['Can I save multiple addresses?', 'Yes. Signed-in customers can save multiple delivery addresses and choose one during checkout.'],
-    ['Do I need an account to check out?', 'Yes. Checkout is restricted to registered customers so orders, addresses, and account history stay connected.'],
-    ['Can I review a product?', 'Yes. Signed-in customers can submit reviews directly from the product page.'],
-    ['What products does Puff Jo sell?', 'Puff Jo carries vape devices, disposable vapes, pod systems, e-liquids, pods, coils, chargers, cases, and other smoking accessories. Availability changes by product and delivery area.'],
-    ['Do you sell to minors?', 'No. Puff Jo products are intended for adults of legal smoking age only. We may request age or identity confirmation before completing an order or delivery.'],
+    [
+      'How do I track my order?',
+      'Open your account orders page to see the latest order status, tracking number when available, and delivery updates.',
+    ],
+    [
+      'Can I save multiple addresses?',
+      'Yes. Signed-in customers can save multiple delivery addresses and choose one during checkout.',
+    ],
+    [
+      'Do I need an account to check out?',
+      'Yes. Checkout is restricted to registered customers so orders, addresses, and account history stay connected.',
+    ],
+    [
+      'Can I review a product?',
+      'Yes. Signed-in customers can submit reviews directly from the product page.',
+    ],
+    [
+      'What products does Puff Jo sell?',
+      'Puff Jo carries vape devices, disposable vapes, pod systems, e-liquids, pods, coils, chargers, cases, and other smoking accessories. Availability changes by product and delivery area.',
+    ],
+    [
+      'Do you sell to minors?',
+      'No. Puff Jo products are intended for adults of legal smoking age only. We may request age or identity confirmation before completing an order or delivery.',
+    ],
   ];
 
   return (
     <Container className="py-8 md:py-14">
-      <motion.section
+      <MotionBox
+        component="section"
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
         className="relative isolate overflow-hidden rounded-[36px] border border-[var(--border)] bg-[var(--card)] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.12)] md:p-10 lg:p-14"
       >
-        <div className="pointer-events-none absolute -right-20 -top-28 -z-10 h-72 w-72 rounded-full border border-[var(--border)] opacity-60" />
-        <div className="pointer-events-none absolute -bottom-32 -left-16 -z-10 h-64 w-64 rounded-full bg-[color:color-mix(in_srgb,var(--accent)_10%,transparent)] blur-3xl" />
-        <div className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16">
-          <div>
-            <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--accent)]">
-              <span className="h-px w-8 bg-[var(--accent)]" />
+        <Box
+          component="div"
+          className="pointer-events-none absolute -right-20 -top-28 -z-10 h-72 w-72 rounded-full border border-[var(--border)] opacity-60"
+        />
+        <Box
+          component="div"
+          className="pointer-events-none absolute -bottom-32 -left-16 -z-10 h-64 w-64 rounded-full bg-[color:color-mix(in_srgb,var(--accent)_10%,transparent)] blur-3xl"
+        />
+        <Box component="div" className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16">
+          <Box component="div">
+            <Box
+              component="div"
+              className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.24em] text-[var(--accent)]"
+            >
+              <Box component="span" className="h-px w-8 bg-[var(--accent)]" />
               {t('HELP')}
-            </div>
-            <h1 className="mt-6 text-6xl font-black uppercase leading-[0.88] tracking-[-0.05em] text-[var(--text)] md:text-8xl">
+            </Box>
+            <Box
+              component="h1"
+              className="mt-6 text-6xl font-black uppercase leading-[0.88] tracking-[-0.05em] text-[var(--text)] md:text-8xl"
+            >
               {t('FAQ')}
-            </h1>
-            <p className="mt-6 max-w-sm text-base leading-8 text-[var(--text-secondary)]">
+            </Box>
+            <Box
+              component="p"
+              className="mt-6 max-w-sm text-base leading-8 text-[var(--text-secondary)]"
+            >
               {t('Quick answers to the most common store and order questions.')}
-            </p>
-            <div className="mt-10 border-t border-[var(--border)] pt-5">
-              <div className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--muted)]">
+            </Box>
+            <Box component="div" className="mt-10 border-t border-[var(--border)] pt-5">
+              <Box
+                component="div"
+                className="text-xs font-bold uppercase tracking-[0.2em] text-[var(--muted)]"
+              >
                 {t('PUFF JO / ONLINE SUPPORT')}
-              </div>
-              <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
+              </Box>
+              <Box component="p" className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
                 {t('Need a hand with a product or order? We are here online across Jordan.')}
-              </p>
+              </Box>
               <Link
                 href="/contact-us"
                 className="mt-5 inline-flex items-center gap-2 text-sm font-bold uppercase tracking-[0.12em] text-[var(--text)] underline decoration-[var(--accent)] decoration-2 underline-offset-4 transition hover:text-[var(--accent)]"
               >
                 {t('CONTACT US')} <ArrowUpRight className="h-4 w-4" />
               </Link>
-            </div>
-          </div>
+            </Box>
+          </Box>
 
-          <div className="space-y-2">
+          <Box component="div" className="space-y-2">
             {questions.map(([question, answer], index) => {
               const isOpen = openIndex === index;
               return (
-                <motion.div
+                <MotionBox
                   key={question}
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.08 + index * 0.05, duration: 0.4 }}
                   className={`overflow-hidden border-b border-[var(--border)] ${isOpen ? 'bg-[var(--surface)]' : ''}`}
                 >
-                  <button
+                  <Box
+                    component="button"
                     type="button"
                     onClick={() => setOpenIndex(isOpen ? -1 : index)}
                     aria-expanded={isOpen}
                     className="flex w-full items-center justify-between gap-6 px-4 py-5 text-left transition hover:text-[var(--accent)] md:px-5"
                   >
-                    <span className="flex items-start gap-4 text-base font-bold text-[var(--text)] md:text-lg">
-                      <span className="pt-0.5 text-xs font-semibold tracking-[0.16em] text-[var(--muted)]">0{index + 1}</span>
+                    <Box
+                      component="span"
+                      className="flex items-start gap-4 text-base font-bold text-[var(--text)] md:text-lg"
+                    >
+                      <Box
+                        component="span"
+                        className="pt-0.5 text-xs font-semibold tracking-[0.16em] text-[var(--muted)]"
+                      >
+                        0{index + 1}
+                      </Box>
                       {t(question)}
-                    </span>
-                    <ChevronDown className={`h-5 w-5 shrink-0 text-[var(--muted)] transition-transform duration-300 ${isOpen ? 'rotate-180 text-[var(--accent)]' : ''}`} />
-                  </button>
+                    </Box>
+                    <ChevronDown
+                      className={`h-5 w-5 shrink-0 text-[var(--muted)] transition-transform duration-300 ${isOpen ? 'rotate-180 text-[var(--accent)]' : ''}`}
+                    />
+                  </Box>
                   <AnimatePresence initial={false}>
                     {isOpen ? (
-                      <motion.div
+                      <MotionBox
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
                       >
-                        <p className="max-w-2xl px-4 pb-6 pl-14 text-sm leading-8 text-[var(--text-secondary)] md:px-5 md:pl-16">
+                        <Box
+                          component="p"
+                          className="max-w-2xl px-4 pb-6 pl-14 text-sm leading-8 text-[var(--text-secondary)] md:px-5 md:pl-16"
+                        >
                           {t(answer)}
-                        </p>
-                      </motion.div>
+                        </Box>
+                      </MotionBox>
                     ) : null}
                   </AnimatePresence>
-                </motion.div>
+                </MotionBox>
               );
             })}
-          </div>
-        </div>
-      </motion.section>
+          </Box>
+        </Box>
+      </MotionBox>
     </Container>
   );
 }

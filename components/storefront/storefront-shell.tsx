@@ -1,7 +1,12 @@
 'use client';
 
-import { AnimatePresence, motion } from 'framer-motion';
+import { Box, Button, Drawer, Image, Paper, ScrollArea, Stack, Text, Title } from '@mantine/core';
+import { MotionBox } from '@/components/storefront/ui/motion-box';
+
+import { AnimatePresence } from 'framer-motion';
 import {
+  ArrowLeft,
+  ArrowRight,
   Cloud,
   CircleHelp,
   Clock,
@@ -39,6 +44,7 @@ import { formatCurrency } from '@/lib/commerce-utils';
 import { getCartProducts, useCartStore } from '@/stores/use-cart-store';
 import { useUiStore } from '@/stores/use-ui-store';
 import type { CustomerSession } from '@/lib/customer/auth';
+import { CartLineCard } from '@/components/storefront/ui/cart-line-card';
 
 const mobileNav = [
   { label: 'HOME', href: '/', icon: Home },
@@ -54,7 +60,7 @@ function BrandLogo({ className, alt = '' }: { className: string; alt?: string })
   const { isDark } = useThemeMode();
 
   return (
-    <img
+    <Image
       src={isDark ? '/puff-jordan-logo.png' : '/puff-jordan-logo-light.png'}
       alt={alt}
       className={className}
@@ -122,7 +128,7 @@ export function StorefrontShell({
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--text)]">
+    <Box component="div" className="min-h-screen bg-[var(--background)] text-[var(--text)]">
       <AnnouncementBar text={t(settings.announcement)} />
       <Header
         brandName={storefrontBrandName}
@@ -140,7 +146,9 @@ export function StorefrontShell({
         brandName={storefrontBrandName}
         navigationItems={navigationItems}
       />
-      <main className="pb-24 md:pb-10">{children}</main>
+      <Box component="main" className="pb-24 md:pb-10">
+        {children}
+      </Box>
       {!isCheckout ? <MobileBottomNav onAccount={() => setAccountOpen(true)} /> : null}
       <Footer settings={settings} navigationItems={navigationItems} />
       <CartDrawer open={isCartOpen} onClose={closeCart} />
@@ -151,13 +159,14 @@ export function StorefrontShell({
       />
       <FlashSaleModal sale={flashSale} />
       <ToastViewport toasts={toasts} dismissToast={dismissToast} />
-    </div>
+    </Box>
   );
 }
 
 function AnnouncementBar({ text }: { text: string }) {
   return (
-    <div
+    <Box
+      component="div"
       className="border-b px-4 py-2 text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-white md:text-xs"
       style={{
         borderColor: 'rgba(0,0,0,0.08)',
@@ -165,7 +174,7 @@ function AnnouncementBar({ text }: { text: string }) {
       }}
     >
       {text}
-    </div>
+    </Box>
   );
 }
 
@@ -199,7 +208,8 @@ function Header({
   const secondaryTextColor = isDark ? 'var(--text-secondary)' : '#5f514b';
   const badgeBackground = 'var(--accent)';
   return (
-    <header
+    <Box
+      component="header"
       className={`sticky top-0 z-40 transition duration-300 ${
         scrolled ? 'border-b backdrop-blur-xl' : 'backdrop-blur-xl'
       }`}
@@ -209,9 +219,13 @@ function Header({
         color: headerTextColor,
       }}
     >
-      <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-3 px-4 py-3 md:px-8 lg:px-12">
-        <div className="flex items-center gap-3">
-          <button
+      <Box
+        component="div"
+        className="mx-auto flex max-w-[1440px] items-center justify-between gap-3 px-4 py-3 md:px-8 lg:px-12"
+      >
+        <Box component="div" className="flex items-center gap-3">
+          <Box
+            component="button"
             type="button"
             onClick={onMenu}
             className="rounded-full border p-2 text-[var(--text)] lg:hidden"
@@ -222,7 +236,7 @@ function Header({
             aria-label="Open navigation"
           >
             <Menu className="h-5 w-5" />
-          </button>
+          </Box>
 
           <Link
             href="/"
@@ -230,11 +244,14 @@ function Header({
             aria-label={brandName}
           >
             <BrandLogo className="h-full w-full object-contain" />
-            <span className="sr-only">{brandName}</span>
+            <Box component="span" className="sr-only">
+              {brandName}
+            </Box>
           </Link>
-        </div>
+        </Box>
 
-        <nav
+        <Box
+          component="nav"
           className="storefront-nav hidden min-w-0 max-w-[46rem] flex-1 items-center justify-start gap-1 overflow-visible text-[11px] font-bold uppercase tracking-[0.16em] lg:flex"
           style={{
             color: secondaryTextColor,
@@ -243,24 +260,33 @@ function Header({
           }}
         >
           {navigationItems.map((item) => (
-            <div key={item.id} className="group relative">
+            <Box component="div" key={item.id} className="group relative">
               <Link
                 href={item.path}
                 aria-haspopup={item.children?.length ? 'menu' : undefined}
                 aria-current={currentPath === item.path ? 'page' : undefined}
                 className={`inline-flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-2 py-3 transition ${navHoverClassName} ${currentPath === item.path ? 'border-[var(--accent)] text-[var(--text)]' : 'border-transparent text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--text)]'}`}
               >
-                <span>{localize(item.label, item.labelAr)}</span>
+                <Box component="span">{localize(item.label, item.labelAr)}</Box>
                 {item.children?.length ? (
-                  <span className="text-[8px] opacity-60 transition duration-200 group-hover:opacity-100">
+                  <Box
+                    component="span"
+                    className="text-[8px] opacity-60 transition duration-200 group-hover:opacity-100"
+                  >
                     ▾
-                  </span>
+                  </Box>
                 ) : null}
               </Link>
               {item.children?.length ? (
-                <div className="invisible absolute left-0 top-[calc(100%-1px)] z-50 min-w-64 pt-2 opacity-0 transition duration-200 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
-                  <div className="overflow-hidden rounded-[18px] border border-[var(--border)] bg-[var(--background)] shadow-[0_18px_40px_rgba(0,0,0,0.16)]">
-                    <div className="space-y-0.5 p-2">
+                <Box
+                  component="div"
+                  className="invisible absolute left-0 top-[calc(100%-1px)] z-50 min-w-64 pt-2 opacity-0 transition duration-200 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
+                >
+                  <Box
+                    component="div"
+                    className="overflow-hidden rounded-[18px] border border-[var(--border)] bg-[var(--background)] shadow-[0_18px_40px_rgba(0,0,0,0.16)]"
+                  >
+                    <Box component="div" className="space-y-0.5 p-2">
                       {item.children.map((child) => (
                         <Link
                           key={child.id}
@@ -270,18 +296,22 @@ function Header({
                           {localize(child.label, child.labelAr)}
                         </Link>
                       ))}
-                    </div>
-                  </div>
-                </div>
+                    </Box>
+                  </Box>
+                </Box>
               ) : null}
-            </div>
+            </Box>
           ))}
-        </nav>
+        </Box>
 
-        <div className="flex items-center gap-2 md:gap-3" style={{ color: secondaryTextColor }}>
-          <div className="hidden lg:block">
+        <Box
+          component="div"
+          className="flex items-center gap-2 md:gap-3"
+          style={{ color: secondaryTextColor }}
+        >
+          <Box component="div" className="hidden lg:block">
             <LocaleSwitcher />
-          </div>
+          </Box>
           <ThemeSwitcher />
           <Link
             href="/search"
@@ -318,7 +348,8 @@ function Header({
           >
             <User className="h-4 w-4" />
           </Link>
-          <button
+          <Box
+            component="button"
             type="button"
             onClick={onCart}
             className={`relative rounded-full border p-2 transition ${navHoverClassName}`}
@@ -330,14 +361,15 @@ function Header({
           >
             <ShoppingBag className="h-4 w-4" />
             {cartCount > 0 ? (
-              <span
+              <Box
+                component="span"
                 className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px]"
                 style={{ color: badgeTextColor, background: badgeBackground }}
               >
                 {cartCount}
-              </span>
+              </Box>
             ) : null}
-          </button>
+          </Box>
           <Link
             href="/shop"
             className="!text-black hidden shrink-0 items-center gap-2 whitespace-nowrap rounded-full bg-white px-5 py-2.5 text-xs font-black uppercase tracking-[0.16em] shadow-[0_14px_32px_rgba(255,255,255,0.14)] transition hover:-translate-y-0.5 hover:bg-neutral-200 lg:inline-flex"
@@ -345,9 +377,9 @@ function Header({
             <Cloud className="h-4 w-4" />
             {t('ORDER NOW')}
           </Link>
-        </div>
-      </div>
-    </header>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 
@@ -377,7 +409,8 @@ function MobileMenu({
     <AnimatePresence>
       {open ? (
         <>
-          <motion.button
+          <MotionBox
+            component="button"
             type="button"
             onClick={onClose}
             className="fixed inset-0 z-40 bg-black/70"
@@ -385,7 +418,8 @@ function MobileMenu({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           />
-          <motion.aside
+          <MotionBox
+            component="aside"
             initial={{ x: '-100%' }}
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
@@ -393,69 +427,94 @@ function MobileMenu({
             className="storefront-nav fixed inset-y-0 left-0 z-50 flex w-[86%] max-w-sm flex-col border-r border-[var(--border)] px-5 py-5 shadow-[0_25px_60px_rgba(0,0,0,0.28)]"
             style={{ background: isDark ? '#0d0d0f' : '#f5f5f3' }}
           >
-            <div className="mb-6 flex items-center justify-between gap-4 border-b border-[var(--border)] pb-4">
-              <div className="flex min-w-0 items-center gap-3">
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--border)] bg-[var(--card)] p-1.5 shadow-[0_12px_28px_rgba(0,0,0,0.2)]">
+            <Box
+              component="div"
+              className="mb-6 flex items-center justify-between gap-4 border-b border-[var(--border)] pb-4"
+            >
+              <Box component="div" className="flex min-w-0 items-center gap-3">
+                <Box
+                  component="span"
+                  className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--border)] bg-[var(--card)] p-1.5 shadow-[0_12px_28px_rgba(0,0,0,0.2)]"
+                >
                   <BrandLogo className="h-full w-full object-cover" />
-                </span>
-                <div className="min-w-0">
-                  <div className="truncate text-base font-black uppercase text-[var(--text)]">
+                </Box>
+                <Box component="div" className="min-w-0">
+                  <Box
+                    component="div"
+                    className="truncate text-base font-black uppercase text-[var(--text)]"
+                  >
                     {brandName}
-                  </div>
-                  <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--accent)]">
+                  </Box>
+                  <Box
+                    component="div"
+                    className="mt-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[var(--accent)]"
+                  >
                     Vape / Smoke / Repeat
-                  </div>
-                </div>
-              </div>
-              <button
+                  </Box>
+                </Box>
+              </Box>
+              <Box
+                component="button"
                 type="button"
                 onClick={onClose}
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--card)] text-[var(--text)] transition hover:border-[var(--accent)] hover:text-[var(--accent)]"
               >
                 <X className="h-4 w-4" />
-              </button>
-            </div>
+              </Box>
+            </Box>
 
-            <div className="mb-5 flex items-center justify-between gap-3 rounded-[18px] border border-[var(--border)] bg-[var(--card)] px-3 py-2.5">
+            <Box
+              component="div"
+              className="mb-5 flex items-center justify-between gap-3 rounded-[18px] border border-[var(--border)] bg-[var(--card)] px-3 py-2.5"
+            >
               <LocaleSwitcher />
               <ThemeSwitcher />
-            </div>
+            </Box>
 
-            <div className="space-y-2 whitespace-nowrap text-base font-bold uppercase tracking-[0.12em]">
+            <Box
+              component="div"
+              className="space-y-2 whitespace-nowrap text-base font-bold uppercase tracking-[0.12em]"
+            >
               {navigationItems.map((item) => {
                 const isExpanded = Boolean(expandedItems[item.id]);
 
                 return (
-                  <div
+                  <Box
+                    component="div"
                     key={item.id}
                     className="overflow-hidden rounded-[18px] border border-[var(--border)] bg-[var(--card)]"
                   >
                     {item.children?.length ? (
                       <>
-                        <button
+                        <Box
+                          component="button"
                           type="button"
                           onClick={() => toggleItem(item.id)}
                           className="flex w-full items-center justify-between px-4 py-3 text-left text-[var(--text)] transition hover:bg-[color:color-mix(in_srgb,var(--accent)_12%,var(--card))] hover:text-[var(--accent)]"
                         >
-                          <span>{localize(item.label, item.labelAr)}</span>
-                          <span
+                          <Box component="span">{localize(item.label, item.labelAr)}</Box>
+                          <Box
+                            component="span"
                             className={`text-[10px] transition-transform duration-200 ${
                               isExpanded ? 'rotate-180' : ''
                             }`}
                           >
                             ▾
-                          </span>
-                        </button>
+                          </Box>
+                        </Box>
                         <AnimatePresence initial={false}>
                           {isExpanded ? (
-                            <motion.div
+                            <MotionBox
                               initial={{ height: 0, opacity: 0 }}
                               animate={{ height: 'auto', opacity: 1 }}
                               exit={{ height: 0, opacity: 0 }}
                               transition={{ duration: 0.2 }}
                               className="overflow-hidden"
                             >
-                              <div className="space-y-1 border-t border-[var(--border)] bg-[color:color-mix(in_srgb,var(--background)_92%,transparent)] px-3 py-2 text-sm tracking-[0.12em] text-[var(--text-secondary)]">
+                              <Box
+                                component="div"
+                                className="space-y-1 border-t border-[var(--border)] bg-[color:color-mix(in_srgb,var(--background)_92%,transparent)] px-3 py-2 text-sm tracking-[0.12em] text-[var(--text-secondary)]"
+                              >
                                 {item.children.map((child) => (
                                   <Link
                                     key={child.id}
@@ -466,8 +525,8 @@ function MobileMenu({
                                     {localize(child.label, child.labelAr)}
                                   </Link>
                                 ))}
-                              </div>
-                            </motion.div>
+                              </Box>
+                            </MotionBox>
                           ) : null}
                         </AnimatePresence>
                       </>
@@ -477,10 +536,10 @@ function MobileMenu({
                         onClick={onClose}
                         className="flex items-center justify-between px-4 py-3 text-[var(--text)] transition hover:bg-[color:color-mix(in_srgb,var(--accent)_12%,var(--card))] hover:text-[var(--accent)]"
                       >
-                        <span>{localize(item.label, item.labelAr)}</span>
+                        <Box component="span">{localize(item.label, item.labelAr)}</Box>
                       </Link>
                     )}
-                  </div>
+                  </Box>
                 );
               })}
 
@@ -491,8 +550,8 @@ function MobileMenu({
               >
                 {t('ACCOUNT')}
               </Link>
-            </div>
-          </motion.aside>
+            </Box>
+          </MotionBox>
         </>
       ) : null}
     </AnimatePresence>
@@ -504,45 +563,42 @@ function MobileBottomNav({ onAccount }: { onAccount: () => void }) {
   const { t } = useLocale();
 
   return (
-    <div
+    <Box
+      component="div"
       className="storefront-nav fixed inset-x-4 bottom-4 z-30 rounded-full border px-3 py-2 backdrop-blur-xl md:hidden"
       style={{
         borderColor: 'var(--border)',
         background: 'color-mix(in srgb, var(--background) 78%, transparent)',
       }}
     >
-      <div className="grid grid-cols-5 gap-2">
+      <Box component="div" className="grid grid-cols-5 gap-2">
         {mobileNav.map((item) => {
           const Icon = item.icon;
           const active = pathname === item.href;
 
-          return item.href === '/account' ? (
-            <button
-              key={item.href}
-              type="button"
-              onClick={onAccount}
-              className={`flex flex-col items-center gap-1 whitespace-nowrap rounded-full py-1 text-[10px] tracking-[0.18em] transition ${
-                active ? 'scale-105 text-white' : 'text-[var(--muted)]'
-              }`}
-            >
-              <Icon className="h-4 w-4" />
-              <span>{t(item.label)}</span>
-            </button>
-          ) : (
+          return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center gap-1 whitespace-nowrap rounded-full py-1 text-[10px] tracking-[0.18em] transition ${
+              onClick={
+                item.href === '/account'
+                  ? (event) => {
+                      event.preventDefault();
+                      onAccount();
+                    }
+                  : undefined
+              }
+              className={`flex h-12 w-full min-w-0 flex-col items-center justify-center gap-1 whitespace-nowrap rounded-full px-0 text-[10px] tracking-[0.18em] transition ${
                 active ? 'scale-105 text-white' : 'text-[var(--muted)]'
               }`}
             >
               <Icon className="h-4 w-4" />
-              <span>{t(item.label)}</span>
+              <Box component="span">{t(item.label)}</Box>
             </Link>
           );
         })}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 
@@ -555,57 +611,100 @@ function Footer({
 }) {
   const { t, localize } = useLocale();
   return (
-    <footer
+    <Box
+      component="footer"
       className="tc-store-footer relative overflow-hidden border-t text-[var(--text)]"
       style={{
         borderColor: 'var(--border)',
         boxShadow: 'inset 0 1px 0 color-mix(in srgb, var(--text) 6%, transparent)',
       }}
     >
-      <div className="pointer-events-none absolute -right-28 -top-36 h-96 w-96 rounded-full border border-[var(--border)] opacity-50 blur-sm" />
-      <div className="pointer-events-none absolute -right-8 -top-16 h-72 w-72 rounded-full border border-[var(--border)]" />
-      <div className="relative mx-auto max-w-[1440px] px-4 py-10 sm:py-12 md:px-8 md:py-16 lg:px-12">
-        <div className="mb-10 flex flex-col gap-4 border-b border-[var(--border)] pb-8 xl:flex-row xl:items-end xl:justify-between">
-          <div>
-            <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--muted)]">
+      <Box
+        component="div"
+        className="pointer-events-none absolute -right-28 -top-36 h-96 w-96 rounded-full border border-[var(--border)] opacity-50 blur-sm"
+      />
+      <Box
+        component="div"
+        className="pointer-events-none absolute -right-8 -top-16 h-72 w-72 rounded-full border border-[var(--border)]"
+      />
+      <Box
+        component="div"
+        className="relative mx-auto max-w-[1440px] px-4 py-10 sm:py-12 md:px-8 md:py-16 lg:px-12"
+      >
+        <Box
+          component="div"
+          className="mb-10 flex flex-col gap-4 border-b border-[var(--border)] pb-8 xl:flex-row xl:items-end xl:justify-between"
+        >
+          <Box component="div">
+            <Box
+              component="div"
+              className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--muted)]"
+            >
               {t('Puff Jo / Jordan')}
-            </div>
-            <div className="mt-3 max-w-2xl text-3xl font-black uppercase leading-[0.98] tracking-[-0.04em] xl:text-5xl">
+            </Box>
+            <Box
+              component="div"
+              className="mt-3 max-w-2xl text-3xl font-black uppercase leading-[0.98] tracking-[-0.04em] xl:text-5xl"
+            >
               {t('Your trusted vape shop in Jordan.')}
-            </div>
-          </div>
-          <div className="max-w-xs text-sm leading-6 text-[var(--text-secondary)] md:text-right">
+            </Box>
+          </Box>
+          <Box
+            component="div"
+            className="max-w-xs text-sm leading-6 text-[var(--text-secondary)] md:text-right"
+          >
             {t(
               'Shop trusted devices, flavors, pods, coils, and accessories with delivery across Jordan.'
             )}
-          </div>
-        </div>
-        <div className="grid min-w-0 grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-x-12 sm:gap-y-12 xl:grid-cols-[1.5fr_repeat(3,1fr)] xl:gap-10">
-          <div className="col-span-1 max-w-md text-center sm:col-span-2 sm:text-left xl:col-span-1">
+          </Box>
+        </Box>
+        <Box
+          component="div"
+          className="grid min-w-0 grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-x-12 sm:gap-y-12 xl:grid-cols-[1.5fr_repeat(3,1fr)] xl:gap-10"
+        >
+          <Box
+            component="div"
+            className="col-span-1 max-w-md text-center sm:col-span-2 sm:text-left xl:col-span-1"
+          >
             <Link href="/" className="inline-flex items-center gap-3 sm:gap-4">
-              <span className="flex h-16 w-20 shrink-0 items-center justify-center overflow-hidden sm:h-20 sm:w-24">
+              <Box
+                component="span"
+                className="flex h-16 w-20 shrink-0 items-center justify-center overflow-hidden sm:h-20 sm:w-24"
+              >
                 <BrandLogo className="h-full w-full object-contain" />
-              </span>
-              <span>
-                <span className="block text-base font-black uppercase leading-tight sm:text-lg md:text-xl">
+              </Box>
+              <Box component="span">
+                <Box
+                  component="span"
+                  className="block text-base font-black uppercase leading-tight sm:text-lg md:text-xl"
+                >
                   {storefrontBrandName}
-                </span>
-                <span className="mt-1 block text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--accent)] sm:text-[10px] md:text-[11px]">
+                </Box>
+                <Box
+                  component="span"
+                  className="mt-1 block text-[9px] font-bold uppercase tracking-[0.2em] text-[var(--accent)] sm:text-[10px] md:text-[11px]"
+                >
                   {t('Your vape setup, sorted')}
-                </span>
-              </span>
+                </Box>
+              </Box>
             </Link>
-            <p className="mt-4 max-w-md text-sm leading-6 text-[var(--text-secondary)] sm:mt-5 sm:leading-7">
+            <Box
+              component="p"
+              className="mt-4 max-w-md text-sm leading-6 text-[var(--text-secondary)] sm:mt-5 sm:leading-7"
+            >
               {t(
                 'Genuine vape gear, popular flavors, and everyday accessories for customers across Jordan.'
               )}
-            </p>
-            <div className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-3 xl:flex xl:flex-wrap">
+            </Box>
+            <Box
+              component="div"
+              className="mt-5 grid grid-cols-1 gap-2.5 sm:grid-cols-3 xl:flex xl:flex-wrap"
+            >
               <FooterInfo icon={Clock} label="Hours" value="12 PM - 2 AM" />
               <FooterInfo icon={Phone} label="Phone" value={settings.supportPhone} />
               <FooterInfo icon={MapPin} label="Delivery" value="Delivery across Jordan" />
-            </div>
-          </div>
+            </Box>
+          </Box>
 
           <FooterColumn
             title="SHOP"
@@ -625,7 +724,7 @@ function Footer({
             ]}
           />
 
-          <div className="sm:col-span-2 xl:col-span-1 xl:pt-0">
+          <Box component="div" className="sm:col-span-2 xl:col-span-1 xl:pt-0">
             <FooterColumn
               title="FOLLOW"
               links={[
@@ -634,17 +733,20 @@ function Footer({
                 { label: 'TERMS', href: '/terms' },
               ]}
             />
-          </div>
-        </div>
+          </Box>
+        </Box>
 
-        <div className="mt-8 flex flex-col gap-2 border-t border-[var(--border)] pt-4 text-center text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)] sm:text-xs xl:mt-12 xl:flex-row xl:items-center xl:justify-between xl:pt-6">
-          <span>© 2026 {storefrontBrandName}</span>
-          <span className="text-[var(--accent)]">
+        <Box
+          component="div"
+          className="mt-8 flex flex-col gap-2 border-t border-[var(--border)] pt-4 text-center text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--muted)] sm:text-xs xl:mt-12 xl:flex-row xl:items-center xl:justify-between xl:pt-6"
+        >
+          <Box component="span">© 2026 {storefrontBrandName}</Box>
+          <Box component="span" className="text-[var(--accent)]">
             {t('BETTER CLOUDS, FAST DELIVERY, QUALITY GEAR')}
-          </span>
-        </div>
-      </div>
-    </footer>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 
@@ -659,17 +761,26 @@ function FooterInfo({
 }) {
   const { t } = useLocale();
   return (
-    <div className="inline-flex w-full items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 shadow-[0_10px_28px_rgba(24,18,17,0.04)] lg:w-auto">
+    <Box
+      component="div"
+      className="inline-flex w-full items-center gap-2 rounded-2xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 shadow-[0_10px_28px_rgba(24,18,17,0.04)] lg:w-auto"
+    >
       <Icon className="h-4 w-4 shrink-0 text-[var(--accent)]" />
-      <div className="min-w-0">
-        <div className="text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--muted)] sm:text-[9px]">
+      <Box component="div" className="min-w-0">
+        <Box
+          component="div"
+          className="text-[8px] font-bold uppercase tracking-[0.16em] text-[var(--muted)] sm:text-[9px]"
+        >
           {t(label)}
-        </div>
-        <div className="mt-0.5 text-[10px] font-black uppercase leading-4 text-[var(--text)] sm:text-[11px]">
+        </Box>
+        <Box
+          component="div"
+          className="mt-0.5 text-[10px] font-black uppercase leading-4 text-[var(--text)] sm:text-[11px]"
+        >
           {t(value)}
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 
@@ -682,11 +793,17 @@ function FooterColumn({
 }) {
   const { t } = useLocale();
   return (
-    <div>
-      <div className="mb-3 text-[10px] font-black uppercase tracking-[0.22em] text-[var(--accent)] sm:mb-5 sm:text-xs">
+    <Box component="div">
+      <Box
+        component="div"
+        className="mb-3 text-[10px] font-black uppercase tracking-[0.22em] text-[var(--accent)] sm:mb-5 sm:text-xs"
+      >
         {t(title)}
-      </div>
-      <div className="grid gap-2.5 text-sm font-semibold text-[var(--text-secondary)] sm:space-y-3 sm:gap-0">
+      </Box>
+      <Box
+        component="div"
+        className="grid gap-2.5 text-sm font-semibold text-[var(--text-secondary)] sm:space-y-3 sm:gap-0"
+      >
         {links.map((link) => (
           <Link
             key={link.label}
@@ -696,8 +813,8 @@ function FooterColumn({
             {t(link.label)}
           </Link>
         ))}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 
@@ -714,6 +831,7 @@ function AccountDrawer({
   const { isDark } = useThemeMode();
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const isRtl = locale === 'ar';
+  const ForwardArrow = isRtl ? ArrowLeft : ArrowRight;
 
   useEffect(() => {
     if (!open) {
@@ -747,22 +865,23 @@ function AccountDrawer({
       .toUpperCase() || 'PU';
 
   const accountLinks = [
-    { label: 'My Profile', href: '/profile', icon: UserRound },
-    { label: 'My Orders', href: '/orders', icon: Package },
-    { label: 'Saved Addresses', href: '/addresses', icon: MapPinned },
-    { label: 'Favorites', href: '/favorites', icon: Heart },
+    { label: t('My Profile'), href: '/profile', icon: UserRound },
+    { label: t('My Orders'), href: '/orders', icon: Package },
+    { label: t('Saved Addresses'), href: '/addresses', icon: MapPinned },
+    { label: t('Favorites'), href: '/favorites', icon: Heart },
   ];
 
   const supportLinks = [
-    { label: 'Contact Us', href: '/contact-us', icon: CircleHelp },
-    { label: 'Help / FAQ', href: '/faq', icon: CircleHelp },
+    { label: t('Contact Us'), href: '/contact-us', icon: CircleHelp },
+    { label: t('Help / FAQ'), href: '/faq', icon: CircleHelp },
   ];
 
   return (
     <AnimatePresence>
       {open ? (
         <>
-          <motion.button
+          <MotionBox
+            component="button"
             type="button"
             onClick={onClose}
             aria-label={t('Close account drawer')}
@@ -772,7 +891,9 @@ function AccountDrawer({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.26, ease: 'easeOut' }}
           />
-          <motion.aside
+          <MotionBox
+            key={`account-drawer-${locale}`}
+            component="aside"
             role="dialog"
             aria-modal="true"
             aria-labelledby="account-drawer-title"
@@ -789,19 +910,27 @@ function AccountDrawer({
               boxShadow: isRtl ? '12px 0 40px rgba(0,0,0,0.18)' : '-12px 0 40px rgba(0,0,0,0.18)',
             }}
           >
-            <div className="flex items-start justify-between gap-4 border-b border-[var(--border)] pb-6">
-              <div>
-                <div className="text-[10px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]">
+            <Box
+              component="div"
+              className="flex items-start justify-between gap-4 border-b border-[var(--border)] pb-6"
+            >
+              <Box component="div">
+                <Box
+                  component="div"
+                  className="text-[10px] font-bold uppercase tracking-[0.28em] text-[var(--muted)]"
+                >
                   {t('YOUR ACCOUNT')}
-                </div>
-                <h2
+                </Box>
+                <Box
+                  component="h2"
                   id="account-drawer-title"
                   className="mt-2 font-display text-3xl uppercase leading-none"
                 >
                   {session ? t('Account') : t('Welcome')}
-                </h2>
-              </div>
-              <button
+                </Box>
+              </Box>
+              <Box
+                component="button"
                 ref={closeButtonRef}
                 type="button"
                 onClick={onClose}
@@ -809,52 +938,66 @@ function AccountDrawer({
                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)] transition hover:border-[var(--text)] hover:text-[var(--text)]"
               >
                 <X className="h-4 w-4" />
-              </button>
-            </div>
+              </Box>
+            </Box>
 
             {session ? (
-              <div className="border-b border-[var(--border)] py-7">
-                <div className="flex items-center gap-4">
+              <Box component="div" className="border-b border-[var(--border)] py-7">
+                <Box component="div" className="flex items-center gap-4">
                   {session.avatarUrl ? (
-                    <img
+                    <Image
                       src={session.avatarUrl}
                       alt=""
                       className="h-16 w-16 rounded-full border border-[var(--border)] object-cover"
                     />
                   ) : (
-                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--card)] text-sm font-bold tracking-[0.12em] text-[var(--text)]">
+                    <Box
+                      component="div"
+                      className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--card)] text-sm font-bold tracking-[0.12em] text-[var(--text)]"
+                    >
                       {initials}
-                    </div>
+                    </Box>
                   )}
-                  <div className="min-w-0">
-                    <div className="truncate text-xl font-bold text-[var(--text)]">
+                  <Box component="div" className="min-w-0">
+                    <Box component="div" className="truncate text-xl font-bold text-[var(--text)]">
                       {session.fullName}
-                    </div>
-                    <div className="mt-1 truncate text-sm text-[var(--text-secondary)]">
+                    </Box>
+                    <Box
+                      component="div"
+                      className="mt-1 truncate text-sm text-[var(--text-secondary)]"
+                    >
                       {session.email}
-                    </div>
+                    </Box>
                     {session.phone ? (
-                      <div className="mt-0.5 text-xs text-[var(--muted)]">{session.phone}</div>
+                      <Box component="div" className="mt-0.5 text-xs text-[var(--muted)]">
+                        {session.phone}
+                      </Box>
                     ) : null}
-                  </div>
-                </div>
+                  </Box>
+                </Box>
                 <Link
                   href="/profile"
                   onClick={onClose}
                   className="group mt-6 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.23em] text-[var(--text-secondary)] transition hover:text-[var(--text)]"
                 >
                   {t('VIEW PROFILE')}{' '}
-                  <span className="transition-transform duration-200 group-hover:translate-x-0.5 rtl:rotate-180">
-                    →
-                  </span>
+                  <Box
+                    component="span"
+                    className={`transition-transform duration-200 ${isRtl ? 'group-hover:-translate-x-0.5' : 'group-hover:translate-x-0.5'}`}
+                  >
+                    <ForwardArrow className="h-4 w-4" />
+                  </Box>
                 </Link>
-              </div>
+              </Box>
             ) : (
-              <div className="border-b border-[var(--border)] py-9">
-                <p className="max-w-xs text-lg font-semibold leading-7 text-[var(--text)]">
+              <Box component="div" className="border-b border-[var(--border)] py-9">
+                <Box
+                  component="p"
+                  className="max-w-xs text-lg font-semibold leading-7 text-[var(--text)]"
+                >
                   {t('Sign in to view orders, favorites and manage your profile.')}
-                </p>
-                <div className="mt-7 grid gap-3">
+                </Box>
+                <Box component="div" className="mt-7 grid gap-3">
                   <Link
                     href="/login"
                     onClick={onClose}
@@ -870,17 +1013,25 @@ function AccountDrawer({
                   >
                     {t('CREATE ACCOUNT')}
                   </Link>
-                </div>
-              </div>
+                </Box>
+              </Box>
             )}
 
             {session ? (
-              <div className="min-h-0 flex-1 overflow-y-auto py-6">
-                <AccountDrawerSection label={t('ACCOUNT')} links={accountLinks} onClose={onClose} />
-                <div className="mt-7">
-                  <div className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--muted)]">
+              <Box component="div" className="min-h-0 flex-1 overflow-y-auto py-6">
+                <AccountDrawerSection
+                  label={t('ACCOUNT')}
+                  links={accountLinks}
+                  onClose={onClose}
+                  isRtl={isRtl}
+                />
+                <Box component="div" className="mt-7">
+                  <Box
+                    component="div"
+                    className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--muted)]"
+                  >
                     {t('SETTINGS')}
-                  </div>
+                  </Box>
                   <AccountDrawerRow
                     icon={Languages}
                     label={t('Language')}
@@ -893,27 +1044,33 @@ function AccountDrawer({
                     label={t('Theme')}
                     value={isDark ? t('Dark') : t('Light')}
                   >
-                    <ThemeSwitcher />
+                    <ThemeSwitcher
+                      ariaLabel={t(isDark ? 'Switch to light theme' : 'Switch to dark theme')}
+                    />
                   </AccountDrawerRow>
-                </div>
-                <div className="mt-7">
+                </Box>
+                <Box component="div" className="mt-7">
                   <AccountDrawerSection
                     label={t('SUPPORT')}
                     links={supportLinks}
                     onClose={onClose}
+                    isRtl={isRtl}
                   />
-                </div>
-              </div>
+                </Box>
+              </Box>
             ) : null}
 
-            <div className="mt-auto border-t border-[var(--border)] pt-4">
+            <Box component="div" className="mt-auto border-t border-[var(--border)] pt-4">
               {session ? <AccountDrawerLogoutButton /> : null}
-              <div className="mt-4 flex items-center justify-between text-[10px] uppercase tracking-[0.24em] text-[var(--muted)]">
-                <span>PUFF JO</span>
-                <span>Jordan</span>
-              </div>
-            </div>
-          </motion.aside>
+              <Box
+                component="div"
+                className="mt-4 flex items-center justify-between text-[10px] uppercase tracking-[0.24em] text-[var(--muted)]"
+              >
+                <Box component="span">PUFF JO</Box>
+                <Box component="span">{t('Jordan')}</Box>
+              </Box>
+            </Box>
+          </MotionBox>
         </>
       ) : null}
     </AnimatePresence>
@@ -924,16 +1081,23 @@ function AccountDrawerSection({
   label,
   links,
   onClose,
+  isRtl,
 }: {
   label: string;
   links: Array<{ label: string; href: string; icon: ComponentType<{ className?: string }> }>;
   onClose: () => void;
+  isRtl: boolean;
 }) {
+  const ForwardArrow = isRtl ? ArrowLeft : ArrowRight;
+
   return (
-    <div>
-      <div className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--muted)]">
+    <Box component="div">
+      <Box
+        component="div"
+        className="mb-2 px-1 text-[10px] font-bold uppercase tracking-[0.25em] text-[var(--muted)]"
+      >
         {label}
-      </div>
+      </Box>
       {links.map((link) => {
         const Icon = link.icon;
         return (
@@ -943,15 +1107,22 @@ function AccountDrawerSection({
             onClick={onClose}
             className="group flex h-14 items-center gap-3 border-b border-[var(--border)] text-sm font-semibold text-[var(--text)] transition first:border-t hover:bg-[var(--surface)]"
           >
-            <Icon className="h-4 w-4 shrink-0 text-[var(--muted)] transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-[var(--text)]" />
-            <span className="flex-1">{link.label}</span>
-            <span className="text-lg font-normal text-[var(--muted)] transition-transform duration-200 group-hover:translate-x-0.5">
-              →
-            </span>
+            <Icon
+              className={`h-4 w-4 shrink-0 text-[var(--muted)] transition-transform duration-200 group-hover:text-[var(--text)] ${isRtl ? 'group-hover:-translate-x-0.5' : 'group-hover:translate-x-0.5'}`}
+            />
+            <Box component="span" className="flex-1">
+              {link.label}
+            </Box>
+            <Box
+              component="span"
+              className={`text-lg font-normal text-[var(--muted)] transition-transform duration-200 ${isRtl ? 'group-hover:-translate-x-0.5' : 'group-hover:translate-x-0.5'}`}
+            >
+              <ForwardArrow className="h-4 w-4" />
+            </Box>
           </Link>
         );
       })}
-    </div>
+    </Box>
   );
 }
 
@@ -967,12 +1138,19 @@ function AccountDrawerRow({
   children: ReactNode;
 }) {
   return (
-    <div className="flex min-h-14 items-center gap-3 border-b border-[var(--border)] text-sm font-semibold text-[var(--text)]">
+    <Box
+      component="div"
+      className="flex min-h-14 items-center gap-3 border-b border-[var(--border)] text-sm font-semibold text-[var(--text)]"
+    >
       <Icon className="h-4 w-4 shrink-0 text-[var(--muted)]" />
-      <span className="flex-1">{label}</span>
-      <span className="mr-1 text-xs font-normal text-[var(--muted)]">{value}</span>
+      <Box component="span" className="flex-1">
+        {label}
+      </Box>
+      <Box component="span" className="mr-1 text-xs font-normal text-[var(--muted)]">
+        {value}
+      </Box>
       {children}
-    </div>
+    </Box>
   );
 }
 
@@ -981,7 +1159,8 @@ function AccountDrawerLogoutButton() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   return (
-    <button
+    <Box
+      component="button"
       type="button"
       disabled={isPending}
       onClick={() =>
@@ -994,8 +1173,8 @@ function AccountDrawerLogoutButton() {
       className="group flex h-12 w-full items-center gap-3 text-sm font-semibold text-[var(--text-secondary)] transition hover:text-[var(--error)] disabled:opacity-50"
     >
       <LogOut className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-      <span>{isPending ? t('PLEASE WAIT') : t('SIGN OUT')}</span>
-    </button>
+      <Box component="span">{isPending ? t('PLEASE WAIT') : t('SIGN OUT')}</Box>
+    </Box>
   );
 }
 
@@ -1004,163 +1183,81 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
   const lines = useMemo(() => getCartProducts(items), [items]);
-  const { t, localize } = useLocale();
-  const { isDark } = useThemeMode();
+  const { t } = useLocale();
   const subtotal = lines.reduce((sum, line) => sum + line.variant.price * line.quantity, 0);
 
   return (
-    <AnimatePresence>
-      {open ? (
-        <>
-          <motion.button
-            type="button"
-            onClick={onClose}
-            className="fixed inset-0 z-40 bg-black/70"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          />
-          <motion.aside
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col p-6"
-            style={{ background: isDark ? '#0d0d0f' : '#f5f5f3' }}
-          >
-            <div className="mb-8 flex items-center justify-between">
-              <div>
-                <div className="text-xs tracking-[0.25em] text-[var(--muted)]">
-                  {t('YOUR CART')}
-                </div>
-                <div className="mt-1 font-display text-2xl uppercase">{t('ORDER')}</div>
-              </div>
-              <button
-                type="button"
-                onClick={onClose}
-                className="rounded-full border border-white/10 p-2"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="flex-1 space-y-4 overflow-y-auto">
-              {lines.length ? (
-                lines.map((line) => (
-                  <div
-                    key={line.lineId}
-                    className="flex gap-4 rounded-[24px] border border-white/8 bg-white/3 p-3"
-                  >
-                    <img
-                      src={line.product.images[0]?.url || '/products/puff-jo-product-default.png'}
-                      alt={localize(line.product.name, line.product.nameAr)}
-                      className="h-28 w-24 rounded-[18px] bg-[var(--background-secondary)] object-contain p-1"
-                    />
-                    <div className="flex-1">
-                      <div className="text-sm uppercase tracking-[0.2em] text-[var(--muted)]">
-                        {line.product.categorySlug}
-                      </div>
-                      <div className="mt-1 text-base">
-                        {localize(line.product.name, line.product.nameAr)}
-                      </div>
-                      <div className="mt-2 text-sm text-[var(--text-secondary)]">
-                        {localize(line.variant.size, line.variant.sizeAr)}
-                      </div>
-                      {line.selections.length ? (
-                        <div className="mt-3 space-y-1.5">
-                          {line.selections.map((selection) => (
-                            <div
-                              key={selection.groupId}
-                              className="rounded-[14px] border border-white/8 bg-white/4 px-3 py-2"
-                            >
-                              <div className="text-[10px] uppercase tracking-[0.18em] text-[var(--muted)]">
-                                {localize(selection.groupName, selection.groupNameAr)}
-                              </div>
-                              <div className="mt-1 text-xs leading-5 text-[var(--text-secondary)]">
-                                {selection.items
-                                  .map((item) => {
-                                    const label = localize(item.name, item.nameAr);
-                                    return item.priceDelta > 0
-                                      ? `${label} +${formatCurrency(item.priceDelta)}`
-                                      : label;
-                                  })
-                                  .join(', ')}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : null}
-                      <div className="mt-3 flex items-center justify-between">
-                        <div className="text-sm">{formatCurrency(line.variant.price)}</div>
-                        <div className="flex items-center gap-2 rounded-full border border-white/10 px-3 py-1">
-                          <button
-                            type="button"
-                            onClick={() => updateQuantity(line.lineId, line.quantity - 1)}
-                          >
-                            -
-                          </button>
-                          <span>{line.quantity}</span>
-                          <button
-                            type="button"
-                            onClick={() => updateQuantity(line.lineId, line.quantity + 1)}
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removeItem(line.lineId)}
-                        className="mt-3 text-xs tracking-[0.2em] text-[var(--muted)]"
-                      >
-                        {t('REMOVE')}
-                      </button>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="rounded-[32px] border border-white/8 bg-white/3 p-8 text-center">
-                  <div className="font-display text-3xl uppercase">{t('YOUR CART IS EMPTY.')}</div>
-                  <p className="mt-3 text-sm text-[var(--text-secondary)]">
-                    {t('Start with a device, a fresh flavor, or a new everyday essential.')}
-                  </p>
-                  <Link
-                    href="/shop"
-                    onClick={onClose}
-                    className="mt-6 inline-flex rounded-full bg-[var(--accent)] px-5 py-3 text-sm tracking-[0.2em]"
-                    style={{ color: 'var(--background)' }}
-                  >
-                    {t('VIEW SHOP')}
-                  </Link>
-                </div>
-              )}
-            </div>
-            <div className="mt-6 border-t border-white/8 pt-5">
-              <div className="mb-4 flex items-center justify-between text-sm">
-                <span className="text-[var(--text-secondary)]">{t('Subtotal')}</span>
-                <span>{formatCurrency(subtotal)}</span>
-              </div>
-              <div className="grid gap-3">
-                <Link
-                  href="/cart"
-                  onClick={onClose}
-                  className="rounded-full border border-white/10 px-5 py-3 text-center text-sm tracking-[0.2em]"
-                >
-                  {t('VIEW CART')}
-                </Link>
-                <Link
-                  href="/checkout"
-                  onClick={onClose}
-                  className="rounded-full bg-[var(--accent)] px-5 py-3 text-center text-sm tracking-[0.2em]"
-                  style={{ color: 'var(--background)' }}
-                >
-                  {t('CHECKOUT')}
-                </Link>
-              </div>
-            </div>
-          </motion.aside>
-        </>
-      ) : null}
-    </AnimatePresence>
+    <Drawer
+      opened={open}
+      onClose={onClose}
+      position="right"
+      size="md"
+      padding="lg"
+      title={
+        <Box>
+          <Text size="xs" c="dimmed" tt="uppercase" lts="0.2em">
+            {t('YOUR CART')}
+          </Text>
+          <Title order={2} fz="xl" tt="uppercase">
+            {t('ORDER')}
+          </Title>
+        </Box>
+      }
+      overlayProps={{ backgroundOpacity: 0.7, blur: 2 }}
+      styles={{
+        content: { background: 'var(--mantine-color-body)' },
+        body: { height: 'calc(100% - 76px)', display: 'flex', flexDirection: 'column' },
+      }}
+    >
+      <ScrollArea style={{ flex: 1 }} offsetScrollbars>
+        {lines.length ? (
+          <Stack gap="md" pr="xs">
+            {lines.map((line) => (
+              <CartLineCard
+                key={line.lineId}
+                line={line}
+                onQuantityChange={(quantity) => updateQuantity(line.lineId, quantity)}
+                onRemove={() => removeItem(line.lineId)}
+              />
+            ))}
+          </Stack>
+        ) : (
+          <Paper radius="xl" p="xl" withBorder ta="center">
+            <Title order={3} tt="uppercase">
+              {t('YOUR CART IS EMPTY.')}
+            </Title>
+            <Text mt="sm" mb="lg" size="sm" c="dimmed">
+              {t('Start with a device, a fresh flavor, or a new everyday essential.')}
+            </Text>
+            <Button component={Link} href="/shop" onClick={onClose} radius="xl" color="dark">
+              {t('VIEW SHOP')}
+            </Button>
+          </Paper>
+        )}
+      </ScrollArea>
+
+      <Stack
+        gap="sm"
+        pt="lg"
+        mt="md"
+        style={{ borderTop: '1px solid var(--mantine-color-default-border)' }}
+      >
+        <Box style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
+          <Text size="sm" c="dimmed">
+            {t('Subtotal')}
+          </Text>
+          <Text size="sm" fw={700}>
+            {formatCurrency(subtotal)}
+          </Text>
+        </Box>
+        <Button component={Link} href="/cart" onClick={onClose} variant="default" radius="xl">
+          {t('VIEW CART')}
+        </Button>
+        <Button component={Link} href="/checkout" onClick={onClose} color="dark" radius="xl">
+          {t('CHECKOUT')}
+        </Button>
+      </Stack>
+    </Drawer>
   );
 }
 
@@ -1203,7 +1300,8 @@ function FlashSaleModal({ sale }: { sale: FlashSale | null }) {
     <AnimatePresence>
       {visible ? (
         <>
-          <motion.button
+          <MotionBox
+            component="button"
             type="button"
             onClick={dismiss}
             className="fixed inset-0 z-50 bg-black/75"
@@ -1211,7 +1309,7 @@ function FlashSaleModal({ sale }: { sale: FlashSale | null }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           />
-          <motion.div
+          <MotionBox
             initial={{ opacity: 0, scale: 0.94, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.94, y: 20 }}
@@ -1222,40 +1320,54 @@ function FlashSaleModal({ sale }: { sale: FlashSale | null }) {
               background: isDark ? '#111112' : '#f5f5f3',
             }}
           >
-            <div className="grid md:grid-cols-[1.05fr_0.95fr]">
-              <img
+            <Box component="div" className="grid md:grid-cols-[1.05fr_0.95fr]">
+              <Image
                 src={imageSrc}
                 alt={sale.title}
                 className="h-[260px] w-full bg-[var(--background-secondary)] object-contain md:h-full"
               />
-              <div className="relative flex min-h-[420px] flex-col justify-center p-8 md:p-10">
-                <button
+              <Box
+                component="div"
+                className="relative flex min-h-[420px] flex-col justify-center p-8 md:p-10"
+              >
+                <Box
+                  component="button"
                   type="button"
                   onClick={dismiss}
                   className="absolute right-5 top-5 rounded-full border border-white/10 p-2"
                 >
                   <X className="h-4 w-4" />
-                </button>
-                <div className="text-xs tracking-[0.28em] text-[var(--muted)]">{modalKicker}</div>
-                <div className="mt-4 font-display text-5xl uppercase leading-none">
+                </Box>
+                <Box component="div" className="text-xs tracking-[0.28em] text-[var(--muted)]">
+                  {modalKicker}
+                </Box>
+                <Box component="div" className="mt-4 font-display text-5xl uppercase leading-none">
                   {sale.discountLabel}
-                </div>
-                <h3 className="mt-5 max-w-sm text-lg uppercase tracking-[0.18em] text-[var(--text)]">
+                </Box>
+                <Box
+                  component="h3"
+                  className="mt-5 max-w-sm text-lg uppercase tracking-[0.18em] text-[var(--text)]"
+                >
                   {t(modalTitle)}
-                </h3>
-                <p className="mt-4 max-w-sm text-sm leading-7 text-[var(--text-secondary)]">
+                </Box>
+                <Box
+                  component="p"
+                  className="mt-4 max-w-sm text-sm leading-7 text-[var(--text-secondary)]"
+                >
                   {t(modalDescription)}
-                </p>
+                </Box>
                 <Link
                   href={sale.ctaUrl}
                   onClick={dismiss}
                   className="mt-8 inline-flex w-fit rounded-full bg-[var(--text)] px-6 py-3 text-sm tracking-[0.2em] text-black"
                 >
-                  <span style={{ color: ctaTextColor }}>{ctaText}</span>
+                  <Box component="span" style={{ color: ctaTextColor }}>
+                    {ctaText}
+                  </Box>
                 </Link>
-              </div>
-            </div>
-          </motion.div>
+              </Box>
+            </Box>
+          </MotionBox>
         </>
       ) : null}
     </AnimatePresence>
@@ -1278,10 +1390,13 @@ function ToastViewport({
   }, [toasts, dismissToast]);
 
   return (
-    <div className="pointer-events-none fixed bottom-24 right-4 z-[70] flex w-[calc(100vw-2rem)] max-w-sm flex-col gap-3 md:bottom-6">
+    <Box
+      component="div"
+      className="pointer-events-none fixed bottom-24 right-4 z-[70] flex w-[calc(100vw-2rem)] max-w-sm flex-col gap-3 md:bottom-6"
+    >
       <AnimatePresence>
         {toasts.map((toast) => (
-          <motion.div
+          <MotionBox
             key={toast.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1292,15 +1407,17 @@ function ToastViewport({
               background: 'var(--elevated)',
             }}
           >
-            <div className="text-sm">{toast.title}</div>
+            <Box component="div" className="text-sm">
+              {toast.title}
+            </Box>
             {toast.description ? (
-              <div className="mt-1 text-xs leading-6 text-[var(--text-secondary)]">
+              <Box component="div" className="mt-1 text-xs leading-6 text-[var(--text-secondary)]">
                 {toast.description}
-              </div>
+              </Box>
             ) : null}
-          </motion.div>
+          </MotionBox>
         ))}
       </AnimatePresence>
-    </div>
+    </Box>
   );
 }

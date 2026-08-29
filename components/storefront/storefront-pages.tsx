@@ -1,7 +1,9 @@
 'use client';
 
+import { Box, Button, Grid, Image, Paper, SimpleGrid, Stack, Text, Title } from '@mantine/core';
+import { MotionBox } from '@/components/storefront/ui/motion-box';
+
 import { zodResolver } from '@hookform/resolvers/zod';
-import { motion } from 'framer-motion';
 import {
   ArrowLeft,
   ArrowRight,
@@ -19,6 +21,13 @@ import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useLocale } from '@/components/storefront/locale-provider';
+import {
+  CheckoutDetailsPanel,
+  CheckoutFormState,
+} from '@/components/storefront/ui/checkout-details-panel';
+import { StoreTextInput } from '@/components/storefront/ui/store-form-controls';
+import { CartLineCard } from '@/components/storefront/ui/cart-line-card';
+import { StorePageContainer } from '@/components/storefront/ui/store-layout';
 import {
   Container,
   NewsletterSection,
@@ -95,7 +104,7 @@ export function ShopPageView({
     products.filter((product) => product.categorySlug === slug).length;
 
   return (
-    <div className="space-y-10 pb-16 md:space-y-16 md:pb-24">
+    <Box component="div" className="space-y-10 pb-16 md:space-y-16 md:pb-24">
       {flashSale ? <CatalogFlashSaleBanner flashSale={flashSale} /> : null}
       <CatalogHero title={title} description={description} />
       <CategoryFilterBar
@@ -114,27 +123,39 @@ export function ShopPageView({
         t={t}
       />
       <Container>
-        <div className="mb-4 flex items-center justify-between border-b border-[var(--border)] py-3 text-[10px] uppercase tracking-[0.22em] text-[var(--muted)]">
-          <div>
+        <Box
+          component="div"
+          className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] py-3 text-[10px] uppercase tracking-[0.22em] text-[var(--muted)]"
+        >
+          <Box component="div" className="min-w-0">
             {t('Showing')} {filtered.length} {t('products')}
-          </div>
-          <div className="flex items-center gap-3">
-            <button type="button" className="inline-flex items-center gap-2">
+          </Box>
+          <Box component="div" className="flex min-w-0 items-center gap-2 sm:gap-3">
+            <Box component="button" type="button" className="inline-flex items-center gap-2">
               <SlidersHorizontal className="h-3.5 w-3.5" />
               {t('FILTERS')}
-            </button>
-            <select
+            </Box>
+            <Box
+              component="select"
               value={sort}
               onChange={(event) => setSort(event.target.value as typeof sort)}
-              className="border-l border-[var(--border)] bg-transparent pl-3 text-[10px] uppercase tracking-[0.22em] outline-none"
+              className="min-w-0 max-w-[48vw] border-l border-[var(--border)] bg-transparent pl-3 text-[10px] uppercase tracking-[0.16em] outline-none sm:max-w-none sm:tracking-[0.22em]"
             >
-              <option value="newest">{t('Newest')}</option>
-              <option value="price-asc">{t('Price Low to High')}</option>
-              <option value="price-desc">{t('Price High to Low')}</option>
-              <option value="featured">{t('Featured')}</option>
-            </select>
-          </div>
-        </div>
+              <Box component="option" value="newest">
+                {t('Newest')}
+              </Box>
+              <Box component="option" value="price-asc">
+                {t('Price Low to High')}
+              </Box>
+              <Box component="option" value="price-desc">
+                {t('Price High to Low')}
+              </Box>
+              <Box component="option" value="featured">
+                {t('Featured')}
+              </Box>
+            </Box>
+          </Box>
+        </Box>
         {filtered.length ? (
           <ProductGrid products={filtered} />
         ) : (
@@ -144,7 +165,7 @@ export function ShopPageView({
       <Container>
         <NewsletterSection />
       </Container>
-    </div>
+    </Box>
   );
 }
 
@@ -152,33 +173,52 @@ function ShopEmptyState({ onClearFilters }: { onClearFilters: () => void }) {
   const { t, dir } = useLocale();
 
   return (
-    <section className="relative isolate overflow-hidden border-y border-[var(--border)] bg-[var(--background-secondary)] px-6 py-16 md:px-14 md:py-24">
-      <div className="pointer-events-none absolute -right-10 -top-16 -z-10 text-[15rem] font-black leading-none tracking-[-.16em] text-[var(--text)]/[.035]">
+    <Box
+      component="section"
+      className="relative isolate overflow-hidden border-y border-[var(--border)] bg-[var(--background-secondary)] px-6 py-16 md:px-14 md:py-24"
+    >
+      <Box
+        component="div"
+        className="pointer-events-none absolute -right-10 -top-16 -z-10 text-[15rem] font-black leading-none tracking-[-.16em] text-[var(--text)]/[.035]"
+      >
         00
-      </div>
-      <div className="mx-auto max-w-2xl text-center">
-        <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full border border-[var(--border)] text-[var(--accent)]">
+      </Box>
+      <Box component="div" className="mx-auto max-w-2xl text-center">
+        <Box
+          component="div"
+          className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-full border border-[var(--border)] text-[var(--accent)]"
+        >
           <PackageOpen className="h-6 w-6" />
-        </div>
-        <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--accent)]">
+        </Box>
+        <Box
+          component="div"
+          className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--accent)]"
+        >
           {t('PUFF JO / CATALOG')}
-        </div>
-        <h2 className="mt-4 text-3xl font-black uppercase leading-none tracking-[-.04em] md:text-5xl">
+        </Box>
+        <Box
+          component="h2"
+          className="mt-4 text-3xl font-black uppercase leading-none tracking-[-.04em] md:text-5xl"
+        >
           {t('NO PRODUCTS MATCH')}
-        </h2>
-        <p className="mx-auto mt-4 max-w-md text-sm leading-7 text-[var(--text-secondary)]">
+        </Box>
+        <Box
+          component="p"
+          className="mx-auto mt-4 max-w-md text-sm leading-7 text-[var(--text-secondary)]"
+        >
           {t('Try another category or clear your filters to see the full collection.')}
-        </p>
-        <button
+        </Box>
+        <Box
+          component="button"
           type="button"
           onClick={onClearFilters}
           className="!text-white mt-7 inline-flex min-h-11 items-center gap-3 rounded-full bg-[var(--accent)] px-6 py-3 text-[10px] font-bold uppercase tracking-[0.18em] transition hover:gap-4"
         >
           {t('VIEW ALL PRODUCTS')}
           {dir === 'rtl' ? <ArrowLeft className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
-        </button>
-      </div>
-    </section>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 
@@ -204,37 +244,53 @@ export function BrandsPageView({
 
   return (
     <Container className="py-10 md:py-16">
-      <motion.section
+      <MotionBox
+        component="section"
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
         className="relative overflow-hidden rounded-[32px] border border-[var(--border)] bg-[var(--card)] p-7 md:p-12"
       >
-        <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full border border-[var(--border)] opacity-60" />
-        <div className="relative max-w-2xl">
-          <div className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--accent)]">
+        <Box
+          component="div"
+          className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full border border-[var(--border)] opacity-60"
+        />
+        <Box component="div" className="relative max-w-2xl">
+          <Box
+            component="div"
+            className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--accent)]"
+          >
             {t('PUFF JO / BRANDS')}
-          </div>
-          <h1 className="mt-4 text-5xl font-black uppercase leading-none tracking-[-0.05em] text-[var(--text)] md:text-7xl">
+          </Box>
+          <Box
+            component="h1"
+            className="mt-4 text-5xl font-black uppercase leading-none tracking-[-0.05em] text-[var(--text)] md:text-7xl"
+          >
             {t('BRANDS')}
-          </h1>
-          <p className="mt-5 max-w-xl text-base leading-8 text-[var(--text-secondary)]">
+          </Box>
+          <Box
+            component="p"
+            className="mt-5 max-w-xl text-base leading-8 text-[var(--text-secondary)]"
+          >
             {t('Shop trusted vape brands, devices, flavors, and accessories from one place.')}
-          </p>
-        </div>
-      </motion.section>
+          </Box>
+        </Box>
+      </MotionBox>
 
       {brandCards.length ? (
-        <motion.div
+        <MotionBox
           initial="hidden"
           animate="visible"
           variants={{ visible: { transition: { staggerChildren: 0.07 } } }}
           className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
         >
           {brandCards.map((brand) => (
-            <motion.div
+            <MotionBox
               key={brand.id}
-              variants={{ hidden: { opacity: 0, y: 14 }, visible: { opacity: 1, y: 0 } }}
+              variants={{
+                hidden: { opacity: 0, y: 14 },
+                visible: { opacity: 1, y: 0 },
+              }}
               transition={{ duration: 0.4 }}
             >
               <Link
@@ -242,32 +298,47 @@ export function BrandsPageView({
                 className="group relative block aspect-[1.15] overflow-hidden rounded-[26px] border border-[var(--border)] bg-[var(--card)]"
               >
                 {brand.image ? (
-                  <img
+                  <Image
                     src={brand.image}
                     alt={localize(brand.name, brand.nameAr)}
                     className="absolute inset-0 h-full w-full object-cover opacity-75 transition duration-500 group-hover:scale-105 group-hover:opacity-100"
                   />
                 ) : null}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-5 text-white">
-                  <div>
-                    <div className="text-xl font-black uppercase tracking-[-0.02em]">
+                <Box
+                  component="div"
+                  className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"
+                />
+                <Box
+                  component="div"
+                  className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-5 text-white"
+                >
+                  <Box component="div">
+                    <Box
+                      component="div"
+                      className="text-xl font-black uppercase tracking-[-0.02em]"
+                    >
                       {localize(brand.name, brand.nameAr)}
-                    </div>
-                    <div className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/65">
+                    </Box>
+                    <Box
+                      component="div"
+                      className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/65"
+                    >
                       {t('View products')}
-                    </div>
-                  </div>
+                    </Box>
+                  </Box>
                   <ArrowUpRight className="h-5 w-5 shrink-0 transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" />
-                </div>
+                </Box>
               </Link>
-            </motion.div>
+            </MotionBox>
           ))}
-        </motion.div>
+        </MotionBox>
       ) : (
-        <div className="mt-6 rounded-[26px] border border-[var(--border)] bg-[var(--card)] p-10 text-center text-[var(--text-secondary)]">
+        <Box
+          component="div"
+          className="mt-6 rounded-[26px] border border-[var(--border)] bg-[var(--card)] p-10 text-center text-[var(--text-secondary)]"
+        >
           {t('No brands available yet.')}
-        </div>
+        </Box>
       )}
     </Container>
   );
@@ -301,10 +372,17 @@ function CategoryFilterBar({
   const hasSubcategories = subcategories.length > 0 && selectedCategory !== 'all';
 
   return (
-    <section className="border-y border-[var(--border)] bg-[var(--background-secondary)]" dir={dir}>
+    <Box
+      component="section"
+      className="border-y border-[var(--border)] bg-[var(--background-secondary)]"
+      dir={dir}
+    >
       <Container className="py-4 md:py-5">
-        <div className="relative">
-          <div className="scrollbar-hidden flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible">
+        <Box component="div" className="relative">
+          <Box
+            component="div"
+            className="scrollbar-hidden flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible"
+          >
             <CategoryFilterButton
               label={allLabel}
               count={null}
@@ -323,12 +401,16 @@ function CategoryFilterBar({
                 onClick={() => onSelect(item.slug)}
               />
             ))}
-          </div>
-        </div>
-        <div
+          </Box>
+        </Box>
+        <Box
+          component="div"
           className={`grid transition-all duration-300 ease-out ${hasSubcategories ? 'mt-3 max-h-20 translate-y-0 opacity-100' : 'max-h-0 -translate-y-1 overflow-hidden opacity-0'}`}
         >
-          <div className="scrollbar-hidden flex gap-2 overflow-x-auto border-t border-[var(--border)] pt-3 md:flex-wrap md:overflow-visible">
+          <Box
+            component="div"
+            className="scrollbar-hidden flex gap-2 overflow-x-auto border-t border-[var(--border)] pt-3 md:flex-wrap md:overflow-visible"
+          >
             {subcategories.map((item) => (
               <CategoryFilterButton
                 key={item.id}
@@ -339,13 +421,16 @@ function CategoryFilterBar({
                 secondary
               />
             ))}
-          </div>
-        </div>
-        <div className="mt-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
+          </Box>
+        </Box>
+        <Box
+          component="div"
+          className="mt-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]"
+        >
           {selectedLabel} · {resultCount} {t(resultCount === 1 ? 'product' : 'products')}
-        </div>
+        </Box>
       </Container>
-    </section>
+    </Box>
   );
 }
 
@@ -363,18 +448,22 @@ function CategoryFilterButton({
   secondary?: boolean;
 }) {
   return (
-    <button
+    <Box
+      component="button"
       type="button"
       onClick={onClick}
       className={`inline-flex shrink-0 items-center gap-2 whitespace-nowrap border px-3.5 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.14em] transition duration-300 hover:-translate-y-0.5 ${secondary ? 'rounded-lg border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--card)]' : 'rounded-xl'} ${active ? 'border-[var(--text)] bg-[var(--text)] text-[var(--background)] shadow-[0_6px_16px_rgba(0,0,0,.14)]' : 'border-[var(--border)] bg-transparent text-[var(--text-secondary)] hover:border-[var(--text)] hover:bg-[var(--card)]'}`}
     >
-      <span>{label}</span>
+      <Box component="span">{label}</Box>
       {count !== null ? (
-        <span className={`text-[9px] ${active ? 'opacity-60' : 'text-[var(--muted)]'}`}>
+        <Box
+          component="span"
+          className={`text-[9px] ${active ? 'opacity-60' : 'text-[var(--muted)]'}`}
+        >
           {count}
-        </span>
+        </Box>
       ) : null}
-    </button>
+    </Box>
   );
 }
 
@@ -382,33 +471,42 @@ function CatalogFlashSaleBanner({ flashSale }: { flashSale: FlashSale }) {
   const { dir, t } = useLocale();
 
   return (
-    <section className="border-y border-white/10 bg-[linear-gradient(135deg,#222525,#090a0a)] px-4 py-5 md:px-8">
+    <Box
+      component="section"
+      className="border-y border-white/10 bg-[linear-gradient(135deg,#222525,#090a0a)] px-4 py-5 md:px-8"
+    >
       <Container className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <div className="text-[10px] uppercase tracking-[0.28em] text-white/60">
+        <Box component="div">
+          <Box component="div" className="text-[10px] uppercase tracking-[0.28em] text-white/60">
             {t(flashSale.title)}
-          </div>
-          <div className="mt-2 font-display text-4xl uppercase leading-none text-white md:text-5xl">
+          </Box>
+          <Box
+            component="div"
+            className="mt-2 font-display text-4xl uppercase leading-none text-white md:text-5xl"
+          >
             {t(flashSale.discountLabel)}
-          </div>
+          </Box>
           {flashSale.description ? (
-            <div className="mt-2 text-[11px] uppercase tracking-[0.16em] text-white/74">
+            <Box
+              component="div"
+              className="mt-2 text-[11px] uppercase tracking-[0.16em] text-white/74"
+            >
               {t(flashSale.description)}
-            </div>
+            </Box>
           ) : null}
-        </div>
+        </Box>
 
         <Link
           href={flashSale.ctaUrl || '/shop?sale=true'}
           className="inline-flex items-center gap-2 self-start rounded-full border border-white/20 bg-white px-5 py-3 text-[11px] uppercase tracking-[0.24em] text-black md:self-center"
         >
-          <span className="text-black">
+          <Box component="span" className="text-black">
             {flashSale.ctaText ? t(flashSale.ctaText) : t('Shop sale')}
-          </span>
+          </Box>
           {dir === 'rtl' ? <ArrowLeft className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
         </Link>
       </Container>
-    </section>
+    </Box>
   );
 }
 
@@ -705,9 +803,15 @@ export function ProductPageView({
   }
 
   return (
-    <div className="bg-[var(--background)] pb-20 pt-8 text-[var(--text)] md:pb-24 md:pt-12">
+    <Box
+      component="div"
+      className="bg-[var(--background)] pb-20 pt-8 text-[var(--text)] md:pb-24 md:pt-12"
+    >
       <Container>
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
+        <Box
+          component="div"
+          className="mb-6 flex flex-wrap items-center justify-between gap-3 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]"
+        >
           <Link
             href="/shop"
             className="inline-flex items-center gap-2 transition hover:text-[var(--accent)]"
@@ -715,16 +819,23 @@ export function ProductPageView({
             <ArrowLeft className="h-4 w-4" />
             {t('BACK TO SHOP')}
           </Link>
-          <span>{localize(product.categorySlug, product.categorySlug)}</span>
-        </div>
+          <Box component="span">{localize(product.categorySlug, product.categorySlug)}</Box>
+        </Box>
 
-        <div className="grid gap-10 lg:grid-cols-[1.04fr_0.96fr] lg:items-start">
-          <div className="grid gap-4 lg:grid-cols-[96px_minmax(0,1fr)] lg:items-start">
-            <div className="order-2 flex gap-3 overflow-x-auto pb-2 lg:order-1 lg:grid lg:max-h-[720px] lg:auto-rows-max lg:overflow-visible lg:pb-0">
+        <Box component="div" className="grid gap-10 lg:grid-cols-[1.04fr_0.96fr] lg:items-start">
+          <Box
+            component="div"
+            className="grid gap-4 lg:grid-cols-[96px_minmax(0,1fr)] lg:items-start"
+          >
+            <Box
+              component="div"
+              className="order-2 flex gap-3 overflow-x-auto pb-2 lg:order-1 lg:grid lg:max-h-[720px] lg:auto-rows-max lg:overflow-visible lg:pb-0"
+            >
               {galleryImages.map((image, index) => {
                 const isActive = index === selectedImageIndex;
                 return (
-                  <button
+                  <Box
+                    component="button"
                     key={image.id}
                     type="button"
                     onClick={() => setSelectedImageIndex(index)}
@@ -734,34 +845,44 @@ export function ProductPageView({
                         : 'border-[var(--border)] hover:border-[var(--accent)]/40'
                     }`}
                   >
-                    <img
+                    <Image
                       src={image.url || undefined}
                       alt={image.alt}
                       className="h-24 w-24 rounded-md bg-[var(--background)] object-contain transition duration-500 group-hover:scale-[1.03] lg:h-24 lg:w-full lg:min-w-[96px]"
                     />
-                  </button>
+                  </Box>
                 );
               })}
-            </div>
+            </Box>
 
-            <div className="order-1 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--card)] shadow-[0_24px_70px_rgba(24,18,17,0.12)] lg:order-2">
-              <div className="relative bg-[var(--card)]">
+            <Box
+              component="div"
+              className="order-1 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--card)] shadow-[0_24px_70px_rgba(24,18,17,0.12)] lg:order-2"
+            >
+              <Box component="div" className="relative bg-[var(--card)]">
                 {galleryImages[selectedImageIndex]?.url ? (
-                  <img
+                  <Image
                     src={galleryImages[selectedImageIndex].url}
                     alt={galleryImages[selectedImageIndex].alt}
                     className="block h-auto w-full object-contain"
                   />
                 ) : null}
-              </div>
-            </div>
-          </div>
-          <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-5 shadow-[0_20px_60px_rgba(24,18,17,0.08)] md:p-7 lg:sticky lg:top-28 lg:h-fit">
-            <div className="flex items-start justify-between gap-4">
-              <div className="rounded-full bg-[color:color-mix(in_srgb,var(--accent)_12%,transparent)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--accent)]">
+              </Box>
+            </Box>
+          </Box>
+          <Box
+            component="div"
+            className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-5 shadow-[0_20px_60px_rgba(24,18,17,0.08)] md:p-7 lg:sticky lg:top-28 lg:h-fit"
+          >
+            <Box component="div" className="flex items-start justify-between gap-4">
+              <Box
+                component="div"
+                className="rounded-full bg-[color:color-mix(in_srgb,var(--accent)_12%,transparent)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--accent)]"
+              >
                 {localize(product.brand, product.brandAr)}
-              </div>
-              <button
+              </Box>
+              <Box
+                component="button"
                 type="button"
                 onClick={handleFavoriteToggle}
                 className={`inline-flex h-11 w-11 items-center justify-center rounded-full border transition ${
@@ -772,47 +893,56 @@ export function ProductPageView({
                 aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
               >
                 <Heart className={`h-4 w-4 ${isFavorite ? 'fill-current' : ''}`} />
-              </button>
-            </div>
-            <h1 className="mt-5 text-4xl font-bold leading-tight text-[var(--text)] md:text-6xl">
+              </Box>
+            </Box>
+            <Box
+              component="h1"
+              className="mt-5 text-4xl font-bold leading-tight text-[var(--text)] md:text-6xl"
+            >
               {localize(product.name, product.nameAr)}
-            </h1>
-            <p className="mt-4 text-base leading-8 text-[var(--text-secondary)]">
+            </Box>
+            <Box component="p" className="mt-4 text-base leading-8 text-[var(--text-secondary)]">
               {localize(product.shortDescription, product.shortDescriptionAr)}
-            </p>
+            </Box>
 
-            <div className="mt-6 flex flex-wrap items-center gap-4">
-              <div className="text-4xl font-bold text-[var(--accent)]">
+            <Box component="div" className="mt-6 flex flex-wrap items-center gap-4">
+              <Box component="div" className="text-4xl font-bold text-[var(--accent)]">
                 {formatCurrency(displayPrice)}
-              </div>
+              </Box>
               {selectedVariant.compareAtPrice ? (
-                <div className="text-lg text-[var(--muted)] line-through">
+                <Box component="div" className="text-lg text-[var(--muted)] line-through">
                   {formatCurrency(selectedVariant.compareAtPrice)}
-                </div>
+                </Box>
               ) : null}
               {discount > 0 ? (
-                <div className="rounded-full bg-[var(--text)] px-3 py-1 text-xs font-semibold tracking-[0.14em] text-[var(--background)]">
+                <Box
+                  component="div"
+                  className="rounded-full bg-[var(--text)] px-3 py-1 text-xs font-semibold tracking-[0.14em] text-[var(--background)]"
+                >
                   {discount}% OFF
-                </div>
+                </Box>
               ) : null}
-            </div>
-            <div className="mt-4 flex items-center gap-4">
+            </Box>
+            <Box component="div" className="mt-4 flex items-center gap-4">
               <Rating rating={product.rating} reviewCount={product.reviewCount} />
-              <div className="text-sm text-[var(--muted)]">
+              <Box component="div" className="text-sm text-[var(--muted)]">
                 {selectedVariant.stockQuantity > 0
                   ? selectedVariant.stockQuantity <= 2
                     ? `${t('ONLY')} ${selectedVariant.stockQuantity} ${t('LEFT')}`
                     : t('HOT NOW')
                   : t('SOLD OUT')}
-              </div>
-            </div>
+              </Box>
+            </Box>
 
             {sizes.length > 1 ? (
-              <div className="mt-7">
-                <div className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
+              <Box component="div" className="mt-7">
+                <Box
+                  component="div"
+                  className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]"
+                >
                   {t('SIZE')}
-                </div>
-                <div className="flex flex-wrap gap-3">
+                </Box>
+                <Box component="div" className="flex flex-wrap gap-3">
                   {sizes.map((sizeOption) => {
                     const available = product.variants.some(
                       (variant) =>
@@ -821,7 +951,8 @@ export function ProductPageView({
                     );
 
                     return (
-                      <button
+                      <Box
+                        component="button"
                         key={sizeOption.name}
                         type="button"
                         onClick={() => setSelectedSize(sizeOption.name)}
@@ -833,33 +964,42 @@ export function ProductPageView({
                         } disabled:cursor-not-allowed disabled:opacity-40`}
                       >
                         {localize(sizeOption.name, sizeOption.nameAr)}
-                      </button>
+                      </Box>
                     );
                   })}
-                </div>
-              </div>
+                </Box>
+              </Box>
             ) : null}
 
             {optionGroups.length ? (
-              <div className="mt-7 space-y-5">
+              <Box component="div" className="mt-7 space-y-5">
                 {optionGroups.map((group) => (
-                  <div key={group.id}>
-                    <div className="mb-3 flex items-center justify-between gap-3">
-                      <div>
-                        <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
+                  <Box component="div" key={group.id}>
+                    <Box component="div" className="mb-3 flex items-center justify-between gap-3">
+                      <Box component="div">
+                        <Box
+                          component="div"
+                          className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]"
+                        >
                           {localize(group.name, group.nameAr)}
-                        </div>
+                        </Box>
                         {group.description || group.descriptionAr ? (
-                          <div className="mt-1 text-xs text-[var(--text-secondary)]">
+                          <Box
+                            component="div"
+                            className="mt-1 text-xs text-[var(--text-secondary)]"
+                          >
                             {localize(group.description ?? '', group.descriptionAr)}
-                          </div>
+                          </Box>
                         ) : null}
-                      </div>
-                      <span className="rounded-full bg-[color:color-mix(in_srgb,var(--accent)_12%,transparent)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--accent)]">
+                      </Box>
+                      <Box
+                        component="span"
+                        className="rounded-full bg-[color:color-mix(in_srgb,var(--accent)_12%,transparent)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--accent)]"
+                      >
                         {group.selectionType === 'radio' ? t('Choose one') : t('Add-ons')}
-                      </span>
-                    </div>
-                    <div className="grid gap-2">
+                      </Box>
+                    </Box>
+                    <Box component="div" className="grid gap-2">
                       {group.items.map((item) => {
                         const selected = (selectedOptions[group.id] ?? []).includes(item.id);
                         const inputType = group.selectionType === 'radio' ? 'radio' : 'checkbox';
@@ -867,7 +1007,8 @@ export function ProductPageView({
                           !item.trackInventory || item.stockQuantity > 0 || item.allowBackorder;
 
                         return (
-                          <label
+                          <Box
+                            component="label"
                             key={item.id}
                             className={`flex items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm font-semibold transition ${
                               selected
@@ -875,8 +1016,9 @@ export function ProductPageView({
                                 : 'border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent)]/40'
                             } ${available ? 'cursor-pointer' : 'cursor-not-allowed opacity-45'}`}
                           >
-                            <span className="flex items-center gap-3">
-                              <input
+                            <Box component="span" className="flex items-center gap-3">
+                              <Box
+                                component="input"
                                 type={inputType}
                                 name={`option-${group.id}`}
                                 checked={selected}
@@ -887,63 +1029,76 @@ export function ProductPageView({
                                 className="h-4 w-4 accent-black"
                               />
                               {item.imageUrl ? (
-                                <img
+                                <Image
                                   src={item.imageUrl}
                                   alt={localize(item.name, item.nameAr)}
                                   className="h-11 w-11 rounded-md bg-[var(--background-secondary)] object-contain p-1"
                                 />
                               ) : null}
-                              <span>
-                                <span className="block">{localize(item.name, item.nameAr)}</span>
+                              <Box component="span">
+                                <Box component="span" className="block">
+                                  {localize(item.name, item.nameAr)}
+                                </Box>
                                 {item.trackInventory ? (
-                                  <span className="mt-1 block text-[10px] uppercase tracking-[0.14em] text-[var(--muted)]">
+                                  <Box
+                                    component="span"
+                                    className="mt-1 block text-[10px] uppercase tracking-[0.14em] text-[var(--muted)]"
+                                  >
                                     {available
                                       ? `${t('Stock')}: ${item.stockQuantity}`
                                       : t('SOLD OUT')}
-                                  </span>
+                                  </Box>
                                 ) : null}
-                              </span>
-                            </span>
+                              </Box>
+                            </Box>
                             {item.priceDelta > 0 ? (
-                              <span className="text-xs text-[var(--accent)]">
+                              <Box component="span" className="text-xs text-[var(--accent)]">
                                 +{formatCurrency(item.priceDelta)}
-                              </span>
+                              </Box>
                             ) : null}
-                          </label>
+                          </Box>
                         );
                       })}
-                    </div>
-                  </div>
+                    </Box>
+                  </Box>
                 ))}
-              </div>
+              </Box>
             ) : null}
 
-            <div className="mt-7 flex flex-wrap items-center gap-4">
-              <div className="flex items-center gap-4 rounded-full border border-[var(--border)] bg-[var(--background-secondary)] px-4 py-3">
-                <button
+            <Box component="div" className="mt-7 flex flex-wrap items-center gap-4">
+              <Box
+                component="div"
+                className="flex items-center gap-4 rounded-full border border-[var(--border)] bg-[var(--background-secondary)] px-4 py-3"
+              >
+                <Box
+                  component="button"
                   type="button"
                   onClick={() => setQuantity((value) => Math.max(1, value - 1))}
                   className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[var(--card)] text-[var(--text)]"
                 >
                   <Minus className="h-4 w-4" />
-                </button>
-                <span className="min-w-6 text-center text-lg font-bold">{quantity}</span>
-                <button
+                </Box>
+                <Box component="span" className="min-w-6 text-center text-lg font-bold">
+                  {quantity}
+                </Box>
+                <Box
+                  component="button"
                   type="button"
                   disabled={quantity >= maxQuantity}
                   onClick={() => setQuantity((value) => Math.min(maxQuantity, value + 1))}
                   className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[var(--card)] text-[var(--text)] disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <Plus className="h-4 w-4" />
-                </button>
-              </div>
-              <div className="text-sm font-semibold text-[var(--text-secondary)]">
+                </Box>
+              </Box>
+              <Box component="div" className="text-sm font-semibold text-[var(--text-secondary)]">
                 {t('Choose quantity')}
-              </div>
-            </div>
+              </Box>
+            </Box>
 
-            <div className="mt-7 grid gap-3 sm:grid-cols-2">
-              <button
+            <Box component="div" className="mt-7 grid gap-3 sm:grid-cols-2">
+              <Box
+                component="button"
                 type="button"
                 disabled={selectedVariant.stockQuantity <= 0 && !selectedVariant.allowBackorder}
                 onClick={() => {
@@ -963,7 +1118,7 @@ export function ProductPageView({
                 className="rounded-full bg-black px-6 py-4 text-sm font-semibold uppercase tracking-[0.14em] text-white shadow-[0_18px_34px_rgba(0,0,0,0.22)] disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {t('AddToCartButton')}
-              </button>
+              </Box>
               <Link
                 href="/checkout"
                 onClick={(event) => {
@@ -974,9 +1129,12 @@ export function ProductPageView({
               >
                 {t('ORDER NOW')}
               </Link>
-            </div>
+            </Box>
 
-            <div className="mt-8 space-y-4 rounded-lg border border-[var(--border)] bg-[var(--background)] p-5">
+            <Box
+              component="div"
+              className="mt-8 space-y-4 rounded-lg border border-[var(--border)] bg-[var(--background)] p-5"
+            >
               <Accordion title="ITEM DETAILS" defaultOpen>
                 {localize(product.description, product.descriptionAr)}
               </Accordion>
@@ -988,17 +1146,27 @@ export function ProductPageView({
               <Accordion title="ORDER NOTES">
                 {t('Please add delivery notes and any setup preferences before checkout.')}
               </Accordion>
-            </div>
+            </Box>
 
-            <div className="mt-8 rounded-lg border border-[var(--border)] bg-[var(--background)] p-5">
-              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
+            <Box
+              component="div"
+              className="mt-8 rounded-lg border border-[var(--border)] bg-[var(--background)] p-5"
+            >
+              <Box
+                component="div"
+                className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]"
+              >
                 {t('ITEM REVIEWS')}
-              </div>
+              </Box>
               {customer ? (
-                <div className="mt-4 space-y-4 border-b border-[var(--border)] pb-5">
-                  <div className="flex flex-wrap gap-2">
+                <Box
+                  component="div"
+                  className="mt-4 space-y-4 border-b border-[var(--border)] pb-5"
+                >
+                  <Box component="div" className="flex flex-wrap gap-2">
                     {[1, 2, 3, 4, 5].map((value) => (
-                      <button
+                      <Box
+                        component="button"
                         key={value}
                         type="button"
                         onClick={() => setReviewRating(value)}
@@ -1012,80 +1180,100 @@ export function ProductPageView({
                           className={`h-4 w-4 ${reviewRating >= value ? 'fill-current' : ''}`}
                         />
                         {value}
-                      </button>
+                      </Box>
                     ))}
-                  </div>
-                  <input
+                  </Box>
+                  <Box
+                    component="input"
                     value={reviewTitle}
                     onChange={(event) => setReviewTitle(event.target.value)}
                     placeholder={t('Review title')}
                     className="h-12 w-full rounded-full border border-[var(--border)] bg-[var(--background-secondary)] px-5 text-sm text-[var(--text)] outline-none"
                   />
-                  <textarea
+                  <Box
+                    component="textarea"
                     value={reviewComment}
                     onChange={(event) => setReviewComment(event.target.value)}
                     placeholder={t('Write your review')}
                     rows={4}
                     className="w-full rounded-lg border border-[var(--border)] bg-[var(--background-secondary)] px-5 py-4 text-sm text-[var(--text)] outline-none"
                   />
-                  <button
+                  <Box
+                    component="button"
                     type="button"
                     onClick={handleReviewSubmit}
                     disabled={isSubmittingReview}
                     className="rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-white disabled:opacity-40"
                   >
                     {isSubmittingReview ? t('PLEASE WAIT') : t('SUBMIT REVIEW')}
-                  </button>
-                </div>
+                  </Box>
+                </Box>
               ) : (
-                <div className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--background-secondary)] p-4 text-sm text-[var(--text-secondary)]">
-                  <div>{t('Sign in to review products.')}</div>
+                <Box
+                  component="div"
+                  className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--background-secondary)] p-4 text-sm text-[var(--text-secondary)]"
+                >
+                  <Box component="div">{t('Sign in to review products.')}</Box>
                   <Link
                     href="/login"
                     className="mt-3 inline-flex rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text)]"
                   >
                     {t('LOG IN')}
                   </Link>
-                </div>
+                </Box>
               )}
 
-              <div className="mt-5 space-y-4">
+              <Box component="div" className="mt-5 space-y-4">
                 {reviews.length ? (
                   reviews.map((review) => (
-                    <div
+                    <Box
+                      component="div"
                       key={review.id}
                       className="rounded-lg border border-[var(--border)] bg-[var(--background-secondary)] p-4"
                     >
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div>
-                          <div className="text-sm font-medium">{review.authorName}</div>
-                          <div className="mt-1 text-xs tracking-[0.16em] text-[var(--muted)]">
+                      <Box
+                        component="div"
+                        className="flex flex-wrap items-center justify-between gap-3"
+                      >
+                        <Box component="div">
+                          <Box component="div" className="text-sm font-medium">
+                            {review.authorName}
+                          </Box>
+                          <Box
+                            component="div"
+                            className="mt-1 text-xs tracking-[0.16em] text-[var(--muted)]"
+                          >
                             {review.createdAt}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1 text-sm">
+                          </Box>
+                        </Box>
+                        <Box component="div" className="flex items-center gap-1 text-sm">
                           {Array.from({ length: review.rating }).map((_, index) => (
                             <Star key={`${review.id}-${index}`} className="h-4 w-4 fill-current" />
                           ))}
-                        </div>
-                      </div>
+                        </Box>
+                      </Box>
                       {review.title ? (
-                        <div className="mt-3 text-sm uppercase tracking-[0.14em]">
+                        <Box component="div" className="mt-3 text-sm uppercase tracking-[0.14em]">
                           {review.title}
-                        </div>
+                        </Box>
                       ) : null}
-                      <p className="mt-2 text-sm leading-7 text-[var(--text-secondary)]">
+                      <Box
+                        component="p"
+                        className="mt-2 text-sm leading-7 text-[var(--text-secondary)]"
+                      >
                         {review.comment}
-                      </p>
-                    </div>
+                      </Box>
+                    </Box>
                   ))
                 ) : (
-                  <div className="text-sm text-[var(--text-secondary)]">{t('No reviews yet.')}</div>
+                  <Box component="div" className="text-sm text-[var(--text-secondary)]">
+                    {t('No reviews yet.')}
+                  </Box>
                 )}
-              </div>
-            </div>
-          </div>
-        </div>
+              </Box>
+            </Box>
+          </Box>
+        </Box>
       </Container>
 
       <Container className="mt-16">
@@ -1093,17 +1281,24 @@ export function ProductPageView({
         <ProductGrid products={relatedProducts} />
       </Container>
 
-      <div className="fixed inset-x-0 bottom-0 z-20 border-t border-[var(--border)] bg-[color:color-mix(in_srgb,var(--card)_90%,transparent)] p-4 text-[var(--text)] backdrop-blur-xl md:hidden">
-        <div className="mx-auto flex max-w-[1440px] items-center gap-3">
-          <div className="flex-1">
-            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
+      <Box
+        component="div"
+        className="fixed inset-x-0 bottom-0 z-20 border-t border-[var(--border)] bg-[color:color-mix(in_srgb,var(--card)_90%,transparent)] p-4 text-[var(--text)] backdrop-blur-xl md:hidden"
+      >
+        <Box component="div" className="mx-auto flex max-w-[1440px] items-center gap-3">
+          <Box component="div" className="flex-1">
+            <Box
+              component="div"
+              className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]"
+            >
               {t('PRICE')}
-            </div>
-            <div className="text-lg font-bold text-[var(--accent)]">
+            </Box>
+            <Box component="div" className="text-lg font-bold text-[var(--accent)]">
               {formatCurrency(selectedVariant.price)}
-            </div>
-          </div>
-          <button
+            </Box>
+          </Box>
+          <Box
+            component="button"
             type="button"
             disabled={selectedVariant.stockQuantity <= 0 && !selectedVariant.allowBackorder}
             onClick={() => {
@@ -1119,10 +1314,10 @@ export function ProductPageView({
             className="rounded-full bg-black px-6 py-4 text-sm font-semibold uppercase tracking-[0.14em] text-white"
           >
             {t('AddToCartButton')}
-          </button>
-        </div>
-      </div>
-    </div>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 
@@ -1140,9 +1335,10 @@ function CartSelectionList({
   }
 
   return (
-    <div className={compact ? 'mt-2 space-y-1.5' : 'mt-3 space-y-2'}>
+    <Box component="div" className={compact ? 'mt-2 space-y-1.5' : 'mt-3 space-y-2'}>
       {selections.map((selection) => (
-        <div
+        <Box
+          component="div"
           key={selection.groupId}
           className={
             compact
@@ -1150,20 +1346,23 @@ function CartSelectionList({
               : 'rounded-[16px] border border-white/8 bg-black/10 px-4 py-3'
           }
         >
-          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
+          <Box
+            component="div"
+            className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]"
+          >
             {localize(selection.groupName, selection.groupNameAr)}
-          </div>
-          <div className="mt-1 text-xs leading-5 text-[var(--text-secondary)]">
+          </Box>
+          <Box component="div" className="mt-1 text-xs leading-5 text-[var(--text-secondary)]">
             {selection.items
               .map((item) => {
                 const label = localize(item.name, item.nameAr);
                 return item.priceDelta > 0 ? `${label} +${formatCurrency(item.priceDelta)}` : label;
               })
               .join(', ')}
-          </div>
-        </div>
+          </Box>
+        </Box>
       ))}
-    </div>
+    </Box>
   );
 }
 
@@ -1187,7 +1386,7 @@ function getCartSelectionSummary(
 }
 
 export function CartPageView({ products }: { products: StoreProduct[] }) {
-  const { t, localize } = useLocale();
+  const { t } = useLocale();
   const items = useCartStore((state) => state.items);
   const appliedCoupon = useCartStore((state) => state.appliedCoupon);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
@@ -1339,136 +1538,105 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
   }
 
   return (
-    <Container className="py-8 md:py-14">
-      <div className="mb-8">
-        <div className="text-xs tracking-[0.3em] text-[var(--muted)]">{t('CART')}</div>
-        <h1 className="font-display text-4xl uppercase sm:text-5xl">{t('YOUR CART')}</h1>
-      </div>
+    <StorePageContainer py={{ base: 32, sm: 56 }}>
+      <Text size="xs" c="dimmed" tt="uppercase" lts="0.3em">
+        {t('CART')}
+      </Text>
+      <Title order={1} mt={4} mb={32} fz={{ base: 36, sm: 50 }} tt="uppercase">
+        {t('YOUR CART')}
+      </Title>
+
       {lines.length ? (
-        <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
-          <div className="space-y-4">
-            {lines.map((line) => (
-              <div
-                key={line.lineId}
-                className="flex flex-col gap-4 rounded-[24px] border border-white/8 bg-white/3 p-3 sm:p-4 md:flex-row"
-              >
-                <img
-                  src={line.product.images[0]?.url || '/products/puff-jo-product-default.png'}
-                  alt={localize(line.product.name, line.product.nameAr)}
-                  className="h-32 w-full rounded-[20px] bg-[var(--background-secondary)] object-contain p-2 sm:h-40 md:h-36 md:w-32 md:flex-none"
+        <Grid gap={{ base: 24, lg: 32 }} align="flex-start">
+          <Grid.Col span={{ base: 12, lg: 8 }}>
+            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+              {lines.map((line) => (
+                <CartLineCard
+                  key={line.lineId}
+                  line={line}
+                  onQuantityChange={(quantity) => updateQuantity(line.lineId, quantity)}
+                  onRemove={() => removeItem(line.lineId)}
                 />
-                <div className="flex flex-1 flex-col">
-                  <div className="text-base sm:text-lg">
-                    {localize(line.product.name, line.product.nameAr)}
-                  </div>
-                  <div className="mt-2 text-sm leading-6 text-[var(--text-secondary)]">
-                    {localize(line.variant.size, line.variant.sizeAr)}
-                  </div>
-                  <CartSelectionList selections={line.selections} />
-                  <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="text-sm sm:text-base">{formatCurrency(line.variant.price)}</div>
-                    <div className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 px-3 py-2">
-                      <button
-                        type="button"
-                        onClick={() => updateQuantity(line.lineId, line.quantity - 1)}
-                      >
-                        <Minus className="h-4 w-4" />
-                      </button>
-                      <span>{line.quantity}</span>
-                      <button
-                        type="button"
-                        onClick={() => updateQuantity(line.lineId, line.quantity + 1)}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => removeItem(line.lineId)}
-                    className="mt-4 self-start text-xs tracking-[0.2em] text-[var(--muted)]"
-                  >
-                    {t('REMOVE')}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="h-fit rounded-[28px] border border-white/8 bg-white/3 p-5 lg:sticky lg:top-28">
-            <div className="mb-5 text-xs tracking-[0.25em] text-[var(--muted)]">
-              {t('ORDER SUMMARY')}
-            </div>
-            <SummaryRow label={t('Subtotal')} value={formatCurrency(subtotal)} />
-            {couponDiscountAmount > 0 ? (
-              <SummaryRow
-                label={appliedCoupon ? `${t('Coupon')} (${appliedCoupon.code})` : t('Coupon')}
-                value={`-${formatCurrency(couponDiscountAmount)}`}
-              />
-            ) : null}
-            <SummaryRow
-              label={t('Delivery')}
-              value={lines.length ? t('Calculated at checkout') : formatCurrency(0)}
-            />
-            <SummaryRow label={t('Tax')} value={formatCurrency(0)} />
-            <div className="mt-4 border-t border-white/8 pt-4">
-              <SummaryRow label={t('Total')} value={formatCurrency(total)} emphasis />
-            </div>
-            <div className="mt-5 grid gap-3">
-              <input
-                value={couponCode}
-                onChange={(event) => setCouponCode(event.target.value)}
-                placeholder={t('Enter promo code')}
-                className="h-12 rounded-full border border-white/10 bg-black/20 px-5 text-sm outline-none"
-              />
-              {appliedCoupon ? (
-                <button
-                  type="button"
-                  onClick={clearAppliedCoupon}
-                  className="rounded-full border border-white/10 px-5 py-3 text-sm tracking-[0.2em]"
+              ))}
+            </SimpleGrid>
+          </Grid.Col>
+          <Grid.Col span={{ base: 12, lg: 4 }}>
+            <Paper
+              radius="xl"
+              p="lg"
+              withBorder
+              shadow="sm"
+              style={{ position: 'sticky', top: 112 }}
+            >
+              <Text mb="md" size="xs" c="dimmed" tt="uppercase" lts="0.2em">
+                {t('ORDER SUMMARY')}
+              </Text>
+              <Stack gap="sm">
+                <SummaryRow label={t('Subtotal')} value={formatCurrency(subtotal)} />
+                {couponDiscountAmount > 0 ? (
+                  <SummaryRow
+                    label={appliedCoupon ? `${t('Coupon')} (${appliedCoupon.code})` : t('Coupon')}
+                    value={`-${formatCurrency(couponDiscountAmount)}`}
+                  />
+                ) : null}
+                <SummaryRow label={t('Delivery')} value={t('Calculated at checkout')} />
+                <SummaryRow label={t('Tax')} value={formatCurrency(0)} />
+                <Box
+                  pt="md"
+                  mt="xs"
+                  style={{ borderTop: '1px solid var(--mantine-color-default-border)' }}
                 >
-                  {t('REMOVE COUPON')}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  disabled={!lines.length || isApplyingCoupon}
-                  onClick={applyCoupon}
-                  className="rounded-full border border-white/10 px-5 py-3 text-sm tracking-[0.2em] disabled:cursor-not-allowed disabled:opacity-40"
+                  <SummaryRow label={t('Total')} value={formatCurrency(total)} emphasis />
+                </Box>
+                <StoreTextInput
+                  value={couponCode}
+                  onChange={(event) => setCouponCode(event.target.value)}
+                  placeholder={t('Enter promo code')}
+                  aria-label={t('Enter promo code')}
+                />
+                <Button
+                  variant="default"
+                  radius="xl"
+                  loading={isApplyingCoupon}
+                  disabled={!lines.length}
+                  onClick={appliedCoupon ? clearAppliedCoupon : applyCoupon}
                 >
-                  {isApplyingCoupon ? t('APPLYING') : t('Apply')}
-                </button>
-              )}
-              {appliedCoupon?.description ? (
-                <div className="text-xs text-[var(--text-secondary)]">
-                  {appliedCoupon.description}
-                </div>
-              ) : null}
-              <Link
-                href="/checkout"
-                className="rounded-full bg-[var(--accent)] px-5 py-3 text-center text-sm tracking-[0.2em]"
-                style={{ color: 'var(--background)' }}
-              >
-                {t('CHECKOUT')}
-              </Link>
-            </div>
-          </div>
-        </div>
+                  {appliedCoupon ? t('REMOVE COUPON') : t('Apply')}
+                </Button>
+                {appliedCoupon?.description ? (
+                  <Text size="xs" c="dimmed">
+                    {appliedCoupon.description}
+                  </Text>
+                ) : null}
+                <Button
+                  component={Link}
+                  href="/checkout"
+                  radius="xl"
+                  color="dark"
+                  size="md"
+                  tt="uppercase"
+                  lts="0.12em"
+                >
+                  {t('CHECKOUT')}
+                </Button>
+              </Stack>
+            </Paper>
+          </Grid.Col>
+        </Grid>
       ) : (
-        <div className="rounded-[32px] border border-white/8 bg-white/3 p-10 text-center">
-          <div className="font-display text-4xl uppercase">{t('YOUR CART IS EMPTY.')}</div>
-          <p className="mt-3 text-sm text-[var(--text-secondary)]">
+        <Paper radius="xl" p={{ base: 32, sm: 48 }} withBorder ta="center">
+          <Title order={2} tt="uppercase">
+            {t('YOUR CART IS EMPTY.')}
+          </Title>
+          <Text mt="sm" mb="xl" size="sm" c="dimmed">
             {t('Start with a device, a fresh flavor, or a new everyday essential.')}
-          </p>
-          <Link
-            href="/shop"
-            className="mt-6 inline-flex rounded-full bg-[var(--accent)] px-5 py-3 text-sm tracking-[0.2em]"
-            style={{ color: 'var(--background)' }}
-          >
+          </Text>
+          <Button component={Link} href="/shop" radius="xl" color="dark">
             {t('VIEW SHOP')}
-          </Link>
-        </div>
+          </Button>
+        </Paper>
       )}
-    </Container>
+    </StorePageContainer>
   );
 }
 
@@ -1485,15 +1653,20 @@ export function FavoritesPageView({ products }: { products: StoreProduct[] }) {
       {favoriteProducts.length ? (
         <ProductGrid products={favoriteProducts} />
       ) : (
-        <div className="rounded-[32px] border border-white/8 bg-white/3 p-10 text-center">
-          <p className="text-sm text-[var(--text-secondary)]">Nothing saved yet.</p>
+        <Box
+          component="div"
+          className="rounded-[32px] border border-white/8 bg-white/3 p-10 text-center"
+        >
+          <Box component="p" className="text-sm text-[var(--text-secondary)]">
+            Nothing saved yet.
+          </Box>
           <Link
             href="/shop"
             className="mt-6 inline-flex rounded-full bg-[var(--text)] px-5 py-3 text-sm tracking-[0.2em] text-black"
           >
             VIEW SHOP
           </Link>
-        </div>
+        </Box>
       )}
     </Container>
   );
@@ -1510,15 +1683,16 @@ export function SearchPageView({ products }: { products: StoreProduct[] }) {
   return (
     <Container className="py-8 md:py-14">
       <SectionHeading title="SEARCH" description="Search by name, mood, or product detail." />
-      <input
+      <Box
+        component="input"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         placeholder={t('Search devices, flavors, and accessories...')}
         className="h-14 w-full rounded-full border border-white/10 bg-white/3 px-6 text-sm outline-none"
       />
-      <div className="mt-8">
+      <Box component="div" className="mt-8">
         <ProductGrid products={results.length ? results : products.slice(0, 4)} />
-      </div>
+      </Box>
     </Container>
   );
 }
@@ -1536,14 +1710,22 @@ export function AccountPageView() {
   return (
     <Container className="py-8 md:py-14">
       <SectionHeading title="ACCOUNT" description="Everything you need, none of the clutter." />
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <Box component="div" className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {cards.map((card) => (
-          <div key={card.title} className="rounded-[28px] border border-white/8 bg-white/3 p-6">
-            <div className="font-display text-3xl uppercase">{t(card.title)}</div>
-            <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">{t(card.body)}</p>
-          </div>
+          <Box
+            component="div"
+            key={card.title}
+            className="rounded-[28px] border border-white/8 bg-white/3 p-6"
+          >
+            <Box component="div" className="font-display text-3xl uppercase">
+              {t(card.title)}
+            </Box>
+            <Box component="p" className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
+              {t(card.body)}
+            </Box>
+          </Box>
         ))}
-      </div>
+      </Box>
     </Container>
   );
 }
@@ -1572,18 +1754,6 @@ type ActiveFlashSaleView = {
   title: string;
   discount_type: 'percentage' | 'fixed';
   discount_value: number;
-};
-
-type CheckoutFormState = {
-  fullName: string;
-  phone: string;
-  country: string;
-  city: string;
-  area: string;
-  street: string;
-  building: string;
-  notes: string;
-  paymentMethod: string;
 };
 
 export function CheckoutPageView({
@@ -1683,14 +1853,6 @@ export function CheckoutPageView({
     !lines.length || resolveDeliveryFee(deliveryZones, form.country, form.city) !== null;
   const discountAmount = flashSaleDiscountAmount + couponDiscountAmount;
   const total = Math.max(0, subtotal - discountAmount + shippingAmount);
-  const checkoutFields: Array<{ label: string; key: keyof CheckoutFormState }> = [
-    { label: 'Full Name', key: 'fullName' },
-    { label: 'Phone', key: 'phone' },
-    { label: 'Area', key: 'area' },
-    { label: 'Street', key: 'street' },
-    { label: 'Building', key: 'building' },
-  ];
-
   useEffect(() => {
     setCouponCode(appliedCoupon?.code ?? '');
   }, [appliedCoupon?.code]);
@@ -2006,277 +2168,223 @@ export function CheckoutPageView({
 
   return (
     <Container className="checkout-page py-6 md:py-12">
-      <header className="checkout-entrance mb-8 border-b border-[var(--border)] pb-7 md:mb-10 md:pb-8">
-        <div className="flex items-end justify-between gap-5">
-          <div>
-            <div className="text-[10px] uppercase tracking-[0.28em] text-[var(--muted)]">
+      <Box
+        component="header"
+        className="checkout-entrance mb-8 border-b border-[var(--border)] pb-7 md:mb-10 md:pb-8"
+      >
+        <Box component="div" className="flex items-end justify-between gap-5">
+          <Box component="div">
+            <Box
+              component="div"
+              className="text-[10px] uppercase tracking-[0.28em] text-[var(--muted)]"
+            >
               PUFF JO / {t('CHECKOUT')}
-            </div>
-            <h1 className="mt-3 font-display text-4xl uppercase leading-none md:text-6xl">
+            </Box>
+            <Box
+              component="h1"
+              className="mt-3 font-display text-4xl uppercase leading-none md:text-6xl"
+            >
               {t('Complete your order')}
-            </h1>
-            <p className="mt-3 text-sm text-[var(--text-secondary)]">
+            </Box>
+            <Box component="p" className="mt-3 text-sm text-[var(--text-secondary)]">
               {t('Secure checkout · Fast delivery across Jordan')}
-            </p>
-          </div>
-          <div className="hidden text-right text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] sm:block">
-            {lines.length} {t('items')} <span className="mx-2">·</span>{' '}
+            </Box>
+          </Box>
+          <Box
+            component="div"
+            className="hidden text-right text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] sm:block"
+          >
+            {lines.length} {t('items')}{' '}
+            <Box component="span" className="mx-2">
+              ·
+            </Box>{' '}
             {new Intl.NumberFormat(locale === 'ar' ? 'ar-JO' : 'en-JO', {
               style: 'currency',
               currency: 'JOD',
               maximumFractionDigits: 2,
             }).format(total)}
-          </div>
-        </div>
-        <div className="mt-8 flex max-w-2xl items-center gap-2 text-[10px] uppercase tracking-[0.16em] text-[var(--muted)] md:gap-3">
-          <span className="font-semibold text-[var(--text)]">01 {t('Cart')}</span>
-          <span className="h-px flex-1 bg-[var(--border)]" />
-          <span>02 {t('Delivery')}</span>
-          <span className="h-px flex-1 bg-[var(--border)]" /> <span>03 {t('Confirm')}</span>
-        </div>
-      </header>
-      <div className="checkout-layout mt-8 grid w-full gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(390px,30vw)] lg:gap-16">
-        <div className="checkout-form checkout-form-shell space-y-5 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 md:p-8">
-          <div className="checkout-section border-b border-[var(--border)] pb-7">
-            <div className="checkout-section-kicker">01</div>
-            <h2 className="mt-2 text-xl font-semibold uppercase tracking-[0.08em]">
+          </Box>
+        </Box>
+        <Box
+          component="div"
+          className="mt-8 flex max-w-2xl items-center gap-2 text-[10px] uppercase tracking-[0.16em] text-[var(--muted)] md:gap-3"
+        >
+          <Box component="span" className="font-semibold text-[var(--text)]">
+            01 {t('Cart')}
+          </Box>
+          <Box component="span" className="h-px flex-1 bg-[var(--border)]" />
+          <Box component="span">02 {t('Delivery')}</Box>
+          <Box component="span" className="h-px flex-1 bg-[var(--border)]" />{' '}
+          <Box component="span">03 {t('Confirm')}</Box>
+        </Box>
+      </Box>
+      <Box
+        component="div"
+        className="checkout-layout mt-8 grid w-full gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(390px,30vw)] lg:gap-16"
+      >
+        <Box
+          component="div"
+          className="checkout-form checkout-form-shell min-w-0 space-y-5 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 md:p-8"
+        >
+          <Box component="div" className="checkout-section border-b border-[var(--border)] pb-7">
+            <Box component="div" className="checkout-section-kicker">
+              01
+            </Box>
+            <Box component="h2" className="mt-2 text-xl font-semibold uppercase tracking-[0.08em]">
               {t('CONTACT')}
-            </h2>
-            <p className="mt-2 text-sm text-[var(--text-secondary)]">
+            </Box>
+            <Box component="p" className="mt-2 text-sm text-[var(--text-secondary)]">
               {t('Who should we contact about this order?')}
-            </p>
-          </div>
+            </Box>
+          </Box>
           {!lines.length ? (
-            <div className="rounded-[24px] border border-white/8 bg-black/10 p-5 text-sm text-[var(--text-secondary)]">
+            <Box
+              component="div"
+              className="rounded-[24px] border border-white/8 bg-black/10 p-5 text-sm text-[var(--text-secondary)]"
+            >
               {t('YOUR CART IS EMPTY.')}
-            </div>
+            </Box>
           ) : null}
           {addresses.length ? (
-            <div className="space-y-3 border-b border-[var(--border)] pb-7">
-              <div className="text-[10px] tracking-[0.22em] text-[var(--muted)] md:text-xs">
+            <Box component="div" className="space-y-3 border-b border-[var(--border)] pb-7">
+              <Box
+                component="div"
+                className="text-[10px] tracking-[0.22em] text-[var(--muted)] md:text-xs"
+              >
                 {t('Saved addresses')}
-              </div>
-              <div className="grid gap-3">
+              </Box>
+              <Box component="div" className="grid gap-3">
                 {addresses.map((address) => (
-                  <button
+                  <Box
+                    component="button"
                     key={address.id}
                     type="button"
                     onClick={() => setSelectedAddressId(address.id)}
-                    className={`rounded-[18px] border px-3 py-3 text-left transition md:rounded-[22px] md:px-4 md:py-4 ${
+                    className={`w-full min-w-0 rounded-[18px] border px-3 py-3 text-left transition md:rounded-[22px] md:px-4 md:py-4 ${
                       selectedAddressId === address.id
                         ? 'border-[var(--text)] bg-[color:color-mix(in_srgb,var(--card)_88%,var(--text)_12%)] text-[var(--text)]'
                         : 'border-white/10 bg-transparent text-[var(--text)]'
                     }`}
                   >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="text-sm font-medium uppercase tracking-[0.16em]">
+                    <Box component="div" className="flex items-center justify-between gap-3">
+                      <Box
+                        component="div"
+                        className="text-sm font-medium uppercase tracking-[0.16em]"
+                      >
                         {address.label}
-                      </div>
+                      </Box>
                       {address.isDefault ? (
-                        <span
+                        <Box
+                          component="span"
                           className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.2em] ${selectedAddressId === address.id ? 'bg-[var(--text)] text-[var(--background)]' : 'border border-white/10 text-[var(--muted)]'}`}
                         >
                           {t('Default')}
-                        </span>
+                        </Box>
                       ) : null}
-                    </div>
-                    <div
+                    </Box>
+                    <Box
+                      component="div"
                       className={`mt-2 text-sm ${selectedAddressId === address.id ? 'text-[var(--text-secondary)]' : 'text-[var(--text-secondary)]'}`}
                     >
                       {address.fullName} · {address.phone}
-                    </div>
-                    <div
+                    </Box>
+                    <Box
+                      component="div"
                       className={`mt-1 text-sm ${selectedAddressId === address.id ? 'text-[var(--text-secondary)]' : 'text-[var(--text-secondary)]'}`}
                     >
                       {[address.country, address.city, address.area].filter(Boolean).join(', ')}
-                    </div>
-                    <div
+                    </Box>
+                    <Box
+                      component="div"
                       className={`mt-1 text-sm ${selectedAddressId === address.id ? 'text-[var(--text-secondary)]' : 'text-[var(--text-secondary)]'}`}
                     >
                       {[address.street, address.building].filter(Boolean).join(', ')}
-                    </div>
-                  </button>
+                    </Box>
+                  </Box>
                 ))}
-              </div>
-              <div className="flex justify-end">
+              </Box>
+              <Box component="div" className="flex justify-end">
                 <Link
                   href="/addresses/new"
                   className="rounded-[0.25rem] border border-white/10 px-4 py-2 text-xs tracking-[0.2em]"
                 >
                   {t('ADD ADDRESS')}
                 </Link>
-              </div>
-            </div>
+              </Box>
+            </Box>
           ) : (
-            <div className="border-b border-[var(--border)] pb-7 text-sm text-[var(--text-secondary)]">
-              <div>{t('No saved addresses.')}</div>
+            <Box
+              component="div"
+              className="border-b border-[var(--border)] pb-7 text-sm text-[var(--text-secondary)]"
+            >
+              <Box component="div">{t('No saved addresses.')}</Box>
               <Link
                 href="/addresses/new"
                 className="mt-4 inline-flex rounded-[0.25rem] border border-white/10 px-4 py-2 text-xs tracking-[0.2em] text-[var(--text)]"
               >
                 {t('ADD ADDRESS')}
               </Link>
-            </div>
+            </Box>
           )}
-          <div className="checkout-section border-b border-[var(--border)] pb-8">
-            <div className="mb-5">
-              <div className="checkout-section-kicker">02</div>
-              <h2 className="mt-2 text-xl font-semibold uppercase tracking-[0.08em]">
-                {t('DELIVERY ADDRESS')}
-              </h2>
-              <p className="mt-2 text-sm text-[var(--text-secondary)]">
-                {t('Where should we deliver your order?')}
-              </p>
-            </div>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <select
-                value={form.country}
-                onChange={(event) =>
-                  setForm((current) => ({
-                    ...current,
-                    country: event.target.value,
-                    city: '',
-                  }))
-                }
-                className="checkout-input"
-              >
-                <option value="">{t('Select a country')}</option>
-                {countryOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              <select
-                value={form.city}
-                onChange={(event) =>
-                  setForm((current) => ({
-                    ...current,
-                    city: event.target.value,
-                  }))
-                }
-                className="checkout-input"
-              >
-                <option value="">{t('Select a city')}</option>
-                {cityOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              {checkoutFields.map((field) => (
-                <label key={field.key} className={field.key === 'street' ? 'md:col-span-2' : ''}>
-                  <span className="checkout-label">{t(field.label)}</span>
-                  <input
-                    value={form[field.key]}
-                    onChange={(event) =>
-                      setForm((current) => ({ ...current, [field.key]: event.target.value }))
-                    }
-                    className="checkout-input"
-                  />
-                </label>
-              ))}
-            </div>
-            {form.city && hasConfiguredDelivery ? (
-              <div className="mt-4 text-xs text-[var(--success)]">
-                ✓ {t('Delivery available')} · {t('Estimated fee')}: {formatCurrency(shippingAmount)}
-              </div>
-            ) : null}
-          </div>
-          <div className="checkout-section border-b border-[var(--border)] pb-8">
-            <div className="mb-5">
-              <div className="checkout-section-kicker">03</div>
-              <h2 className="mt-2 text-xl font-semibold uppercase tracking-[0.08em]">
-                {t('PAYMENT')}
-              </h2>
-              <p className="mt-2 text-sm text-[var(--text-secondary)]">
-                {t('Choose how you would like to pay.')}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() =>
-                setForm((current) => ({ ...current, paymentMethod: 'cash_on_delivery' }))
-              }
-              className={`flex w-full items-center justify-between rounded-xl border p-4 text-left transition ${form.paymentMethod === 'cash_on_delivery' ? 'border-[var(--text)] bg-[var(--surface)]' : 'border-[var(--border)]'}`}
-            >
-              <span className="flex items-center gap-3">
-                <span
-                  className={`flex h-5 w-5 items-center justify-center rounded-full border ${form.paymentMethod === 'cash_on_delivery' ? 'border-[var(--text)]' : 'border-[var(--muted)]'}`}
-                >
-                  <span
-                    className={`h-2.5 w-2.5 rounded-full bg-[var(--text)] ${form.paymentMethod === 'cash_on_delivery' ? '' : 'scale-0'}`}
-                  />
-                </span>
-                <span>
-                  <span className="block text-sm font-semibold">{t('Cash on Delivery')}</span>
-                  <span className="mt-1 block text-xs text-[var(--text-secondary)]">
-                    {t('Pay when your order arrives')}
-                  </span>
-                </span>
-              </span>
-              <span className="text-sm">
-                {form.paymentMethod === 'cash_on_delivery' ? '✓' : ''}
-              </span>
-            </button>
-          </div>
-          <div>
-            <label
-              htmlFor="checkout-notes"
-              className="mb-2 block text-xs tracking-[0.16em] text-[var(--muted)]"
-            >
-              {t('Delivery instructions (optional)')}
-            </label>
-            <textarea
-              id="checkout-notes"
-              value={form.notes}
-              onChange={(event) =>
-                setForm((current) => ({
-                  ...current,
-                  notes: event.target.value,
-                }))
-              }
-              placeholder={t('Add delivery instructions or a note for your order')}
-              rows={3}
-              className="w-full resize-y rounded-[0.25rem] border border-white/10 bg-black/20 px-5 py-3 text-sm outline-none"
-            />
-          </div>
-        </div>
-        <aside className="checkout-summary h-fit rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 md:p-7 lg:sticky lg:top-[120px]">
-          <div className="mb-4 text-[10px] tracking-[0.22em] text-[var(--muted)] md:text-xs">
+          <CheckoutDetailsPanel
+            form={form}
+            setForm={setForm}
+            countryOptions={countryOptions}
+            cityOptions={cityOptions}
+            hasConfiguredDelivery={hasConfiguredDelivery}
+            deliveryFee={formatCurrency(shippingAmount)}
+            t={t}
+          />
+        </Box>
+        <Box
+          component="aside"
+          className="checkout-summary h-fit rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 md:p-7 lg:sticky lg:top-[120px]"
+        >
+          <Box
+            component="div"
+            className="mb-4 text-[10px] tracking-[0.22em] text-[var(--muted)] md:text-xs"
+          >
             {t('ORDER SUMMARY')}
-          </div>
-          <div className="mb-5 space-y-3">
+          </Box>
+          <Box component="div" className="mb-5 space-y-3">
             {lines.map((line) => (
-              <div
+              <Box
+                component="div"
                 key={line.lineId}
                 className="checkout-product rounded-xl border border-[var(--border)] bg-[var(--background-secondary)]/30 p-3"
               >
-                <div className="flex items-center gap-3">
-                  <img
+                <Box component="div" className="flex items-center gap-3">
+                  <Image
                     src={line.product.images[0]?.url || '/products/puff-jo-product-default.png'}
                     alt={localize(line.product.name, line.product.nameAr)}
                     className="h-[76px] w-[68px] rounded-xl bg-[var(--background-secondary)] object-contain p-1.5"
                   />
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm">
+                  <Box component="div" className="min-w-0 flex-1">
+                    <Box component="div" className="truncate text-sm">
                       {localize(line.product.name, line.product.nameAr)}
-                    </div>
-                    <div className="mt-1 text-xs text-[var(--text-secondary)]">
+                    </Box>
+                    <Box component="div" className="mt-1 text-xs text-[var(--text-secondary)]">
                       {localize(line.variant.size, line.variant.sizeAr)}
-                    </div>
+                    </Box>
                     <CartSelectionList selections={line.selections} compact />
-                    <div className="mt-3 inline-flex items-center gap-3 rounded-full border border-white/10 px-3 py-2">
-                      <button
+                    <Box
+                      component="div"
+                      className="mt-3 inline-flex items-center gap-3 rounded-full border border-white/10 px-3 py-2"
+                    >
+                      <Box
+                        component="button"
                         type="button"
                         onClick={() => updateQuantity(line.lineId, Math.max(1, line.quantity - 1))}
                         className="text-[var(--text-secondary)] transition hover:text-[var(--text)]"
                         aria-label={`Decrease quantity for ${localize(line.product.name, line.product.nameAr)}`}
                       >
                         <Minus className="h-4 w-4" />
-                      </button>
-                      <span className="min-w-4 text-sm">{line.quantity}</span>
-                      <button
+                      </Box>
+                      <Box component="span" className="min-w-4 text-sm">
+                        {line.quantity}
+                      </Box>
+                      <Box
+                        component="button"
                         type="button"
                         disabled={
                           !line.variant.allowBackorder &&
@@ -2287,30 +2395,34 @@ export function CheckoutPageView({
                         aria-label={`Increase quantity for ${localize(line.product.name, line.product.nameAr)}`}
                       >
                         <Plus className="h-4 w-4" />
-                      </button>
-                    </div>
-                    <div className="mt-2 text-[10px] uppercase tracking-[0.2em] text-[var(--muted)]">
+                      </Box>
+                    </Box>
+                    <Box
+                      component="div"
+                      className="mt-2 text-[10px] uppercase tracking-[0.2em] text-[var(--muted)]"
+                    >
                       {line.variant.allowBackorder
                         ? t('Backorder available')
                         : `${t('Max')}: ${Math.max(1, line.variant.stockQuantity)}`}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm">
+                    </Box>
+                  </Box>
+                  <Box component="div" className="text-right">
+                    <Box component="div" className="text-sm">
                       {formatCurrency(line.variant.price * line.quantity)}
-                    </div>
-                    <button
+                    </Box>
+                    <Box
+                      component="button"
                       type="button"
                       onClick={() => removeItem(line.lineId)}
                       className="mt-3 text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] transition hover:text-[var(--text)]"
                     >
                       {t('REMOVE')}
-                    </button>
-                  </div>
-                </div>
-              </div>
+                    </Box>
+                  </Box>
+                </Box>
+              </Box>
             ))}
-          </div>
+          </Box>
           <SummaryRow label={t('Subtotal')} value={formatCurrency(subtotal)} />
           {flashSaleDiscountAmount > 0 ? (
             <SummaryRow
@@ -2326,50 +2438,53 @@ export function CheckoutPageView({
               value={`-${formatCurrency(couponDiscountAmount)}`}
             />
           ) : null}
-          <div className="mt-6 border-t border-[var(--border)] pt-5">
-            <button
+          <Box component="div" className="mt-6 border-t border-[var(--border)] pt-5">
+            <Box
+              component="button"
               type="button"
               onClick={() => setIsCouponOpen((open) => !open)}
               className="text-sm text-[var(--text-secondary)]"
             >
               {isCouponOpen ? '−' : '+'} {t('Have a discount code?')}
-            </button>
-            <div
+            </Box>
+            <Box
+              component="div"
               className={`overflow-hidden transition-all duration-200 ${isCouponOpen ? 'mt-3 max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}
             >
-              <div className="grid gap-3">
-                <input
+              <Box component="div" className="grid gap-3">
+                <StoreTextInput
                   value={couponCode}
                   onChange={(event) => setCouponCode(event.target.value)}
                   placeholder={t('Enter discount code')}
-                  className="checkout-input"
                 />
                 {appliedCoupon ? (
-                  <button
+                  <Box
+                    component="button"
                     type="button"
                     onClick={clearAppliedCoupon}
                     className="rounded-full border border-white/10 px-4 py-2.5 text-sm tracking-[0.2em] md:px-5 md:py-3"
                   >
                     {t('REMOVE COUPON')}
-                  </button>
+                  </Box>
                 ) : (
-                  <button
+                  <Box
+                    component="button"
                     type="button"
                     disabled={!lines.length || isApplyingCoupon}
                     onClick={applyCoupon}
                     className="rounded-full border border-white/10 px-4 py-2.5 text-sm tracking-[0.2em] disabled:cursor-not-allowed disabled:opacity-40 md:px-5 md:py-3"
                   >
                     {isApplyingCoupon ? t('APPLYING') : t('Apply')}
-                  </button>
+                  </Box>
                 )}
                 {appliedCoupon?.description ? (
-                  <div className="text-xs text-[var(--text-secondary)]">
+                  <Box component="div" className="text-xs text-[var(--text-secondary)]">
                     {appliedCoupon.description}
-                  </div>
+                  </Box>
                 ) : null}
-              </div>
-            </div>
-          </div>
+              </Box>
+            </Box>
+          </Box>
           <SummaryRow
             label={t('Delivery')}
             value={
@@ -2380,39 +2495,43 @@ export function CheckoutPageView({
           />
           <SummaryRow label={t('Total')} value={formatCurrency(total)} emphasis />
           {!hasConfiguredDelivery && lines.length ? (
-            <p className="mt-4 text-sm leading-7 text-[var(--text-secondary)]">
+            <Box component="p" className="mt-4 text-sm leading-7 text-[var(--text-secondary)]">
               {t('No delivery fee is configured for the selected location.')}
-            </p>
+            </Box>
           ) : null}
-          <button
+          <Box
+            component="button"
             type="button"
             disabled={!lines.length || isSubmitting || !hasConfiguredDelivery}
             onClick={placeOrder}
             className="checkout-order-button mt-7 w-full rounded-xl bg-[var(--text)] px-5 py-4 text-sm font-semibold tracking-[0.16em] text-[var(--background)] disabled:cursor-not-allowed disabled:opacity-40"
           >
             {isSubmitting ? (
-              <span className="inline-flex items-center gap-2">
-                <span className="checkout-spinner" />
+              <Box component="span" className="inline-flex items-center gap-2">
+                <Box component="span" className="checkout-spinner" />
                 {t('PLACING ORDER')}...
-              </span>
+              </Box>
             ) : (
-              <span className="inline-flex items-center gap-3">
+              <Box component="span" className="inline-flex items-center gap-3">
                 {t('PLACE ORDER')}{' '}
                 {dir === 'rtl' ? (
                   <ArrowLeft className="h-4 w-4" />
                 ) : (
                   <ArrowRight className="h-4 w-4" />
                 )}
-              </span>
+              </Box>
             )}
-          </button>
-          <p className="mt-4 text-center text-xs leading-6 text-[var(--text-secondary)]">
+          </Box>
+          <Box
+            component="p"
+            className="mt-4 text-center text-xs leading-6 text-[var(--text-secondary)]"
+          >
             🔒 {t('Secure checkout')}
-            <br />
+            <Box component="br" />
             {t('Your order is only created after confirmation.')}
-          </p>
-        </aside>
-      </div>
+          </Box>
+        </Box>
+      </Box>
     </Container>
   );
 }
@@ -2437,23 +2556,29 @@ export function AuthPageView({ mode }: { mode: 'login' | 'register' | 'forgot-pa
 
   return (
     <Container className="flex min-h-[70vh] items-center py-10">
-      <div className="mx-auto w-full max-w-lg rounded-[36px] border border-white/8 bg-white/3 p-8 md:p-10">
-        <div className="text-xs tracking-[0.25em] text-[var(--muted)]">{t('SUPABASE AUTH')}</div>
-        <h1 className="mt-3 font-display text-5xl uppercase">
+      <Box
+        component="div"
+        className="mx-auto w-full max-w-lg rounded-[36px] border border-white/8 bg-white/3 p-8 md:p-10"
+      >
+        <Box component="div" className="text-xs tracking-[0.25em] text-[var(--muted)]">
+          {t('SUPABASE AUTH')}
+        </Box>
+        <Box component="h1" className="mt-3 font-display text-5xl uppercase">
           {mode === 'login'
             ? t('LOG IN')
             : mode === 'register'
               ? t('JOIN THE PUFF CLUB')
               : t('RESET PASSWORD')}
-        </h1>
-        <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
+        </Box>
+        <Box component="p" className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
           {mode === 'login'
             ? 'Sign in to keep your bag, favorites, and orders in sync.'
             : mode === 'register'
               ? 'Create your account before the next drop disappears.'
               : 'We will send a reset link if your Supabase project is configured.'}
-        </p>
-        <form
+        </Box>
+        <Box
+          component="form"
           onSubmit={handleSubmit(async () => {
             await new Promise((resolve) => setTimeout(resolve, 500));
             setSubmitted(true);
@@ -2462,28 +2587,32 @@ export function AuthPageView({ mode }: { mode: 'login' | 'register' | 'forgot-pa
         >
           {mode === 'register' ? (
             <Field label={t('Full Name')} error={errors.fullName?.message}>
-              <input
+              <Box
+                component="input"
                 {...register('fullName')}
                 className="h-12 w-full rounded-full border border-white/10 bg-black/20 px-5 text-sm outline-none"
               />
             </Field>
           ) : null}
           <Field label={t('Email')} error={errors.email?.message}>
-            <input
+            <Box
+              component="input"
               {...register('email')}
               className="h-12 w-full rounded-full border border-white/10 bg-black/20 px-5 text-sm outline-none"
             />
           </Field>
           {mode !== 'forgot-password' ? (
             <Field label={t('Password')} error={errors.password?.message}>
-              <input
+              <Box
+                component="input"
                 type="password"
                 {...register('password')}
                 className="h-12 w-full rounded-full border border-white/10 bg-black/20 px-5 text-sm outline-none"
               />
             </Field>
           ) : null}
-          <button
+          <Box
+            component="button"
             type="submit"
             disabled={isSubmitting}
             className="w-full rounded-full bg-[var(--text)] px-5 py-3 text-sm tracking-[0.2em] text-black"
@@ -2495,14 +2624,14 @@ export function AuthPageView({ mode }: { mode: 'login' | 'register' | 'forgot-pa
                 : mode === 'register'
                   ? t('Register')
                   : t('Send code')}
-          </button>
+          </Box>
           {submitted ? (
-            <p className="text-sm text-[var(--blush)]">
+            <Box component="p" className="text-sm text-[var(--blush)]">
               {t('Form captured. Wire this to your Supabase auth environment keys before launch.')}
-            </p>
+            </Box>
           ) : null}
-        </form>
-      </div>
+        </Box>
+      </Box>
     </Container>
   );
 }
@@ -2512,16 +2641,21 @@ export function OrderSuccessPageView({ orderId }: { orderId: string }) {
 
   return (
     <Container className="py-12 md:py-20">
-      <div className="mx-auto max-w-3xl rounded-[36px] border border-white/8 bg-white/3 p-8 md:p-10">
+      <Box
+        component="div"
+        className="mx-auto max-w-3xl rounded-[36px] border border-white/8 bg-white/3 p-8 md:p-10"
+      >
         <SectionHeading
           title={t('ORDER RECEIVED.')}
           description={`${t('Order number')} #${orderId}`}
         />
-        <div className="space-y-4 text-sm leading-7 text-[var(--text-secondary)]">
-          <p>{t('Your order has been placed successfully.')}</p>
-          <p>{t('You can review delivery updates and order details from your account page.')}</p>
-        </div>
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+        <Box component="div" className="space-y-4 text-sm leading-7 text-[var(--text-secondary)]">
+          <Box component="p">{t('Your order has been placed successfully.')}</Box>
+          <Box component="p">
+            {t('You can review delivery updates and order details from your account page.')}
+          </Box>
+        </Box>
+        <Box component="div" className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Link
             href="/account"
             className="rounded-full border border-white/10 px-5 py-3 text-center text-sm tracking-[0.2em]"
@@ -2535,8 +2669,8 @@ export function OrderSuccessPageView({ orderId }: { orderId: string }) {
           >
             {t('CONTINUE SHOPPING')}
           </Link>
-        </div>
-      </div>
+        </Box>
+      </Box>
     </Container>
   );
 }
@@ -2544,19 +2678,31 @@ export function OrderSuccessPageView({ orderId }: { orderId: string }) {
 function CatalogHero({ title, description }: { title: string; description: string }) {
   const { t } = useLocale();
   return (
-    <section className="relative overflow-hidden border-b border-[var(--border)] bg-[radial-gradient(circle_at_80%_20%,rgba(255,255,255,.08),transparent_25%),var(--background)] py-12 md:py-20">
+    <Box
+      component="section"
+      className="relative overflow-hidden border-b border-[var(--border)] bg-[radial-gradient(circle_at_80%_20%,rgba(255,255,255,.08),transparent_25%),var(--background)] py-12 md:py-20"
+    >
       <Container className="relative">
-        <div className="text-[11px] font-bold tracking-[0.3em] text-[var(--accent)]">
+        <Box
+          component="div"
+          className="text-[11px] font-bold tracking-[0.3em] text-[var(--accent)]"
+        >
           {t('PUFF JO / STORE')}
-        </div>
-        <h1 className="mt-4 max-w-3xl text-4xl font-black uppercase leading-none tracking-[-0.04em] md:text-7xl">
+        </Box>
+        <Box
+          component="h1"
+          className="mt-4 max-w-3xl text-4xl font-black uppercase leading-none tracking-[-0.04em] md:text-7xl"
+        >
           {t(title)}
-        </h1>
-        <p className="mt-5 max-w-2xl text-sm leading-7 text-[var(--text-secondary)] md:text-base">
+        </Box>
+        <Box
+          component="p"
+          className="mt-5 max-w-2xl text-sm leading-7 text-[var(--text-secondary)] md:text-base"
+        >
           {t(description)}
-        </p>
+        </Box>
       </Container>
-    </section>
+    </Box>
   );
 }
 
@@ -2570,12 +2716,16 @@ function SummaryRow({
   emphasis?: boolean;
 }) {
   return (
-    <div
-      className={`flex items-center justify-between ${emphasis ? 'text-lg text-[var(--text)]' : 'text-sm text-[var(--text-secondary)]'}`}
+    <Box
+      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}
     >
-      <span>{label}</span>
-      <span className={emphasis ? 'text-[var(--text)]' : ''}>{value}</span>
-    </div>
+      <Text size={emphasis ? 'lg' : 'sm'} c={emphasis ? undefined : 'dimmed'}>
+        {label}
+      </Text>
+      <Text size={emphasis ? 'lg' : 'sm'} fw={emphasis ? 700 : 500}>
+        {value}
+      </Text>
+    </Box>
   );
 }
 
@@ -2620,11 +2770,17 @@ function sameAppliedCoupon(
 
 function Field({ label, error, children }: { label: string; error?: string; children: ReactNode }) {
   return (
-    <label className="block">
-      <span className="mb-2 block text-xs tracking-[0.24em] text-[var(--muted)]">{label}</span>
+    <Box component="label" className="block">
+      <Box component="span" className="mb-2 block text-xs tracking-[0.24em] text-[var(--muted)]">
+        {label}
+      </Box>
       {children}
-      {error ? <span className="mt-2 block text-xs text-[var(--blush)]">{error}</span> : null}
-    </label>
+      {error ? (
+        <Box component="span" className="mt-2 block text-xs text-[var(--blush)]">
+          {error}
+        </Box>
+      ) : null}
+    </Box>
   );
 }
 
@@ -2642,20 +2798,23 @@ function Accordion({
   const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
 
   return (
-    <div className="border-b border-[var(--border)] pb-4 last:border-b-0">
-      <button
+    <Box component="div" className="border-b border-[var(--border)] pb-4 last:border-b-0">
+      <Box
+        component="button"
         type="button"
         onClick={() => setOpen((value) => !value)}
         className="flex w-full items-center justify-between py-2 text-left text-sm font-semibold uppercase tracking-[0.14em] text-[var(--text)]"
       >
-        <span>{t(title)}</span>
+        <Box component="span">{t(title)}</Box>
         <ArrowIcon
           className={`h-4 w-4 transition ${open ? (dir === 'rtl' ? '-rotate-90' : 'rotate-90') : ''}`}
         />
-      </button>
+      </Box>
       {open ? (
-        <div className="pt-2 text-sm leading-7 text-[var(--text-secondary)]">{children}</div>
+        <Box component="div" className="pt-2 text-sm leading-7 text-[var(--text-secondary)]">
+          {children}
+        </Box>
       ) : null}
-    </div>
+    </Box>
   );
 }

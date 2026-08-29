@@ -75,7 +75,7 @@ export function useThemeMode() {
   return value;
 }
 
-export function ThemeSwitcher() {
+export function ThemeSwitcher({ ariaLabel }: { ariaLabel?: string } = {}) {
   const { colorScheme, toggleColorScheme, isDark } = useThemeMode();
 
   return (
@@ -85,7 +85,9 @@ export function ThemeSwitcher() {
       radius="xl"
       size={40}
       onClick={toggleColorScheme}
-      aria-label={colorScheme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+      aria-label={
+        ariaLabel ?? (colorScheme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme')
+      }
       styles={{
         root: {
           border: isDark ? '1px solid rgba(255,255,255,0.10)' : '1px solid rgba(23,23,23,0.10)',

@@ -1,5 +1,7 @@
 'use client';
 
+import { Box } from '@mantine/core';
+
 import { useEffect, useState } from 'react';
 import { LoaderBars } from '@/components/ui/loaders-bars';
 
@@ -55,12 +57,13 @@ export function NavigationLoader() {
   if (!visible) return null;
 
   return (
-    <div
+    <Box
+      component="div"
       aria-busy="true"
       aria-label="Loading"
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/95 text-foreground backdrop-blur-sm"
     >
       <LoaderBars barWidth={6} barHeight={46} gap={6} count={5} />
-    </div>
+    </Box>
   );
 }

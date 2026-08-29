@@ -1,5 +1,7 @@
 'use client';
 
+import { Box } from '@mantine/core';
+
 import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 import { Languages } from 'lucide-react';
 import { Locale, translateText } from '@/lib/i18n';
@@ -80,11 +82,12 @@ export function useLocale() {
 }
 
 export function LocaleSwitcher() {
-  const { locale, setLocale } = useLocale();
+  const { locale, setLocale, t } = useLocale();
   const { isDark } = useThemeMode();
 
   return (
-    <button
+    <Box
+      component="button"
       type="button"
       onClick={() => setLocale(locale === 'en' ? 'ar' : 'en')}
       className="inline-flex h-10 w-10 items-center justify-center rounded-full border shadow-[0_10px_26px_rgba(0,0,0,0.14)] transition hover:-translate-y-0.5"
@@ -93,10 +96,10 @@ export function LocaleSwitcher() {
         background: isDark ? 'rgba(255,255,255,0.06)' : '#ffffff',
         color: isDark ? '#ffffff' : '#111111',
       }}
-      aria-label={`Change language. Current language: ${locale}`}
-      title={`Change language (${locale === 'en' ? 'العربية' : 'English'})`}
+      aria-label={`${t('Change language')}. ${t('Current language')}: ${locale === 'ar' ? 'العربية' : 'English'}`}
+      title={`${t('Change language')} (${locale === 'en' ? 'العربية' : 'English'})`}
     >
       <Languages className="h-4 w-4" />
-    </button>
+    </Box>
   );
 }

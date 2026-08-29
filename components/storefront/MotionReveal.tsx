@@ -1,6 +1,6 @@
 'use client';
 
-import { Transition } from '@mantine/core';
+import { Box, Transition } from '@mantine/core';
 import { PropsWithChildren, useEffect, useState } from 'react';
 
 type MotionRevealProps = PropsWithChildren<{
@@ -21,7 +21,11 @@ export function MotionReveal({
 
   return (
     <Transition mounted={mounted} transition={transition} duration={duration} timingFunction="ease">
-      {(styles) => <div style={styles}>{children}</div>}
+      {(styles) => (
+        <Box component="div" style={styles}>
+          {children}
+        </Box>
+      )}
     </Transition>
   );
 }

@@ -1,6 +1,8 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { Box, Image } from '@mantine/core';
+import { MotionBox } from '@/components/storefront/ui/motion-box';
+
 import { ArrowLeft, ArrowRight, Cloud, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -32,7 +34,7 @@ export function StorefrontHome({
   const bestSellers = featured.length ? featured : products.slice(0, 4);
 
   return (
-    <div className="overflow-x-clip bg-[var(--background)] pb-16 md:pb-24">
+    <Box component="div" className="overflow-x-clip bg-[var(--background)] pb-16 md:pb-24">
       <Hero slides={heroSlides} />
 
       {flashSale ? <PromoRibbon flashSale={flashSale} /> : null}
@@ -41,7 +43,7 @@ export function StorefrontHome({
 
       {quickPicks.length ? (
         <Container className="py-20 md:py-32">
-          <section>
+          <Box component="section">
             <SectionHeading
               eyebrow={t('FEATURED GEAR')}
               title={t('Your next vape, sorted.')}
@@ -59,13 +61,13 @@ export function StorefrontHome({
               }
             />
             <ProductGrid products={quickPicks} />
-          </section>
+          </Box>
         </Container>
       ) : null}
 
       {refills.length ? (
         <Container className="bg-[var(--background-secondary)] py-20 md:my-4 md:py-28">
-          <section>
+          <Box component="section">
             <SectionHeading
               eyebrow={t('FLAVORS & E-LIQUIDS')}
               title={t('Find a flavor you will come back to')}
@@ -74,27 +76,27 @@ export function StorefrontHome({
               )}
             />
             <FlavorRail products={refills} />
-          </section>
+          </Box>
         </Container>
       ) : null}
 
       {bestSellers.length ? (
         <Container className="py-20 md:py-32">
-          <section>
+          <Box component="section">
             <SectionHeading
               eyebrow={t('POPULAR IN JORDAN')}
               title={t('What people are buying')}
               description={t('Reliable gear and flavors our customers keep coming back for.')}
             />
             <RankingRail products={bestSellers} />
-          </section>
+          </Box>
         </Container>
       ) : null}
 
       <WhyVapor />
 
       {!products.length ? <HomeEmptyState /> : null}
-    </div>
+    </Box>
   );
 }
 
@@ -130,7 +132,8 @@ function Hero({ slides }: { slides: HeroSlide[] }) {
       );
 
   return (
-    <section
+    <Box
+      component="section"
       className={`hero-backdrop relative isolate w-full min-w-0 min-h-[560px] overflow-hidden bg-[#0b0c0c] text-[#f4f1e8] md:min-h-[720px] ${slide ? 'has-slide' : ''}`}
       style={
         slide?.imageEnUrl || slide?.imageArUrl
@@ -142,31 +145,46 @@ function Hero({ slides }: { slides: HeroSlide[] }) {
           : undefined
       }
     >
-      <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-white/10 blur-3xl" />
-      <div className="mx-auto grid min-w-0 max-w-[1440px] grid-cols-1 items-center gap-8 px-5 py-16 sm:px-6 sm:py-20 md:grid-cols-[1.05fr_.95fr] md:gap-10 md:px-12 md:py-28">
-        <motion.div
+      <Box
+        component="div"
+        className="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-white/10 blur-3xl"
+      />
+      <Box
+        component="div"
+        className="mx-auto grid min-w-0 max-w-[1440px] grid-cols-1 items-center gap-8 px-5 py-16 sm:px-6 sm:py-20 md:grid-cols-[1.05fr_.95fr] md:gap-10 md:px-12 md:py-28"
+      >
+        <MotionBox
           initial={{ opacity: 0, x: dir === 'rtl' ? 30 : -30 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.7 }}
           className={`relative z-10 max-w-2xl ${slide ? 'hero-slide-content' : ''}`}
         >
           {!slide ? (
-            <div className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[0.28em] text-white">
+            <Box
+              component="div"
+              className="mb-5 flex items-center gap-3 text-xs font-bold uppercase tracking-[0.28em] text-white"
+            >
               <Cloud className="h-4 w-4" /> {t('PUFF JO / VAPE SHOP IN JORDAN')}
-            </div>
+            </Box>
           ) : null}
           {title ? (
-            <h1 className="max-w-full text-4xl font-black leading-[0.96] tracking-[-0.05em] sm:text-5xl md:max-w-xl md:text-6xl lg:text-8xl md:tracking-[-0.06em]">
+            <Box
+              component="h1"
+              className="max-w-full text-4xl font-black leading-[0.96] tracking-[-0.05em] sm:text-5xl md:max-w-xl md:text-6xl lg:text-8xl md:tracking-[-0.06em]"
+            >
               {title}
-            </h1>
+            </Box>
           ) : null}
           {description ? (
-            <p className="mt-6 max-w-lg text-base leading-7 text-[#b7c0b9] md:text-lg">
+            <Box
+              component="p"
+              className="mt-6 max-w-lg text-base leading-7 text-[#b7c0b9] md:text-lg"
+            >
               {description}
-            </p>
+            </Box>
           ) : null}
           {!slide ? (
-            <div className="mt-8 flex flex-wrap gap-3">
+            <Box component="div" className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/shop"
                 className="!text-black inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-black uppercase tracking-[0.12em] transition hover:bg-neutral-200"
@@ -178,42 +196,79 @@ function Hero({ slides }: { slides: HeroSlide[] }) {
                   <ArrowRight className="h-4 w-4" />
                 )}
               </Link>
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-3 text-sm text-[#b7c0b9]">
+              <Box
+                component="span"
+                className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-3 text-sm text-[#b7c0b9]"
+              >
                 <Zap className="h-4 w-4 text-white" /> {t('18+ ONLY')}
-              </span>
-            </div>
+              </Box>
+            </Box>
           ) : null}
-        </motion.div>
+        </MotionBox>
         {!slide ? (
-          <div className="relative flex min-h-[310px] items-center justify-center md:min-h-[430px]">
-            <div className="absolute h-64 w-64 rounded-full border border-white/25 md:h-96 md:w-96" />
-            <div className="absolute h-48 w-48 rounded-full border border-white/10 md:h-72 md:w-72" />
-            <div className="relative flex h-64 w-44 -rotate-6 flex-col justify-between rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-[#27352d] via-[#101513] to-[#070908] p-5 shadow-[0_35px_90px_rgba(0,0,0,.5)] md:h-80 md:w-56">
-              <div className="flex items-center justify-between text-[10px] font-bold tracking-[0.18em] text-white">
-                <span>PUFF/JOR</span>
-                <span>01</span>
-              </div>
-              <div>
-                <div className="text-7xl font-black tracking-[-.12em] text-[#f4f1e8]">V</div>
-                <div className="mt-2 text-[9px] uppercase tracking-[.3em] text-[#b7c0b9]">
+          <Box
+            component="div"
+            className="relative flex min-h-[310px] items-center justify-center md:min-h-[430px]"
+          >
+            <Box
+              component="div"
+              className="absolute h-64 w-64 rounded-full border border-white/25 md:h-96 md:w-96"
+            />
+            <Box
+              component="div"
+              className="absolute h-48 w-48 rounded-full border border-white/10 md:h-72 md:w-72"
+            />
+            <Box
+              component="div"
+              className="relative flex h-64 w-44 -rotate-6 flex-col justify-between rounded-[2.5rem] border border-white/20 bg-gradient-to-br from-[#27352d] via-[#101513] to-[#070908] p-5 shadow-[0_35px_90px_rgba(0,0,0,.5)] md:h-80 md:w-56"
+            >
+              <Box
+                component="div"
+                className="flex items-center justify-between text-[10px] font-bold tracking-[0.18em] text-white"
+              >
+                <Box component="span">PUFF/JOR</Box>
+                <Box component="span">01</Box>
+              </Box>
+              <Box component="div">
+                <Box
+                  component="div"
+                  className="text-7xl font-black tracking-[-.12em] text-[#f4f1e8]"
+                >
+                  V
+                </Box>
+                <Box
+                  component="div"
+                  className="mt-2 text-[9px] uppercase tracking-[.3em] text-[#b7c0b9]"
+                >
                   {t('Vape essentials')}
-                </div>
-              </div>
-              <div className="h-1.5 w-full rounded-full bg-white" />
-            </div>
-            <div className="absolute bottom-4 right-2 rotate-12 rounded-2xl border border-white/15 bg-[#171b1a] px-4 py-3 text-xs font-bold uppercase tracking-[.15em] text-[#b7c0b9] shadow-xl md:right-10">
-              <span className="text-white">{t('Ready for pickup')}</span>
-              <br />
+                </Box>
+              </Box>
+              <Box component="div" className="h-1.5 w-full rounded-full bg-white" />
+            </Box>
+            <Box
+              component="div"
+              className="absolute bottom-4 right-2 rotate-12 rounded-2xl border border-white/15 bg-[#171b1a] px-4 py-3 text-xs font-bold uppercase tracking-[.15em] text-[#b7c0b9] shadow-xl md:right-10"
+            >
+              <Box component="span" className="text-white">
+                {t('Ready for pickup')}
+              </Box>
+              <Box component="br" />
               {t('in Jordan')}
-            </div>
-          </div>
+            </Box>
+          </Box>
         ) : null}
-      </div>
+      </Box>
 
       {/* SCROLL INDICATOR */}
-      <div className="absolute bottom-6 left-1/2 z-20 hidden -translate-x-1/2 md:block">
-        <div className="flex h-10 w-6 justify-center rounded-full border border-white/40 pt-2">
-          <motion.div
+      <Box
+        component="div"
+        className="absolute bottom-6 left-1/2 z-20 hidden -translate-x-1/2 md:block"
+      >
+        <Box
+          component="div"
+          className="flex h-10 w-6 justify-center rounded-full border border-white/40 pt-2"
+        >
+          <MotionBox
             animate={{
               y: [0, 10, 0],
               opacity: [1, 0.3, 1],
@@ -224,9 +279,9 @@ function Hero({ slides }: { slides: HeroSlide[] }) {
             }}
             className="h-1.5 w-1.5 rounded-full bg-white"
           />
-        </div>
-      </div>
-    </section>
+        </Box>
+      </Box>
+    </Box>
   );
 }
 
@@ -236,29 +291,38 @@ function PopularCategories({ categories }: { categories: StoreCategory[] }) {
 
   return (
     <Container className="py-12 md:py-16">
-      <section>
-        <div className="mb-7 flex items-end justify-between gap-4">
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
+      <Box component="section">
+        <Box component="div" className="mb-7 flex items-end justify-between gap-4">
+          <Box component="div">
+            <Box
+              component="div"
+              className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent)]"
+            >
               {t('SHOP BY CATEGORY')}
-            </div>
-            <h2 className="mt-2 max-w-full text-3xl font-bold leading-tight text-[var(--text)] md:text-5xl">
+            </Box>
+            <Box
+              component="h2"
+              className="mt-2 max-w-full text-3xl font-bold leading-tight text-[var(--text)] md:text-5xl"
+            >
               {t('Find what fits your setup')}
-            </h2>
-          </div>
+            </Box>
+          </Box>
           <Link href="/shop" className="hidden text-sm font-semibold text-[var(--accent)] md:block">
             {t('VIEW SHOP')}
           </Link>
-        </div>
-        <div className="grid auto-rows-[150px] grid-cols-2 gap-2.5 sm:auto-rows-[180px] lg:auto-rows-[190px] lg:grid-cols-4 lg:gap-3">
+        </Box>
+        <Box
+          component="div"
+          className="grid auto-rows-[150px] grid-cols-2 gap-2.5 sm:auto-rows-[180px] lg:auto-rows-[190px] lg:grid-cols-4 lg:gap-3"
+        >
           {categories.map((category) => (
             <Link
               key={category.id}
               href={`/shop?category=${category.slug}`}
               className={`group relative min-w-0 overflow-hidden rounded-[4px] border border-white/10 bg-[var(--card)] transition duration-300 ease-[cubic-bezier(.22,1,.36,1)] hover:border-white/25 ${categories.indexOf(category) === 0 ? 'col-span-2 row-span-2' : categories.indexOf(category) === 1 ? 'row-span-1' : categories.indexOf(category) === 2 ? 'row-span-1' : 'col-span-2 md:col-span-2'}`}
             >
-              <div className="absolute inset-0 bg-[#171717]">
-                <img
+              <Box component="div" className="absolute inset-0 bg-[#171717]">
+                <Image
                   src={category.image?.trim() || '/products/puff-jo-product-default.png'}
                   alt={localize(category.name, category.nameAr)}
                   onError={(event) => {
@@ -267,27 +331,39 @@ function PopularCategories({ categories }: { categories: StoreCategory[] }) {
                   }}
                   className="h-full w-full object-cover transition-transform duration-500 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-[1.04]"
                 />
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent transition-colors duration-300 group-hover:from-black/80" />
-              <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 px-4 pb-4 pt-16 md:px-6 md:pb-6">
-                <div>
-                  <div className="text-lg font-bold leading-5 text-white transition-transform duration-300 group-hover:translate-x-[2px] md:text-2xl">
+              </Box>
+              <Box
+                component="div"
+                className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent transition-colors duration-300 group-hover:from-black/80"
+              />
+              <Box
+                component="div"
+                className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 px-4 pb-4 pt-16 md:px-6 md:pb-6"
+              >
+                <Box component="div">
+                  <Box
+                    component="div"
+                    className="text-lg font-bold leading-5 text-white transition-transform duration-300 group-hover:translate-x-[2px] md:text-2xl"
+                  >
                     {localize(category.name, category.nameAr)}
-                  </div>
-                  <p className="mt-1 line-clamp-2 text-[11px] leading-4 text-white/65 md:max-w-[300px] md:text-sm">
+                  </Box>
+                  <Box
+                    component="p"
+                    className="mt-1 line-clamp-2 text-[11px] leading-4 text-white/65 md:max-w-[300px] md:text-sm"
+                  >
                     {localize(category.description, category.descriptionAr)}
-                  </p>
-                </div>
+                  </Box>
+                </Box>
                 {isRtl ? (
                   <ArrowLeft className="h-5 w-5 shrink-0 text-white transition-transform duration-300 group-hover:-translate-x-1" />
                 ) : (
                   <ArrowRight className="h-5 w-5 shrink-0 text-white transition-transform duration-300 group-hover:translate-x-1" />
                 )}
-              </div>
+              </Box>
             </Link>
           ))}
-        </div>
-      </section>
+        </Box>
+      </Box>
     </Container>
   );
 }
@@ -306,20 +382,24 @@ function FlavorRail({ products }: { products: StoreProduct[] }) {
         });
 
   return (
-    <div className="relative">
-      <div className="mb-7 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
+    <Box component="div" className="relative">
+      <Box component="div" className="mb-7 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
         {filters.map((item) => (
-          <button
+          <Box
+            component="button"
             key={item}
             type="button"
             onClick={() => setFilter(item)}
             className={`min-h-11 shrink-0 rounded-full border px-4 text-[10px] font-bold tracking-[0.18em] transition ${filter === item ? 'border-[var(--text)] bg-[var(--text)] text-[var(--background)]' : 'border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--text-secondary)]'}`}
           >
             {t(item)}
-          </button>
+          </Box>
         ))}
-      </div>
-      <div className="-mx-4 flex min-w-0 snap-x gap-3 overflow-x-auto px-4 pb-3 [scrollbar-width:none] md:-mx-8 md:px-8">
+      </Box>
+      <Box
+        component="div"
+        className="-mx-4 flex min-w-0 snap-x gap-3 overflow-x-auto px-4 pb-3 [scrollbar-width:none] md:-mx-8 md:px-8"
+      >
         {visible.length ? (
           visible.map((product) => (
             <Link
@@ -327,93 +407,118 @@ function FlavorRail({ products }: { products: StoreProduct[] }) {
               href={`/product/${product.slug}`}
               className="group relative min-w-[74vw] snap-start overflow-hidden rounded-[4px] border border-white/10 bg-[var(--background)] p-3 transition duration-300 hover:-translate-y-1 sm:min-w-[280px] md:min-w-[300px]"
             >
-              <div className="flex h-52 items-center justify-center bg-[var(--background-secondary)]">
-                <img
+              <Box
+                component="div"
+                className="flex h-52 items-center justify-center bg-[var(--background-secondary)]"
+              >
+                <Image
                   src={product.images[0]?.url?.trim() || '/products/puff-jo-product-default.png'}
                   alt={localize(product.name, product.nameAr)}
                   className="h-full w-full object-contain p-5 transition duration-500 group-hover:scale-[1.045]"
                 />
-              </div>
-              <div className="flex items-end justify-between gap-3 px-1 pb-1 pt-4">
-                <div>
-                  <div className="text-[9px] uppercase tracking-[.22em] text-[var(--muted)]">
+              </Box>
+              <Box component="div" className="flex items-end justify-between gap-3 px-1 pb-1 pt-4">
+                <Box component="div">
+                  <Box
+                    component="div"
+                    className="text-[9px] uppercase tracking-[.22em] text-[var(--muted)]"
+                  >
                     {localize(product.brand, product.brandAr)}
-                  </div>
-                  <div className="mt-1 text-base font-bold">
+                  </Box>
+                  <Box component="div" className="mt-1 text-base font-bold">
                     {localize(product.name, product.nameAr)}
-                  </div>
-                </div>
-                <div className="shrink-0 text-sm font-bold">
+                  </Box>
+                </Box>
+                <Box component="div" className="shrink-0 text-sm font-bold">
                   {formatCurrency(getPrimaryPrice(product))}{' '}
                   {dir === 'rtl' ? (
                     <ArrowLeft className="ml-1 inline h-4 w-4" />
                   ) : (
                     <ArrowRight className="ml-1 inline h-4 w-4" />
                   )}
-                </div>
-              </div>
+                </Box>
+              </Box>
             </Link>
           ))
         ) : (
-          <div className="min-w-full border border-dashed border-[var(--border)] bg-[var(--background)] px-6 py-14 text-center md:px-10">
-            <div className="mx-auto h-px w-12 bg-[var(--accent)]" />
-            <h3 className="mt-5 text-2xl font-black uppercase tracking-[-.03em]">
+          <Box
+            component="div"
+            className="min-w-full border border-dashed border-[var(--border)] bg-[var(--background)] px-6 py-14 text-center md:px-10"
+          >
+            <Box component="div" className="mx-auto h-px w-12 bg-[var(--accent)]" />
+            <Box component="h3" className="mt-5 text-2xl font-black uppercase tracking-[-.03em]">
               {t('NO FLAVORS IN THIS FILTER')}
-            </h3>
-            <p className="mx-auto mt-3 max-w-md text-sm leading-7 text-[var(--text-secondary)]">
+            </Box>
+            <Box
+              component="p"
+              className="mx-auto mt-3 max-w-md text-sm leading-7 text-[var(--text-secondary)]"
+            >
               {t('Try another flavor profile or return to the full collection.')}
-            </p>
-            <button
+            </Box>
+            <Box
+              component="button"
               type="button"
               onClick={() => setFilter('ALL')}
               className="!text-white mt-6 min-h-11 rounded-full bg-[var(--accent)] px-5 py-3 text-[10px] font-bold uppercase tracking-[.18em] transition hover:opacity-85"
             >
               {t('SHOW ALL FLAVORS')}
-            </button>
-          </div>
+            </Box>
+          </Box>
         )}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 
 function RankingRail({ products }: { products: StoreProduct[] }) {
   const { t, localize, dir } = useLocale();
   return (
-    <div className="grid min-w-0 gap-0 border-t border-[var(--border)] lg:grid-cols-3">
+    <Box
+      component="div"
+      className="grid min-w-0 gap-0 border-t border-[var(--border)] lg:grid-cols-3"
+    >
       {products.slice(0, 3).map((product) => (
         <Link
           key={product.id}
           href={`/product/${product.slug}`}
           className="group relative flex min-w-0 min-h-[220px] items-center gap-2 overflow-hidden border-b border-[var(--border)] py-4 lg:min-h-[350px] lg:gap-3 lg:border-b-0 lg:border-r lg:px-5 lg:first:pl-0 lg:last:border-r-0"
         >
-          <div className="relative h-32 w-28 shrink-0 sm:h-36 sm:w-32 lg:h-56 lg:w-48">
-            <img
+          <Box
+            component="div"
+            className="relative h-32 w-28 shrink-0 sm:h-36 sm:w-32 lg:h-56 lg:w-48"
+          >
+            <Image
               src={product.images[0]?.url?.trim() || '/products/puff-jo-product-default.png'}
               alt={localize(product.name, product.nameAr)}
               className="h-full w-full object-contain transition duration-500 group-hover:scale-[1.045]"
             />
-          </div>
-          <div className="relative min-w-0">
-            <div className="text-[9px] font-bold uppercase tracking-[.22em] text-[var(--accent)]">
+          </Box>
+          <Box component="div" className="relative min-w-0">
+            <Box
+              component="div"
+              className="text-[9px] font-bold uppercase tracking-[.22em] text-[var(--accent)]"
+            >
               {t('POPULAR')}
-            </div>
-            <h3 className="mt-3 text-xl font-bold leading-tight">
+            </Box>
+            <Box component="h3" className="mt-3 text-xl font-bold leading-tight">
               {localize(product.name, product.nameAr)}
-            </h3>
-            <p className="mt-2 line-clamp-2 text-sm text-[var(--text-secondary)]">
+            </Box>
+            <Box component="p" className="mt-2 line-clamp-2 text-sm text-[var(--text-secondary)]">
               {localize(product.shortDescription, product.shortDescriptionAr)}
-            </p>
-            <div className="mt-5 text-sm font-bold">
+            </Box>
+            <Box component="div" className="mt-5 text-sm font-bold">
               {formatCurrency(getPrimaryPrice(product))}{' '}
-              <span className="ml-1 inline-block transition-transform group-hover:translate-x-1">
+              <Box
+                component="span"
+                className="ml-1 inline-block transition-transform group-hover:translate-x-1"
+              >
                 {dir === 'rtl' ? '←' : '→'}
-              </span>
-            </div>
-          </div>
+              </Box>
+            </Box>
+          </Box>
         </Link>
       ))}
-    </div>
+    </Box>
   );
 }
 
@@ -436,24 +541,30 @@ function WhyVapor() {
 
   return (
     <Container className="py-20 md:py-32">
-      <section className="border-y border-[var(--border)] py-10 md:py-14">
-        <div className="mb-10 text-xs font-semibold uppercase tracking-[0.3em] text-[var(--accent)]">
+      <Box component="section" className="border-y border-[var(--border)] py-10 md:py-14">
+        <Box
+          component="div"
+          className="mb-10 text-xs font-semibold uppercase tracking-[0.3em] text-[var(--accent)]"
+        >
           {t('WHY PUFF JO')}
-        </div>
-        <div className="grid gap-8 md:grid-cols-3 md:gap-10">
+        </Box>
+        <Box component="div" className="grid gap-8 md:grid-cols-3 md:gap-10">
           {reasons.map((reason) => (
-            <div
+            <Box
+              component="div"
               key={reason.title}
               className="relative border-l border-[var(--border)] pl-5 first:border-l-0 first:pl-0 md:pl-7"
             >
-              <h3 className="text-2xl font-bold text-[var(--text)]">{t(reason.title)}</h3>
-              <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
+              <Box component="h3" className="text-2xl font-bold text-[var(--text)]">
+                {t(reason.title)}
+              </Box>
+              <Box component="p" className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
                 {t(reason.body)}
-              </p>
-            </div>
+              </Box>
+            </Box>
           ))}
-        </div>
-      </section>
+        </Box>
+      </Box>
     </Container>
   );
 }
@@ -462,14 +573,22 @@ function PromoRibbon({ flashSale }: { flashSale: FlashSale }) {
   const { t, dir } = useLocale();
 
   return (
-    <section className="bg-white px-4 py-5 text-black md:px-8">
-      <div className="mx-auto flex max-w-[1440px] flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-black/60">
+    <Box component="section" className="bg-white px-4 py-5 text-black md:px-8">
+      <Box
+        component="div"
+        className="mx-auto flex max-w-[1440px] flex-col gap-4 md:flex-row md:items-center md:justify-between"
+      >
+        <Box component="div">
+          <Box
+            component="div"
+            className="text-xs font-semibold uppercase tracking-[0.18em] text-black/60"
+          >
             {t(flashSale.title)}
-          </div>
-          <div className="mt-1 text-3xl font-bold">{t(flashSale.discountLabel)}</div>
-        </div>
+          </Box>
+          <Box component="div" className="mt-1 text-3xl font-bold">
+            {t(flashSale.discountLabel)}
+          </Box>
+        </Box>
         <Link
           href={flashSale.ctaUrl || '/shop?sale=true'}
           className="!text-white inline-flex w-fit items-center gap-2 rounded-full bg-black px-5 py-3 text-sm font-semibold uppercase tracking-[0.12em]"
@@ -477,8 +596,8 @@ function PromoRibbon({ flashSale }: { flashSale: FlashSale }) {
           {flashSale.ctaText ? t(flashSale.ctaText) : t('ORDER THE DEAL')}
           {dir === 'rtl' ? <ArrowLeft className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
         </Link>
-      </div>
-    </section>
+      </Box>
+    </Box>
   );
 }
 
@@ -487,24 +606,42 @@ function HomeEmptyState() {
 
   return (
     <Container className="py-16 md:py-28">
-      <div className="relative isolate min-h-[430px] overflow-hidden rounded-[4px] border border-[var(--border)] bg-[var(--background-secondary)] px-6 py-14 md:px-16 md:py-20">
-        <div className="absolute -right-20 -top-24 -z-10 text-[19rem] font-black leading-none tracking-[-.16em] text-[var(--text)]/[.035]">
+      <Box
+        component="div"
+        className="relative isolate min-h-[430px] overflow-hidden rounded-[4px] border border-[var(--border)] bg-[var(--background-secondary)] px-6 py-14 md:px-16 md:py-20"
+      >
+        <Box
+          component="div"
+          className="absolute -right-20 -top-24 -z-10 text-[19rem] font-black leading-none tracking-[-.16em] text-[var(--text)]/[.035]"
+        >
           00
-        </div>
-        <div className="absolute bottom-0 left-0 -z-10 h-px w-2/3 bg-[var(--border)]" />
-        <div className="max-w-2xl">
-          <div className="mb-8 flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--accent)]">
-            <span className="h-px w-10 bg-[var(--accent)]" />
+        </Box>
+        <Box
+          component="div"
+          className="absolute bottom-0 left-0 -z-10 h-px w-2/3 bg-[var(--border)]"
+        />
+        <Box component="div" className="max-w-2xl">
+          <Box
+            component="div"
+            className="mb-8 flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--accent)]"
+          >
+            <Box component="span" className="h-px w-10 bg-[var(--accent)]" />
             {t('PUFF JO / THE COLLECTION')}
-          </div>
-          <h2 className="max-w-xl text-4xl font-black uppercase leading-[.95] tracking-[-.05em] md:text-7xl">
+          </Box>
+          <Box
+            component="h2"
+            className="max-w-xl text-4xl font-black uppercase leading-[.95] tracking-[-.05em] md:text-7xl"
+          >
             {t('NO LIVE PRODUCTS YET.')}
-          </h2>
-          <p className="mt-6 max-w-lg text-sm leading-7 text-[var(--text-secondary)] md:text-base">
+          </Box>
+          <Box
+            component="p"
+            className="mt-6 max-w-lg text-sm leading-7 text-[var(--text-secondary)] md:text-base"
+          >
             {t(
               'We are updating the shelves. Check back soon for devices, flavors, pods, coils, and accessories.'
             )}
-          </p>
+          </Box>
           <Link
             href="/shop"
             className="mt-8 inline-flex min-h-11 items-center gap-3 rounded-full bg-[var(--text)] px-6 py-3 text-[11px] font-bold uppercase tracking-[0.16em] text-[var(--background)] transition hover:gap-4"
@@ -512,8 +649,8 @@ function HomeEmptyState() {
             {t('BROWSE THE SHOP')}
             {dir === 'rtl' ? <ArrowLeft className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
           </Link>
-        </div>
-      </div>
+        </Box>
+      </Box>
     </Container>
   );
 }

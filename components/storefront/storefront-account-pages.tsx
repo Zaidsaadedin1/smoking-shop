@@ -3,10 +3,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   ArrowLeft,
-  Check,
-  ChevronDown,
-  Eye,
-  EyeOff,
   Pencil,
   Heart,
   LogOut,
@@ -18,17 +14,38 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ReactNode, useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { ReactNode, useEffect, useMemo, useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import {
+  Alert,
+  Anchor,
+  Box,
+  Button,
+  Checkbox,
+  Grid,
+  Group,
+  Image,
+  Paper,
+  Stack,
+  Text,
+  Title,
+} from '@mantine/core';
 import { useLocale } from '@/components/storefront/locale-provider';
 import { useThemeMode } from '@/components/storefront/theme-provider';
+import {
+  StoreNativeSelect,
+  StorePasswordInput,
+  StoreTextInput,
+} from '@/components/storefront/ui/store-form-controls';
+import { StorePageContainer, StorePageHeader } from '@/components/storefront/ui/store-layout';
 import {
   Container,
   ProductGrid,
   SectionHeading,
 } from '@/components/storefront/storefront-sections';
 import { DeliveryZone, StoreProduct } from '@/lib/commerce-types';
+import { translateAuthError } from '@/lib/i18n';
 
 type CustomerSessionView = {
   fullName: string;
@@ -97,91 +114,6 @@ const phoneCountries = [
   { code: '+964', name: 'Iraq', nameAr: 'العراق' },
 ];
 
-function CountryCodeSelect({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const selectedCountry =
-    phoneCountries.find((country) => country.code === value) ?? phoneCountries[0];
-
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    function handleOutsideClick(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-
-    document.addEventListener('mousedown', handleOutsideClick);
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
-  }, [isOpen]);
-
-  return (
-    <div ref={menuRef} className="relative w-44 shrink-0">
-      <button
-        type="button"
-        onClick={() => setIsOpen((open) => !open)}
-        aria-label="Country code / رمز الدولة"
-        aria-haspopup="listbox"
-        aria-expanded={isOpen}
-        className="flex h-12 w-full items-center justify-between gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 text-left text-sm text-[var(--text)] outline-none transition hover:border-[var(--text-secondary)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/15"
-      >
-        <span className="min-w-0 truncate">
-          <span className="font-semibold">{selectedCountry.code}</span>
-          <span className="ml-1 text-xs text-[var(--text-secondary)]">
-            {selectedCountry.nameAr}
-          </span>
-        </span>
-        <ChevronDown
-          className={`h-4 w-4 shrink-0 text-[var(--muted)] transition-transform ${isOpen ? 'rotate-180' : ''}`}
-        />
-      </button>
-      {isOpen ? (
-        <div
-          role="listbox"
-          aria-label="Country code / رمز الدولة"
-          className="absolute left-0 top-[calc(100%+0.5rem)] z-30 max-h-64 w-[min(19rem,calc(100vw-3rem))] overflow-y-auto rounded-2xl border border-[var(--border)] bg-[var(--card)] p-1.5 shadow-[0_18px_48px_rgba(0,0,0,0.28)]"
-        >
-          {phoneCountries.map((country) => {
-            const selected = country.code === selectedCountry.code;
-            return (
-              <button
-                key={country.code}
-                type="button"
-                role="option"
-                aria-selected={selected}
-                onClick={() => {
-                  onChange(country.code);
-                  setIsOpen(false);
-                }}
-                className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition ${
-                  selected
-                    ? 'bg-[var(--accent-deep)] text-[var(--background)]'
-                    : 'text-[var(--text)] hover:bg-[var(--surface)]'
-                }`}
-              >
-                <span className="w-12 shrink-0 font-semibold">{country.code}</span>
-                <span className="min-w-0 flex-1 truncate text-xs">
-                  {country.name} <span className="opacity-70">/ {country.nameAr}</span>
-                </span>
-                {selected ? <Check className="h-4 w-4 shrink-0" /> : null}
-              </button>
-            );
-          })}
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
 export function AuthPageView({
   mode,
   nextPath = '/account',
@@ -189,12 +121,10 @@ export function AuthPageView({
   mode: 'login' | 'register' | 'forgot-password';
   nextPath?: string;
 }) {
-  const { t } = useLocale();
-  const { isDark } = useThemeMode();
+  const { locale, t } = useLocale();
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
   const [serverMessage, setServerMessage] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
 
   const schema = z.object({
     fullName:
@@ -229,8 +159,6 @@ export function AuthPageView({
   const {
     register,
     handleSubmit,
-    setValue,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -240,17 +168,19 @@ export function AuthPageView({
   });
 
   return (
-    <Container className="flex min-h-[70vh] items-center py-10">
-      <div className="mx-auto w-full max-w-xl rounded-[36px] border border-[var(--border)] bg-[var(--card)] p-8 shadow-[0_18px_54px_rgba(24,18,17,0.08)] md:p-10">
-        <div className="text-xs tracking-[0.25em] text-[var(--muted)]">{t('CUSTOMER ACCESS')}</div>
-        <h1 className="mt-3 font-display text-5xl uppercase">
+    <StorePageContainer size="xs" py={{ base: 40, sm: 64 }}>
+      <Paper radius={32} p={{ base: 24, sm: 40 }} withBorder shadow="lg" w="100%">
+        <Text size="xs" c="dimmed" tt="uppercase" lts="0.25em">
+          {t('CUSTOMER ACCESS')}
+        </Text>
+        <Title order={1} mt={12} fz={{ base: 38, sm: 50 }} tt="uppercase">
           {mode === 'login'
             ? t('LOG IN')
             : mode === 'register'
               ? t('CREATE ACCOUNT')
               : t('RESET PASSWORD')}
-        </h1>
-        <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
+        </Title>
+        <Text mt={12} size="sm" c="dimmed" lh={1.8}>
           {mode === 'login'
             ? t('Sign in to keep your bag, favorites, and orders in sync.')
             : mode === 'register'
@@ -258,8 +188,9 @@ export function AuthPageView({
                   'Create a customer account for orders, favorites, addresses, and faster checkout.'
                 )
               : t('Send a password reset email to your account.')}
-        </p>
-        <form
+        </Text>
+        <Box
+          component="form"
           onSubmit={handleSubmit(async (values) => {
             setServerError(null);
             setServerMessage(null);
@@ -290,17 +221,21 @@ export function AuthPageView({
             };
 
             if (!response.ok) {
-              setServerError(payload.error ?? 'Something went wrong');
+              setServerError(
+                payload.error
+                  ? translateAuthError(payload.error, locale)
+                  : t('Something went wrong')
+              );
               return;
             }
 
             if (mode === 'forgot-password') {
-              setServerMessage('Password reset email sent.');
+              setServerMessage(t('Password reset email sent.'));
               return;
             }
 
             if (mode === 'register' && payload.requiresEmailConfirmation) {
-              setServerMessage('Account created. Confirm your email, then sign in.');
+              setServerMessage(t('Account created. Confirm your email, then sign in.'));
               router.push(`/login?next=${encodeURIComponent(nextPath)}`);
               return;
             }
@@ -308,130 +243,137 @@ export function AuthPageView({
             router.push(nextPath);
             router.refresh();
           })}
-          className="mt-8 space-y-4"
+          mt={32}
         >
-          {mode === 'register' ? (
-            <>
-              <Field
-                label={t('Full Name')}
-                error={errors.fullName?.message ? t(errors.fullName.message) : undefined}
-              >
-                <input
+          <Stack gap="md">
+            {mode === 'register' ? (
+              <>
+                <StoreTextInput
+                  label={t('Full Name')}
+                  error={errors.fullName?.message ? t(errors.fullName.message) : undefined}
                   {...register('fullName')}
-                  type="text"
                   autoComplete="name"
                   maxLength={80}
                   required
-                  className={`${inputClassName} ${errors.fullName ? 'border-[var(--error)]' : ''}`}
-                  aria-invalid={Boolean(errors.fullName)}
                 />
-              </Field>
-              <Field
-                label={t('Phone')}
-                error={
-                  errors.phone?.message || errors.phoneCountry?.message
-                    ? t((errors.phone?.message ?? errors.phoneCountry?.message) as string)
-                    : undefined
-                }
-              >
-                <div className="flex min-w-0 gap-2" dir="ltr">
-                  <input type="hidden" {...register('phoneCountry')} />
-                  <CountryCodeSelect
-                    value={watch('phoneCountry') ?? '+962'}
-                    onChange={(value) =>
-                      setValue('phoneCountry', value, { shouldValidate: true, shouldTouch: true })
+                <Group align="flex-start" gap="sm" wrap="nowrap" dir="ltr">
+                  <StoreNativeSelect
+                    label={t('Country code')}
+                    aria-label={t('Country code')}
+                    data={phoneCountries.map((country) => ({
+                      value: country.code,
+                      label: `${country.code} · ${locale === 'ar' ? country.nameAr : country.name}`,
+                    }))}
+                    {...register('phoneCountry')}
+                    error={
+                      errors.phoneCountry?.message ? t(errors.phoneCountry.message) : undefined
                     }
+                    styles={{ root: { width: 172, flexShrink: 0 } }}
                   />
-                  <input
+                  <StoreTextInput
+                    label={t('Phone')}
                     {...register('phone')}
                     type="tel"
                     inputMode="numeric"
                     autoComplete="tel-national"
                     maxLength={12}
                     placeholder={t('Phone number')}
-                    className={`${inputClassName} min-w-0 flex-1 ${errors.phone ? 'border-[var(--error)]' : ''}`}
-                    aria-invalid={Boolean(errors.phone)}
+                    error={errors.phone?.message ? t(errors.phone.message) : undefined}
+                    styles={{ root: { flex: 1, minWidth: 0 } }}
                   />
-                </div>
-              </Field>
-            </>
-          ) : null}
-          <Field
-            label={t('Email')}
-            error={errors.email?.message ? t(errors.email.message) : undefined}
-          >
-            <input
+                </Group>
+              </>
+            ) : null}
+            <StoreTextInput
+              label={t('Email')}
+              error={errors.email?.message ? t(errors.email.message) : undefined}
               {...register('email')}
               type="email"
               autoComplete="email"
               maxLength={254}
               required
-              className={`${inputClassName} ${errors.email ? 'border-[var(--error)]' : ''}`}
-              aria-invalid={Boolean(errors.email)}
             />
-          </Field>
-          {mode !== 'forgot-password' ? (
-            <Field
-              label={t('Password')}
-              error={errors.password?.message ? t(errors.password.message) : undefined}
+            {mode !== 'forgot-password' ? (
+              <StorePasswordInput
+                label={t('Password')}
+                error={errors.password?.message ? t(errors.password.message) : undefined}
+                {...register('password')}
+                autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+                minLength={8}
+                maxLength={72}
+                required
+              />
+            ) : null}
+            {serverError ? (
+              <Alert color="red" radius="md">
+                {t(serverError)}
+              </Alert>
+            ) : null}
+            {serverMessage ? (
+              <Alert color="green" radius="md">
+                {t(serverMessage)}
+              </Alert>
+            ) : null}
+            <Button
+              type="submit"
+              loading={isSubmitting}
+              fullWidth
+              size="md"
+              radius="xl"
+              color="dark"
+              tt="uppercase"
+              lts="0.12em"
             >
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  {...register('password')}
-                  autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
-                  minLength={8}
-                  maxLength={72}
-                  required
-                  className={`${inputClassName} pr-12 ${errors.password ? 'border-[var(--error)]' : ''}`}
-                  aria-invalid={Boolean(errors.password)}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((visible) => !visible)}
-                  className="absolute inset-y-0 right-3 inline-flex items-center text-[var(--muted)] transition hover:text-[var(--text)]"
-                  aria-label={showPassword ? t('Hide password') : t('Show password')}
-                  title={showPassword ? t('Hide password') : t('Show password')}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </Field>
-          ) : null}
-          {serverError ? <p className="text-sm text-[var(--error)]">{t(serverError)}</p> : null}
-          {serverMessage ? (
-            <p className="text-sm text-[var(--success)]">{t(serverMessage)}</p>
-          ) : null}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className={`${primaryButtonClassName} w-full rounded-none`}
-            style={getPrimaryButtonStyle(isDark)}
-          >
-            {isSubmitting
-              ? t('PLEASE WAIT')
-              : mode === 'login'
-                ? t('LOG IN')
-                : mode === 'register'
-                  ? t('CREATE ACCOUNT')
-                  : t('SEND RESET LINK')}
-          </button>
-        </form>
-        <div className="mt-6 flex flex-wrap gap-3 text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
+              {isSubmitting
+                ? t('PLEASE WAIT')
+                : mode === 'login'
+                  ? t('LOG IN')
+                  : mode === 'register'
+                    ? t('CREATE ACCOUNT')
+                    : t('SEND RESET LINK')}
+            </Button>
+          </Stack>
+        </Box>
+        <Group mt={24} gap="md" wrap="wrap">
           {mode !== 'login' ? (
-            <Link href={`/login?next=${encodeURIComponent(nextPath)}`}>
+            <Anchor
+              component={Link}
+              size="xs"
+              c="dimmed"
+              tt="uppercase"
+              lts="0.12em"
+              href={`/login?next=${encodeURIComponent(nextPath)}`}
+            >
               {t('Already have an account? Sign in')}
-            </Link>
+            </Anchor>
           ) : null}
           {mode === 'login' ? (
-            <Link href={`/register?next=${encodeURIComponent(nextPath)}`}>
+            <Anchor
+              component={Link}
+              size="xs"
+              c="dimmed"
+              tt="uppercase"
+              lts="0.12em"
+              href={`/register?next=${encodeURIComponent(nextPath)}`}
+            >
               {t('Create account')}
-            </Link>
+            </Anchor>
           ) : null}
-          {mode === 'login' ? <Link href="/forgot-password">{t('Forgot password?')}</Link> : null}
-        </div>
-      </div>
-    </Container>
+          {mode === 'login' ? (
+            <Anchor
+              component={Link}
+              size="xs"
+              c="dimmed"
+              tt="uppercase"
+              lts="0.12em"
+              href="/forgot-password"
+            >
+              {t('Forgot password?')}
+            </Anchor>
+          ) : null}
+        </Group>
+      </Paper>
+    </StorePageContainer>
   );
 }
 
@@ -449,26 +391,41 @@ export function AccountDashboardPageView({
   const { t } = useLocale();
 
   return (
-    <div className="bg-[var(--background)] text-[var(--text)]">
+    <Box component="div" className="bg-[var(--background)] text-[var(--text)]">
       <Container className="py-8 md:py-14">
-        <section className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--card)] shadow-[0_24px_70px_rgba(24,18,17,0.08)]">
-          <div className="grid gap-0 lg:grid-cols-[1.25fr_0.75fr]">
-            <div className="relative overflow-hidden bg-black p-6 text-white md:p-8">
-              <div className="absolute -right-20 -top-24 h-64 w-64 rounded-full border-[36px] border-white/10" />
-              <div className="absolute -bottom-28 left-1/2 h-72 w-72 rounded-full bg-black/10" />
-              <div className="relative">
-                <div className="inline-flex rounded-full bg-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/80">
+        <Box
+          component="section"
+          className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--card)] shadow-[0_24px_70px_rgba(24,18,17,0.08)]"
+        >
+          <Box component="div" className="grid gap-0 lg:grid-cols-[1.25fr_0.75fr]">
+            <Box
+              component="div"
+              className="relative overflow-hidden bg-black p-6 text-white md:p-8"
+            >
+              <Box
+                component="div"
+                className="absolute -right-20 -top-24 h-64 w-64 rounded-full border-[36px] border-white/10"
+              />
+              <Box
+                component="div"
+                className="absolute -bottom-28 left-1/2 h-72 w-72 rounded-full bg-black/10"
+              />
+              <Box component="div" className="relative">
+                <Box
+                  component="div"
+                  className="inline-flex rounded-full bg-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/80"
+                >
                   {t('CUSTOMER DASHBOARD')}
-                </div>
-                <h1 className="mt-5 text-4xl font-bold leading-tight md:text-6xl">
+                </Box>
+                <Box component="h1" className="mt-5 text-4xl font-bold leading-tight md:text-6xl">
                   {t('Welcome back')}, {session.fullName}
-                </h1>
-                <p className="mt-4 max-w-2xl text-base leading-8 text-white/78">
+                </Box>
+                <Box component="p" className="mt-4 max-w-2xl text-base leading-8 text-white/78">
                   {t(
                     'Reorder your favorite devices and flavors, manage delivery addresses, and track every order from one place.'
                   )}
-                </p>
-                <div className="mt-7 flex flex-wrap gap-3">
+                </Box>
+                <Box component="div" className="mt-7 flex flex-wrap gap-3">
                   <Link
                     href="/shop"
                     className="inline-flex items-center justify-center rounded-full border border-white bg-white px-5 py-3 text-sm font-semibold uppercase tracking-[0.14em] shadow-[0_12px_30px_rgba(0,0,0,0.14)] transition hover:-translate-y-0.5"
@@ -477,30 +434,49 @@ export function AccountDashboardPageView({
                     {t('ORDER NOW')}
                   </Link>
                   <LogoutButton />
-                </div>
-              </div>
-            </div>
-            <div className="bg-[color:color-mix(in_srgb,var(--card)_86%,var(--accent)_8%)] p-6 md:p-8">
-              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
+                </Box>
+              </Box>
+            </Box>
+            <Box
+              component="div"
+              className="bg-[color:color-mix(in_srgb,var(--card)_86%,var(--accent)_8%)] p-6 md:p-8"
+            >
+              <Box
+                component="div"
+                className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]"
+              >
                 {t('Signed in as')}
-              </div>
-              <div className="mt-3 text-2xl font-bold text-[var(--text)]">{session.email}</div>
+              </Box>
+              <Box component="div" className="mt-3 text-2xl font-bold text-[var(--text)]">
+                {session.email}
+              </Box>
               {session.phone ? (
-                <div className="mt-2 text-sm text-[var(--text-secondary)]">{session.phone}</div>
+                <Box component="div" className="mt-2 text-sm text-[var(--text-secondary)]">
+                  {session.phone}
+                </Box>
               ) : null}
-              <div className="mt-7 rounded-lg border border-[var(--border)] bg-[var(--background)] p-4">
-                <div className="flex items-center gap-3 text-sm font-semibold text-[var(--text-secondary)]">
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[color:color-mix(in_srgb,var(--accent)_12%,transparent)] text-[var(--accent)]">
+              <Box
+                component="div"
+                className="mt-7 rounded-lg border border-[var(--border)] bg-[var(--background)] p-4"
+              >
+                <Box
+                  component="div"
+                  className="flex items-center gap-3 text-sm font-semibold text-[var(--text-secondary)]"
+                >
+                  <Box
+                    component="span"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[color:color-mix(in_srgb,var(--accent)_12%,transparent)] text-[var(--accent)]"
+                  >
                     <ShieldCheck className="h-5 w-5" />
-                  </span>
+                  </Box>
                   {t('Customer account is active and ready for orders.')}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
+        </Box>
 
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
+        <Box component="div" className="mt-6 grid gap-4 md:grid-cols-3">
           <MetricCard
             label={t('Orders')}
             value={String(orderCount)}
@@ -516,9 +492,9 @@ export function AccountDashboardPageView({
             value={String(addressCount)}
             icon={<MapPin className="h-5 w-5" />}
           />
-        </div>
+        </Box>
 
-        <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <Box component="div" className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           <AccountLinkCard
             href="/orders"
             title={t('My Orders')}
@@ -537,9 +513,9 @@ export function AccountDashboardPageView({
             body={t('Review your saved delivery addresses for faster checkout.')}
             icon={<MapPin className="h-5 w-5" />}
           />
-        </div>
+        </Box>
       </Container>
-    </div>
+    </Box>
   );
 }
 
@@ -548,62 +524,87 @@ export function OrdersPageView({ orders }: { orders: OrderView[] }) {
 
   return (
     <Container className="orders-page py-7 md:py-12">
-      <div className="orders-hero mb-8 flex flex-col justify-between gap-6 border-b border-[var(--border)] pb-8 md:mb-10 md:flex-row md:items-end">
-        <div>
-          <div className="mb-3 text-[10px] uppercase tracking-[0.28em] text-[var(--muted)]">
+      <Box
+        component="div"
+        className="orders-hero mb-8 flex flex-col justify-between gap-6 border-b border-[var(--border)] pb-8 md:mb-10 md:flex-row md:items-end"
+      >
+        <Box component="div">
+          <Box
+            component="div"
+            className="mb-3 text-[10px] uppercase tracking-[0.28em] text-[var(--muted)]"
+          >
             PUFF JO / {t('ACCOUNT')}
-          </div>
-          <h1 className="font-display text-5xl uppercase leading-none md:text-7xl">
+          </Box>
+          <Box component="h1" className="font-display text-5xl uppercase leading-none md:text-7xl">
             {t('MY ORDERS')}
-          </h1>
-          <p className="mt-4 max-w-xl text-sm leading-7 text-[var(--text-secondary)]">
+          </Box>
+          <Box
+            component="p"
+            className="mt-4 max-w-xl text-sm leading-7 text-[var(--text-secondary)]"
+          >
             {t('Keep track of your Puff Jo orders, payment status, and delivery updates.')}
-          </p>
-        </div>
-        <div className="flex items-center justify-between gap-5 sm:justify-end">
-          <div className="orders-count">
-            <span>{orders.length}</span> {t(orders.length === 1 ? 'order' : 'orders')}
-          </div>
+          </Box>
+        </Box>
+        <Box component="div" className="flex items-center justify-between gap-5 sm:justify-end">
+          <Box component="div" className="orders-count">
+            <Box component="span">{orders.length}</Box>{' '}
+            {t(orders.length === 1 ? 'order' : 'orders')}
+          </Box>
           <BackToAccountButton />
-        </div>
-      </div>
+        </Box>
+      </Box>
       {orders.length ? (
-        <div className="orders-list grid gap-3">
+        <Box component="div" className="orders-list grid gap-3">
           {orders.map((order, index) => (
             <Link key={order.id} href={`/order/${order.id}`} className="order-row group">
-              <div className="order-index">{String(index + 1).padStart(2, '0')}</div>
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-3">
-                  <span className="text-xs font-semibold tracking-[0.18em] text-[var(--muted)]">
+              <Box component="div" className="order-index">
+                {String(index + 1).padStart(2, '0')}
+              </Box>
+              <Box component="div" className="min-w-0 flex-1">
+                <Box component="div" className="flex flex-wrap items-center gap-3">
+                  <Box
+                    component="span"
+                    className="text-xs font-semibold tracking-[0.18em] text-[var(--muted)]"
+                  >
                     {order.number}
-                  </span>
-                  <span className="order-status">{t(order.status.replaceAll('_', ' '))}</span>
-                </div>
-                <div className="mt-3 text-sm text-[var(--text-secondary)]">
+                  </Box>
+                  <Box component="span" className="order-status">
+                    {t(order.status.replaceAll('_', ' '))}
+                  </Box>
+                </Box>
+                <Box component="div" className="mt-3 text-sm text-[var(--text-secondary)]">
                   {formatOrderDate(order.createdAt, locale)}
-                </div>
-              </div>
-              <div className="order-meta hidden text-right text-xs text-[var(--text-secondary)] sm:block">
-                <div>
-                  {t('Payment status')}: <span>{t(order.paymentStatus ?? 'pending')}</span>
-                </div>
-                <div className="mt-1">
-                  {t('Payment method')}: <span>{t(order.paymentMethod ?? 'cash_on_delivery')}</span>
-                </div>
-              </div>
-              <div className="order-total">
-                <span>{formatMoney(order.total, order.currency)}</span>
+                </Box>
+              </Box>
+              <Box
+                component="div"
+                className="order-meta hidden text-right text-xs text-[var(--text-secondary)] sm:block"
+              >
+                <Box component="div">
+                  {t('Payment status')}:{' '}
+                  <Box component="span">{t(order.paymentStatus ?? 'pending')}</Box>
+                </Box>
+                <Box component="div" className="mt-1">
+                  {t('Payment method')}:{' '}
+                  <Box component="span">{t(order.paymentMethod ?? 'cash_on_delivery')}</Box>
+                </Box>
+              </Box>
+              <Box component="div" className="order-total">
+                <Box component="span">{formatMoney(order.total, order.currency)}</Box>
                 <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
-              </div>
-              <div className="order-mobile-meta mt-2 w-full text-xs text-[var(--text-secondary)] sm:hidden">
+              </Box>
+              <Box
+                component="div"
+                className="order-mobile-meta mt-2 w-full text-xs text-[var(--text-secondary)] sm:hidden"
+              >
                 {t('Payment status')}: {t(order.paymentStatus ?? 'pending')}
-              </div>
-              <div className="order-row-arrow">
+              </Box>
+              <Box component="div" className="order-row-arrow">
                 <ArrowLeft className="h-4 w-4" />
-              </div>
+              </Box>
             </Link>
           ))}
-        </div>
+        </Box>
       ) : (
         <EmptyState
           title={t('No orders yet.')}
@@ -641,7 +642,7 @@ export function OrderDetailPageView({ order }: { order: OrderView | null }) {
         description={t('Order details, payment state, and delivery information.')}
         action={<BackButton href="/account" label={t('BACK TO ACCOUNT')} />}
       />
-      <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+      <Box component="div" className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
         <SurfacePanel title={t('Order status')}>
           <DetailRow label={t('Status')} value={t(order.status.replaceAll('_', ' '))} />
           <DetailRow label={t('Payment status')} value={t(order.paymentStatus ?? 'pending')} />
@@ -663,57 +664,77 @@ export function OrderDetailPageView({ order }: { order: OrderView | null }) {
           ) : null}
           {order.notes ? <DetailRow label={t('Notes')} value={order.notes} /> : null}
         </SurfacePanel>
-      </div>
-      <div className="mt-4">
+      </Box>
+      <Box component="div" className="mt-4">
         <SurfacePanel title={t('Order items')}>
           {order.items?.length ? (
-            <div className="space-y-4">
+            <Box component="div" className="space-y-4">
               {order.items.map((item) => (
-                <div
+                <Box
+                  component="div"
                   key={item.id}
-                  className="flex flex-col gap-4 rounded-[24px] border border-[var(--border)] bg-[color:color-mix(in_srgb,var(--card)_84%,var(--background)_16%)] p-4 md:flex-row"
+                  className="flex flex-col rounded-[4px] border border-white/10 bg-[var(--background)] p-3 shadow-none transition duration-300 hover:-translate-y-0.5 hover:border-white/25"
                 >
-                  <img
+                  <Image
                     src={item.imageUrl || '/products/puff-jo-product-default.png'}
                     alt={item.productName}
-                    className="h-32 w-full rounded-[18px] bg-[var(--background-secondary)] object-contain p-2 md:w-24"
+                    className="h-52 w-full rounded-[3px] bg-[var(--background-secondary)] object-cover"
                   />
-                  <div className="flex-1">
-                    <div className="text-lg font-medium">{t(item.productName)}</div>
-                    <div className="mt-2 grid gap-2 text-sm text-[var(--text-secondary)] md:grid-cols-2">
-                      <div>
-                        {t('Size')}: {item.sizeName ?? '-'}
-                      </div>
-                      <div>
+                  <Box component="div" className="flex-1 px-1 pb-1 pt-4">
+                    <Box component="div" className="text-lg font-medium">
+                      {t(item.productName)}
+                    </Box>
+                    <Box
+                      component="div"
+                      className="mt-2 grid gap-2 text-sm text-[var(--text-secondary)] md:grid-cols-2"
+                    >
+                      {item.sizeName?.trim() ? (
+                        <Box component="div">
+                          {t('Size')}: {item.sizeName}
+                        </Box>
+                      ) : null}
+                      {item.colorName?.trim() ? (
+                        <Box component="div">
+                          {t('Color')}: {item.colorName}
+                        </Box>
+                      ) : null}
+                      <Box component="div">
                         {t('Quantity')}: {item.quantity}
-                      </div>
-                      <div>
-                        {t('SKU')}: {item.sku ?? '-'}
-                      </div>
-                    </div>
-                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border)] pt-4 text-sm">
-                      <div>
+                      </Box>
+                      {item.sku?.trim() ? (
+                        <Box component="div">
+                          {t('SKU')}: {item.sku}
+                        </Box>
+                      ) : null}
+                    </Box>
+                    <Box
+                      component="div"
+                      className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--border)] pt-4 text-sm"
+                    >
+                      <Box component="div">
                         {t('Unit price')}:{' '}
-                        <span className="text-[var(--text)]">
+                        <Box component="span" className="text-[var(--text)]">
                           {formatMoney(item.unitPrice, order.currency)}
-                        </span>
-                      </div>
-                      <div>
+                        </Box>
+                      </Box>
+                      <Box component="div">
                         {t('Line total')}:{' '}
-                        <span className="text-[var(--text)]">
+                        <Box component="span" className="text-[var(--text)]">
                           {formatMoney(item.lineTotal, order.currency)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Box>
               ))}
-            </div>
+            </Box>
           ) : (
-            <div className="text-sm text-[var(--text-secondary)]">{t('No order items found.')}</div>
+            <Box component="div" className="text-sm text-[var(--text-secondary)]">
+              {t('No order items found.')}
+            </Box>
           )}
         </SurfacePanel>
-      </div>
+      </Box>
     </Container>
   );
 }
@@ -781,54 +802,66 @@ export function AddressesPageView({ addresses }: { addresses: AddressView[] }) {
         }
       />
       {deleteError ? (
-        <div className="mb-4 rounded-[20px] border border-[var(--error)] bg-[var(--card)] px-4 py-3 text-sm text-[var(--error)]">
+        <Box
+          component="div"
+          className="mb-4 rounded-[20px] border border-[var(--error)] bg-[var(--card)] px-4 py-3 text-sm text-[var(--error)]"
+        >
           {deleteError}
-        </div>
+        </Box>
       ) : null}
       {addresses.length ? (
-        <div className="grid gap-4 md:grid-cols-2">
+        <Box component="div" className="grid gap-4 md:grid-cols-2">
           {addresses.map((address) => (
-            <div key={address.id} className={accountPanelClassName}>
-              <div className="flex items-center justify-between gap-3">
-                <div className="font-semibold uppercase">{address.label}</div>
+            <Box component="div" key={address.id} className={accountPanelClassName}>
+              <Box component="div" className="flex items-center justify-between gap-3">
+                <Box component="div" className="font-semibold uppercase">
+                  {address.label}
+                </Box>
                 {address.isDefault ? (
-                  <div className="rounded-full border border-[var(--border)] px-3 py-1 text-[10px] uppercase tracking-[0.2em]">
+                  <Box
+                    component="div"
+                    className="rounded-full border border-[var(--border)] px-3 py-1 text-[10px] uppercase tracking-[0.2em]"
+                  >
                     {t('Default')}
-                  </div>
+                  </Box>
                 ) : null}
-              </div>
-              <div className="mt-4 space-y-2 text-sm text-[var(--text-secondary)]">
-                <div>{address.fullName}</div>
-                <div>{address.phone}</div>
-                <div>
+              </Box>
+              <Box component="div" className="mt-4 space-y-2 text-sm text-[var(--text-secondary)]">
+                <Box component="div">{address.fullName}</Box>
+                <Box component="div">{address.phone}</Box>
+                <Box component="div">
                   {address.city}
                   {address.area ? `, ${address.area}` : ''}
-                </div>
-                {address.street ? <div>{address.street}</div> : null}
-                {address.building ? <div>{address.building}</div> : null}
-              </div>
-              <div className="mt-5 flex flex-wrap gap-3 border-t border-[var(--border)] pt-4">
+                </Box>
+                {address.street ? <Box component="div">{address.street}</Box> : null}
+                {address.building ? <Box component="div">{address.building}</Box> : null}
+              </Box>
+              <Box
+                component="div"
+                className="mt-5 flex flex-wrap gap-3 border-t border-[var(--border)] pt-4"
+              >
                 <Link href={`/address/${address.id}/edit`} className={secondaryButtonClassName}>
-                  <span className="inline-flex items-center gap-2">
+                  <Box component="span" className="inline-flex items-center gap-2">
                     <Pencil className="h-4 w-4" />
                     {t('EDIT')}
-                  </span>
+                  </Box>
                 </Link>
-                <button
+                <Box
+                  component="button"
                   type="button"
                   onClick={() => handleDelete(address.id)}
                   disabled={deletingAddressId}
                   className={secondaryButtonClassName}
                 >
-                  <span className="inline-flex items-center gap-2">
+                  <Box component="span" className="inline-flex items-center gap-2">
                     <Trash2 className="h-4 w-4" />
                     {deletingAddressId ? t('PLEASE WAIT') : t('REMOVE')}
-                  </span>
-                </button>
-              </div>
-            </div>
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
           ))}
-        </div>
+        </Box>
       ) : (
         <EmptyState
           title={t('No saved addresses.')}
@@ -849,17 +882,23 @@ export function ProfilePageView({ session }: { session: CustomerSessionView }) {
         description="Account identity and contact details linked to this customer session."
         action={<BackToAccountButton />}
       />
-      <div className="grid gap-4 lg:grid-cols-3">
+      <Box component="div" className="grid gap-4 lg:grid-cols-3">
         <SurfacePanel title="Full name">
-          <p className="text-lg">{session.fullName}</p>
+          <Box component="p" className="text-lg">
+            {session.fullName}
+          </Box>
         </SurfacePanel>
         <SurfacePanel title="Email">
-          <p className="text-lg">{session.email}</p>
+          <Box component="p" className="text-lg">
+            {session.email}
+          </Box>
         </SurfacePanel>
         <SurfacePanel title="Phone">
-          <p className="text-lg">{session.phone || '-'}</p>
+          <Box component="p" className="text-lg">
+            {session.phone || '-'}
+          </Box>
         </SurfacePanel>
-      </div>
+      </Box>
     </Container>
   );
 }
@@ -879,11 +918,11 @@ export function SettingsPageView({ session }: { session: CustomerSessionView }) 
           </ActionRow>
         }
       />
-      <div className="grid gap-4 lg:grid-cols-2">
+      <Box component="div" className="grid gap-4 lg:grid-cols-2">
         <SurfacePanel title="Security">
-          <p className="text-sm leading-7 text-[var(--text-secondary)]">
+          <Box component="p" className="text-sm leading-7 text-[var(--text-secondary)]">
             {t('Password resets are handled through the forgot password flow for this account.')}
-          </p>
+          </Box>
           <Link href="/forgot-password" className={secondaryButtonClassName}>
             {t('RESET PASSWORD')}
           </Link>
@@ -893,7 +932,7 @@ export function SettingsPageView({ session }: { session: CustomerSessionView }) 
           <DetailRow label="Role" value={t(session.role ?? 'customer')} />
           <DetailRow label="Status" value={t('Active')} />
         </SurfacePanel>
-      </div>
+      </Box>
     </Container>
   );
 }
@@ -913,16 +952,17 @@ export function NotificationsPageView() {
         description="A single stream for customer account and order events."
         action={<BackToAccountButton />}
       />
-      <div className="space-y-4">
+      <Box component="div" className="space-y-4">
         {notifications.map((item) => (
-          <div
+          <Box
+            component="div"
             key={item}
             className={`${accountPanelClassName} text-sm text-[var(--text-secondary)]`}
           >
             {t(item)}
-          </div>
+          </Box>
         ))}
-      </div>
+      </Box>
     </Container>
   );
 }
@@ -938,23 +978,25 @@ export function ReviewsPageView({ reviews }: { reviews: ReviewView[] }) {
         action={<BackToAccountButton />}
       />
       {reviews.length ? (
-        <div className="space-y-4">
+        <Box component="div" className="space-y-4">
           {reviews.map((review) => (
-            <div key={review.id} className={accountPanelClassName}>
-              <div className="flex items-center justify-between gap-3">
-                <div className="font-semibold uppercase">{review.productName}</div>
-                <div className="flex items-center gap-1 text-[var(--muted)]">
+            <Box component="div" key={review.id} className={accountPanelClassName}>
+              <Box component="div" className="flex items-center justify-between gap-3">
+                <Box component="div" className="font-semibold uppercase">
+                  {review.productName}
+                </Box>
+                <Box component="div" className="flex items-center gap-1 text-[var(--muted)]">
                   {Array.from({ length: review.rating }).map((_, index) => (
                     <Star key={index} className="h-4 w-4 fill-current" />
                   ))}
-                </div>
-              </div>
-              <p className="mt-4 text-sm leading-7 text-[var(--text-secondary)]">
+                </Box>
+              </Box>
+              <Box component="p" className="mt-4 text-sm leading-7 text-[var(--text-secondary)]">
                 {t(review.body)}
-              </p>
-            </div>
+              </Box>
+            </Box>
           ))}
-        </div>
+        </Box>
       ) : (
         <EmptyState
           title="No reviews yet."
@@ -1063,213 +1105,193 @@ export function CreateAddressPageView({
     setValue('city', cityOptions[0]?.value ?? '', { shouldValidate: true });
   }, [cityOptions, selectedCity, selectedCountry, setValue]);
 
+  function submitAddress(values: FormValues) {
+    startTransition(async () => {
+      setServerError(null);
+      const response = await fetch(isEditMode ? `/api/addresses/${addressId}` : '/api/addresses', {
+        method: isEditMode ? 'PATCH' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values),
+      });
+      const payload = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        setServerError(payload.error ?? 'Something went wrong');
+        return;
+      }
+
+      router.replace('/addresses');
+      router.refresh();
+    });
+  }
+
   return (
-    <Container className="py-8 md:py-14">
-      <SectionHeading
-        title={isEditMode ? 'EDIT ADDRESS' : 'ADD ADDRESS'}
+    <StorePageContainer>
+      <StorePageHeader
+        title={t(isEditMode ? 'EDIT ADDRESS' : 'ADD ADDRESS')}
         description={
           isEditMode
-            ? 'Update a saved delivery address for your account.'
-            : 'Create a saved delivery address for your account.'
+            ? t('Update a saved delivery address for your account.')
+            : t('Create a saved delivery address for your account.')
         }
-        action={<BackButton href="/addresses" label="BACK TO ADDRESSES" />}
+        action={
+          <Button component={Link} href="/addresses" variant="default" radius="xl">
+            {t('BACK TO ADDRESSES')}
+          </Button>
+        }
       />
-      <div className="grid gap-5 xl:grid-cols-[0.85fr_1.15fr]">
-        <div className="relative overflow-hidden rounded-[34px] border border-[var(--border)] bg-[color:color-mix(in_srgb,var(--card)_88%,var(--accent)_5%)] p-6 md:p-8">
-          <div
-            className="absolute inset-0 opacity-40"
+      <Grid gap="md">
+        <Grid.Col span={{ base: 12, xl: 5 }}>
+          <Paper
+            radius="xl"
+            p={{ base: 'lg', md: 'xl' }}
+            withBorder
+            h="100%"
             style={{
+              position: 'relative',
+              overflow: 'hidden',
               background: isDark
-                ? 'radial-gradient(circle at top left, rgba(255,255,255,0.12), transparent 38%)'
-                : 'radial-gradient(circle at top left, rgba(23,23,23,0.08), transparent 38%)',
+                ? 'radial-gradient(circle at top left, rgba(255,255,255,0.1), transparent 42%), var(--mantine-color-dark-8)'
+                : 'radial-gradient(circle at top left, rgba(0,0,0,0.06), transparent 42%), var(--mantine-color-white)',
             }}
-          />
-          <div className="relative">
-            <div className="text-[11px] uppercase tracking-[0.3em] text-[var(--muted)]">
-              {t('Delivery')}
-            </div>
-            <h2 className="mt-4 font-display text-4xl uppercase leading-none md:text-5xl">
-              {t(isEditMode ? 'Edit address details' : 'Address details')}
-            </h2>
-            <p className="mt-4 max-w-sm text-sm leading-7 text-[var(--text-secondary)]">
-              {t(
-                isEditMode
-                  ? 'Update delivery details here so future checkout stays accurate and fast.'
-                  : 'Save a complete delivery location so future checkout feels instant and accurate.'
-              )}
-            </p>
-            <div className="mt-8 space-y-3">
-              {[
-                'Choose a clear label for home, office, or studio.',
-                'Keep phone and area details accurate for delivery calls.',
-                'Set one address as default to speed up checkout.',
-              ].map((item) => (
-                <div
-                  key={item}
-                  className="rounded-[22px] border border-[var(--border)] bg-[var(--background)] px-4 py-3 text-sm text-[var(--text-secondary)]"
-                >
-                  {t(item)}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="rounded-[34px] border border-[var(--border)] bg-[var(--card)] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.12)] md:p-8">
-          <form
-            onSubmit={handleSubmit((values) =>
-              startTransition(async () => {
-                setServerError(null);
-                const response = await fetch(
-                  isEditMode ? `/api/addresses/${addressId}` : '/api/addresses',
-                  {
-                    method: isEditMode ? 'PATCH' : 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(values),
-                  }
-                );
-
-                const payload = (await response.json()) as { error?: string };
-
-                if (!response.ok) {
-                  setServerError(payload.error ?? 'Something went wrong');
-                  return;
-                }
-
-                // The addresses page is server-rendered, so replacing the form route
-                // ensures the newly created address is loaded from Supabase.
-                router.replace('/addresses');
-                router.refresh();
-              })
-            )}
-            className="grid gap-5"
           >
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field
-                label={t('Label')}
-                error={errors.label?.message ? t(errors.label.message) : undefined}
+            <Stack gap="lg" style={{ position: 'relative' }}>
+              <Text size="xs" c="dimmed" tt="uppercase" style={{ letterSpacing: '0.3em' }}>
+                {t('Delivery')}
+              </Text>
+              <Title
+                order={2}
+                tt="uppercase"
+                style={{ fontSize: 'clamp(2rem, 6vw, 3rem)', lineHeight: 1 }}
               >
-                <input
-                  {...register('label')}
-                  className={inputClassName}
-                  placeholder={t('Home, Studio, Office')}
+                {t(isEditMode ? 'Edit address details' : 'Address details')}
+              </Title>
+              <Text size="sm" c="dimmed" maw={420} lh={1.8}>
+                {t(
+                  isEditMode
+                    ? 'Update delivery details here so future checkout stays accurate and fast.'
+                    : 'Save a complete delivery location so future checkout feels instant and accurate.'
+                )}
+              </Text>
+              <Stack gap="sm">
+                {[
+                  'Choose a clear label for home, office, or studio.',
+                  'Keep phone and area details accurate for delivery calls.',
+                  'Set one address as default to speed up checkout.',
+                ].map((item) => (
+                  <Paper key={item} radius="md" p="md" withBorder>
+                    <Text size="sm" c="dimmed">
+                      {t(item)}
+                    </Text>
+                  </Paper>
+                ))}
+              </Stack>
+            </Stack>
+          </Paper>
+        </Grid.Col>
+        <Grid.Col span={{ base: 12, xl: 7 }}>
+          <Paper radius="xl" p={{ base: 'md', sm: 'lg', md: 'xl' }} withBorder>
+            <Box component="form" onSubmit={handleSubmit(submitAddress)}>
+              <Stack gap="md">
+                <Grid gap="md">
+                  <Grid.Col span={{ base: 12, md: 6 }}>
+                    <StoreTextInput
+                      label={t('Label')}
+                      error={errors.label?.message ? t(errors.label.message) : undefined}
+                      {...register('label')}
+                      placeholder={t('Home, Studio, Office')}
+                    />
+                  </Grid.Col>
+                  <Grid.Col span={{ base: 12, md: 6 }}>
+                    <StoreTextInput
+                      label={t('Full Name')}
+                      error={errors.fullName?.message ? t(errors.fullName.message) : undefined}
+                      {...register('fullName')}
+                      placeholder={t('Full recipient name')}
+                    />
+                  </Grid.Col>
+                  <Grid.Col span={{ base: 12, md: 6 }}>
+                    <StoreTextInput
+                      label={t('Phone')}
+                      error={errors.phone?.message ? t(errors.phone.message) : undefined}
+                      {...register('phone')}
+                      placeholder={t('+962...')}
+                    />
+                  </Grid.Col>
+                  <Grid.Col span={{ base: 12, md: 6 }}>
+                    <StoreNativeSelect
+                      label={t('Country')}
+                      error={errors.country?.message ? t(errors.country.message) : undefined}
+                      {...register('country')}
+                      data={[{ label: t('Select a country'), value: '' }, ...countryOptions]}
+                      onChange={(event) => {
+                        setValue('country', event.target.value, {
+                          shouldValidate: true,
+                          shouldDirty: true,
+                        });
+                        setValue('city', '', {
+                          shouldValidate: true,
+                          shouldDirty: true,
+                        });
+                      }}
+                    />
+                  </Grid.Col>
+                  <Grid.Col span={{ base: 12, md: 6 }}>
+                    <StoreNativeSelect
+                      label={t('City')}
+                      error={errors.city?.message ? t(errors.city.message) : undefined}
+                      {...register('city')}
+                      data={[{ label: t('Select a city'), value: '' }, ...cityOptions]}
+                    />
+                  </Grid.Col>
+                  <Grid.Col span={{ base: 12, md: 6 }}>
+                    <StoreTextInput
+                      label={t('Area')}
+                      error={errors.area?.message ? t(errors.area.message) : undefined}
+                      {...register('area')}
+                      placeholder={t('Area')}
+                    />
+                  </Grid.Col>
+                  <Grid.Col span={{ base: 12, md: 6 }}>
+                    <StoreTextInput
+                      label={t('Street')}
+                      error={errors.street?.message ? t(errors.street.message) : undefined}
+                      {...register('street')}
+                      placeholder={t('Street')}
+                    />
+                  </Grid.Col>
+                  <Grid.Col span={{ base: 12, md: 6 }}>
+                    <StoreTextInput
+                      label={t('Building')}
+                      error={errors.building?.message ? t(errors.building.message) : undefined}
+                      {...register('building')}
+                      placeholder={t('Building, floor, apartment')}
+                    />
+                  </Grid.Col>
+                </Grid>
+                <Checkbox
+                  {...register('isDefault')}
+                  label={t('DefaultAddressSwitch')}
+                  radius="sm"
+                  size="md"
                 />
-              </Field>
-              <Field
-                label={t('Full Name')}
-                error={errors.fullName?.message ? t(errors.fullName.message) : undefined}
-              >
-                <input
-                  {...register('fullName')}
-                  className={inputClassName}
-                  placeholder={t('Full recipient name')}
-                />
-              </Field>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field
-                label={t('Phone')}
-                error={errors.phone?.message ? t(errors.phone.message) : undefined}
-              >
-                <input
-                  {...register('phone')}
-                  className={inputClassName}
-                  placeholder={t('+962...')}
-                />
-              </Field>
-              <Field
-                label={t('Country')}
-                error={errors.country?.message ? t(errors.country.message) : undefined}
-              >
-                <select
-                  {...register('country')}
-                  className={inputClassName}
-                  onChange={(event) => {
-                    setValue('country', event.target.value, {
-                      shouldValidate: true,
-                      shouldDirty: true,
-                    });
-                    setValue('city', '', {
-                      shouldValidate: true,
-                      shouldDirty: true,
-                    });
-                  }}
-                >
-                  <option value="">{t('Select a country')}</option>
-                  {countryOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field
-                label={t('City')}
-                error={errors.city?.message ? t(errors.city.message) : undefined}
-              >
-                <select {...register('city')} className={inputClassName}>
-                  <option value="">{t('Select a city')}</option>
-                  {cityOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <Field
-                label={t('Area')}
-                error={errors.area?.message ? t(errors.area.message) : undefined}
-              >
-                <input {...register('area')} className={inputClassName} placeholder={t('Area')} />
-              </Field>
-              <Field
-                label={t('Street')}
-                error={errors.street?.message ? t(errors.street.message) : undefined}
-              >
-                <input
-                  {...register('street')}
-                  className={inputClassName}
-                  placeholder={t('Street')}
-                />
-              </Field>
-            </div>
-            <Field
-              label={t('Building')}
-              error={errors.building?.message ? t(errors.building.message) : undefined}
-            >
-              <input
-                {...register('building')}
-                className={inputClassName}
-                placeholder={t('Building, floor, apartment')}
-              />
-            </Field>
-            <label className="flex items-center gap-3 rounded-[24px] border border-[var(--border)] bg-[color:color-mix(in_srgb,var(--background)_80%,transparent)] px-4 py-4 text-sm text-[var(--text)]">
-              <input
-                type="checkbox"
-                {...register('isDefault')}
-                className="h-4 w-4 accent-[var(--accent)]"
-              />
-              <span>{t('DefaultAddressSwitch')}</span>
-            </label>
-            {serverError ? <p className="text-sm text-[var(--error)]">{t(serverError)}</p> : null}
-            <div className="flex flex-wrap gap-3 border-t border-[var(--border)] pt-2">
-              <BackButton href="/addresses" label="CANCEL" />
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className={primaryButtonClassName}
-                style={getPrimaryButtonStyle(isDark)}
-              >
-                {isSubmitting ? t('PLEASE WAIT') : t(isEditMode ? 'SAVE CHANGES' : 'SAVE ADDRESS')}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </Container>
+                {serverError ? <Alert color="red">{t(serverError)}</Alert> : null}
+                <Group gap="sm" pt="xs">
+                  <Button component={Link} href="/addresses" variant="default" radius="xl">
+                    {t('CANCEL')}
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting} radius="xl" loading={isSubmitting}>
+                    {isSubmitting
+                      ? t('PLEASE WAIT')
+                      : t(isEditMode ? 'SAVE CHANGES' : 'SAVE ADDRESS')}
+                  </Button>
+                </Group>
+              </Stack>
+            </Box>
+          </Paper>
+        </Grid.Col>
+      </Grid>
+    </StorePageContainer>
   );
 }
 
@@ -1279,7 +1301,8 @@ function LogoutButton() {
   const [isPending, startTransition] = useTransition();
 
   return (
-    <button
+    <Box
+      component="button"
       type="button"
       onClick={() =>
         startTransition(async () => {
@@ -1291,16 +1314,20 @@ function LogoutButton() {
       className="inline-flex items-center justify-center gap-2 rounded-full border border-white/30 bg-white/15 px-5 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-white disabled:opacity-50"
       disabled={isPending}
     >
-      <span className="flex items-center justify-center gap-2 leading-none">
+      <Box component="span" className="flex items-center justify-center gap-2 leading-none">
         <LogOut className="h-4 w-4 shrink-0" />
-        <span>{isPending ? t('PLEASE WAIT') : t('SIGN OUT')}</span>
-      </span>
-    </button>
+        <Box component="span">{isPending ? t('PLEASE WAIT') : t('SIGN OUT')}</Box>
+      </Box>
+    </Box>
   );
 }
 
 function ActionRow({ children }: { children: ReactNode }) {
-  return <div className="flex flex-wrap items-center gap-3">{children}</div>;
+  return (
+    <Box component="div" className="flex flex-wrap items-center gap-3">
+      {children}
+    </Box>
+  );
 }
 
 function BackToAccountButton() {
@@ -1348,13 +1375,20 @@ function AccountLinkCard({
       href={href}
       className="group rounded-lg border border-[var(--border)] bg-[var(--card)] p-6 shadow-[0_16px_42px_rgba(24,18,17,0.06)] transition hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[0_24px_56px_rgba(24,18,17,0.1)]"
     >
-      <div className="flex items-center justify-between gap-3">
-        <div className="text-2xl font-bold text-[var(--text)]">{t(title)}</div>
-        <div className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[color:color-mix(in_srgb,var(--accent)_12%,transparent)] text-[var(--accent)] transition group-hover:bg-[var(--accent)] group-hover:text-white">
+      <Box component="div" className="flex items-center justify-between gap-3">
+        <Box component="div" className="text-2xl font-bold text-[var(--text)]">
+          {t(title)}
+        </Box>
+        <Box
+          component="div"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[color:color-mix(in_srgb,var(--accent)_12%,transparent)] text-[var(--accent)] transition group-hover:bg-[var(--accent)] group-hover:text-white"
+        >
           {icon}
-        </div>
-      </div>
-      <p className="mt-4 text-sm leading-7 text-[var(--text-secondary)]">{t(body)}</p>
+        </Box>
+      </Box>
+      <Box component="p" className="mt-4 text-sm leading-7 text-[var(--text-secondary)]">
+        {t(body)}
+      </Box>
     </Link>
   );
 }
@@ -1363,13 +1397,22 @@ function MetricCard({ label, value, icon }: { label: string; value: string; icon
   const { t } = useLocale();
 
   return (
-    <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-5 shadow-[0_16px_42px_rgba(24,18,17,0.06)]">
-      <div className="flex items-center justify-between gap-3 text-[var(--muted)]">
-        <div className="text-[10px] font-semibold uppercase tracking-[0.18em]">{t(label)}</div>
-        <div className="text-[var(--accent)]">{icon}</div>
-      </div>
-      <div className="mt-4 text-4xl font-bold text-[var(--text)]">{value}</div>
-    </div>
+    <Box
+      component="div"
+      className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-5 shadow-[0_16px_42px_rgba(24,18,17,0.06)]"
+    >
+      <Box component="div" className="flex items-center justify-between gap-3 text-[var(--muted)]">
+        <Box component="div" className="text-[10px] font-semibold uppercase tracking-[0.18em]">
+          {t(label)}
+        </Box>
+        <Box component="div" className="text-[var(--accent)]">
+          {icon}
+        </Box>
+      </Box>
+      <Box component="div" className="mt-4 text-4xl font-bold text-[var(--text)]">
+        {value}
+      </Box>
+    </Box>
   );
 }
 
@@ -1377,12 +1420,18 @@ function SurfacePanel({ title, children }: { title: string; children: ReactNode 
   const { t } = useLocale();
 
   return (
-    <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-5 shadow-[0_16px_42px_rgba(24,18,17,0.06)]">
-      <div className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]">
+    <Box
+      component="div"
+      className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-5 shadow-[0_16px_42px_rgba(24,18,17,0.06)]"
+    >
+      <Box
+        component="div"
+        className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]"
+      >
         {t(title)}
-      </div>
+      </Box>
       {children}
-    </div>
+    </Box>
   );
 }
 
@@ -1390,10 +1439,17 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   const { t } = useLocale();
 
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-[var(--border)] py-3 text-sm last:border-b-0">
-      <span className="text-[var(--text-secondary)]">{t(label)}</span>
-      <span className="text-right font-semibold text-[var(--text)]">{value}</span>
-    </div>
+    <Box
+      component="div"
+      className="flex items-center justify-between gap-4 border-b border-[var(--border)] py-3 text-sm last:border-b-0"
+    >
+      <Box component="span" className="text-[var(--text-secondary)]">
+        {t(label)}
+      </Box>
+      <Box component="span" className="text-right font-semibold text-[var(--text)]">
+        {value}
+      </Box>
+    </Box>
   );
 }
 
@@ -1412,9 +1468,16 @@ function EmptyState({
   const { isDark } = useThemeMode();
 
   return (
-    <div className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-10 text-center shadow-[0_18px_48px_rgba(24,18,17,0.06)]">
-      <div className="text-4xl font-bold text-[var(--text)]">{t(title)}</div>
-      <p className="mt-3 text-sm text-[var(--text-secondary)]">{t(body)}</p>
+    <Box
+      component="div"
+      className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-10 text-center shadow-[0_18px_48px_rgba(24,18,17,0.06)]"
+    >
+      <Box component="div" className="text-4xl font-bold text-[var(--text)]">
+        {t(title)}
+      </Box>
+      <Box component="p" className="mt-3 text-sm text-[var(--text-secondary)]">
+        {t(body)}
+      </Box>
       <Link
         href={actionHref}
         className={`mt-6 inline-flex ${primaryButtonClassName}`}
@@ -1422,17 +1485,7 @@ function EmptyState({
       >
         {t(actionLabel)}
       </Link>
-    </div>
-  );
-}
-
-function Field({ label, error, children }: { label: string; error?: string; children: ReactNode }) {
-  return (
-    <label className="block">
-      <span className="mb-2 block text-xs tracking-[0.24em] text-[var(--muted)]">{label}</span>
-      {children}
-      {error ? <span className="mt-2 block text-xs text-[var(--error)]">{error}</span> : null}
-    </label>
+    </Box>
   );
 }
 
@@ -1451,9 +1504,6 @@ function formatOrderDate(value: string, locale: 'en' | 'ar') {
     year: 'numeric',
   }).format(new Date(value));
 }
-
-const inputClassName =
-  'h-12 w-full rounded-lg border border-[var(--border)] bg-[var(--card)] px-5 text-sm text-[var(--text)] outline-none transition placeholder:text-[var(--muted)] focus:border-[var(--accent)]';
 
 const primaryButtonClassName =
   'inline-flex items-center justify-center rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-white disabled:opacity-50';
