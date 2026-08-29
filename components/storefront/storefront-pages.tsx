@@ -164,7 +164,7 @@ export function ShopPageView({
         />
       </Box>
 
-      <Container size="xl">
+      <Container>
         {/* Toolbar */}
         <Paper
           withBorder
@@ -928,7 +928,7 @@ export function ProductPageView({
       component="div"
       className="bg-[var(--background)] pb-24 pt-4 text-[var(--text)] md:pb-16 md:pt-6"
     >
-      <Container size="xl">
+      <Container>
         {/* BREADCRUMB */}
         <Box
           component="div"
@@ -1550,7 +1550,7 @@ export function ProductPageView({
       </Container>
 
       {/* RELATED PRODUCTS */}
-      <Container size="xl" className="mt-10">
+      <Container className="mt-10">
         <SectionHeading title="You may also want" />
         <ProductGrid products={relatedProducts} />
       </Container>
@@ -1886,7 +1886,7 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
       </Box>
 
       {lines.length ? (
-        <Grid gutter={{ base: 20, lg: 28 }} align="flex-start">
+        <Grid align="flex-start">
           {/* Cart products */}
           <Grid.Col span={{ base: 12, lg: 8 }}>
             <Stack gap="sm">
@@ -2654,7 +2654,7 @@ export function CheckoutPageView({
   }
 
   return (
-    <Container size="xl" py={{ base: 20, sm: 28, md: 36 }}>
+    <Container>
       {/* Header */}
       <Box mb={{ base: 24, md: 32 }}>
         <Group justify="space-between" align="flex-end" gap="md" wrap="wrap">
@@ -2676,7 +2676,7 @@ export function CheckoutPageView({
         </Group>
       </Box>
 
-      <Grid gutter={{ base: "lg", lg: 32 }} align="flex-start">
+      <Grid align="flex-start">
         {/* LEFT */}
         <Grid.Col span={{ base: 12, lg: 8 }}>
           <Stack gap="sm">
