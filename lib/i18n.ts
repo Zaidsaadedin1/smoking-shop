@@ -8,6 +8,9 @@ export const localeLabelMap: Record<Locale, string> = {
 };
 
 export const messages: Record<string, LocaleMessages> = {
+  'MY ACCOUNT': { en: 'MY ACCOUNT', ar: 'حسابي' },
+  'Quick access': { en: 'Quick access', ar: 'الوصول السريع' },
+  'Manage your account': { en: 'Manage your account', ar: 'إدارة حسابك' },
   'ACCOUNT RECOVERY': { en: 'ACCOUNT RECOVERY', ar: 'استعادة الحساب' },
   'Reset password': { en: 'Reset password', ar: 'إعادة تعيين كلمة المرور' },
   'New password': { en: 'New password', ar: 'كلمة المرور الجديدة' },
@@ -408,16 +411,17 @@ export const messages: Record<string, LocaleMessages> = {
   },
   'Choose a clear label for home, office, or studio.': {
     en: 'Choose a clear label for home, office, or studio.',
-    ar: 'اختاري تسمية واضحة للمنزل أو المكتب أو الاستوديو.',
+    ar: 'اختار تسمية واضحة للمنزل أو المكتب أو الاستوديو.',
   },
   'Keep phone and area details accurate for delivery calls.': {
     en: 'Keep phone and area details accurate for delivery calls.',
-    ar: 'احرصي على دقة الهاتف وتفاصيل المنطقة لمكالمات التوصيل.',
+    ar: 'احرص على دقة الهاتف وتفاصيل المنطقة لمكالمات التوصيل.',
   },
   'Set one address as default to speed up checkout.': {
     en: 'Set one address as default to speed up checkout.',
-    ar: 'اجعلي أحد العناوين افتراضياً لتسريع إتمام الشراء.',
+    ar: 'اجعل أحد العناوين افتراضياً لتسريع إتمام الشراء.',
   },
+  
   'Home, Studio, Office': { en: 'Home, Studio, Office', ar: 'المنزل، الاستوديو، المكتب' },
   'Full recipient name': { en: 'Full recipient name', ar: 'اسم المستلم الكامل' },
   'Building, floor, apartment': { en: 'Building, floor, apartment', ar: 'البناية، الطابق، الشقة' },
@@ -2374,6 +2378,86 @@ export const messages: Record<string, LocaleMessages> = {
   'Increase quantity': { en: 'Increase quantity', ar: 'زيادة الكمية' },
   'Decrease quantity': { en: 'Decrease quantity', ar: 'تقليل الكمية' },
   'Shop sale': { en: 'Shop sale', ar: 'تسوق العرض' },
+  'Shopping Cart': { en: 'Shopping Cart', ar: 'سلة التسوق' },
+  'Shipping and discounts are calculated at checkout.': {
+    en: 'Shipping and discounts are calculated at checkout.',
+    ar: 'يتم حساب الشحن والخصومات عند الدفع.',
+  },
+  'Checkout': { en: 'Checkout', ar: 'الدفع' },
+  'View Cart': { en: 'View cart', ar: 'عرض السلة' },
+  'Order Summary': { en: 'Order Summary', ar: 'ملخص الطلب' },
+  'Continue shopping': { en: 'Continue Shopping', ar: 'متابعة التسوق' },
+  'Proceed to Checkout': { en: 'Proceed to checkout', ar: 'الدفع' },
+  'Shipping fees are calculated during checkout.': {    
+    en: 'Shipping fees are calculated during checkout.',
+    ar: 'يتم حساب رسوم الشحن عند الدفع.',  
+  },
+  'Delivery Address': { en: 'Delivery Address', ar: 'عنوان التوصيل' },
+  'Choose a saved address or enter your details below.': {
+    en: 'Choose a saved address or enter your details below.',
+    ar: 'اختر عنواناً محفوظاً أو ادخل التفاصيل التالية.',
+  },
+  'Complete your delivery details and place your order.': {
+    en: 'Complete your delivery details and place your order.',
+    ar: 'اكمل تفاصيل التوصيل واقم طلبك.',
+  },
+  'Place Order': { en: 'Place Order', ar: 'إتمام الطلب' },
+  'Your order will be created after you confirm your purchase.': {
+    en: 'Your order will be created after you confirm your purchase.',
+    ar: 'سيتم انشاء الطلب بعد تاكيد شراءك.',
+  },
+  'Choose a saved address or enter your details.': {
+    en: 'Choose a saved address or enter your details.',
+    ar: 'اختر عنواناً محفوظاً أو ادخل التفاصيل.',
+  },
+  'Optional note': { en: 'Optional note', ar: 'ملاحظة اختيارية' },
+  'Delivery instructions': { en: 'Delivery instructions', ar: 'تعليمات التوصيل' },
+  'cash on delivery': { en: 'cash on delivery', ar: 'الدفع عند الاستلام' },
+  'Method': { en: 'Method', ar: 'طريقة' },
+  'View your previous orders and track their payment and delivery status.': {
+    en: 'View your previous orders and track their payment and delivery status.',
+    ar: 'عرض طلباتك السابقة وتتبع حالة الدفع والتوصيل.',      
+  },
+  'Order Items': { en: 'Order Items', ar: 'أصناف الطلب' },
+  'View your order status, payment details, delivery information, and purchased items.': {    
+    en: 'View your order status, payment details, delivery information, and purchased items.',
+    ar: 'عرض حالة الطلب، تفاصيل الدفع، معلومات التوصيل، والأصناف المشتراة.',
+  },
+  'Delivery Information': { en: 'Delivery Information', ar: 'معلومات التوصيل' },
+  'My Account': { en: 'My Account', ar: 'حسابي' },
+  'Manage your orders, favorites, addresses, and account details.': {
+    en: 'Manage your orders, favorites, addresses, and account details.',
+    ar: 'ادارة طلباتك، المفضلات، العناوين، وتفاصيل حسابك.',
+  },
+  'Continue Shopping': { en: 'Continue Shopping', ar: 'متابعة التسوق' },
+  'View your orders and track their current status.': {
+    en: 'View your orders and track their current status.',
+    ar: 'عرض طلباتك وتتبع حالتها الحالية.',
+  },
+'View products you saved for later.':{
+  en:'View products you saved for later.',
+  ar:'عرض المنتجات التي قمت بحفظها لاحقاً.',},
+
+  'Manage your saved delivery addresses.':{
+    en:'Manage your saved delivery addresses.',
+    ar:'ادارة عناوين التوصيل المحفوظة.',
+  },
+  'View your personal and contact information.':{
+    en:'View your personal and contact information.',
+    ar:'عرض معلوماتك الشخصية والاتصالية.',
+  },
+  'View updates related to your account and orders.':{
+    en:'View updates related to your account and orders.',
+    ar:'عرض التحديثات المتعلقة بحسابك وطلباتك.',
+  },
+  'View and manage your product reviews.':{
+    en:'View and manage your product reviews.',
+    ar:'عرض وإدارة تقييماتك للمنتجات.',
+  },
+  'Manage your account preferences and security.':{
+    en:'Manage your account preferences and security.',
+    ar:'إدارة تفضيلات حسابك وحماية.',
+  },
 };
 
 export function translateText(text: string, locale: Locale) {

@@ -1,9 +1,24 @@
-'use client';
+"use client";
 
-import { Box, Button, Grid, Image, Paper, SimpleGrid, Stack, Text, Title } from '@mantine/core';
-import { MotionBox } from '@/components/storefront/ui/motion-box';
+import {
+  ActionIcon,
+  Badge,
+  Box,
+  Button,
+  Grid,
+  Group,
+  Image,
+  Paper,
+  Select,
+  SimpleGrid,
+  Stack,
+  Text,
+  Title,
+  UnstyledButton,
+} from "@mantine/core";
+import { MotionBox } from "@/components/storefront/ui/motion-box";
 
-import { zodResolver } from '@hookform/resolvers/zod';
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ArrowLeft,
   ArrowRight,
@@ -14,51 +29,56 @@ import {
   Plus,
   SlidersHorizontal,
   Star,
-} from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ReactNode, useEffect, useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { useLocale } from '@/components/storefront/locale-provider';
+  Trash2,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ReactNode, useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { useLocale } from "@/components/storefront/locale-provider";
 import {
   CheckoutDetailsPanel,
   CheckoutFormState,
-} from '@/components/storefront/ui/checkout-details-panel';
-import { StoreTextInput } from '@/components/storefront/ui/store-form-controls';
-import { CartLineCard } from '@/components/storefront/ui/cart-line-card';
-import { StorePageContainer } from '@/components/storefront/ui/store-layout';
+} from "@/components/storefront/ui/checkout-details-panel";
+import { StoreTextInput } from "@/components/storefront/ui/store-form-controls";
+import { CartLineCard } from "@/components/storefront/ui/cart-line-card";
+import { StorePageContainer } from "@/components/storefront/ui/store-layout";
 import {
   Container,
   NewsletterSection,
   ProductGrid,
   Rating,
   SectionHeading,
-} from '@/components/storefront/storefront-sections';
+} from "@/components/storefront/storefront-sections";
 import {
   DeliveryZone,
   FlashSale,
   StoreBrand,
   StoreCategory,
   StoreProduct,
-} from '@/lib/commerce-types';
+} from "@/lib/commerce-types";
 import {
   calculateDiscount,
   calculateDiscountAmount,
   filterProducts,
   formatCurrency,
   getProductSizes,
-} from '@/lib/commerce-utils';
-import { calculateCouponDiscount } from '@/lib/coupon-utils';
-import { resolveDeliveryFee } from '@/lib/delivery-zones';
-import { CartLineSelection, getCartProducts, useCartStore } from '@/stores/use-cart-store';
-import { useUiStore } from '@/stores/use-ui-store';
+} from "@/lib/commerce-utils";
+import { calculateCouponDiscount } from "@/lib/coupon-utils";
+import { resolveDeliveryFee } from "@/lib/delivery-zones";
+import {
+  CartLineSelection,
+  getCartProducts,
+  useCartStore,
+} from "@/stores/use-cart-store";
+import { useUiStore } from "@/stores/use-ui-store";
 
 export function ShopPageView({
   products,
   categories,
-  title = 'SHOP',
-  description = 'Explore premium devices, e-liquids, pods, coils, and smoking accessories.',
+  title = "SHOP",
+  description = "Explore premium devices, e-liquids, pods, coils, and smoking accessories.",
   initialCategory,
   initialBrand,
   initialSort,
@@ -71,111 +91,160 @@ export function ShopPageView({
   description?: string;
   initialCategory?: string;
   initialBrand?: string;
-  initialSort?: 'newest' | 'price-asc' | 'price-desc' | 'featured';
+  initialSort?: "newest" | "price-asc" | "price-desc" | "featured";
   initialSale?: boolean;
   flashSale?: FlashSale | null;
 }) {
   const { t, localize, dir } = useLocale();
-  const [category, setCategory] = useState(initialCategory ?? 'all');
-  const [brand] = useState(initialBrand ?? '');
-  const [sort, setSort] = useState<'newest' | 'price-asc' | 'price-desc' | 'featured'>(
-    initialSort ?? 'newest'
-  );
+
+  const [category, setCategory] = useState(initialCategory ?? "all");
+  const [brand] = useState(initialBrand ?? "");
+  const [sort, setSort] = useState<
+    "newest" | "price-asc" | "price-desc" | "featured"
+  >(initialSort ?? "newest");
 
   const filtered = useMemo(
     () =>
       filterProducts(products, {
-        category: category !== 'all' ? category : undefined,
+        category: category !== "all" ? category : undefined,
         brand: brand || undefined,
         sort,
         sale: initialSale || undefined,
       }),
-    [brand, category, initialSale, products, sort]
+    [brand, category, initialSale, products, sort],
   );
+
   const rootCategories = categories.filter((item) => !item.parentId);
+
   const selectedCategory = categories.find((item) => item.slug === category);
+
   const selectedParent = selectedCategory?.parentId
     ? categories.find((item) => item.id === selectedCategory.parentId)
     : selectedCategory;
+
   const subcategories = selectedParent
     ? categories.filter((item) => item.parentId === selectedParent.id)
     : [];
+
   const productCount = (slug: string) =>
     products.filter((product) => product.categorySlug === slug).length;
 
   return (
-    <Box component="div" className="space-y-10 pb-16 md:space-y-16 md:pb-24">
-      {flashSale ? <CatalogFlashSaleBanner flashSale={flashSale} /> : null}
-      <CatalogHero title={title} description={description} />
-      <CategoryFilterBar
-        categories={rootCategories}
-        subcategories={subcategories}
-        selectedCategory={category}
-        productCount={productCount}
-        dir={dir}
-        selectedLabel={
-          category === 'all' ? t('ALL') : localize(selectedCategory?.name, selectedCategory?.nameAr)
-        }
-        resultCount={filtered.length}
-        onSelect={setCategory}
-        allLabel={t('ALL')}
-        localize={localize}
-        t={t}
-      />
-      <Container>
-        <Box
-          component="div"
-          className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] py-3 text-[10px] uppercase tracking-[0.22em] text-[var(--muted)]"
-        >
-          <Box component="div" className="min-w-0">
-            {t('Showing')} {filtered.length} {t('products')}
-          </Box>
-          <Box component="div" className="flex min-w-0 items-center gap-2 sm:gap-3">
-            <Box component="button" type="button" className="inline-flex items-center gap-2">
-              <SlidersHorizontal className="h-3.5 w-3.5" />
-              {t('FILTERS')}
-            </Box>
-            <Box
-              component="select"
-              value={sort}
-              onChange={(event) => setSort(event.target.value as typeof sort)}
-              className="min-w-0 max-w-[48vw] border-l border-[var(--border)] bg-transparent pl-3 text-[10px] uppercase tracking-[0.16em] outline-none sm:max-w-none sm:tracking-[0.22em]"
-            >
-              <Box component="option" value="newest">
-                {t('Newest')}
-              </Box>
-              <Box component="option" value="price-asc">
-                {t('Price Low to High')}
-              </Box>
-              <Box component="option" value="price-desc">
-                {t('Price High to Low')}
-              </Box>
-              <Box component="option" value="featured">
-                {t('Featured')}
-              </Box>
-            </Box>
-          </Box>
+    <Box component="div" className="pb-12 md:pb-16">
+      {/* Flash sale */}
+      {flashSale ? (
+        <Box className="mb-4">
+          <CatalogFlashSaleBanner flashSale={flashSale} />
         </Box>
+      ) : null}
+
+      {/* Hero */}
+      <Box className="mb-4 md:mb-5">
+        <CatalogHero title={title} description={description} />
+      </Box>
+
+      {/* Categories */}
+      <Box className="mb-5">
+        <CategoryFilterBar
+          categories={rootCategories}
+          subcategories={subcategories}
+          selectedCategory={category}
+          productCount={productCount}
+          dir={dir}
+          selectedLabel={
+            category === "all"
+              ? t("ALL")
+              : localize(selectedCategory?.name, selectedCategory?.nameAr)
+          }
+          resultCount={filtered.length}
+          onSelect={setCategory}
+          allLabel={t("ALL")}
+          localize={localize}
+          t={t}
+        />
+      </Box>
+
+      <Container size="xl">
+        {/* Toolbar */}
+        <Paper
+          withBorder
+          radius="md"
+          px={{ base: "sm", sm: "md" }}
+          py="sm"
+          mb="md"
+        >
+          <Group justify="space-between" align="center" gap="sm" wrap="wrap">
+            <Text size="sm" c="dimmed">
+              {filtered.length}{" "}
+              {t(filtered.length === 1 ? "product" : "products")}
+            </Text>
+
+            <Group gap="xs" wrap="nowrap">
+              <Button
+                variant="default"
+                size="xs"
+                radius="sm"
+                leftSection={<SlidersHorizontal size={14} />}
+              >
+                {t("Filters")}
+              </Button>
+
+              <Select
+                value={sort}
+                onChange={(value) => {
+                  if (value) {
+                    setSort(value as typeof sort);
+                  }
+                }}
+                data={[
+                  {
+                    value: "newest",
+                    label: t("Newest"),
+                  },
+                  {
+                    value: "price-asc",
+                    label: t("Price Low to High"),
+                  },
+                  {
+                    value: "price-desc",
+                    label: t("Price High to Low"),
+                  },
+                  {
+                    value: "featured",
+                    label: t("Featured"),
+                  },
+                ]}
+                size="xs"
+                radius="sm"
+                w={{ base: 155, sm: 190 }}
+                allowDeselect={false}
+              />
+            </Group>
+          </Group>
+        </Paper>
+
+        {/* Products */}
         {filtered.length ? (
           <ProductGrid products={filtered} />
         ) : (
-          <ShopEmptyState onClearFilters={() => setCategory('all')} />
+          <ShopEmptyState onClearFilters={() => setCategory("all")} />
         )}
-      </Container>
-      <Container>
-        <NewsletterSection />
+
+        {/* Newsletter */}
+        <Box mt={{ base: 32, md: 40 }}>
+          <NewsletterSection />
+        </Box>
       </Container>
     </Box>
   );
 }
-
 function ShopEmptyState({ onClearFilters }: { onClearFilters: () => void }) {
   const { t, dir } = useLocale();
 
   return (
     <Box
       component="section"
-      className="relative isolate overflow-hidden border-y border-[var(--border)] bg-[var(--background-secondary)] px-6 py-16 md:px-14 md:py-24"
+      className="relative isolate overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-12 shadow-sm md:px-8 md:py-16"
     >
       <Box
         component="div"
@@ -194,19 +263,21 @@ function ShopEmptyState({ onClearFilters }: { onClearFilters: () => void }) {
           component="div"
           className="text-[10px] font-bold uppercase tracking-[0.3em] text-[var(--accent)]"
         >
-          {t('PUFF JO / CATALOG')}
+          {t("PUFF JO / CATALOG")}
         </Box>
         <Box
           component="h2"
-          className="mt-4 text-3xl font-black uppercase leading-none tracking-[-.04em] md:text-5xl"
+          className="mt-4 text-3xl font-black uppercase leading-none tracking-[-.04em] md:text-4xl"
         >
-          {t('NO PRODUCTS MATCH')}
+          {t("NO PRODUCTS MATCH")}
         </Box>
         <Box
           component="p"
           className="mx-auto mt-4 max-w-md text-sm leading-7 text-[var(--text-secondary)]"
         >
-          {t('Try another category or clear your filters to see the full collection.')}
+          {t(
+            "Try another category or clear your filters to see the full collection.",
+          )}
         </Box>
         <Box
           component="button"
@@ -214,8 +285,12 @@ function ShopEmptyState({ onClearFilters }: { onClearFilters: () => void }) {
           onClick={onClearFilters}
           className="!text-white mt-7 inline-flex min-h-11 items-center gap-3 rounded-full bg-[var(--accent)] px-6 py-3 text-[10px] font-bold uppercase tracking-[0.18em] transition hover:gap-4"
         >
-          {t('VIEW ALL PRODUCTS')}
-          {dir === 'rtl' ? <ArrowLeft className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
+          {t("VIEW ALL PRODUCTS")}
+          {dir === "rtl" ? (
+            <ArrowLeft className="h-4 w-4" />
+          ) : (
+            <ArrowRight className="h-4 w-4" />
+          )}
         </Box>
       </Box>
     </Box>
@@ -232,15 +307,15 @@ export function BrandsPageView({
   const { localize, t } = useLocale();
   const brandCards = brands.length
     ? brands
-    : Array.from(new Map(products.map((product) => [product.brand, product])).values()).map(
-        (product) => ({
-          id: product.brand,
-          slug: product.brand.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-          name: product.brand,
-          nameAr: product.brandAr,
-          image: product.images[0]?.url,
-        })
-      );
+    : Array.from(
+        new Map(products.map((product) => [product.brand, product])).values(),
+      ).map((product) => ({
+        id: product.brand,
+        slug: product.brand.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+        name: product.brand,
+        nameAr: product.brandAr,
+        image: product.images[0]?.url,
+      }));
 
   return (
     <Container className="py-10 md:py-16">
@@ -249,7 +324,7 @@ export function BrandsPageView({
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-        className="relative overflow-hidden rounded-[32px] border border-[var(--border)] bg-[var(--card)] p-7 md:p-12"
+        className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[linear-gradient(145deg,var(--card),var(--background-secondary))] p-5 shadow-sm md:p-8"
       >
         <Box
           component="div"
@@ -260,19 +335,21 @@ export function BrandsPageView({
             component="div"
             className="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--accent)]"
           >
-            {t('PUFF JO / BRANDS')}
+            {t("PUFF JO / BRANDS")}
           </Box>
           <Box
             component="h1"
-            className="mt-4 text-5xl font-black uppercase leading-none tracking-[-0.05em] text-[var(--text)] md:text-7xl"
+            className="mt-4 text-4xl font-black uppercase leading-none tracking-[-0.05em] text-[var(--text)] md:text-4xl"
           >
-            {t('BRANDS')}
+            {t("BRANDS")}
           </Box>
           <Box
             component="p"
             className="mt-5 max-w-xl text-base leading-8 text-[var(--text-secondary)]"
           >
-            {t('Shop trusted vape brands, devices, flavors, and accessories from one place.')}
+            {t(
+              "Shop trusted vape brands, devices, flavors, and accessories from one place.",
+            )}
           </Box>
         </Box>
       </MotionBox>
@@ -282,7 +359,7 @@ export function BrandsPageView({
           initial="hidden"
           animate="visible"
           variants={{ visible: { transition: { staggerChildren: 0.07 } } }}
-          className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+          className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
         >
           {brandCards.map((brand) => (
             <MotionBox
@@ -295,7 +372,7 @@ export function BrandsPageView({
             >
               <Link
                 href={`/shop?brand=${encodeURIComponent(brand.name)}`}
-                className="group relative block aspect-[1.15] overflow-hidden rounded-[26px] border border-[var(--border)] bg-[var(--card)]"
+                className="group relative block aspect-[1.08] overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-md"
               >
                 {brand.image ? (
                   <Image
@@ -323,10 +400,10 @@ export function BrandsPageView({
                       component="div"
                       className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/65"
                     >
-                      {t('View products')}
+                      {t("View products")}
                     </Box>
                   </Box>
-                  <ArrowUpRight className="h-5 w-5 shrink-0 transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" />
+                  <ArrowUpRight className="h-5 w-5 shrink-0 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-1" />
                 </Box>
               </Link>
             </MotionBox>
@@ -337,7 +414,7 @@ export function BrandsPageView({
           component="div"
           className="mt-6 rounded-[26px] border border-[var(--border)] bg-[var(--card)] p-10 text-center text-[var(--text-secondary)]"
         >
-          {t('No brands available yet.')}
+          {t("No brands available yet.")}
         </Box>
       )}
     </Container>
@@ -361,7 +438,7 @@ function CategoryFilterBar({
   subcategories: StoreCategory[];
   selectedCategory: string;
   productCount: (slug: string) => number;
-  dir: 'ltr' | 'rtl';
+  dir: "ltr" | "rtl";
   selectedLabel: string;
   resultCount: number;
   onSelect: (slug: string) => void;
@@ -369,25 +446,26 @@ function CategoryFilterBar({
   localize: (english?: string | null, arabic?: string | null) => string;
   t: (text: string) => string;
 }) {
-  const hasSubcategories = subcategories.length > 0 && selectedCategory !== 'all';
+  const hasSubcategories =
+    subcategories.length > 0 && selectedCategory !== "all";
 
   return (
     <Box
       component="section"
-      className="border-y border-[var(--border)] bg-[var(--background-secondary)]"
+      className="border-y border-[var(--border)] bg-[var(--background-secondary)]/80 backdrop-blur-xl"
       dir={dir}
     >
       <Container className="py-4 md:py-5">
         <Box component="div" className="relative">
           <Box
             component="div"
-            className="scrollbar-hidden flex gap-2 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible"
+            className="scrollbar-hidden flex gap-2.5 overflow-x-auto pb-1 md:flex-wrap md:overflow-visible"
           >
             <CategoryFilterButton
               label={allLabel}
               count={null}
-              active={selectedCategory === 'all'}
-              onClick={() => onSelect('all')}
+              active={selectedCategory === "all"}
+              onClick={() => onSelect("all")}
             />
             {categories.map((item) => (
               <CategoryFilterButton
@@ -396,7 +474,9 @@ function CategoryFilterBar({
                 count={productCount(item.slug)}
                 active={
                   selectedCategory === item.slug ||
-                  item.id === subcategories.find((sub) => sub.slug === selectedCategory)?.parentId
+                  item.id ===
+                    subcategories.find((sub) => sub.slug === selectedCategory)
+                      ?.parentId
                 }
                 onClick={() => onSelect(item.slug)}
               />
@@ -405,7 +485,7 @@ function CategoryFilterBar({
         </Box>
         <Box
           component="div"
-          className={`grid transition-all duration-300 ease-out ${hasSubcategories ? 'mt-3 max-h-20 translate-y-0 opacity-100' : 'max-h-0 -translate-y-1 overflow-hidden opacity-0'}`}
+          className={`grid transition-all duration-300 ease-out ${hasSubcategories ? "mt-3 max-h-20 translate-y-0 opacity-100" : "max-h-0 -translate-y-1 overflow-hidden opacity-0"}`}
         >
           <Box
             component="div"
@@ -427,7 +507,8 @@ function CategoryFilterBar({
           component="div"
           className="mt-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--muted)]"
         >
-          {selectedLabel} · {resultCount} {t(resultCount === 1 ? 'product' : 'products')}
+          {selectedLabel} · {resultCount}{" "}
+          {t(resultCount === 1 ? "product" : "products")}
         </Box>
       </Container>
     </Box>
@@ -452,13 +533,13 @@ function CategoryFilterButton({
       component="button"
       type="button"
       onClick={onClick}
-      className={`inline-flex shrink-0 items-center gap-2 whitespace-nowrap border px-3.5 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.14em] transition duration-300 hover:-translate-y-0.5 ${secondary ? 'rounded-lg border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--card)]' : 'rounded-xl'} ${active ? 'border-[var(--text)] bg-[var(--text)] text-[var(--background)] shadow-[0_6px_16px_rgba(0,0,0,.14)]' : 'border-[var(--border)] bg-transparent text-[var(--text-secondary)] hover:border-[var(--text)] hover:bg-[var(--card)]'}`}
+      className={`inline-flex min-h-10 shrink-0 items-center gap-2 whitespace-nowrap border px-4 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.13em] transition duration-300 ${secondary ? "rounded-full border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--card)]" : "rounded-full"} ${active ? "border-[var(--accent)] bg-[var(--accent)] text-white shadow-[0_8px_22px_rgba(0,0,0,.14)]" : "border-[var(--border)] bg-[var(--card)]/40 text-[var(--text-secondary)] hover:-translate-y-0.5 hover:border-[var(--accent)] hover:text-[var(--text)]"}`}
     >
       <Box component="span">{label}</Box>
       {count !== null ? (
         <Box
           component="span"
-          className={`text-[9px] ${active ? 'opacity-60' : 'text-[var(--muted)]'}`}
+          className={`text-[9px] ${active ? "opacity-60" : "text-[var(--muted)]"}`}
         >
           {count}
         </Box>
@@ -477,12 +558,15 @@ function CatalogFlashSaleBanner({ flashSale }: { flashSale: FlashSale }) {
     >
       <Container className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <Box component="div">
-          <Box component="div" className="text-[10px] uppercase tracking-[0.28em] text-white/60">
+          <Box
+            component="div"
+            className="text-[10px] uppercase tracking-[0.28em] text-white/60"
+          >
             {t(flashSale.title)}
           </Box>
           <Box
             component="div"
-            className="mt-2 font-display text-4xl uppercase leading-none text-white md:text-5xl"
+            className="mt-2 font-display text-4xl uppercase leading-none text-white md:text-4xl"
           >
             {t(flashSale.discountLabel)}
           </Box>
@@ -497,13 +581,17 @@ function CatalogFlashSaleBanner({ flashSale }: { flashSale: FlashSale }) {
         </Box>
 
         <Link
-          href={flashSale.ctaUrl || '/shop?sale=true'}
+          href={flashSale.ctaUrl || "/shop?sale=true"}
           className="inline-flex items-center gap-2 self-start rounded-full border border-white/20 bg-white px-5 py-3 text-[11px] uppercase tracking-[0.24em] text-black md:self-center"
         >
           <Box component="span" className="text-black">
-            {flashSale.ctaText ? t(flashSale.ctaText) : t('Shop sale')}
+            {flashSale.ctaText ? t(flashSale.ctaText) : t("Shop sale")}
           </Box>
-          {dir === 'rtl' ? <ArrowLeft className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
+          {dir === "rtl" ? (
+            <ArrowLeft className="h-4 w-4" />
+          ) : (
+            <ArrowRight className="h-4 w-4" />
+          )}
         </Link>
       </Container>
     </Box>
@@ -542,48 +630,58 @@ export function ProductPageView({
     ? product.images
     : [
         {
-          id: 'fallback-image',
-          url: '/products/puff-jo-product-default.png',
+          id: "fallback-image",
+          url: "/products/puff-jo-product-default.png",
           alt: product.name,
         },
       ];
-  const [selectedSize, setSelectedSize] = useState(sizes[0]?.name ?? '');
-  const [selectedOptions, setSelectedOptions] = useState<Record<string, string[]>>(() =>
+  const [selectedSize, setSelectedSize] = useState(sizes[0]?.name ?? "");
+  const [selectedOptions, setSelectedOptions] = useState<
+    Record<string, string[]>
+  >(() =>
     Object.fromEntries(
       optionGroups.map((group) => [
         group.id,
-        group.selectionType === 'radio'
+        group.selectionType === "radio"
           ? [
               group.items.find(
                 (item) =>
                   item.isDefault &&
-                  (!item.trackInventory || item.stockQuantity > 0 || item.allowBackorder)
+                  (!item.trackInventory ||
+                    item.stockQuantity > 0 ||
+                    item.allowBackorder),
               )?.id ??
                 group.items.find(
-                  (item) => !item.trackInventory || item.stockQuantity > 0 || item.allowBackorder
+                  (item) =>
+                    !item.trackInventory ||
+                    item.stockQuantity > 0 ||
+                    item.allowBackorder,
                 )?.id ??
-                '',
+                "",
             ].filter(Boolean)
           : group.items
               .filter(
                 (item) =>
                   item.isDefault &&
-                  (!item.trackInventory || item.stockQuantity > 0 || item.allowBackorder)
+                  (!item.trackInventory ||
+                    item.stockQuantity > 0 ||
+                    item.allowBackorder),
               )
               .map((item) => item.id),
-      ])
-    )
+      ]),
+    ),
   );
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
   const [reviews, setReviews] = useState(initialReviews);
   const [reviewRating, setReviewRating] = useState(5);
-  const [reviewTitle, setReviewTitle] = useState('');
-  const [reviewComment, setReviewComment] = useState('');
+  const [reviewTitle, setReviewTitle] = useState("");
+  const [reviewComment, setReviewComment] = useState("");
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const selectedVariant =
-    product.variants.find((variant) => variant.size === selectedSize) ?? product.variants[0];
+    product.variants.find((variant) => variant.size === selectedSize) ??
+    product.variants[0];
 
   const selectedOptionItems = optionGroups.flatMap((group) => {
     const ids = selectedOptions[group.id] ?? [];
@@ -610,20 +708,36 @@ export function ProductPageView({
       };
     })
     .filter((group) => group.items.length > 0);
-  const optionsTotal = selectedOptionItems.reduce((sum, item) => sum + item.priceDelta, 0);
+  const optionsTotal = selectedOptionItems.reduce(
+    (sum, item) => sum + item.priceDelta,
+    0,
+  );
   const displayPrice = selectedVariant.price + optionsTotal;
-  const discount = calculateDiscount(selectedVariant.price, selectedVariant.compareAtPrice);
+  const discount = calculateDiscount(
+    selectedVariant.price,
+    selectedVariant.compareAtPrice,
+  );
   const maxQuantity = Math.min(
     product.maxOrderQuantity ?? 99,
-    selectedVariant.allowBackorder ? 99 : Math.max(1, selectedVariant.stockQuantity)
+    selectedVariant.allowBackorder
+      ? 99
+      : Math.max(1, selectedVariant.stockQuantity),
   );
   const selectedOptionKey = optionGroups
-    .map((group) => `${group.id}:${[...(selectedOptions[group.id] ?? [])].sort().join(',')}`)
+    .map(
+      (group) =>
+        `${group.id}:${[...(selectedOptions[group.id] ?? [])].sort().join(",")}`,
+    )
     .sort()
-    .join('|');
-  const cartLineId = [product.id, selectedVariant.id, selectedSize, selectedOptionKey]
+    .join("|");
+  const cartLineId = [
+    product.id,
+    selectedVariant.id,
+    selectedSize,
+    selectedOptionKey,
+  ]
     .filter(Boolean)
-    .join('::');
+    .join("::");
 
   function handleBuyNow() {
     addItem(
@@ -631,15 +745,15 @@ export function ProductPageView({
       selectedVariant.id,
       Math.min(quantity, maxQuantity),
       cartLineId,
-      cartSelections
+      cartSelections,
     );
 
     if (!customer) {
-      router.push('/login?next=%2Fcheckout');
+      router.push("/login?next=%2Fcheckout");
       return;
     }
 
-    router.push('/checkout');
+    router.push("/checkout");
   }
 
   function buildConfiguredProduct() {
@@ -650,7 +764,9 @@ export function ProductPageView({
     return {
       ...product,
       variants: product.variants.map((variant) =>
-        variant.id === selectedVariant.id ? { ...variant, price: displayPrice } : variant
+        variant.id === selectedVariant.id
+          ? { ...variant, price: displayPrice }
+          : variant,
       ),
     };
   }
@@ -658,7 +774,7 @@ export function ProductPageView({
   function handleOptionChange(
     groupId: string,
     itemId: string,
-    selectionType: 'radio' | 'checkbox'
+    selectionType: "radio" | "checkbox",
   ) {
     const group = optionGroups.find((entry) => entry.id === groupId);
     const item = group?.items.find((entry) => entry.id === itemId);
@@ -671,7 +787,7 @@ export function ProductPageView({
     }
 
     setSelectedOptions((current) => {
-      if (selectionType === 'radio') {
+      if (selectionType === "radio") {
         return { ...current, [groupId]: [itemId] };
       }
 
@@ -687,33 +803,33 @@ export function ProductPageView({
   async function handleFavoriteToggle() {
     if (!customer) {
       pushToast({
-        title: t('Sign in required'),
-        description: t('Sign in to save products to your favorites.'),
+        title: t("Sign in required"),
+        description: t("Sign in to save products to your favorites."),
       });
-      router.push('/login');
+      router.push("/login");
       return;
     }
 
     const nextFavorite = !isFavorite;
     const response = await fetch(
       nextFavorite
-        ? '/api/favorites'
+        ? "/api/favorites"
         : `/api/favorites?productId=${encodeURIComponent(product.id)}`,
       nextFavorite
         ? {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
             body: JSON.stringify({ productId: product.id }),
           }
-        : { method: 'DELETE' }
+        : { method: "DELETE" },
     );
 
     if (!response.ok) {
       pushToast({
-        title: t('Something went wrong'),
-        description: t('Try again in a moment.'),
+        title: t("Something went wrong"),
+        description: t("Try again in a moment."),
       });
       return;
     }
@@ -721,7 +837,9 @@ export function ProductPageView({
     setIsFavorite(nextFavorite);
     toggleFavorite(product.id);
     pushToast({
-      title: nextFavorite ? t('SAVED TO FAVORITES') : t('REMOVED FROM FAVORITES'),
+      title: nextFavorite
+        ? t("SAVED TO FAVORITES")
+        : t("REMOVED FROM FAVORITES"),
       description: localize(product.name, product.nameAr),
     });
   }
@@ -729,17 +847,17 @@ export function ProductPageView({
   async function handleReviewSubmit() {
     if (!customer) {
       pushToast({
-        title: t('Sign in required'),
-        description: t('Sign in to review products.'),
+        title: t("Sign in required"),
+        description: t("Sign in to review products."),
       });
-      router.push('/login');
+      router.push("/login");
       return;
     }
 
     if (!reviewComment.trim()) {
       pushToast({
-        title: t('Review comment is required'),
-        description: t('Write a short review before submitting.'),
+        title: t("Review comment is required"),
+        description: t("Write a short review before submitting."),
       });
       return;
     }
@@ -747,10 +865,10 @@ export function ProductPageView({
     setIsSubmittingReview(true);
 
     try {
-      const response = await fetch('/api/reviews', {
-        method: 'POST',
+      const response = await fetch("/api/reviews", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           productId: product.id,
@@ -761,13 +879,13 @@ export function ProductPageView({
       });
 
       if (response.status === 401) {
-        router.push('/login');
+        router.push("/login");
         return;
       }
 
       if (!response.ok) {
         const payload = (await response.json()) as { error?: string };
-        throw new Error(payload.error ?? 'Failed to submit review');
+        throw new Error(payload.error ?? "Failed to submit review");
       }
 
       setReviews((current) => [
@@ -776,26 +894,29 @@ export function ProductPageView({
           rating: reviewRating,
           title: reviewTitle,
           comment: reviewComment,
-          createdAt: new Intl.DateTimeFormat('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
+          createdAt: new Intl.DateTimeFormat("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
           }).format(new Date()),
           authorName: customer.fullName,
         },
         ...current,
       ]);
-      setReviewTitle('');
-      setReviewComment('');
+      setReviewTitle("");
+      setReviewComment("");
       setReviewRating(5);
       pushToast({
-        title: t('Review submitted'),
-        description: t('Your review was submitted successfully.'),
+        title: t("Review submitted"),
+        description: t("Your review was submitted successfully."),
       });
     } catch (error) {
       pushToast({
-        title: t('Something went wrong'),
-        description: error instanceof Error ? t(error.message) : t('Try again in a moment.'),
+        title: t("Something went wrong"),
+        description:
+          error instanceof Error
+            ? t(error.message)
+            : t("Try again in a moment."),
       });
     } finally {
       setIsSubmittingReview(false);
@@ -805,515 +926,672 @@ export function ProductPageView({
   return (
     <Box
       component="div"
-      className="bg-[var(--background)] pb-20 pt-8 text-[var(--text)] md:pb-24 md:pt-12"
+      className="bg-[var(--background)] pb-24 pt-4 text-[var(--text)] md:pb-16 md:pt-6"
     >
-      <Container>
+      <Container size="xl">
+        {/* BREADCRUMB */}
         <Box
           component="div"
-          className="mb-6 flex flex-wrap items-center justify-between gap-3 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]"
+          className="mb-5 flex items-center justify-between gap-3"
         >
           <Link
             href="/shop"
-            className="inline-flex items-center gap-2 transition hover:text-[var(--accent)]"
+            className="inline-flex items-center gap-2 text-sm font-medium text-[var(--text-secondary)] transition hover:text-[var(--accent)]"
           >
             <ArrowLeft className="h-4 w-4" />
-            {t('BACK TO SHOP')}
+            {t("BACK TO SHOP")}
           </Link>
-          <Box component="span">{localize(product.categorySlug, product.categorySlug)}</Box>
+
+          <Text size="xs" c="dimmed">
+            {localize(product.categorySlug, product.categorySlug)}
+          </Text>
         </Box>
 
-        <Box component="div" className="grid gap-10 lg:grid-cols-[1.04fr_0.96fr] lg:items-start">
+        {/* MAIN PRODUCT */}
+        <Box
+          component="div"
+          className="grid gap-7 lg:grid-cols-[minmax(0,1.05fr)_minmax(380px,.95fr)] lg:items-start xl:gap-10"
+        >
+          {/* ============================
+            LEFT - GALLERY
+        ============================= */}
           <Box
             component="div"
-            className="grid gap-4 lg:grid-cols-[96px_minmax(0,1fr)] lg:items-start"
+            className="grid min-w-0 gap-3 lg:grid-cols-[76px_minmax(0,1fr)]"
           >
+            {/* THUMBNAILS */}
             <Box
               component="div"
-              className="order-2 flex gap-3 overflow-x-auto pb-2 lg:order-1 lg:grid lg:max-h-[720px] lg:auto-rows-max lg:overflow-visible lg:pb-0"
+              className="order-2 flex gap-2 overflow-x-auto pb-1 lg:order-1 lg:flex-col lg:overflow-visible"
             >
               {galleryImages.map((image, index) => {
                 const isActive = index === selectedImageIndex;
+
                 return (
                   <Box
                     component="button"
                     key={image.id}
                     type="button"
                     onClick={() => setSelectedImageIndex(index)}
-                    className={`group relative shrink-0 overflow-hidden rounded-lg border bg-[var(--card)] p-1 transition ${
+                    className={`relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-lg border bg-[var(--card)] p-1 transition ${
                       isActive
-                        ? 'border-[var(--accent)] shadow-[0_0_0_1px_var(--accent)]'
-                        : 'border-[var(--border)] hover:border-[var(--accent)]/40'
+                        ? "border-[var(--accent)]"
+                        : "border-[var(--border)] hover:border-[var(--text-secondary)]"
                     }`}
                   >
                     <Image
                       src={image.url || undefined}
                       alt={image.alt}
-                      className="h-24 w-24 rounded-md bg-[var(--background)] object-contain transition duration-500 group-hover:scale-[1.03] lg:h-24 lg:w-full lg:min-w-[96px]"
+                      className="h-full w-full object-contain"
                     />
                   </Box>
                 );
               })}
             </Box>
 
+            {/* MAIN IMAGE */}
             <Box
               component="div"
-              className="order-1 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--card)] shadow-[0_24px_70px_rgba(24,18,17,0.12)] lg:order-2"
+              className="order-1 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)] lg:order-2"
             >
-              <Box component="div" className="relative bg-[var(--card)]">
+              <Box
+                component="div"
+                className="relative flex min-h-[360px] w-full items-center justify-center bg-[var(--background-secondary)] p-4 sm:min-h-[460px] lg:min-h-[520px]"
+              >
                 {galleryImages[selectedImageIndex]?.url ? (
                   <Image
                     src={galleryImages[selectedImageIndex].url}
                     alt={galleryImages[selectedImageIndex].alt}
-                    className="block h-auto w-full object-contain"
+                    fit="contain"
+                    className="max-h-[520px] w-full object-contain"
                   />
+                ) : null}
+
+                {discount > 0 ? (
+                  <Box
+                    component="div"
+                    className="absolute left-3 top-3 rounded-md bg-[var(--accent)] px-2.5 py-1 text-xs font-semibold text-white"
+                  >
+                    -{discount}%
+                  </Box>
                 ) : null}
               </Box>
             </Box>
           </Box>
-          <Box
-            component="div"
-            className="rounded-lg border border-[var(--border)] bg-[var(--card)] p-5 shadow-[0_20px_60px_rgba(24,18,17,0.08)] md:p-7 lg:sticky lg:top-28 lg:h-fit"
-          >
-            <Box component="div" className="flex items-start justify-between gap-4">
+
+          {/* ============================
+            RIGHT - PRODUCT DETAILS
+        ============================= */}
+          <Box component="div" className="min-w-0 lg:sticky lg:top-24">
+            <Box
+              component="div"
+              className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5"
+            >
+              {/* BRAND + FAVORITE */}
               <Box
                 component="div"
-                className="rounded-full bg-[color:color-mix(in_srgb,var(--accent)_12%,transparent)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--accent)]"
+                className="flex items-start justify-between gap-4"
               >
-                {localize(product.brand, product.brandAr)}
-              </Box>
-              <Box
-                component="button"
-                type="button"
-                onClick={handleFavoriteToggle}
-                className={`inline-flex h-11 w-11 items-center justify-center rounded-full border transition ${
-                  isFavorite
-                    ? 'border-[var(--accent)] bg-[var(--accent)] text-white'
-                    : 'border-[var(--border)] text-[var(--muted)] hover:border-[var(--accent)] hover:text-[var(--accent)]'
-                }`}
-                aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-              >
-                <Heart className={`h-4 w-4 ${isFavorite ? 'fill-current' : ''}`} />
-              </Box>
-            </Box>
-            <Box
-              component="h1"
-              className="mt-5 text-4xl font-bold leading-tight text-[var(--text)] md:text-6xl"
-            >
-              {localize(product.name, product.nameAr)}
-            </Box>
-            <Box component="p" className="mt-4 text-base leading-8 text-[var(--text-secondary)]">
-              {localize(product.shortDescription, product.shortDescriptionAr)}
-            </Box>
+                <Box>
+                  <Text size="xs" fw={600} c="dimmed" tt="uppercase">
+                    {localize(product.brand, product.brandAr)}
+                  </Text>
 
-            <Box component="div" className="mt-6 flex flex-wrap items-center gap-4">
-              <Box component="div" className="text-4xl font-bold text-[var(--accent)]">
-                {formatCurrency(displayPrice)}
-              </Box>
-              {selectedVariant.compareAtPrice ? (
-                <Box component="div" className="text-lg text-[var(--muted)] line-through">
-                  {formatCurrency(selectedVariant.compareAtPrice)}
-                </Box>
-              ) : null}
-              {discount > 0 ? (
-                <Box
-                  component="div"
-                  className="rounded-full bg-[var(--text)] px-3 py-1 text-xs font-semibold tracking-[0.14em] text-[var(--background)]"
-                >
-                  {discount}% OFF
-                </Box>
-              ) : null}
-            </Box>
-            <Box component="div" className="mt-4 flex items-center gap-4">
-              <Rating rating={product.rating} reviewCount={product.reviewCount} />
-              <Box component="div" className="text-sm text-[var(--muted)]">
-                {selectedVariant.stockQuantity > 0
-                  ? selectedVariant.stockQuantity <= 2
-                    ? `${t('ONLY')} ${selectedVariant.stockQuantity} ${t('LEFT')}`
-                    : t('HOT NOW')
-                  : t('SOLD OUT')}
-              </Box>
-            </Box>
-
-            {sizes.length > 1 ? (
-              <Box component="div" className="mt-7">
-                <Box
-                  component="div"
-                  className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]"
-                >
-                  {t('SIZE')}
-                </Box>
-                <Box component="div" className="flex flex-wrap gap-3">
-                  {sizes.map((sizeOption) => {
-                    const available = product.variants.some(
-                      (variant) =>
-                        variant.size === sizeOption.name &&
-                        (variant.stockQuantity > 0 || variant.allowBackorder)
-                    );
-
-                    return (
-                      <Box
-                        component="button"
-                        key={sizeOption.name}
-                        type="button"
-                        onClick={() => setSelectedSize(sizeOption.name)}
-                        disabled={!available}
-                        className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
-                          selectedSize === sizeOption.name
-                            ? 'border-[var(--accent)] bg-[var(--accent)] text-white'
-                            : 'border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent)]/40'
-                        } disabled:cursor-not-allowed disabled:opacity-40`}
-                      >
-                        {localize(sizeOption.name, sizeOption.nameAr)}
-                      </Box>
-                    );
-                  })}
-                </Box>
-              </Box>
-            ) : null}
-
-            {optionGroups.length ? (
-              <Box component="div" className="mt-7 space-y-5">
-                {optionGroups.map((group) => (
-                  <Box component="div" key={group.id}>
-                    <Box component="div" className="mb-3 flex items-center justify-between gap-3">
-                      <Box component="div">
-                        <Box
-                          component="div"
-                          className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]"
-                        >
-                          {localize(group.name, group.nameAr)}
-                        </Box>
-                        {group.description || group.descriptionAr ? (
-                          <Box
-                            component="div"
-                            className="mt-1 text-xs text-[var(--text-secondary)]"
-                          >
-                            {localize(group.description ?? '', group.descriptionAr)}
-                          </Box>
-                        ) : null}
-                      </Box>
-                      <Box
-                        component="span"
-                        className="rounded-full bg-[color:color-mix(in_srgb,var(--accent)_12%,transparent)] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--accent)]"
-                      >
-                        {group.selectionType === 'radio' ? t('Choose one') : t('Add-ons')}
-                      </Box>
-                    </Box>
-                    <Box component="div" className="grid gap-2">
-                      {group.items.map((item) => {
-                        const selected = (selectedOptions[group.id] ?? []).includes(item.id);
-                        const inputType = group.selectionType === 'radio' ? 'radio' : 'checkbox';
-                        const available =
-                          !item.trackInventory || item.stockQuantity > 0 || item.allowBackorder;
-
-                        return (
-                          <Box
-                            component="label"
-                            key={item.id}
-                            className={`flex items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm font-semibold transition ${
-                              selected
-                                ? 'border-[var(--accent)] bg-[color:color-mix(in_srgb,var(--accent)_10%,var(--background))] text-[var(--text)]'
-                                : 'border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent)]/40'
-                            } ${available ? 'cursor-pointer' : 'cursor-not-allowed opacity-45'}`}
-                          >
-                            <Box component="span" className="flex items-center gap-3">
-                              <Box
-                                component="input"
-                                type={inputType}
-                                name={`option-${group.id}`}
-                                checked={selected}
-                                disabled={!available}
-                                onChange={() =>
-                                  handleOptionChange(group.id, item.id, group.selectionType)
-                                }
-                                className="h-4 w-4 accent-black"
-                              />
-                              {item.imageUrl ? (
-                                <Image
-                                  src={item.imageUrl}
-                                  alt={localize(item.name, item.nameAr)}
-                                  className="h-11 w-11 rounded-md bg-[var(--background-secondary)] object-contain p-1"
-                                />
-                              ) : null}
-                              <Box component="span">
-                                <Box component="span" className="block">
-                                  {localize(item.name, item.nameAr)}
-                                </Box>
-                                {item.trackInventory ? (
-                                  <Box
-                                    component="span"
-                                    className="mt-1 block text-[10px] uppercase tracking-[0.14em] text-[var(--muted)]"
-                                  >
-                                    {available
-                                      ? `${t('Stock')}: ${item.stockQuantity}`
-                                      : t('SOLD OUT')}
-                                  </Box>
-                                ) : null}
-                              </Box>
-                            </Box>
-                            {item.priceDelta > 0 ? (
-                              <Box component="span" className="text-xs text-[var(--accent)]">
-                                +{formatCurrency(item.priceDelta)}
-                              </Box>
-                            ) : null}
-                          </Box>
-                        );
-                      })}
-                    </Box>
+                  <Box
+                    component="h1"
+                    className="mt-2 text-2xl font-bold leading-tight tracking-[-0.02em] md:text-[28px]"
+                  >
+                    {localize(product.name, product.nameAr)}
                   </Box>
-                ))}
-              </Box>
-            ) : null}
+                </Box>
 
-            <Box component="div" className="mt-7 flex flex-wrap items-center gap-4">
-              <Box
-                component="div"
-                className="flex items-center gap-4 rounded-full border border-[var(--border)] bg-[var(--background-secondary)] px-4 py-3"
-              >
                 <Box
                   component="button"
                   type="button"
-                  onClick={() => setQuantity((value) => Math.max(1, value - 1))}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[var(--card)] text-[var(--text)]"
+                  onClick={handleFavoriteToggle}
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition ${
+                    isFavorite
+                      ? "border-[var(--accent)] bg-[var(--accent)] text-white"
+                      : "border-[var(--border)] bg-[var(--background)] text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                  }`}
                 >
-                  <Minus className="h-4 w-4" />
+                  <Heart
+                    className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`}
+                  />
                 </Box>
-                <Box component="span" className="min-w-6 text-center text-lg font-bold">
-                  {quantity}
-                </Box>
-                <Box
-                  component="button"
-                  type="button"
-                  disabled={quantity >= maxQuantity}
-                  onClick={() => setQuantity((value) => Math.min(maxQuantity, value + 1))}
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[var(--card)] text-[var(--text)] disabled:cursor-not-allowed disabled:opacity-40"
+              </Box>
+
+              {/* SHORT DESCRIPTION */}
+              {product.shortDescription ? (
+                <Text mt={10} size="sm" c="dimmed" lh={1.6}>
+                  {localize(
+                    product.shortDescription,
+                    product.shortDescriptionAr,
+                  )}
+                </Text>
+              ) : null}
+
+              {/* RATING */}
+              <Group mt="sm" gap="md">
+                <Rating
+                  rating={product.rating}
+                  reviewCount={product.reviewCount}
+                />
+
+                <Text
+                  size="xs"
+                  c={selectedVariant.stockQuantity <= 2 ? "red" : "dimmed"}
                 >
-                  <Plus className="h-4 w-4" />
-                </Box>
-              </Box>
-              <Box component="div" className="text-sm font-semibold text-[var(--text-secondary)]">
-                {t('Choose quantity')}
-              </Box>
-            </Box>
+                  {selectedVariant.stockQuantity > 0
+                    ? selectedVariant.stockQuantity <= 2
+                      ? `${t("ONLY")} ${selectedVariant.stockQuantity} ${t("LEFT")}`
+                      : t("IN STOCK")
+                    : selectedVariant.allowBackorder
+                      ? t("AVAILABLE")
+                      : t("SOLD OUT")}
+                </Text>
+              </Group>
 
-            <Box component="div" className="mt-7 grid gap-3 sm:grid-cols-2">
-              <Box
-                component="button"
-                type="button"
-                disabled={selectedVariant.stockQuantity <= 0 && !selectedVariant.allowBackorder}
-                onClick={() => {
-                  addItem(
-                    buildConfiguredProduct(),
-                    selectedVariant.id,
-                    Math.min(quantity, maxQuantity),
-                    cartLineId,
-                    cartSelections
-                  );
-                  openCart();
-                  pushToast({
-                    title: t('Added to your cart'),
-                    description: `${localize(product.name, product.nameAr)} • ${localize(selectedVariant.size, selectedVariant.sizeAr)}`,
-                  });
-                }}
-                className="rounded-full bg-black px-6 py-4 text-sm font-semibold uppercase tracking-[0.14em] text-white shadow-[0_18px_34px_rgba(0,0,0,0.22)] disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                {t('AddToCartButton')}
-              </Box>
-              <Link
-                href="/checkout"
-                onClick={(event) => {
-                  event.preventDefault();
-                  handleBuyNow();
-                }}
-                className="rounded-full border border-[var(--border)] px-6 py-4 text-center text-sm font-semibold uppercase tracking-[0.14em] text-[var(--text)] transition hover:border-[var(--accent)] hover:text-[var(--accent)]"
-              >
-                {t('ORDER NOW')}
-              </Link>
-            </Box>
+              {/* PRICE */}
+              <Group mt="md" gap="sm" align="center" wrap="wrap">
+                <Text size="xl" fw={700} c="var(--accent)">
+                  {formatCurrency(displayPrice)}
+                </Text>
 
-            <Box
-              component="div"
-              className="mt-8 space-y-4 rounded-lg border border-[var(--border)] bg-[var(--background)] p-5"
-            >
-              <Accordion title="ITEM DETAILS" defaultOpen>
-                {localize(product.description, product.descriptionAr)}
-              </Accordion>
-              <Accordion title="DELIVERY">
-                {t(
-                  'Fast delivery is available across Jordan. Dispatch timing depends on coverage and order volume.'
-                )}
-              </Accordion>
-              <Accordion title="ORDER NOTES">
-                {t('Please add delivery notes and any setup preferences before checkout.')}
-              </Accordion>
-            </Box>
+                {selectedVariant.compareAtPrice ? (
+                  <Text size="sm" c="dimmed" td="line-through">
+                    {formatCurrency(selectedVariant.compareAtPrice)}
+                  </Text>
+                ) : null}
 
-            <Box
-              component="div"
-              className="mt-8 rounded-lg border border-[var(--border)] bg-[var(--background)] p-5"
-            >
+                {discount > 0 ? (
+                  <Box
+                    component="span"
+                    className="rounded-md bg-[var(--background-secondary)] px-2 py-1 text-xs font-semibold"
+                  >
+                    {discount}% {t("OFF")}
+                  </Box>
+                ) : null}
+              </Group>
+
+              {/* DIVIDER */}
               <Box
                 component="div"
-                className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--muted)]"
-              >
-                {t('ITEM REVIEWS')}
-              </Box>
-              {customer ? (
-                <Box
-                  component="div"
-                  className="mt-4 space-y-4 border-b border-[var(--border)] pb-5"
-                >
+                className="my-5 border-t border-[var(--border)]"
+              />
+
+              {/* SIZE */}
+              {sizes.length > 1 ? (
+                <Box component="div">
+                  <Text size="sm" fw={600} mb={8}>
+                    {t("SIZE")}
+                  </Text>
+
                   <Box component="div" className="flex flex-wrap gap-2">
-                    {[1, 2, 3, 4, 5].map((value) => (
-                      <Box
-                        component="button"
-                        key={value}
-                        type="button"
-                        onClick={() => setReviewRating(value)}
-                        className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm ${
-                          reviewRating === value
-                            ? 'border-[var(--accent)] bg-[var(--accent)] text-white'
-                            : 'border-[var(--border)] text-[var(--text-secondary)]'
-                        }`}
-                      >
-                        <Star
-                          className={`h-4 w-4 ${reviewRating >= value ? 'fill-current' : ''}`}
-                        />
-                        {value}
-                      </Box>
-                    ))}
+                    {sizes.map((sizeOption) => {
+                      const available = product.variants.some(
+                        (variant) =>
+                          variant.size === sizeOption.name &&
+                          (variant.stockQuantity > 0 || variant.allowBackorder),
+                      );
+
+                      const active = selectedSize === sizeOption.name;
+
+                      return (
+                        <Box
+                          component="button"
+                          key={sizeOption.name}
+                          type="button"
+                          disabled={!available}
+                          onClick={() => setSelectedSize(sizeOption.name)}
+                          className={`min-w-[52px] rounded-md border px-3 py-2 text-sm font-medium transition ${
+                            active
+                              ? "border-[var(--accent)] bg-[var(--accent)] text-white"
+                              : "border-[var(--border)] bg-[var(--background)] hover:border-[var(--accent)]"
+                          } disabled:cursor-not-allowed disabled:opacity-40`}
+                        >
+                          {localize(sizeOption.name, sizeOption.nameAr)}
+                        </Box>
+                      );
+                    })}
                   </Box>
-                  <Box
-                    component="input"
-                    value={reviewTitle}
-                    onChange={(event) => setReviewTitle(event.target.value)}
-                    placeholder={t('Review title')}
-                    className="h-12 w-full rounded-full border border-[var(--border)] bg-[var(--background-secondary)] px-5 text-sm text-[var(--text)] outline-none"
-                  />
-                  <Box
-                    component="textarea"
-                    value={reviewComment}
-                    onChange={(event) => setReviewComment(event.target.value)}
-                    placeholder={t('Write your review')}
-                    rows={4}
-                    className="w-full rounded-lg border border-[var(--border)] bg-[var(--background-secondary)] px-5 py-4 text-sm text-[var(--text)] outline-none"
-                  />
+                </Box>
+              ) : null}
+
+              {/* OPTIONS */}
+              {optionGroups.length ? (
+                <Box component="div" className="mt-5 space-y-5">
+                  {optionGroups.map((group) => (
+                    <Box component="div" key={group.id}>
+                      <Box
+                        component="div"
+                        className="mb-2 flex items-center justify-between gap-2"
+                      >
+                        <Box>
+                          <Text size="sm" fw={600}>
+                            {localize(group.name, group.nameAr)}
+                          </Text>
+
+                          {group.description || group.descriptionAr ? (
+                            <Text size="xs" c="dimmed" mt={2}>
+                              {localize(
+                                group.description ?? "",
+                                group.descriptionAr,
+                              )}
+                            </Text>
+                          ) : null}
+                        </Box>
+
+                        <Text size="xs" c="dimmed">
+                          {group.selectionType === "radio"
+                            ? t("Choose one")
+                            : t("Add-ons")}
+                        </Text>
+                      </Box>
+
+                      <Box component="div" className="grid gap-2">
+                        {group.items.map((item) => {
+                          const selected = (
+                            selectedOptions[group.id] ?? []
+                          ).includes(item.id);
+
+                          const available =
+                            !item.trackInventory ||
+                            item.stockQuantity > 0 ||
+                            item.allowBackorder;
+
+                          return (
+                            <Box
+                              component="label"
+                              key={item.id}
+                              className={`flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5 transition ${
+                                selected
+                                  ? "border-[var(--accent)] bg-[color:color-mix(in_srgb,var(--accent)_7%,var(--background))]"
+                                  : "border-[var(--border)]"
+                              } ${
+                                available
+                                  ? "cursor-pointer"
+                                  : "cursor-not-allowed opacity-40"
+                              }`}
+                            >
+                              <Box
+                                component="span"
+                                className="flex min-w-0 items-center gap-3"
+                              >
+                                <Box
+                                  component="input"
+                                  type={
+                                    group.selectionType === "radio"
+                                      ? "radio"
+                                      : "checkbox"
+                                  }
+                                  name={`option-${group.id}`}
+                                  checked={selected}
+                                  disabled={!available}
+                                  onChange={() =>
+                                    handleOptionChange(
+                                      group.id,
+                                      item.id,
+                                      group.selectionType,
+                                    )
+                                  }
+                                  className="h-4 w-4 accent-black"
+                                />
+
+                                {item.imageUrl ? (
+                                  <Image
+                                    src={item.imageUrl}
+                                    alt={localize(item.name, item.nameAr)}
+                                    className="h-10 w-10 rounded-md bg-[var(--background-secondary)] object-contain p-1"
+                                  />
+                                ) : null}
+
+                                <Box component="span" className="min-w-0">
+                                  <Text size="sm" fw={500} lineClamp={1}>
+                                    {localize(item.name, item.nameAr)}
+                                  </Text>
+
+                                  {item.trackInventory ? (
+                                    <Text size="xs" c="dimmed">
+                                      {available
+                                        ? `${t("Stock")}: ${item.stockQuantity}`
+                                        : t("SOLD OUT")}
+                                    </Text>
+                                  ) : null}
+                                </Box>
+                              </Box>
+
+                              {item.priceDelta > 0 ? (
+                                <Text
+                                  size="xs"
+                                  fw={600}
+                                  c="var(--accent)"
+                                  className="shrink-0"
+                                >
+                                  +{formatCurrency(item.priceDelta)}
+                                </Text>
+                              ) : null}
+                            </Box>
+                          );
+                        })}
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
+              ) : null}
+
+              {/* QUANTITY */}
+              <Box component="div" className="mt-5">
+                <Text size="sm" fw={600} mb={8}>
+                  {t("Quantity")}
+                </Text>
+
+                <Box
+                  component="div"
+                  className="inline-flex items-center rounded-md border border-[var(--border)] bg-[var(--background)]"
+                >
                   <Box
                     component="button"
                     type="button"
-                    onClick={handleReviewSubmit}
-                    disabled={isSubmittingReview}
-                    className="rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-white disabled:opacity-40"
+                    onClick={() =>
+                      setQuantity((value) => Math.max(1, value - 1))
+                    }
+                    className="flex h-9 w-9 items-center justify-center"
                   >
-                    {isSubmittingReview ? t('PLEASE WAIT') : t('SUBMIT REVIEW')}
+                    <Minus className="h-4 w-4" />
                   </Box>
-                </Box>
-              ) : (
-                <Box
-                  component="div"
-                  className="mt-4 rounded-lg border border-[var(--border)] bg-[var(--background-secondary)] p-4 text-sm text-[var(--text-secondary)]"
-                >
-                  <Box component="div">{t('Sign in to review products.')}</Box>
-                  <Link
-                    href="/login"
-                    className="mt-3 inline-flex rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text)]"
-                  >
-                    {t('LOG IN')}
-                  </Link>
-                </Box>
-              )}
 
-              <Box component="div" className="mt-5 space-y-4">
-                {reviews.length ? (
-                  reviews.map((review) => (
-                    <Box
-                      component="div"
-                      key={review.id}
-                      className="rounded-lg border border-[var(--border)] bg-[var(--background-secondary)] p-4"
-                    >
-                      <Box
-                        component="div"
-                        className="flex flex-wrap items-center justify-between gap-3"
-                      >
-                        <Box component="div">
-                          <Box component="div" className="text-sm font-medium">
-                            {review.authorName}
-                          </Box>
-                          <Box
-                            component="div"
-                            className="mt-1 text-xs tracking-[0.16em] text-[var(--muted)]"
-                          >
-                            {review.createdAt}
-                          </Box>
-                        </Box>
-                        <Box component="div" className="flex items-center gap-1 text-sm">
-                          {Array.from({ length: review.rating }).map((_, index) => (
-                            <Star key={`${review.id}-${index}`} className="h-4 w-4 fill-current" />
-                          ))}
-                        </Box>
-                      </Box>
-                      {review.title ? (
-                        <Box component="div" className="mt-3 text-sm uppercase tracking-[0.14em]">
-                          {review.title}
-                        </Box>
-                      ) : null}
-                      <Box
-                        component="p"
-                        className="mt-2 text-sm leading-7 text-[var(--text-secondary)]"
-                      >
-                        {review.comment}
-                      </Box>
-                    </Box>
-                  ))
-                ) : (
-                  <Box component="div" className="text-sm text-[var(--text-secondary)]">
-                    {t('No reviews yet.')}
+                  <Box
+                    component="span"
+                    className="min-w-10 text-center text-sm font-semibold"
+                  >
+                    {quantity}
                   </Box>
-                )}
+
+                  <Box
+                    component="button"
+                    type="button"
+                    disabled={quantity >= maxQuantity}
+                    onClick={() =>
+                      setQuantity((value) => Math.min(maxQuantity, value + 1))
+                    }
+                    className="flex h-9 w-9 items-center justify-center disabled:opacity-40"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Box>
+                </Box>
+              </Box>
+
+              {/* CART BUTTONS */}
+              <Box component="div" className="mt-5 grid gap-2 sm:grid-cols-2">
+                <Box
+                  component="button"
+                  type="button"
+                  disabled={
+                    selectedVariant.stockQuantity <= 0 &&
+                    !selectedVariant.allowBackorder
+                  }
+                  onClick={() => {
+                    addItem(
+                      buildConfiguredProduct(),
+                      selectedVariant.id,
+                      Math.min(quantity, maxQuantity),
+                      cartLineId,
+                      cartSelections,
+                    );
+
+                    openCart();
+
+                    pushToast({
+                      title: t("Added to your cart"),
+                      description: `${localize(
+                        product.name,
+                        product.nameAr,
+                      )} • ${localize(
+                        selectedVariant.size,
+                        selectedVariant.sizeAr,
+                      )}`,
+                    });
+                  }}
+                  className="h-11 rounded-md bg-[var(--accent)] px-4 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {t("AddToCartButton")}
+                </Box>
+
+                <Link
+                  href="/checkout"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    handleBuyNow();
+                  }}
+                  className="flex h-11 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--background)] px-4 text-sm font-semibold transition hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                >
+                  {t("ORDER NOW")}
+                </Link>
+              </Box>
+
+              {/* DETAILS */}
+              <Box
+                component="div"
+                className="mt-5 border-t border-[var(--border)] pt-2"
+              >
+                <Accordion title="ITEM DETAILS" defaultOpen>
+                  {localize(product.description, product.descriptionAr)}
+                </Accordion>
+
+                <Accordion title="DELIVERY">
+                  {t(
+                    "Fast delivery is available across Jordan. Dispatch timing depends on coverage and order volume.",
+                  )}
+                </Accordion>
+
+                <Accordion title="ORDER NOTES">
+                  {t(
+                    "Please add delivery notes and any setup preferences before checkout.",
+                  )}
+                </Accordion>
               </Box>
             </Box>
           </Box>
         </Box>
+
+        {/* ============================
+          REVIEWS
+      ============================= */}
+        <Box
+          component="section"
+          className="mt-8 rounded-xl border border-[var(--border)] bg-[var(--card)] p-4 sm:p-5"
+        >
+          <Box
+            component="div"
+            className="mb-5 flex items-center justify-between"
+          >
+            <Box>
+              <Text size="lg" fw={700}>
+                {t("ITEM REVIEWS")}
+              </Text>
+
+              <Text size="xs" c="dimmed">
+                {product.reviewCount} {t("reviews")}
+              </Text>
+            </Box>
+
+            <Rating rating={product.rating} reviewCount={product.reviewCount} />
+          </Box>
+
+          {customer ? (
+            <Box
+              component="div"
+              className="mb-6 rounded-lg border border-[var(--border)] bg-[var(--background)] p-4"
+            >
+              <Text size="sm" fw={600}>
+                {t("Write a review")}
+              </Text>
+
+              <Box component="div" className="mt-3 flex flex-wrap gap-1">
+                {[1, 2, 3, 4, 5].map((value) => (
+                  <Box
+                    component="button"
+                    key={value}
+                    type="button"
+                    onClick={() => setReviewRating(value)}
+                    className={`flex h-8 w-8 items-center justify-center rounded-md border ${
+                      reviewRating >= value
+                        ? "border-[var(--accent)] bg-[var(--accent)] text-white"
+                        : "border-[var(--border)]"
+                    }`}
+                  >
+                    <Star
+                      className={`h-4 w-4 ${
+                        reviewRating >= value ? "fill-current" : ""
+                      }`}
+                    />
+                  </Box>
+                ))}
+              </Box>
+
+              <Box
+                component="input"
+                value={reviewTitle}
+                onChange={(event) => setReviewTitle(event.target.value)}
+                placeholder={t("Review title")}
+                className="mt-3 h-10 w-full rounded-md border border-[var(--border)] bg-[var(--background-secondary)] px-3 text-sm outline-none"
+              />
+
+              <Box
+                component="textarea"
+                value={reviewComment}
+                onChange={(event) => setReviewComment(event.target.value)}
+                placeholder={t("Write your review")}
+                rows={3}
+                className="mt-2 w-full resize-none rounded-md border border-[var(--border)] bg-[var(--background-secondary)] px-3 py-2 text-sm outline-none"
+              />
+
+              <Box
+                component="button"
+                type="button"
+                onClick={handleReviewSubmit}
+                disabled={isSubmittingReview}
+                className="mt-3 h-9 rounded-md bg-[var(--accent)] px-4 text-sm font-semibold text-white disabled:opacity-40"
+              >
+                {isSubmittingReview ? t("PLEASE WAIT") : t("SUBMIT REVIEW")}
+              </Box>
+            </Box>
+          ) : (
+            <Box
+              component="div"
+              className="mb-5 rounded-lg border border-[var(--border)] bg-[var(--background)] p-4"
+            >
+              <Text size="sm" c="dimmed">
+                {t("Sign in to review products.")}
+              </Text>
+
+              <Link
+                href="/login"
+                className="mt-3 inline-flex rounded-md border border-[var(--border)] px-3 py-2 text-sm font-medium"
+              >
+                {t("LOG IN")}
+              </Link>
+            </Box>
+          )}
+
+          <Box component="div" className="grid gap-3 md:grid-cols-2">
+            {reviews.length ? (
+              reviews.map((review) => (
+                <Box
+                  component="article"
+                  key={review.id}
+                  className="rounded-lg border border-[var(--border)] bg-[var(--background)] p-4"
+                >
+                  <Box
+                    component="div"
+                    className="flex items-start justify-between gap-3"
+                  >
+                    <Box>
+                      <Text size="sm" fw={600}>
+                        {review.authorName}
+                      </Text>
+
+                      <Text size="xs" c="dimmed" mt={2}>
+                        {review.createdAt}
+                      </Text>
+                    </Box>
+
+                    <Box component="div" className="flex gap-0.5">
+                      {Array.from({
+                        length: review.rating,
+                      }).map((_, index) => (
+                        <Star
+                          key={`${review.id}-${index}`}
+                          className="h-3.5 w-3.5 fill-current"
+                        />
+                      ))}
+                    </Box>
+                  </Box>
+
+                  {review.title ? (
+                    <Text mt="sm" size="sm" fw={600}>
+                      {review.title}
+                    </Text>
+                  ) : null}
+
+                  <Text mt={4} size="sm" c="dimmed" lh={1.6}>
+                    {review.comment}
+                  </Text>
+                </Box>
+              ))
+            ) : (
+              <Text size="sm" c="dimmed">
+                {t("No reviews yet.")}
+              </Text>
+            )}
+          </Box>
+        </Box>
       </Container>
 
-      <Container className="mt-16">
+      {/* RELATED PRODUCTS */}
+      <Container size="xl" className="mt-10">
         <SectionHeading title="You may also want" />
         <ProductGrid products={relatedProducts} />
       </Container>
 
+      {/* MOBILE BUY BAR */}
       <Box
         component="div"
-        className="fixed inset-x-0 bottom-0 z-20 border-t border-[var(--border)] bg-[color:color-mix(in_srgb,var(--card)_90%,transparent)] p-4 text-[var(--text)] backdrop-blur-xl md:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-[var(--border)] bg-[var(--card)] px-3 pb-[calc(env(safe-area-inset-bottom)+10px)] pt-2.5 shadow-[0_-5px_20px_rgba(0,0,0,.08)] md:hidden"
       >
-        <Box component="div" className="mx-auto flex max-w-[1440px] items-center gap-3">
-          <Box component="div" className="flex-1">
-            <Box
-              component="div"
-              className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]"
-            >
-              {t('PRICE')}
-            </Box>
-            <Box component="div" className="text-lg font-bold text-[var(--accent)]">
-              {formatCurrency(selectedVariant.price)}
-            </Box>
+        <Box component="div" className="mx-auto flex items-center gap-3">
+          <Box className="min-w-0 flex-1">
+            <Text size="xs" c="dimmed">
+              {t("PRICE")}
+            </Text>
+
+            <Text size="md" fw={700}>
+              {formatCurrency(displayPrice)}
+            </Text>
           </Box>
+
           <Box
             component="button"
             type="button"
-            disabled={selectedVariant.stockQuantity <= 0 && !selectedVariant.allowBackorder}
+            disabled={
+              selectedVariant.stockQuantity <= 0 &&
+              !selectedVariant.allowBackorder
+            }
             onClick={() => {
               addItem(
                 buildConfiguredProduct(),
                 selectedVariant.id,
                 Math.min(quantity, maxQuantity),
                 cartLineId,
-                cartSelections
+                cartSelections,
               );
+
               openCart();
             }}
-            className="rounded-full bg-black px-6 py-4 text-sm font-semibold uppercase tracking-[0.14em] text-white"
+            className="h-10 rounded-md bg-[var(--accent)] px-5 text-sm font-semibold text-white disabled:opacity-40"
           >
-            {t('AddToCartButton')}
+            {t("AddToCartButton")}
           </Box>
         </Box>
       </Box>
@@ -1335,15 +1613,18 @@ function CartSelectionList({
   }
 
   return (
-    <Box component="div" className={compact ? 'mt-2 space-y-1.5' : 'mt-3 space-y-2'}>
+    <Box
+      component="div"
+      className={compact ? "mt-2 space-y-1.5" : "mt-3 space-y-2"}
+    >
       {selections.map((selection) => (
         <Box
           component="div"
           key={selection.groupId}
           className={
             compact
-              ? 'rounded-[14px] border border-white/8 bg-white/4 px-3 py-2'
-              : 'rounded-[16px] border border-white/8 bg-black/10 px-4 py-3'
+              ? "rounded-[14px] border border-white/8 bg-white/4 px-3 py-2"
+              : "rounded-[16px] border border-white/8 bg-black/10 px-4 py-3"
           }
         >
           <Box
@@ -1352,13 +1633,18 @@ function CartSelectionList({
           >
             {localize(selection.groupName, selection.groupNameAr)}
           </Box>
-          <Box component="div" className="mt-1 text-xs leading-5 text-[var(--text-secondary)]">
+          <Box
+            component="div"
+            className="mt-1 text-xs leading-5 text-[var(--text-secondary)]"
+          >
             {selection.items
               .map((item) => {
                 const label = localize(item.name, item.nameAr);
-                return item.priceDelta > 0 ? `${label} +${formatCurrency(item.priceDelta)}` : label;
+                return item.priceDelta > 0
+                  ? `${label} +${formatCurrency(item.priceDelta)}`
+                  : label;
               })
-              .join(', ')}
+              .join(", ")}
           </Box>
         </Box>
       ))}
@@ -1368,21 +1654,25 @@ function CartSelectionList({
 
 function getCartSelectionSummary(
   selections: CartLineSelection[],
-  localize: (english?: string | null, arabic?: string | null) => string
+  localize: (english?: string | null, arabic?: string | null) => string,
 ) {
   return selections
     .map((selection) => {
       const items = selection.items
         .map((item) => {
           const label = localize(item.name, item.nameAr);
-          return item.priceDelta > 0 ? `${label} +${formatCurrency(item.priceDelta)}` : label;
+          return item.priceDelta > 0
+            ? `${label} +${formatCurrency(item.priceDelta)}`
+            : label;
         })
-        .join(', ');
+        .join(", ");
 
-      return items ? `${localize(selection.groupName, selection.groupNameAr)}: ${items}` : null;
+      return items
+        ? `${localize(selection.groupName, selection.groupNameAr)}: ${items}`
+        : null;
     })
     .filter(Boolean)
-    .join(' | ');
+    .join(" | ");
 }
 
 export function CartPageView({ products }: { products: StoreProduct[] }) {
@@ -1394,15 +1684,23 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
   const setAppliedCoupon = useCartStore((state) => state.setAppliedCoupon);
   const clearAppliedCoupon = useCartStore((state) => state.clearAppliedCoupon);
   const pushToast = useUiStore((state) => state.pushToast);
-  const [couponCode, setCouponCode] = useState(appliedCoupon?.code ?? '');
+
+  const [couponCode, setCouponCode] = useState(appliedCoupon?.code ?? "");
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+
   const lines = items
     .map((item) => {
-      const product = item.product ?? products.find((entry) => entry.id === item.productId);
-      const variant = product?.variants.find((entry) => entry.id === item.variantId);
+      const product =
+        item.product ?? products.find((entry) => entry.id === item.productId);
+
+      const variant = product?.variants.find(
+        (entry) => entry.id === item.variantId,
+      );
+
       if (!product || !variant) {
         return null;
       }
+
       return {
         lineId: item.lineId ?? item.variantId,
         product,
@@ -1412,15 +1710,22 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
       };
     })
     .filter((line): line is NonNullable<typeof line> => Boolean(line));
-  const subtotal = lines.reduce((sum, line) => sum + line.variant.price * line.quantity, 0);
-  const couponDiscountAmount = useMemo(
-    () => (appliedCoupon ? calculateCouponDiscount(subtotal, appliedCoupon) : 0),
-    [appliedCoupon, subtotal]
+
+  const subtotal = lines.reduce(
+    (sum, line) => sum + line.variant.price * line.quantity,
+    0,
   );
+
+  const couponDiscountAmount = useMemo(
+    () =>
+      appliedCoupon ? calculateCouponDiscount(subtotal, appliedCoupon) : 0,
+    [appliedCoupon, subtotal],
+  );
+
   const total = Math.max(0, subtotal - couponDiscountAmount);
 
   useEffect(() => {
-    setCouponCode(appliedCoupon?.code ?? '');
+    setCouponCode(appliedCoupon?.code ?? "");
   }, [appliedCoupon?.code]);
 
   useEffect(() => {
@@ -1432,10 +1737,10 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
       }
 
       try {
-        const response = await fetch('/api/coupons/validate', {
-          method: 'POST',
+        const response = await fetch("/api/coupons/validate", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             code: appliedCoupon.code,
@@ -1454,12 +1759,14 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
 
         if (!response.ok || result.error || !result.data) {
           clearAppliedCoupon();
+
           pushToast({
-            title: t('Coupon removed'),
+            title: t("Coupon removed"),
             description: result.error
               ? localizeCouponError(result.error, t)
-              : t('This coupon no longer applies to your bag.'),
+              : t("This coupon no longer applies to your bag."),
           });
+
           return;
         }
 
@@ -1500,37 +1807,39 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
     setIsApplyingCoupon(true);
 
     try {
-      const response = await fetch('/api/coupons/validate', {
-        method: 'POST',
+      const response = await fetch("/api/coupons/validate", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           code: couponCode,
           subtotal,
         }),
       });
+
       const result = (await response.json()) as {
         data?: NonNullable<typeof appliedCoupon>;
         error?: string;
       };
 
       if (!response.ok || result.error || !result.data) {
-        throw new Error(result.error ?? 'Failed to apply coupon');
+        throw new Error(result.error ?? "Failed to apply coupon");
       }
 
       setAppliedCoupon(result.data);
+
       pushToast({
-        title: t('Coupon applied'),
-        description: `${result.data.code} ${t('is active on this order.')}`,
+        title: t("Coupon applied"),
+        description: `${result.data.code} ${t("is active on this order.")}`,
       });
     } catch (error) {
       pushToast({
-        title: t('Coupon failed'),
+        title: t("Coupon failed"),
         description:
           error instanceof Error
             ? localizeCouponError(error.message, t)
-            : t('Unable to apply that coupon right now.'),
+            : t("Unable to apply that coupon right now."),
       });
     } finally {
       setIsApplyingCoupon(false);
@@ -1538,102 +1847,241 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
   }
 
   return (
-    <StorePageContainer py={{ base: 32, sm: 56 }}>
-      <Text size="xs" c="dimmed" tt="uppercase" lts="0.3em">
-        {t('CART')}
-      </Text>
-      <Title order={1} mt={4} mb={32} fz={{ base: 36, sm: 50 }} tt="uppercase">
-        {t('YOUR CART')}
-      </Title>
+    <StorePageContainer py={{ base: 20, sm: 32, md: 40 }}>
+      {/* Header */}
+      <Box mb={{ base: 24, md: 32 }}>
+        <Group justify="space-between" align="flex-end" gap="md" wrap="wrap">
+          <Box>
+            <Title
+              order={1}
+              fz={{ base: 28, sm: 32 }}
+              fw={700}
+              style={{
+                lineHeight: 1.15,
+              }}
+            >
+              {t("Shopping Cart")}
+            </Title>
+
+            <Text mt={6} size="sm" c="dimmed">
+              {lines.length
+                ? `${lines.length} ${t(lines.length === 1 ? "item" : "items")}`
+                : t("Your cart is empty")}
+            </Text>
+          </Box>
+
+          {lines.length ? (
+            <Button
+              component={Link}
+              href="/shop"
+              variant="subtle"
+              color="gray"
+              size="sm"
+              radius="md"
+            >
+              {t("Continue shopping")}
+            </Button>
+          ) : null}
+        </Group>
+      </Box>
 
       {lines.length ? (
-        <Grid gap={{ base: 24, lg: 32 }} align="flex-start">
+        <Grid gutter={{ base: 20, lg: 28 }} align="flex-start">
+          {/* Cart products */}
           <Grid.Col span={{ base: 12, lg: 8 }}>
-            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
+            <Stack gap="sm">
               {lines.map((line) => (
                 <CartLineCard
                   key={line.lineId}
                   line={line}
-                  onQuantityChange={(quantity) => updateQuantity(line.lineId, quantity)}
+                  onQuantityChange={(quantity) =>
+                    updateQuantity(line.lineId, quantity)
+                  }
                   onRemove={() => removeItem(line.lineId)}
                 />
               ))}
-            </SimpleGrid>
+            </Stack>
           </Grid.Col>
+
+          {/* Order summary */}
           <Grid.Col span={{ base: 12, lg: 4 }}>
             <Paper
-              radius="xl"
-              p="lg"
+              radius="md"
+              p={{ base: "md", sm: "lg" }}
               withBorder
-              shadow="sm"
-              style={{ position: 'sticky', top: 112 }}
+              style={{
+                position: "sticky",
+                top: 88,
+              }}
             >
-              <Text mb="md" size="xs" c="dimmed" tt="uppercase" lts="0.2em">
-                {t('ORDER SUMMARY')}
-              </Text>
-              <Stack gap="sm">
-                <SummaryRow label={t('Subtotal')} value={formatCurrency(subtotal)} />
-                {couponDiscountAmount > 0 ? (
+              <Title order={2} fz={18} fw={700} mb="lg">
+                {t("Order Summary")}
+              </Title>
+
+              <Stack gap="md">
+                <Stack gap="sm">
                   <SummaryRow
-                    label={appliedCoupon ? `${t('Coupon')} (${appliedCoupon.code})` : t('Coupon')}
-                    value={`-${formatCurrency(couponDiscountAmount)}`}
+                    label={t("Subtotal")}
+                    value={formatCurrency(subtotal)}
                   />
-                ) : null}
-                <SummaryRow label={t('Delivery')} value={t('Calculated at checkout')} />
-                <SummaryRow label={t('Tax')} value={formatCurrency(0)} />
+
+                  {couponDiscountAmount > 0 ? (
+                    <SummaryRow
+                      label={
+                        appliedCoupon
+                          ? `${t("Discount")} (${appliedCoupon.code})`
+                          : t("Discount")
+                      }
+                      value={`-${formatCurrency(couponDiscountAmount)}`}
+                    />
+                  ) : null}
+
+                  <SummaryRow
+                    label={t("Shipping")}
+                    value={t("Calculated at checkout")}
+                  />
+                </Stack>
+
                 <Box
-                  pt="md"
-                  mt="xs"
-                  style={{ borderTop: '1px solid var(--mantine-color-default-border)' }}
-                >
-                  <SummaryRow label={t('Total')} value={formatCurrency(total)} emphasis />
-                </Box>
-                <StoreTextInput
-                  value={couponCode}
-                  onChange={(event) => setCouponCode(event.target.value)}
-                  placeholder={t('Enter promo code')}
-                  aria-label={t('Enter promo code')}
+                  style={{
+                    height: 1,
+                    background: "var(--mantine-color-default-border)",
+                  }}
                 />
-                <Button
-                  variant="default"
-                  radius="xl"
-                  loading={isApplyingCoupon}
-                  disabled={!lines.length}
-                  onClick={appliedCoupon ? clearAppliedCoupon : applyCoupon}
-                >
-                  {appliedCoupon ? t('REMOVE COUPON') : t('Apply')}
-                </Button>
-                {appliedCoupon?.description ? (
-                  <Text size="xs" c="dimmed">
-                    {appliedCoupon.description}
+
+                <SummaryRow
+                  label={t("Total")}
+                  value={formatCurrency(total)}
+                  emphasis
+                />
+
+                {/* Coupon */}
+                <Box mt={4}>
+                  <Text size="sm" fw={600} mb={8}>
+                    {t("Promo code")}
                   </Text>
-                ) : null}
+
+                  <Group gap="xs" align="stretch" wrap="nowrap">
+                    <Box style={{ flex: 1 }}>
+                      <StoreTextInput
+                        value={couponCode}
+                        onChange={(event) => setCouponCode(event.target.value)}
+                        placeholder={t("Enter promo code")}
+                        aria-label={t("Enter promo code")}
+                        disabled={Boolean(appliedCoupon)}
+                      />
+                    </Box>
+
+                    <Button
+                      variant="default"
+                      radius="md"
+                      loading={isApplyingCoupon}
+                      disabled={
+                        !lines.length || (!couponCode.trim() && !appliedCoupon)
+                      }
+                      onClick={appliedCoupon ? clearAppliedCoupon : applyCoupon}
+                      px="md"
+                    >
+                      {appliedCoupon ? t("Remove") : t("Apply")}
+                    </Button>
+                  </Group>
+
+                  {appliedCoupon ? (
+                    <Paper
+                      mt="xs"
+                      p="sm"
+                      radius="sm"
+                      bg="var(--mantine-color-green-light)"
+                    >
+                      <Group justify="space-between" gap="xs">
+                        <Box>
+                          <Text size="xs" fw={700}>
+                            {appliedCoupon.code}
+                          </Text>
+
+                          {appliedCoupon.description ? (
+                            <Text size="xs" c="dimmed" mt={2}>
+                              {appliedCoupon.description}
+                            </Text>
+                          ) : null}
+                        </Box>
+
+                        <Text size="xs" fw={700} c="green">
+                          {t("Applied")}
+                        </Text>
+                      </Group>
+                    </Paper>
+                  ) : null}
+                </Box>
+
                 <Button
                   component={Link}
                   href="/checkout"
-                  radius="xl"
-                  color="dark"
+                  fullWidth
+                  radius="md"
                   size="md"
-                  tt="uppercase"
-                  lts="0.12em"
+                  color="dark"
+                  mt={4}
+                  styles={{
+                    root: {
+                      height: 48,
+                    },
+                  }}
                 >
-                  {t('CHECKOUT')}
+                  {t("Proceed to Checkout")}
                 </Button>
+
+                <Text size="xs" c="dimmed" ta="center">
+                  {t("Shipping fees are calculated during checkout.")}
+                </Text>
               </Stack>
             </Paper>
           </Grid.Col>
         </Grid>
       ) : (
-        <Paper radius="xl" p={{ base: 32, sm: 48 }} withBorder ta="center">
-          <Title order={2} tt="uppercase">
-            {t('YOUR CART IS EMPTY.')}
-          </Title>
-          <Text mt="sm" mb="xl" size="sm" c="dimmed">
-            {t('Start with a device, a fresh flavor, or a new everyday essential.')}
-          </Text>
-          <Button component={Link} href="/shop" radius="xl" color="dark">
-            {t('VIEW SHOP')}
-          </Button>
+        /* Empty cart */
+        <Paper
+          withBorder
+          radius="md"
+          px={{ base: 20, sm: 32 }}
+          py={{ base: 48, sm: 64 }}
+        >
+          <Stack align="center" gap="md" ta="center">
+            <Box
+              w={56}
+              h={56}
+              style={{
+                borderRadius: "50%",
+                display: "grid",
+                placeItems: "center",
+                background: "var(--mantine-color-gray-light)",
+              }}
+            >
+              <PackageOpen size={24} strokeWidth={1.6} />
+            </Box>
+
+            <Box>
+              <Title order={2} fz={{ base: 22, sm: 24 }}>
+                {t("Your cart is empty")}
+              </Title>
+
+              <Text mt={8} size="sm" c="dimmed" maw={420}>
+                {t(
+                  "Browse our products and add something to your cart to get started.",
+                )}
+              </Text>
+            </Box>
+
+            <Button
+              component={Link}
+              href="/shop"
+              radius="md"
+              color="dark"
+              mt="xs"
+            >
+              {t("Continue Shopping")}
+            </Button>
+          </Stack>
         </Paper>
       )}
     </StorePageContainer>
@@ -1642,10 +2090,12 @@ export function CartPageView({ products }: { products: StoreProduct[] }) {
 
 export function FavoritesPageView({ products }: { products: StoreProduct[] }) {
   const favorites = useCartStore((state) => state.favorites);
-  const favoriteProducts = products.filter((product) => favorites.includes(product.id));
+  const favoriteProducts = products.filter((product) =>
+    favorites.includes(product.id),
+  );
 
   return (
-    <Container className="py-8 md:py-14">
+    <Container className="py-7 md:py-14">
       <SectionHeading
         title="YOUR FAVORITES ARE EMPTY."
         description="Save the gear and flavors worth coming back to."
@@ -1655,7 +2105,7 @@ export function FavoritesPageView({ products }: { products: StoreProduct[] }) {
       ) : (
         <Box
           component="div"
-          className="rounded-[32px] border border-white/8 bg-white/3 p-10 text-center"
+          className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-10 text-center shadow-sm"
         >
           <Box component="p" className="text-sm text-[var(--text-secondary)]">
             Nothing saved yet.
@@ -1674,24 +2124,29 @@ export function FavoritesPageView({ products }: { products: StoreProduct[] }) {
 
 export function SearchPageView({ products }: { products: StoreProduct[] }) {
   const { t } = useLocale();
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const results = useMemo(
     () => filterProducts(products, { search: query || undefined }).slice(0, 8),
-    [products, query]
+    [products, query],
   );
 
   return (
-    <Container className="py-8 md:py-14">
-      <SectionHeading title="SEARCH" description="Search by name, mood, or product detail." />
+    <Container className="py-7 md:py-14">
+      <SectionHeading
+        title="SEARCH"
+        description="Search by name, mood, or product detail."
+      />
       <Box
         component="input"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
-        placeholder={t('Search devices, flavors, and accessories...')}
-        className="h-14 w-full rounded-full border border-white/10 bg-white/3 px-6 text-sm outline-none"
+        placeholder={t("Search devices, flavors, and accessories...")}
+        className="h-14 w-full rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 text-sm outline-none transition focus:border-[var(--accent)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--accent)_12%,transparent)]"
       />
       <Box component="div" className="mt-8">
-        <ProductGrid products={results.length ? results : products.slice(0, 4)} />
+        <ProductGrid
+          products={results.length ? results : products.slice(0, 4)}
+        />
       </Box>
     </Container>
   );
@@ -1700,27 +2155,33 @@ export function SearchPageView({ products }: { products: StoreProduct[] }) {
 export function AccountPageView() {
   const { t } = useLocale();
   const cards = [
-    { title: 'Profile', body: 'Update your details and stay on the list.' },
-    { title: 'My Orders', body: 'Track deliveries and status changes.' },
-    { title: 'Favorites', body: 'Saved pieces you are not over yet.' },
-    { title: 'Addresses', body: 'Delivery details for checkout.' },
-    { title: 'Settings', body: 'Preferences, notifications, and sign out.' },
+    { title: "Profile", body: "Update your details and stay on the list." },
+    { title: "My Orders", body: "Track deliveries and status changes." },
+    { title: "Favorites", body: "Saved pieces you are not over yet." },
+    { title: "Addresses", body: "Delivery details for checkout." },
+    { title: "Settings", body: "Preferences, notifications, and sign out." },
   ];
 
   return (
-    <Container className="py-8 md:py-14">
-      <SectionHeading title="ACCOUNT" description="Everything you need, none of the clutter." />
-      <Box component="div" className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <Container className="py-7 md:py-14">
+      <SectionHeading
+        title="ACCOUNT"
+        description="Everything you need, none of the clutter."
+      />
+      <Box component="div" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {cards.map((card) => (
           <Box
             component="div"
             key={card.title}
-            className="rounded-[28px] border border-white/8 bg-white/3 p-6"
+            className="group rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-[var(--accent)]/40 hover:shadow-md"
           >
             <Box component="div" className="font-display text-3xl uppercase">
               {t(card.title)}
             </Box>
-            <Box component="p" className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
+            <Box
+              component="p"
+              className="mt-3 text-sm leading-7 text-[var(--text-secondary)]"
+            >
               {t(card.body)}
             </Box>
           </Box>
@@ -1752,7 +2213,7 @@ type CheckoutSessionView = {
 type ActiveFlashSaleView = {
   id: string;
   title: string;
-  discount_type: 'percentage' | 'fixed';
+  discount_type: "percentage" | "fixed";
   discount_value: number;
 };
 
@@ -1777,37 +2238,44 @@ export function CheckoutPageView({
   const pushToast = useUiStore((state) => state.pushToast);
   const lines = useMemo(() => getCartProducts(items), [items]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [couponCode, setCouponCode] = useState(appliedCoupon?.code ?? '');
+  const [couponCode, setCouponCode] = useState(appliedCoupon?.code ?? "");
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [isCouponOpen, setIsCouponOpen] = useState(Boolean(appliedCoupon));
-  const [activeFlashSale, setActiveFlashSale] = useState<ActiveFlashSaleView | null>(null);
-  const defaultAddress = addresses.find((address) => address.isDefault) ?? addresses[0] ?? null;
-  const [selectedAddressId, setSelectedAddressId] = useState(defaultAddress?.id ?? '');
+  const [activeFlashSale, setActiveFlashSale] =
+    useState<ActiveFlashSaleView | null>(null);
+  const defaultAddress =
+    addresses.find((address) => address.isDefault) ?? addresses[0] ?? null;
+  const [selectedAddressId, setSelectedAddressId] = useState(
+    defaultAddress?.id ?? "",
+  );
   const [form, setForm] = useState<CheckoutFormState>({
     fullName: defaultAddress?.fullName ?? session.fullName,
     phone: defaultAddress?.phone ?? session.phone,
-    country: defaultAddress?.country ?? '',
-    city: defaultAddress?.city ?? '',
-    area: defaultAddress?.area ?? '',
-    street: defaultAddress?.street ?? '',
-    building: defaultAddress?.building ?? '',
-    notes: '',
-    paymentMethod: 'cash_on_delivery',
+    country: defaultAddress?.country ?? "",
+    city: defaultAddress?.city ?? "",
+    area: defaultAddress?.area ?? "",
+    street: defaultAddress?.street ?? "",
+    building: defaultAddress?.building ?? "",
+    notes: "",
+    paymentMethod: "cash_on_delivery",
   });
   const countryOptions = useMemo(
     () =>
-      deliveryZones.reduce<Array<{ value: string; label: string }>>((acc, zone) => {
-        if (acc.some((item) => item.value === zone.country)) {
-          return acc;
-        }
+      deliveryZones.reduce<Array<{ value: string; label: string }>>(
+        (acc, zone) => {
+          if (acc.some((item) => item.value === zone.country)) {
+            return acc;
+          }
 
-        acc.push({
-          value: zone.country,
-          label: localize(zone.country, zone.countryAr),
-        });
-        return acc;
-      }, []),
-    [deliveryZones, localize]
+          acc.push({
+            value: zone.country,
+            label: localize(zone.country, zone.countryAr),
+          });
+          return acc;
+        },
+        [],
+      ),
+    [deliveryZones, localize],
   );
   const cityOptions = useMemo(
     () =>
@@ -1824,9 +2292,12 @@ export function CheckoutPageView({
           });
           return acc;
         }, []),
-    [deliveryZones, form.country, localize]
+    [deliveryZones, form.country, localize],
   );
-  const subtotal = lines.reduce((sum, line) => sum + line.variant.price * line.quantity, 0);
+  const subtotal = lines.reduce(
+    (sum, line) => sum + line.variant.price * line.quantity,
+    0,
+  );
   const flashSaleDiscountAmount = useMemo(() => {
     if (!activeFlashSale) {
       return 0;
@@ -1835,7 +2306,7 @@ export function CheckoutPageView({
     return calculateDiscountAmount(
       subtotal,
       activeFlashSale.discount_type,
-      activeFlashSale.discount_value
+      activeFlashSale.discount_value,
     );
   }, [activeFlashSale, subtotal]);
   const couponDiscountAmount = useMemo(() => {
@@ -1844,17 +2315,21 @@ export function CheckoutPageView({
     }
 
     const remainingSubtotal = Math.max(0, subtotal - flashSaleDiscountAmount);
-    return Math.min(remainingSubtotal, calculateCouponDiscount(subtotal, appliedCoupon));
+    return Math.min(
+      remainingSubtotal,
+      calculateCouponDiscount(subtotal, appliedCoupon),
+    );
   }, [appliedCoupon, flashSaleDiscountAmount, subtotal]);
   const shippingAmount = lines.length
     ? (resolveDeliveryFee(deliveryZones, form.country, form.city) ?? 0)
     : 0;
   const hasConfiguredDelivery =
-    !lines.length || resolveDeliveryFee(deliveryZones, form.country, form.city) !== null;
+    !lines.length ||
+    resolveDeliveryFee(deliveryZones, form.country, form.city) !== null;
   const discountAmount = flashSaleDiscountAmount + couponDiscountAmount;
   const total = Math.max(0, subtotal - discountAmount + shippingAmount);
   useEffect(() => {
-    setCouponCode(appliedCoupon?.code ?? '');
+    setCouponCode(appliedCoupon?.code ?? "");
   }, [appliedCoupon?.code]);
 
   useEffect(() => {
@@ -1862,7 +2337,9 @@ export function CheckoutPageView({
       return;
     }
 
-    const selectedAddress = addresses.find((address) => address.id === selectedAddressId);
+    const selectedAddress = addresses.find(
+      (address) => address.id === selectedAddressId,
+    );
 
     if (!selectedAddress) {
       return;
@@ -1875,8 +2352,8 @@ export function CheckoutPageView({
       country: selectedAddress.country,
       city: selectedAddress.city,
       area: selectedAddress.area,
-      street: selectedAddress.street ?? '',
-      building: selectedAddress.building ?? '',
+      street: selectedAddress.street ?? "",
+      building: selectedAddress.building ?? "",
     }));
   }, [addresses, selectedAddressId]);
 
@@ -1895,7 +2372,7 @@ export function CheckoutPageView({
 
     setForm((current) => ({
       ...current,
-      city: cityOptions[0]?.value ?? '',
+      city: cityOptions[0]?.value ?? "",
     }));
   }, [cityOptions, form.city, form.country]);
 
@@ -1911,12 +2388,12 @@ export function CheckoutPageView({
       }
 
       try {
-        const response = await fetch('/api/flash-sales/active');
+        const response = await fetch("/api/flash-sales/active");
         const payload = (await response.json()) as {
           data?: Array<{
             id: string;
             title: string;
-            discount_type: 'percentage' | 'fixed';
+            discount_type: "percentage" | "fixed";
             discount_value: string | number;
           }>;
         };
@@ -1960,10 +2437,10 @@ export function CheckoutPageView({
       }
 
       try {
-        const response = await fetch('/api/coupons/validate', {
-          method: 'POST',
+        const response = await fetch("/api/coupons/validate", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             code: appliedCoupon.code,
@@ -1982,10 +2459,10 @@ export function CheckoutPageView({
         if (!response.ok || result.error || !result.data) {
           clearAppliedCoupon();
           pushToast({
-            title: t('Coupon removed'),
+            title: t("Coupon removed"),
             description: result.error
               ? localizeCouponError(result.error, t)
-              : t('This coupon no longer applies to your order.'),
+              : t("This coupon no longer applies to your order."),
           });
           return;
         }
@@ -2027,10 +2504,10 @@ export function CheckoutPageView({
     setIsApplyingCoupon(true);
 
     try {
-      const response = await fetch('/api/coupons/validate', {
-        method: 'POST',
+      const response = await fetch("/api/coupons/validate", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           code: couponCode,
@@ -2043,21 +2520,21 @@ export function CheckoutPageView({
       };
 
       if (!response.ok || result.error || !result.data) {
-        throw new Error(result.error ?? 'Failed to apply coupon');
+        throw new Error(result.error ?? "Failed to apply coupon");
       }
 
       setAppliedCoupon(result.data);
       pushToast({
-        title: t('Coupon applied'),
-        description: `${result.data.code} ${t('is active on this order.')}`,
+        title: t("Coupon applied"),
+        description: `${result.data.code} ${t("is active on this order.")}`,
       });
     } catch (error) {
       pushToast({
-        title: t('Coupon failed'),
+        title: t("Coupon failed"),
         description:
           error instanceof Error
             ? localizeCouponError(error.message, t)
-            : t('Unable to apply that coupon right now.'),
+            : t("Unable to apply that coupon right now."),
       });
     } finally {
       setIsApplyingCoupon(false);
@@ -2078,16 +2555,20 @@ export function CheckoutPageView({
       !form.street.trim()
     ) {
       pushToast({
-        title: t('Missing details'),
-        description: t('Please complete the delivery details before placing your order.'),
+        title: t("Missing details"),
+        description: t(
+          "Please complete the delivery details before placing your order.",
+        ),
       });
       return;
     }
 
     if (!hasConfiguredDelivery) {
       pushToast({
-        title: t('Delivery unavailable'),
-        description: t('No delivery fee is configured for the selected location.'),
+        title: t("Delivery unavailable"),
+        description: t(
+          "No delivery fee is configured for the selected location.",
+        ),
       });
       return;
     }
@@ -2095,10 +2576,10 @@ export function CheckoutPageView({
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
+      const response = await fetch("/api/checkout", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           paymentMethod: form.paymentMethod,
@@ -2118,20 +2599,26 @@ export function CheckoutPageView({
           shippingAmount,
           taxAmount: 0,
           totalAmount: total,
-          currency: 'JOD',
+          currency: "JOD",
           couponCode: appliedCoupon?.code ?? null,
           notes: form.notes,
           items: lines.map((line) => {
-            const selectionSummary = getCartSelectionSummary(line.selections, localize);
+            const selectionSummary = getCartSelectionSummary(
+              line.selections,
+              localize,
+            );
 
             return {
               productId: line.product.id,
               variantId: line.variant.id,
               productName: localize(line.product.name, line.product.nameAr),
               sku: line.variant.sku,
-              sizeName: [localize(line.variant.size, line.variant.sizeAr), selectionSummary]
+              sizeName: [
+                localize(line.variant.size, line.variant.sizeAr),
+                selectionSummary,
+              ]
                 .filter(Boolean)
-                .join(' | '),
+                .join(" | "),
               colorName: null,
               imageUrl: line.product.images[0]?.url ?? null,
               unitPrice: line.variant.price,
@@ -2148,18 +2635,18 @@ export function CheckoutPageView({
       };
 
       if (!response.ok || result.error || !result.data?.order?.id) {
-        throw new Error(result.error ?? 'Failed to place order');
+        throw new Error(result.error ?? "Failed to place order");
       }
 
       clearCart();
       router.push(`/order-success/${result.data.order.id}`);
     } catch (error) {
       pushToast({
-        title: t('Order failed'),
+        title: t("Order failed"),
         description:
           error instanceof Error
             ? t(error.message)
-            : t('Something went wrong while placing the order.'),
+            : t("Something went wrong while placing the order."),
       });
     } finally {
       setIsSubmitting(false);
@@ -2167,381 +2654,489 @@ export function CheckoutPageView({
   }
 
   return (
-    <Container className="checkout-page py-6 md:py-12">
-      <Box
-        component="header"
-        className="checkout-entrance mb-8 border-b border-[var(--border)] pb-7 md:mb-10 md:pb-8"
-      >
-        <Box component="div" className="flex items-end justify-between gap-5">
-          <Box component="div">
-            <Box
-              component="div"
-              className="text-[10px] uppercase tracking-[0.28em] text-[var(--muted)]"
-            >
-              PUFF JO / {t('CHECKOUT')}
-            </Box>
-            <Box
-              component="h1"
-              className="mt-3 font-display text-4xl uppercase leading-none md:text-6xl"
-            >
-              {t('Complete your order')}
-            </Box>
-            <Box component="p" className="mt-3 text-sm text-[var(--text-secondary)]">
-              {t('Secure checkout · Fast delivery across Jordan')}
-            </Box>
+    <Container size="xl" py={{ base: 20, sm: 28, md: 36 }}>
+      {/* Header */}
+      <Box mb={{ base: 24, md: 32 }}>
+        <Group justify="space-between" align="flex-end" gap="md" wrap="wrap">
+          <Box>
+            <Title order={1} fz={{ base: 26, sm: 30 }} fw={700}>
+              {t("Checkout")}
+            </Title>
+
+            <Text mt={5} size="sm" c="dimmed">
+              {t("Complete your delivery details and place your order.")}
+            </Text>
           </Box>
-          <Box
-            component="div"
-            className="hidden text-right text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] sm:block"
-          >
-            {lines.length} {t('items')}{' '}
-            <Box component="span" className="mx-2">
-              ·
-            </Box>{' '}
-            {new Intl.NumberFormat(locale === 'ar' ? 'ar-JO' : 'en-JO', {
-              style: 'currency',
-              currency: 'JOD',
-              maximumFractionDigits: 2,
-            }).format(total)}
-          </Box>
-        </Box>
-        <Box
-          component="div"
-          className="mt-8 flex max-w-2xl items-center gap-2 text-[10px] uppercase tracking-[0.16em] text-[var(--muted)] md:gap-3"
-        >
-          <Box component="span" className="font-semibold text-[var(--text)]">
-            01 {t('Cart')}
-          </Box>
-          <Box component="span" className="h-px flex-1 bg-[var(--border)]" />
-          <Box component="span">02 {t('Delivery')}</Box>
-          <Box component="span" className="h-px flex-1 bg-[var(--border)]" />{' '}
-          <Box component="span">03 {t('Confirm')}</Box>
-        </Box>
+
+          <Text size="sm" c="dimmed">
+            {lines.length} {t(lines.length === 1 ? "item" : "items")}
+            {" · "}
+            {formatCurrency(total)}
+          </Text>
+        </Group>
       </Box>
-      <Box
-        component="div"
-        className="checkout-layout mt-8 grid w-full gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(390px,30vw)] lg:gap-16"
-      >
-        <Box
-          component="div"
-          className="checkout-form checkout-form-shell min-w-0 space-y-5 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5 md:p-8"
-        >
-          <Box component="div" className="checkout-section border-b border-[var(--border)] pb-7">
-            <Box component="div" className="checkout-section-kicker">
-              01
-            </Box>
-            <Box component="h2" className="mt-2 text-xl font-semibold uppercase tracking-[0.08em]">
-              {t('CONTACT')}
-            </Box>
-            <Box component="p" className="mt-2 text-sm text-[var(--text-secondary)]">
-              {t('Who should we contact about this order?')}
-            </Box>
-          </Box>
-          {!lines.length ? (
-            <Box
-              component="div"
-              className="rounded-[24px] border border-white/8 bg-black/10 p-5 text-sm text-[var(--text-secondary)]"
-            >
-              {t('YOUR CART IS EMPTY.')}
-            </Box>
-          ) : null}
-          {addresses.length ? (
-            <Box component="div" className="space-y-3 border-b border-[var(--border)] pb-7">
-              <Box
-                component="div"
-                className="text-[10px] tracking-[0.22em] text-[var(--muted)] md:text-xs"
-              >
-                {t('Saved addresses')}
-              </Box>
-              <Box component="div" className="grid gap-3">
-                {addresses.map((address) => (
-                  <Box
-                    component="button"
-                    key={address.id}
-                    type="button"
-                    onClick={() => setSelectedAddressId(address.id)}
-                    className={`w-full min-w-0 rounded-[18px] border px-3 py-3 text-left transition md:rounded-[22px] md:px-4 md:py-4 ${
-                      selectedAddressId === address.id
-                        ? 'border-[var(--text)] bg-[color:color-mix(in_srgb,var(--card)_88%,var(--text)_12%)] text-[var(--text)]'
-                        : 'border-white/10 bg-transparent text-[var(--text)]'
-                    }`}
-                  >
-                    <Box component="div" className="flex items-center justify-between gap-3">
-                      <Box
-                        component="div"
-                        className="text-sm font-medium uppercase tracking-[0.16em]"
-                      >
-                        {address.label}
-                      </Box>
-                      {address.isDefault ? (
-                        <Box
-                          component="span"
-                          className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.2em] ${selectedAddressId === address.id ? 'bg-[var(--text)] text-[var(--background)]' : 'border border-white/10 text-[var(--muted)]'}`}
-                        >
-                          {t('Default')}
-                        </Box>
-                      ) : null}
-                    </Box>
-                    <Box
-                      component="div"
-                      className={`mt-2 text-sm ${selectedAddressId === address.id ? 'text-[var(--text-secondary)]' : 'text-[var(--text-secondary)]'}`}
-                    >
-                      {address.fullName} · {address.phone}
-                    </Box>
-                    <Box
-                      component="div"
-                      className={`mt-1 text-sm ${selectedAddressId === address.id ? 'text-[var(--text-secondary)]' : 'text-[var(--text-secondary)]'}`}
-                    >
-                      {[address.country, address.city, address.area].filter(Boolean).join(', ')}
-                    </Box>
-                    <Box
-                      component="div"
-                      className={`mt-1 text-sm ${selectedAddressId === address.id ? 'text-[var(--text-secondary)]' : 'text-[var(--text-secondary)]'}`}
-                    >
-                      {[address.street, address.building].filter(Boolean).join(', ')}
-                    </Box>
-                  </Box>
-                ))}
-              </Box>
-              <Box component="div" className="flex justify-end">
-                <Link
-                  href="/addresses/new"
-                  className="rounded-[0.25rem] border border-white/10 px-4 py-2 text-xs tracking-[0.2em]"
-                >
-                  {t('ADD ADDRESS')}
-                </Link>
-              </Box>
-            </Box>
-          ) : (
-            <Box
-              component="div"
-              className="border-b border-[var(--border)] pb-7 text-sm text-[var(--text-secondary)]"
-            >
-              <Box component="div">{t('No saved addresses.')}</Box>
-              <Link
-                href="/addresses/new"
-                className="mt-4 inline-flex rounded-[0.25rem] border border-white/10 px-4 py-2 text-xs tracking-[0.2em] text-[var(--text)]"
-              >
-                {t('ADD ADDRESS')}
-              </Link>
-            </Box>
-          )}
-          <CheckoutDetailsPanel
-            form={form}
-            setForm={setForm}
-            countryOptions={countryOptions}
-            cityOptions={cityOptions}
-            hasConfiguredDelivery={hasConfiguredDelivery}
-            deliveryFee={formatCurrency(shippingAmount)}
-            t={t}
-          />
-        </Box>
-        <Box
-          component="aside"
-          className="checkout-summary h-fit rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 md:p-7 lg:sticky lg:top-[120px]"
-        >
-          <Box
-            component="div"
-            className="mb-4 text-[10px] tracking-[0.22em] text-[var(--muted)] md:text-xs"
-          >
-            {t('ORDER SUMMARY')}
-          </Box>
-          <Box component="div" className="mb-5 space-y-3">
-            {lines.map((line) => (
-              <Box
-                component="div"
-                key={line.lineId}
-                className="checkout-product rounded-xl border border-[var(--border)] bg-[var(--background-secondary)]/30 p-3"
-              >
-                <Box component="div" className="flex items-center gap-3">
-                  <Image
-                    src={line.product.images[0]?.url || '/products/puff-jo-product-default.png'}
-                    alt={localize(line.product.name, line.product.nameAr)}
-                    className="h-[76px] w-[68px] rounded-xl bg-[var(--background-secondary)] object-contain p-1.5"
-                  />
-                  <Box component="div" className="min-w-0 flex-1">
-                    <Box component="div" className="truncate text-sm">
-                      {localize(line.product.name, line.product.nameAr)}
-                    </Box>
-                    <Box component="div" className="mt-1 text-xs text-[var(--text-secondary)]">
-                      {localize(line.variant.size, line.variant.sizeAr)}
-                    </Box>
-                    <CartSelectionList selections={line.selections} compact />
-                    <Box
-                      component="div"
-                      className="mt-3 inline-flex items-center gap-3 rounded-full border border-white/10 px-3 py-2"
-                    >
-                      <Box
-                        component="button"
-                        type="button"
-                        onClick={() => updateQuantity(line.lineId, Math.max(1, line.quantity - 1))}
-                        className="text-[var(--text-secondary)] transition hover:text-[var(--text)]"
-                        aria-label={`Decrease quantity for ${localize(line.product.name, line.product.nameAr)}`}
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Box>
-                      <Box component="span" className="min-w-4 text-sm">
-                        {line.quantity}
-                      </Box>
-                      <Box
-                        component="button"
-                        type="button"
-                        disabled={
-                          !line.variant.allowBackorder &&
-                          line.quantity >= Math.max(1, line.variant.stockQuantity)
-                        }
-                        onClick={() => updateQuantity(line.lineId, line.quantity + 1)}
-                        className="text-[var(--text-secondary)] transition hover:text-[var(--text)] disabled:cursor-not-allowed disabled:opacity-40"
-                        aria-label={`Increase quantity for ${localize(line.product.name, line.product.nameAr)}`}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Box>
-                    </Box>
-                    <Box
-                      component="div"
-                      className="mt-2 text-[10px] uppercase tracking-[0.2em] text-[var(--muted)]"
-                    >
-                      {line.variant.allowBackorder
-                        ? t('Backorder available')
-                        : `${t('Max')}: ${Math.max(1, line.variant.stockQuantity)}`}
-                    </Box>
-                  </Box>
-                  <Box component="div" className="text-right">
-                    <Box component="div" className="text-sm">
-                      {formatCurrency(line.variant.price * line.quantity)}
-                    </Box>
-                    <Box
-                      component="button"
-                      type="button"
-                      onClick={() => removeItem(line.lineId)}
-                      className="mt-3 text-[10px] uppercase tracking-[0.2em] text-[var(--muted)] transition hover:text-[var(--text)]"
-                    >
-                      {t('REMOVE')}
-                    </Box>
-                  </Box>
+
+      <Grid gutter={{ base: "lg", lg: 32 }} align="flex-start">
+        {/* LEFT */}
+        <Grid.Col span={{ base: 12, lg: 8 }}>
+          <Stack gap="sm">
+            {!lines.length ? (
+              <Paper withBorder radius="md" p="sm">
+                <Text size="xs" c="dimmed">
+                  {t("Your cart is empty.")}
+                </Text>
+              </Paper>
+            ) : null}
+
+            <Paper withBorder radius="md" p={{ base: "sm", sm: "md" }}>
+              <Group justify="space-between" align="center" mb="sm" gap="sm">
+                <Box>
+                  <Text fw={700} fz={15}>
+                    {t("Delivery Address")}
+                  </Text>
+
+                  <Text mt={2} size="xs" c="dimmed">
+                    {addresses.length
+                      ? t("Choose a saved address or enter your details.")
+                      : t("Enter your delivery details.")}
+                  </Text>
                 </Box>
-              </Box>
-            ))}
-          </Box>
-          <SummaryRow label={t('Subtotal')} value={formatCurrency(subtotal)} />
-          {flashSaleDiscountAmount > 0 ? (
-            <SummaryRow
-              label={
-                activeFlashSale ? `${t('Flash sale')} (${activeFlashSale.title})` : t('Flash sale')
-              }
-              value={`-${formatCurrency(flashSaleDiscountAmount)}`}
-            />
-          ) : null}
-          {couponDiscountAmount > 0 ? (
-            <SummaryRow
-              label={appliedCoupon ? `${t('Coupon')} (${appliedCoupon.code})` : t('Coupon')}
-              value={`-${formatCurrency(couponDiscountAmount)}`}
-            />
-          ) : null}
-          <Box component="div" className="mt-6 border-t border-[var(--border)] pt-5">
-            <Box
-              component="button"
-              type="button"
-              onClick={() => setIsCouponOpen((open) => !open)}
-              className="text-sm text-[var(--text-secondary)]"
-            >
-              {isCouponOpen ? '−' : '+'} {t('Have a discount code?')}
-            </Box>
-            <Box
-              component="div"
-              className={`overflow-hidden transition-all duration-200 ${isCouponOpen ? 'mt-3 max-h-40 opacity-100' : 'max-h-0 opacity-0'}`}
-            >
-              <Box component="div" className="grid gap-3">
-                <StoreTextInput
-                  value={couponCode}
-                  onChange={(event) => setCouponCode(event.target.value)}
-                  placeholder={t('Enter discount code')}
+
+                <Button
+                  component={Link}
+                  href="/addresses/new"
+                  variant="subtle"
+                  color="gray"
+                  size="compact-xs"
+                  radius="sm"
+                >
+                  {t("Add address")}
+                </Button>
+              </Group>
+
+              {addresses.length ? (
+                <Box mb="sm">
+                  <Text size="xs" c="dimmed" mb={6}>
+                    {t("Saved addresses")}
+                  </Text>
+
+                  <SimpleGrid
+                    cols={{
+                      base: 1,
+                      sm: Math.min(addresses.length, 2),
+                    }}
+                    spacing="xs"
+                  >
+                    {addresses.map((address) => {
+                      const selected = selectedAddressId === address.id;
+
+                      return (
+                        <UnstyledButton
+                          key={address.id}
+                          onClick={() => setSelectedAddressId(address.id)}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                          }}
+                        >
+                          <Paper
+                            withBorder
+                            radius="sm"
+                            px="sm"
+                            py={8}
+                            h="100%"
+                            style={{
+                              borderColor: selected
+                                ? "var(--mantine-color-dark-5)"
+                                : undefined,
+                              background: selected
+                                ? "var(--mantine-color-default-hover)"
+                                : undefined,
+                            }}
+                          >
+                            <Group align="flex-start" wrap="nowrap" gap="xs">
+                              <Box
+                                mt={3}
+                                w={14}
+                                h={14}
+                                style={{
+                                  flexShrink: 0,
+                                  borderRadius: "50%",
+                                  border: selected
+                                    ? "4px solid var(--mantine-color-dark-6)"
+                                    : "1px solid var(--mantine-color-default-border)",
+                                }}
+                              />
+
+                              <Box
+                                style={{
+                                  minWidth: 0,
+                                  flex: 1,
+                                }}
+                              >
+                                <Group
+                                  justify="space-between"
+                                  gap="xs"
+                                  wrap="nowrap"
+                                >
+                                  <Text fw={600} size="xs" lineClamp={1}>
+                                    {address.label}
+                                  </Text>
+
+                                  {address.isDefault ? (
+                                    <Badge
+                                      variant="light"
+                                      color="gray"
+                                      size="xs"
+                                      radius="sm"
+                                    >
+                                      {t("Default")}
+                                    </Badge>
+                                  ) : null}
+                                </Group>
+
+                                <Text mt={3} size="xs" lineClamp={1}>
+                                  {address.fullName} · {address.phone}
+                                </Text>
+
+                                <Text mt={2} size="xs" c="dimmed" lineClamp={1}>
+                                  {[
+                                    address.area,
+                                    address.street,
+                                    address.building,
+                                    address.city,
+                                    address.country,
+                                  ]
+                                    .filter(Boolean)
+                                    .join(", ")}
+                                </Text>
+                              </Box>
+                            </Group>
+                          </Paper>
+                        </UnstyledButton>
+                      );
+                    })}
+                  </SimpleGrid>
+                </Box>
+              ) : null}
+
+              <Box
+                pt="sm"
+                style={{
+                  borderTop: addresses.length
+                    ? "1px solid var(--mantine-color-default-border)"
+                    : undefined,
+                }}
+              >
+                <CheckoutDetailsPanel
+                  form={form}
+                  setForm={setForm}
+                  countryOptions={countryOptions}
+                  cityOptions={cityOptions}
+                  hasConfiguredDelivery={hasConfiguredDelivery}
+                  deliveryFee={formatCurrency(shippingAmount)}
+                  t={t}
                 />
-                {appliedCoupon ? (
-                  <Box
-                    component="button"
-                    type="button"
-                    onClick={clearAppliedCoupon}
-                    className="rounded-full border border-white/10 px-4 py-2.5 text-sm tracking-[0.2em] md:px-5 md:py-3"
-                  >
-                    {t('REMOVE COUPON')}
-                  </Box>
-                ) : (
-                  <Box
-                    component="button"
-                    type="button"
-                    disabled={!lines.length || isApplyingCoupon}
-                    onClick={applyCoupon}
-                    className="rounded-full border border-white/10 px-4 py-2.5 text-sm tracking-[0.2em] disabled:cursor-not-allowed disabled:opacity-40 md:px-5 md:py-3"
-                  >
-                    {isApplyingCoupon ? t('APPLYING') : t('Apply')}
-                  </Box>
-                )}
-                {appliedCoupon?.description ? (
-                  <Box component="div" className="text-xs text-[var(--text-secondary)]">
-                    {appliedCoupon.description}
-                  </Box>
-                ) : null}
               </Box>
-            </Box>
-          </Box>
-          <SummaryRow
-            label={t('Delivery')}
-            value={
-              hasConfiguredDelivery
-                ? formatCurrency(shippingAmount)
-                : t('Calculated after selecting your city')
-            }
-          />
-          <SummaryRow label={t('Total')} value={formatCurrency(total)} emphasis />
-          {!hasConfiguredDelivery && lines.length ? (
-            <Box component="p" className="mt-4 text-sm leading-7 text-[var(--text-secondary)]">
-              {t('No delivery fee is configured for the selected location.')}
-            </Box>
-          ) : null}
-          <Box
-            component="button"
-            type="button"
-            disabled={!lines.length || isSubmitting || !hasConfiguredDelivery}
-            onClick={placeOrder}
-            className="checkout-order-button mt-7 w-full rounded-xl bg-[var(--text)] px-5 py-4 text-sm font-semibold tracking-[0.16em] text-[var(--background)] disabled:cursor-not-allowed disabled:opacity-40"
+            </Paper>
+          </Stack>
+        </Grid.Col>
+
+        {/* RIGHT */}
+        <Grid.Col span={{ base: 12, lg: 4 }}>
+          <Paper
+            withBorder
+            radius="md"
+            p="md"
+            style={{
+              position: "sticky",
+              top: 76,
+              maxHeight: "calc(100vh - 92px)",
+              overflow: "hidden",
+            }}
           >
-            {isSubmitting ? (
-              <Box component="span" className="inline-flex items-center gap-2">
-                <Box component="span" className="checkout-spinner" />
-                {t('PLACING ORDER')}...
-              </Box>
-            ) : (
-              <Box component="span" className="inline-flex items-center gap-3">
-                {t('PLACE ORDER')}{' '}
-                {dir === 'rtl' ? (
-                  <ArrowLeft className="h-4 w-4" />
+            {/* Header */}
+            <Group justify="space-between" mb="sm">
+              <Text fw={700} fz={15}>
+                {t("Order Summary")}
+              </Text>
+
+              <Text size="xs" c="dimmed">
+                {lines.length} {t(lines.length === 1 ? "item" : "items")}
+              </Text>
+            </Group>
+
+            {/* PRODUCTS */}
+            <Stack
+              gap={0}
+              style={{
+                maxHeight: lines.length > 3 ? 190 : undefined,
+                overflowY: lines.length > 3 ? "auto" : "visible",
+              }}
+            >
+              {lines.map((line, index) => {
+                const productName = localize(
+                  line.product.name,
+                  line.product.nameAr,
+                );
+
+                const variantName = localize(
+                  line.variant.size,
+                  line.variant.sizeAr,
+                );
+
+                return (
+                  <Box
+                    key={line.lineId}
+                    py={8}
+                    style={{
+                      borderBottom:
+                        index < lines.length - 1
+                          ? "1px solid var(--mantine-color-default-border)"
+                          : undefined,
+                    }}
+                  >
+                    <Group wrap="nowrap" gap="sm">
+                      <Image
+                        src={
+                          line.product.images[0]?.url ||
+                          "/products/puff-jo-product-default.png"
+                        }
+                        alt={productName}
+                        w={44}
+                        h={44}
+                        radius="sm"
+                        fit="contain"
+                        p={3}
+                        fallbackSrc="/products/puff-jo-product-default.png"
+                        style={{
+                          flexShrink: 0,
+                          background: "var(--mantine-color-default-hover)",
+                        }}
+                      />
+
+                      <Box style={{ flex: 1, minWidth: 0 }}>
+                        <Group
+                          justify="space-between"
+                          align="flex-start"
+                          gap="xs"
+                          wrap="nowrap"
+                        >
+                          <Box style={{ minWidth: 0 }}>
+                            <Text size="xs" fw={600} lineClamp={1}>
+                              {productName}
+                            </Text>
+
+                            <Text size="xs" c="dimmed" lineClamp={1}>
+                              {variantName ? `${variantName} · ` : ""}
+                              {t("Qty")}: {line.quantity}
+                            </Text>
+                          </Box>
+
+                          <Text size="xs" fw={600} style={{ flexShrink: 0 }}>
+                            {formatCurrency(line.variant.price * line.quantity)}
+                          </Text>
+                        </Group>
+                      </Box>
+
+                      <ActionIcon
+                        variant="subtle"
+                        color="gray"
+                        size={24}
+                        radius="sm"
+                        onClick={() => removeItem(line.lineId)}
+                        aria-label={t("Remove")}
+                      >
+                        <Trash2 size={12} />
+                      </ActionIcon>
+                    </Group>
+                  </Box>
+                );
+              })}
+            </Stack>
+
+            {/* PRICE SUMMARY */}
+            <Stack
+              gap={6}
+              mt="sm"
+              pt="sm"
+              style={{
+                borderTop: "1px solid var(--mantine-color-default-border)",
+              }}
+            >
+              <Group justify="space-between" gap="sm">
+                <Text size="xs" c="dimmed">
+                  {t("Subtotal")}
+                </Text>
+
+                <Text size="xs" fw={500}>
+                  {formatCurrency(subtotal)}
+                </Text>
+              </Group>
+
+              {flashSaleDiscountAmount > 0 ? (
+                <Group justify="space-between" gap="sm">
+                  <Text size="xs" c="dimmed" lineClamp={1}>
+                    {activeFlashSale
+                      ? `${t("Flash sale")} (${activeFlashSale.title})`
+                      : t("Flash sale")}
+                  </Text>
+
+                  <Text size="xs" fw={500}>
+                    -{formatCurrency(flashSaleDiscountAmount)}
+                  </Text>
+                </Group>
+              ) : null}
+
+              {couponDiscountAmount > 0 ? (
+                <Group justify="space-between" gap="sm">
+                  <Text size="xs" c="dimmed">
+                    {appliedCoupon
+                      ? `${t("Coupon")} (${appliedCoupon.code})`
+                      : t("Coupon")}
+                  </Text>
+
+                  <Text size="xs" fw={500}>
+                    -{formatCurrency(couponDiscountAmount)}
+                  </Text>
+                </Group>
+              ) : null}
+
+              <Group justify="space-between" gap="sm">
+                <Text size="xs" c="dimmed">
+                  {t("Delivery")}
+                </Text>
+
+                <Text size="xs" fw={500}>
+                  {hasConfiguredDelivery
+                    ? formatCurrency(shippingAmount)
+                    : t("Select city")}
+                </Text>
+              </Group>
+            </Stack>
+
+            {/* COUPON */}
+            <Box
+              mt="sm"
+              pt="sm"
+              style={{
+                borderTop: "1px solid var(--mantine-color-default-border)",
+              }}
+            >
+              <UnstyledButton
+                onClick={() => setIsCouponOpen((current) => !current)}
+                w="100%"
+              >
+                <Group justify="space-between">
+                  <Text size="xs" fw={500}>
+                    {appliedCoupon
+                      ? `${t("Promo code")}: ${appliedCoupon.code}`
+                      : t("Add promo code")}
+                  </Text>
+
+                  <Text size="sm" c="dimmed">
+                    {isCouponOpen ? "−" : "+"}
+                  </Text>
+                </Group>
+              </UnstyledButton>
+
+              {isCouponOpen ? (
+                <Group mt={8} gap={6} wrap="nowrap">
+                  <Box style={{ flex: 1 }}>
+                    <StoreTextInput
+                      value={couponCode}
+                      onChange={(event) => setCouponCode(event.target.value)}
+                      placeholder={t("Promo code")}
+                      disabled={Boolean(appliedCoupon)}
+                    />
+                  </Box>
+
+                  <Button
+                    variant="default"
+                    radius="sm"
+                    size="xs"
+                    loading={isApplyingCoupon}
+                    disabled={
+                      !lines.length || (!couponCode.trim() && !appliedCoupon)
+                    }
+                    onClick={appliedCoupon ? clearAppliedCoupon : applyCoupon}
+                  >
+                    {appliedCoupon ? t("Remove") : t("Apply")}
+                  </Button>
+                </Group>
+              ) : null}
+            </Box>
+
+            {/* TOTAL */}
+            <Group
+              justify="space-between"
+              mt="sm"
+              pt="sm"
+              style={{
+                borderTop: "1px solid var(--mantine-color-default-border)",
+              }}
+            >
+              <Text size="sm" fw={700}>
+                {t("Total")}
+              </Text>
+
+              <Text fz={17} fw={700}>
+                {formatCurrency(total)}
+              </Text>
+            </Group>
+
+            {!hasConfiguredDelivery && lines.length ? (
+              <Text mt={5} size="xs" c="red">
+                {t("No delivery fee is configured for the selected location.")}
+              </Text>
+            ) : null}
+
+            {/* PLACE ORDER */}
+            <Button
+              fullWidth
+              color="dark"
+              radius="md"
+              mt="sm"
+              loading={isSubmitting}
+              disabled={!lines.length || isSubmitting || !hasConfiguredDelivery}
+              onClick={placeOrder}
+              rightSection={
+                dir === "rtl" ? (
+                  <ArrowLeft size={14} />
                 ) : (
-                  <ArrowRight className="h-4 w-4" />
-                )}
-              </Box>
-            )}
-          </Box>
-          <Box
-            component="p"
-            className="mt-4 text-center text-xs leading-6 text-[var(--text-secondary)]"
-          >
-            🔒 {t('Secure checkout')}
-            <Box component="br" />
-            {t('Your order is only created after confirmation.')}
-          </Box>
-        </Box>
-      </Box>
+                  <ArrowRight size={14} />
+                )
+              }
+              styles={{
+                root: {
+                  height: 40,
+                },
+              }}
+            >
+              {isSubmitting ? t("Placing Order") : t("Place Order")}
+            </Button>
+
+            <Text mt={6} size="xs" c="dimmed" ta="center">
+              {t("Secure checkout")}
+            </Text>
+          </Paper>
+        </Grid.Col>
+      </Grid>
     </Container>
   );
 }
 
-export function AuthPageView({ mode }: { mode: 'login' | 'register' | 'forgot-password' }) {
+export function AuthPageView({
+  mode,
+}: {
+  mode: "login" | "register" | "forgot-password";
+}) {
   const { t } = useLocale();
   const schema = z.object({
     email: z.string().email(),
-    password: mode === 'forgot-password' ? z.string().optional() : z.string().min(6),
-    fullName: mode === 'register' ? z.string().min(2) : z.string().optional(),
+    password:
+      mode === "forgot-password" ? z.string().optional() : z.string().min(6),
+    fullName: mode === "register" ? z.string().min(2) : z.string().optional(),
   });
 
   type FormValues = z.infer<typeof schema>;
@@ -2555,27 +3150,33 @@ export function AuthPageView({ mode }: { mode: 'login' | 'register' | 'forgot-pa
   });
 
   return (
-    <Container className="flex min-h-[70vh] items-center py-10">
+    <Container className="flex min-h-[72vh] items-center py-8 md:py-12">
       <Box
         component="div"
-        className="mx-auto w-full max-w-lg rounded-[36px] border border-white/8 bg-white/3 p-8 md:p-10"
+        className="mx-auto w-full max-w-xl rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm sm:p-6 md:p-8"
       >
-        <Box component="div" className="text-xs tracking-[0.25em] text-[var(--muted)]">
-          {t('SUPABASE AUTH')}
+        <Box
+          component="div"
+          className="text-xs tracking-[0.25em] text-[var(--muted)]"
+        >
+          {t("SUPABASE AUTH")}
         </Box>
-        <Box component="h1" className="mt-3 font-display text-5xl uppercase">
-          {mode === 'login'
-            ? t('LOG IN')
-            : mode === 'register'
-              ? t('JOIN THE PUFF CLUB')
-              : t('RESET PASSWORD')}
+        <Box component="h1" className="mt-3 font-display text-4xl uppercase">
+          {mode === "login"
+            ? t("LOG IN")
+            : mode === "register"
+              ? t("JOIN THE PUFF CLUB")
+              : t("RESET PASSWORD")}
         </Box>
-        <Box component="p" className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
-          {mode === 'login'
-            ? 'Sign in to keep your bag, favorites, and orders in sync.'
-            : mode === 'register'
-              ? 'Create your account before the next drop disappears.'
-              : 'We will send a reset link if your Supabase project is configured.'}
+        <Box
+          component="p"
+          className="mt-3 text-sm leading-7 text-[var(--text-secondary)]"
+        >
+          {mode === "login"
+            ? "Sign in to keep your bag, favorites, and orders in sync."
+            : mode === "register"
+              ? "Create your account before the next drop disappears."
+              : "We will send a reset link if your Supabase project is configured."}
         </Box>
         <Box
           component="form"
@@ -2585,29 +3186,29 @@ export function AuthPageView({ mode }: { mode: 'login' | 'register' | 'forgot-pa
           })}
           className="mt-8 space-y-4"
         >
-          {mode === 'register' ? (
-            <Field label={t('Full Name')} error={errors.fullName?.message}>
+          {mode === "register" ? (
+            <Field label={t("Full Name")} error={errors.fullName?.message}>
               <Box
                 component="input"
-                {...register('fullName')}
-                className="h-12 w-full rounded-full border border-white/10 bg-black/20 px-5 text-sm outline-none"
+                {...register("fullName")}
+                className="h-13 w-full rounded-2xl border border-[var(--border)] bg-[var(--background-secondary)] px-4 text-sm outline-none transition focus:border-[var(--accent)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--accent)_12%,transparent)]"
               />
             </Field>
           ) : null}
-          <Field label={t('Email')} error={errors.email?.message}>
+          <Field label={t("Email")} error={errors.email?.message}>
             <Box
               component="input"
-              {...register('email')}
-              className="h-12 w-full rounded-full border border-white/10 bg-black/20 px-5 text-sm outline-none"
+              {...register("email")}
+              className="h-13 w-full rounded-2xl border border-[var(--border)] bg-[var(--background-secondary)] px-4 text-sm outline-none transition focus:border-[var(--accent)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--accent)_12%,transparent)]"
             />
           </Field>
-          {mode !== 'forgot-password' ? (
-            <Field label={t('Password')} error={errors.password?.message}>
+          {mode !== "forgot-password" ? (
+            <Field label={t("Password")} error={errors.password?.message}>
               <Box
                 component="input"
                 type="password"
-                {...register('password')}
-                className="h-12 w-full rounded-full border border-white/10 bg-black/20 px-5 text-sm outline-none"
+                {...register("password")}
+                className="h-13 w-full rounded-2xl border border-[var(--border)] bg-[var(--background-secondary)] px-4 text-sm outline-none transition focus:border-[var(--accent)] focus:ring-4 focus:ring-[color:color-mix(in_srgb,var(--accent)_12%,transparent)]"
               />
             </Field>
           ) : null}
@@ -2615,19 +3216,21 @@ export function AuthPageView({ mode }: { mode: 'login' | 'register' | 'forgot-pa
             component="button"
             type="submit"
             disabled={isSubmitting}
-            className="w-full rounded-full bg-[var(--text)] px-5 py-3 text-sm tracking-[0.2em] text-black"
+            className="min-h-11 w-full rounded-2xl bg-[var(--text)] px-5 py-3 text-sm font-bold uppercase tracking-[0.12em] text-[var(--background)] shadow-[0_14px_30px_rgba(0,0,0,.14)] transition hover:-translate-y-0.5"
           >
             {isSubmitting
-              ? t('PLEASE WAIT')
-              : mode === 'login'
-                ? t('LOG IN')
-                : mode === 'register'
-                  ? t('Register')
-                  : t('Send code')}
+              ? t("PLEASE WAIT")
+              : mode === "login"
+                ? t("LOG IN")
+                : mode === "register"
+                  ? t("Register")
+                  : t("Send code")}
           </Box>
           {submitted ? (
             <Box component="p" className="text-sm text-[var(--blush)]">
-              {t('Form captured. Wire this to your Supabase auth environment keys before launch.')}
+              {t(
+                "Form captured. Wire this to your Supabase auth environment keys before launch.",
+              )}
             </Box>
           ) : null}
         </Box>
@@ -2643,16 +3246,23 @@ export function OrderSuccessPageView({ orderId }: { orderId: string }) {
     <Container className="py-12 md:py-20">
       <Box
         component="div"
-        className="mx-auto max-w-3xl rounded-[36px] border border-white/8 bg-white/3 p-8 md:p-10"
+        className="mx-auto max-w-3xl rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 shadow-sm sm:p-6 md:p-8"
       >
         <SectionHeading
-          title={t('ORDER RECEIVED.')}
-          description={`${t('Order number')} #${orderId}`}
+          title={t("ORDER RECEIVED.")}
+          description={`${t("Order number")} #${orderId}`}
         />
-        <Box component="div" className="space-y-4 text-sm leading-7 text-[var(--text-secondary)]">
-          <Box component="p">{t('Your order has been placed successfully.')}</Box>
+        <Box
+          component="div"
+          className="space-y-4 text-sm leading-7 text-[var(--text-secondary)]"
+        >
           <Box component="p">
-            {t('You can review delivery updates and order details from your account page.')}
+            {t("Your order has been placed successfully.")}
+          </Box>
+          <Box component="p">
+            {t(
+              "You can review delivery updates and order details from your account page.",
+            )}
           </Box>
         </Box>
         <Box component="div" className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -2660,14 +3270,14 @@ export function OrderSuccessPageView({ orderId }: { orderId: string }) {
             href="/account"
             className="rounded-full border border-white/10 px-5 py-3 text-center text-sm tracking-[0.2em]"
           >
-            {t('TRACK ORDER')}
+            {t("TRACK ORDER")}
           </Link>
           <Link
             href="/shop"
             className="rounded-full bg-[var(--accent)] px-5 py-3 text-center text-sm tracking-[0.2em]"
-            style={{ color: 'var(--background)' }}
+            style={{ color: "var(--background)" }}
           >
-            {t('CONTINUE SHOPPING')}
+            {t("CONTINUE SHOPPING")}
           </Link>
         </Box>
       </Box>
@@ -2675,23 +3285,29 @@ export function OrderSuccessPageView({ orderId }: { orderId: string }) {
   );
 }
 
-function CatalogHero({ title, description }: { title: string; description: string }) {
+function CatalogHero({
+  title,
+  description,
+}: {
+  title: string;
+  description: string;
+}) {
   const { t } = useLocale();
   return (
     <Box
       component="section"
-      className="relative overflow-hidden border-b border-[var(--border)] bg-[radial-gradient(circle_at_80%_20%,rgba(255,255,255,.08),transparent_25%),var(--background)] py-12 md:py-20"
+      className="border-b border-[var(--border)] bg-[var(--background-secondary)] py-10 md:py-14"
     >
       <Container className="relative">
         <Box
           component="div"
           className="text-[11px] font-bold tracking-[0.3em] text-[var(--accent)]"
         >
-          {t('PUFF JO / STORE')}
+          {t("PUFF JO / STORE")}
         </Box>
         <Box
           component="h1"
-          className="mt-4 max-w-3xl text-4xl font-black uppercase leading-none tracking-[-0.04em] md:text-7xl"
+          className="mt-4 max-w-4xl text-4xl md:text-4xl font-black uppercase leading-[.88] tracking-[-0.055em]"
         >
           {t(title)}
         </Box>
@@ -2717,12 +3333,17 @@ function SummaryRow({
 }) {
   return (
     <Box
-      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 16,
+      }}
     >
-      <Text size={emphasis ? 'lg' : 'sm'} c={emphasis ? undefined : 'dimmed'}>
+      <Text size={emphasis ? "lg" : "sm"} c={emphasis ? undefined : "dimmed"}>
         {label}
       </Text>
-      <Text size={emphasis ? 'lg' : 'sm'} fw={emphasis ? 700 : 500}>
+      <Text size={emphasis ? "lg" : "sm"} fw={emphasis ? 700 : 500}>
         {value}
       </Text>
     </Box>
@@ -2730,11 +3351,11 @@ function SummaryRow({
 }
 
 function localizeCouponError(message: string, t: (value: string) => string) {
-  const prefix = 'This coupon requires a minimum subtotal of ';
+  const prefix = "This coupon requires a minimum subtotal of ";
 
-  if (message.startsWith(prefix) && message.endsWith(' JOD.')) {
-    const amount = message.slice(prefix.length, -' JOD.'.length);
-    return `${t('This coupon requires a minimum subtotal of')} ${amount} ${t('JOD.')}`;
+  if (message.startsWith(prefix) && message.endsWith(" JOD.")) {
+    const amount = message.slice(prefix.length, -" JOD.".length);
+    return `${t("This coupon requires a minimum subtotal of")} ${amount} ${t("JOD.")}`;
   }
 
   return t(message);
@@ -2745,7 +3366,7 @@ function sameAppliedCoupon(
     code: string;
     name: string;
     description?: string;
-    discountType: 'percentage' | 'fixed';
+    discountType: "percentage" | "fixed";
     discountValue: number;
     minSubtotal?: number;
   },
@@ -2753,10 +3374,10 @@ function sameAppliedCoupon(
     code: string;
     name: string;
     description?: string;
-    discountType: 'percentage' | 'fixed';
+    discountType: "percentage" | "fixed";
     discountValue: number;
     minSubtotal?: number;
-  }
+  },
 ) {
   return (
     left.code === right.code &&
@@ -2768,15 +3389,29 @@ function sameAppliedCoupon(
   );
 }
 
-function Field({ label, error, children }: { label: string; error?: string; children: ReactNode }) {
+function Field({
+  label,
+  error,
+  children,
+}: {
+  label: string;
+  error?: string;
+  children: ReactNode;
+}) {
   return (
     <Box component="label" className="block">
-      <Box component="span" className="mb-2 block text-xs tracking-[0.24em] text-[var(--muted)]">
+      <Box
+        component="span"
+        className="mb-2 block text-xs tracking-[0.24em] text-[var(--muted)]"
+      >
         {label}
       </Box>
       {children}
       {error ? (
-        <Box component="span" className="mt-2 block text-xs text-[var(--blush)]">
+        <Box
+          component="span"
+          className="mt-2 block text-xs text-[var(--blush)]"
+        >
           {error}
         </Box>
       ) : null}
@@ -2795,10 +3430,13 @@ function Accordion({
 }) {
   const { t, dir } = useLocale();
   const [open, setOpen] = useState(defaultOpen);
-  const ArrowIcon = dir === 'rtl' ? ArrowLeft : ArrowRight;
+  const ArrowIcon = dir === "rtl" ? ArrowLeft : ArrowRight;
 
   return (
-    <Box component="div" className="border-b border-[var(--border)] pb-4 last:border-b-0">
+    <Box
+      component="div"
+      className="border-b border-[var(--border)] py-1 last:border-b-0"
+    >
       <Box
         component="button"
         type="button"
@@ -2807,11 +3445,14 @@ function Accordion({
       >
         <Box component="span">{t(title)}</Box>
         <ArrowIcon
-          className={`h-4 w-4 transition ${open ? (dir === 'rtl' ? '-rotate-90' : 'rotate-90') : ''}`}
+          className={`h-4 w-4 transition ${open ? (dir === "rtl" ? "-rotate-90" : "rotate-90") : ""}`}
         />
       </Box>
       {open ? (
-        <Box component="div" className="pt-2 text-sm leading-7 text-[var(--text-secondary)]">
+        <Box
+          component="div"
+          className="pt-2 text-sm leading-7 text-[var(--text-secondary)]"
+        >
           {children}
         </Box>
       ) : null}
