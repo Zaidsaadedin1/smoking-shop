@@ -143,12 +143,7 @@ export function CartLineCard({
         </Stack>
 
         {/* Actions */}
-        <Stack
-          gap="sm"
-          justify="space-between"
-          align={{ base: "stretch", sm: "flex-end" }}
-          style={{ minWidth: 125 }}
-        >
+        <Stack gap="sm" justify="space-between" style={{ minWidth: 125 }}>
           <Box visibleFrom="sm">
             <Text size="xs" c="dimmed" ta="right">
               {t("Price")}
@@ -159,14 +154,7 @@ export function CartLineCard({
             </Text>
           </Box>
 
-          <Group
-            justify={{
-              base: "space-between",
-              sm: "flex-end",
-            }}
-            gap="sm"
-            wrap="nowrap"
-          >
+          <Group gap="sm" wrap="nowrap">
             {/* Quantity */}
             <Group
               gap={0}
