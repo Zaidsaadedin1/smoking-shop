@@ -782,7 +782,7 @@ export function OrdersPageView({ orders }: { orders: OrderView[] }) {
                       {formatOrderDate(order.createdAt, locale)}
                     </Text>
 
-                    <Group mt="sm" gap={{ base: 8, sm: 16 }} wrap="wrap">
+                    <Group mt="sm" wrap="wrap">
                       <Group gap={5}>
                         <Text size="xs" c="dimmed">
                           {t("Payment")}:
@@ -969,7 +969,7 @@ export function OrderDetailPageView({ order }: { order: OrderView | null }) {
         </Group>
       </Paper>
 
-      <Grid gutter={{ base: "md", lg: "lg" }} align="flex-start">
+      <Grid align="flex-start">
         {/* Main content */}
         <Grid.Col span={{ base: 12, lg: 8 }}>
           <Stack gap="md">
