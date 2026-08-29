@@ -45,7 +45,7 @@ export function CheckoutDetailsPanel({
   return (
     <Stack gap="sm">
       {/* Delivery fields */}
-      <Grid gutter="xs">
+      <Grid>
         <Grid.Col span={{ base: 12, sm: 6 }}>
           <StoreTextInput
             label={t("Full Name")}
@@ -165,7 +165,7 @@ export function CheckoutDetailsPanel({
       ) : null}
 
       {/* Payment + notes */}
-      <Grid gutter="xs" align="flex-start">
+      <Grid align="flex-start">
         <Grid.Col span={{ base: 12, sm: 5 }}>
           <Text size="xs" fw={600} mb={5}>
             {t("Payment Method")}
