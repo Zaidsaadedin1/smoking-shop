@@ -14,6 +14,12 @@ type RestRequestOptions = RestOptions & {
   single?: boolean;
 };
 
+type AuthRequestOptions = {
+  headers?: Record<string, string>;
+  method?: 'GET' | 'POST';
+  body?: unknown;
+};
+
 function getSupabaseConfig() {
   const projectUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -265,6 +271,46 @@ export async function invokeSupabaseAuth<T>(
       }
 
       return { data: null, error, status: response.status };
+    }
+
+    return { data: (await response.json()) as T, error: null, status: response.status };
+  } catch {
+    return { data: null, error: 'Network error while contacting Supabase Auth', status: 500 };
+  }
+}
+
+export async function requestSupabaseAuth<T>(
+  path: string,
+  options: AuthRequestOptions = {}
+): Promise<{ data: T | null; error: string | null; status: number }> {
+  const config = getSupabaseConfig();
+
+  if (!config) {
+    return { data: null, error: 'Missing Supabase configuration', status: 500 };
+  }
+
+  try {
+    const response = await fetch(
+      `${config.restUrl.replace('/rest/v1', '')}/auth/v1/${path.replace(/^\//, '')}`,
+      {
+        method: options.method ?? 'GET',
+        headers: {
+          apikey: config.anonKey,
+          Authorization: `Bearer ${config.anonKey}`,
+          Accept: 'application/json',
+          ...options.headers,
+          ...(options.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+        },
+        body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+      }
+    );
+
+    if (!response.ok) {
+      return {
+        data: null,
+        error: `Supabase auth request failed with status ${response.status}`,
+        status: response.status,
+      };
     }
 
     return { data: (await response.json()) as T, error: null, status: response.status };

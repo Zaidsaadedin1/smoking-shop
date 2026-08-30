@@ -1,7 +1,15 @@
 import { cookies } from 'next/headers';
-import { CUSTOMER_ACCESS_TOKEN_COOKIE, CUSTOMER_SESSION_MAX_AGE_SECONDS } from '@/lib/customer/auth';
+import {
+  CUSTOMER_ACCESS_TOKEN_COOKIE,
+  CUSTOMER_SESSION_MAX_AGE_SECONDS,
+} from '@/lib/customer/auth';
 import { jsonError, jsonOk, requireString } from '@/lib/api/http';
-import { invokeSupabaseAuth } from '@/lib/supabase/rest';
+import {
+  getSupabaseServiceRoleHeaders,
+  invokeSupabaseAuth,
+  requestSupabaseAuth,
+  requestSupabaseRest,
+} from '@/lib/supabase/rest';
 
 type AuthResponse = {
   access_token?: string;
@@ -10,6 +18,17 @@ type AuthResponse = {
     email?: string | null;
   };
 };
+
+type ProfileLookup = { id: string };
+type AuthUserResponse = { id: string; email?: string | null };
+
+function normalizePhone(value: string) {
+  const normalized = value.replace(/[\s()-]/g, '');
+  if (normalized.startsWith('0')) {
+    return `+962${normalized.slice(1)}`;
+  }
+  return normalized.startsWith('+') ? normalized : `+${normalized}`;
+}
 
 function buildCookieOptions() {
   return {
@@ -24,11 +43,34 @@ function buildCookieOptions() {
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as Record<string, unknown>;
-    const email = requireString(body.email, 'email');
+    const identifier = requireString(body.identifier ?? body.email, 'email or phone number');
     const password = requireString(body.password, 'password');
 
     if (password.length < 8 || password.length > 72) {
       return jsonError('Password must be between 8 and 72 characters', 400);
+    }
+
+    let email = identifier;
+    if (!identifier.includes('@')) {
+      const serviceRoleHeaders = getSupabaseServiceRoleHeaders();
+      const profile = await requestSupabaseRest<ProfileLookup[]>('profiles', {
+        query: { select: 'id', phone: `eq.${normalizePhone(identifier)}`, limit: 1 },
+        headers: serviceRoleHeaders ?? undefined,
+        revalidate: 0,
+      });
+      const profileId = profile.data?.[0]?.id;
+
+      if (!profileId || !serviceRoleHeaders) {
+        return jsonError('Invalid email or password.', 400);
+      }
+
+      const authUser = await requestSupabaseAuth<AuthUserResponse>(`admin/users/${profileId}`, {
+        headers: serviceRoleHeaders,
+      });
+      if (!authUser.data?.email) {
+        return jsonError('Invalid email or password.', 400);
+      }
+      email = authUser.data.email;
     }
 
     const result = await invokeSupabaseAuth<AuthResponse>('token?grant_type=password', {

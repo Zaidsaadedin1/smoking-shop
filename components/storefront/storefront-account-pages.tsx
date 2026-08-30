@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { zodResolver } from "@hookform/resolvers/zod";
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
   ArrowLeft,
   Bell,
@@ -15,12 +15,12 @@ import {
   Trash2,
   UserRound,
   ArrowRight,
-} from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, useTransition } from "react";
-import { Controller, useForm } from "react-hook-form";
-import { z } from "zod";
+} from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState, useTransition } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { z } from 'zod';
 import {
   Alert,
   Anchor,
@@ -37,18 +37,15 @@ import {
   Stack,
   Text,
   Title,
-} from "@mantine/core";
-import { useLocale } from "@/components/storefront/locale-provider";
-import { useThemeMode } from "@/components/storefront/theme-provider";
+} from '@mantine/core';
+import { useLocale } from '@/components/storefront/locale-provider';
+import { useThemeMode } from '@/components/storefront/theme-provider';
 import {
   StorePasswordInput,
   StoreSelect,
   StoreTextInput,
-} from "@/components/storefront/ui/store-form-controls";
-import {
-  StorePageContainer,
-  StorePageHeader,
-} from "@/components/storefront/ui/store-layout";
+} from '@/components/storefront/ui/store-form-controls';
+import { StorePageContainer, StorePageHeader } from '@/components/storefront/ui/store-layout';
 import {
   DashboardBackButton,
   DashboardDetailRow,
@@ -58,10 +55,10 @@ import {
   DashboardPage,
   DashboardPanel,
   DashboardPrimaryButton,
-} from "@/components/storefront/ui/dashboard-ui";
-import { ProductGrid } from "@/components/storefront/storefront-sections";
-import { DeliveryZone, StoreProduct } from "@/lib/commerce-types";
-import { translateAuthError } from "@/lib/i18n";
+} from '@/components/storefront/ui/dashboard-ui';
+import { ProductGrid } from '@/components/storefront/storefront-sections';
+import { DeliveryZone, StoreProduct } from '@/lib/commerce-types';
+import { translateAuthError } from '@/lib/i18n';
 
 type CustomerSessionView = {
   fullName: string;
@@ -118,23 +115,23 @@ type ReviewView = {
 };
 
 const phoneCountries = [
-  { code: "+962", name: "Jordan", nameAr: "الأردن" },
-  { code: "+966", name: "Saudi Arabia", nameAr: "السعودية" },
-  { code: "+971", name: "United Arab Emirates", nameAr: "الإمارات" },
-  { code: "+970", name: "Palestine", nameAr: "فلسطين" },
-  { code: "+20", name: "Egypt", nameAr: "مصر" },
-  { code: "+965", name: "Kuwait", nameAr: "الكويت" },
-  { code: "+974", name: "Qatar", nameAr: "قطر" },
-  { code: "+973", name: "Bahrain", nameAr: "البحرين" },
-  { code: "+968", name: "Oman", nameAr: "عُمان" },
-  { code: "+964", name: "Iraq", nameAr: "العراق" },
+  { code: '+962', name: 'Jordan', nameAr: 'الأردن' },
+  { code: '+966', name: 'Saudi Arabia', nameAr: 'السعودية' },
+  { code: '+971', name: 'United Arab Emirates', nameAr: 'الإمارات' },
+  { code: '+970', name: 'Palestine', nameAr: 'فلسطين' },
+  { code: '+20', name: 'Egypt', nameAr: 'مصر' },
+  { code: '+965', name: 'Kuwait', nameAr: 'الكويت' },
+  { code: '+974', name: 'Qatar', nameAr: 'قطر' },
+  { code: '+973', name: 'Bahrain', nameAr: 'البحرين' },
+  { code: '+968', name: 'Oman', nameAr: 'عُمان' },
+  { code: '+964', name: 'Iraq', nameAr: 'العراق' },
 ];
 
 export function AuthPageView({
   mode,
-  nextPath = "/account",
+  nextPath = '/account',
 }: {
-  mode: "login" | "register" | "forgot-password";
+  mode: 'login' | 'register' | 'forgot-password';
   nextPath?: string;
 }) {
   const { locale, t } = useLocale();
@@ -144,36 +141,41 @@ export function AuthPageView({
 
   const schema = z.object({
     fullName:
-      mode === "register"
+      mode === 'register'
         ? z
             .string()
             .trim()
-            .min(2, "Full name must be at least 2 characters")
-            .max(80, "Full name is too long")
+            .min(2, 'Full name must be at least 2 characters')
+            .max(80, 'Full name is too long')
         : z.string().optional(),
     phone:
-      mode === "register"
+      mode === 'register'
         ? z
             .string()
             .trim()
-            .regex(/^\d{7,12}$/, "Enter a valid phone number")
+            .regex(/^\d{7,12}$/, 'Enter a valid phone number')
         : z.string().optional(),
     phoneCountry:
-      mode === "register"
-        ? z.string().min(1, "Select a country")
+      mode === 'register' ? z.string().min(1, 'Select a country') : z.string().optional(),
+    identifier:
+      mode === 'login'
+        ? z
+            .string()
+            .trim()
+            .min(1, 'Enter your email or phone number')
+            .max(254, 'Email or phone number is too long')
         : z.string().optional(),
-    email: z
-      .string()
-      .trim()
-      .email("Enter a valid email")
-      .max(254, "Email is too long"),
+    email:
+      mode === 'login'
+        ? z.string().optional()
+        : z.string().trim().email('Enter a valid email').max(254, 'Email is too long'),
     password:
-      mode === "forgot-password"
+      mode === 'forgot-password'
         ? z.string().optional()
         : z
             .string()
-            .min(8, "Password must be at least 8 characters")
-            .max(72, "Password is too long"),
+            .min(8, 'Password must be at least 8 characters')
+            .max(72, 'Password is too long'),
   });
 
   type FormValues = z.infer<typeof schema>;
@@ -185,9 +187,9 @@ export function AuthPageView({
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { phoneCountry: "+962" },
-    mode: "onTouched",
-    reValidateMode: "onChange",
+    defaultValues: { phoneCountry: '+962' },
+    mode: 'onTouched',
+    reValidateMode: 'onChange',
   });
 
   return (
@@ -198,25 +200,27 @@ export function AuthPageView({
         withBorder
         shadow="lg"
         w="100%"
+        maw={480}
+        mx="auto"
       >
         <Text size="xs" c="dimmed" tt="uppercase" lts="0.25em">
-          {t("CUSTOMER ACCESS")}
+          {t('CUSTOMER ACCESS')}
         </Text>
         <Title order={1} mt={12} fz={{ base: 38, sm: 50 }} tt="uppercase">
-          {mode === "login"
-            ? t("LOG IN")
-            : mode === "register"
-              ? t("CREATE ACCOUNT")
-              : t("RESET PASSWORD")}
+          {mode === 'login'
+            ? t('LOG IN')
+            : mode === 'register'
+              ? t('CREATE ACCOUNT')
+              : t('RESET PASSWORD')}
         </Title>
         <Text mt={12} size="sm" c="dimmed" lh={1.8}>
-          {mode === "login"
-            ? t("Sign in to keep your bag, favorites, and orders in sync.")
-            : mode === "register"
+          {mode === 'login'
+            ? t('Sign in to keep your bag, favorites, and orders in sync.')
+            : mode === 'register'
               ? t(
-                  "Create a customer account for orders, favorites, addresses, and faster checkout.",
+                  'Create a customer account for orders, favorites, addresses, and faster checkout.'
                 )
-              : t("Send a password reset email to your account.")}
+              : t('Send a password reset email to your account.')}
         </Text>
         <Box
           component="form"
@@ -225,25 +229,23 @@ export function AuthPageView({
             setServerMessage(null);
 
             const endpoint =
-              mode === "login"
-                ? "/api/auth/login"
-                : mode === "register"
-                  ? "/api/auth/register"
-                  : "/api/auth/forgot-password";
+              mode === 'login'
+                ? '/api/auth/login'
+                : mode === 'register'
+                  ? '/api/auth/register'
+                  : '/api/auth/forgot-password';
 
-            const { phoneCountry, phone, ...submissionValues } = values;
+            const { phoneCountry, phone, identifier, ...submissionValues } = values;
 
             const response = await fetch(endpoint, {
-              method: "POST",
+              method: 'POST',
               headers: {
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
               },
               body: JSON.stringify({
                 ...submissionValues,
-                phone:
-                  mode === "register"
-                    ? `${phoneCountry ?? "+962"}${phone ?? ""}`
-                    : phone,
+                ...(mode === 'login' ? { identifier } : {}),
+                phone: mode === 'register' ? `${phoneCountry ?? '+962'}${phone ?? ''}` : phone,
               }),
             });
 
@@ -256,20 +258,18 @@ export function AuthPageView({
               setServerError(
                 payload.error
                   ? translateAuthError(payload.error, locale)
-                  : t("Something went wrong"),
+                  : t('Something went wrong')
               );
               return;
             }
 
-            if (mode === "forgot-password") {
-              setServerMessage(t("Password reset email sent."));
+            if (mode === 'forgot-password') {
+              setServerMessage(t('Password reset email sent.'));
               return;
             }
 
-            if (mode === "register" && payload.requiresEmailConfirmation) {
-              setServerMessage(
-                t("Account created. Confirm your email, then sign in."),
-              );
+            if (mode === 'register' && payload.requiresEmailConfirmation) {
+              setServerMessage(t('Account created. Confirm your email, then sign in.'));
               router.push(`/login?next=${encodeURIComponent(nextPath)}`);
               return;
             }
@@ -278,18 +278,15 @@ export function AuthPageView({
             router.refresh();
           })}
           mt={32}
+          style={{ maxWidth: 440 }}
         >
           <Stack gap="md">
-            {mode === "register" ? (
+            {mode === 'register' ? (
               <>
                 <StoreTextInput
-                  label={t("Full Name")}
-                  error={
-                    errors.fullName?.message
-                      ? t(errors.fullName.message)
-                      : undefined
-                  }
-                  {...register("fullName")}
+                  label={t('Full Name')}
+                  error={errors.fullName?.message ? t(errors.fullName.message) : undefined}
+                  {...register('fullName')}
                   autoComplete="name"
                   maxLength={80}
                   required
@@ -300,65 +297,56 @@ export function AuthPageView({
                     control={control}
                     render={({ field }) => (
                       <StoreSelect
-                        label={t("Country code")}
-                        aria-label={t("Country code")}
+                        label={t('Country code')}
+                        aria-label={t('Country code')}
                         data={phoneCountries.map((country) => ({
                           value: country.code,
-                          label: `${country.code} · ${locale === "ar" ? country.nameAr : country.name}`,
+                          label: `${country.code} · ${locale === 'ar' ? country.nameAr : country.name}`,
                         }))}
-                        value={field.value ?? "+962"}
-                        onChange={(value) => field.onChange(value ?? "+962")}
+                        value={field.value ?? '+962'}
+                        onChange={(value) => field.onChange(value ?? '+962')}
                         onBlur={field.onBlur}
                         error={
-                          errors.phoneCountry?.message
-                            ? t(errors.phoneCountry.message)
-                            : undefined
+                          errors.phoneCountry?.message ? t(errors.phoneCountry.message) : undefined
                         }
                         style={{ width: 172, flexShrink: 0 }}
                       />
                     )}
                   />
                   <StoreTextInput
-                    label={t("Phone")}
-                    {...register("phone")}
+                    label={t('Phone')}
+                    {...register('phone')}
                     type="tel"
                     inputMode="numeric"
                     autoComplete="tel-national"
                     maxLength={12}
-                    placeholder={t("Phone number")}
-                    error={
-                      errors.phone?.message
-                        ? t(errors.phone.message)
-                        : undefined
-                    }
+                    placeholder={t('Phone number')}
+                    error={errors.phone?.message ? t(errors.phone.message) : undefined}
                     styles={{ root: { flex: 1, minWidth: 0 } }}
                   />
                 </Group>
               </>
             ) : null}
             <StoreTextInput
-              label={t("Email")}
+              label={t(mode === 'login' ? 'Email or phone number' : 'Email')}
               error={
-                errors.email?.message ? t(errors.email.message) : undefined
+                (errors.identifier?.message ?? errors.email?.message)
+                  ? t((errors.identifier?.message ?? errors.email?.message) as string)
+                  : undefined
               }
-              {...register("email")}
-              type="email"
-              autoComplete="email"
+              {...register(mode === 'login' ? 'identifier' : 'email')}
+              type={mode === 'login' ? 'text' : 'email'}
+              autoComplete={mode === 'login' ? 'username' : 'email'}
               maxLength={254}
+              placeholder={mode === 'login' ? t('Email or phone number') : undefined}
               required
             />
-            {mode !== "forgot-password" ? (
+            {mode !== 'forgot-password' ? (
               <StorePasswordInput
-                label={t("Password")}
-                error={
-                  errors.password?.message
-                    ? t(errors.password.message)
-                    : undefined
-                }
-                {...register("password")}
-                autoComplete={
-                  mode === "register" ? "new-password" : "current-password"
-                }
+                label={t('Password')}
+                error={errors.password?.message ? t(errors.password.message) : undefined}
+                {...register('password')}
+                autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
                 minLength={8}
                 maxLength={72}
                 required
@@ -385,17 +373,17 @@ export function AuthPageView({
               lts="0.12em"
             >
               {isSubmitting
-                ? t("PLEASE WAIT")
-                : mode === "login"
-                  ? t("LOG IN")
-                  : mode === "register"
-                    ? t("CREATE ACCOUNT")
-                    : t("SEND RESET LINK")}
+                ? t('PLEASE WAIT')
+                : mode === 'login'
+                  ? t('LOG IN')
+                  : mode === 'register'
+                    ? t('CREATE ACCOUNT')
+                    : t('SEND RESET LINK')}
             </Button>
           </Stack>
         </Box>
         <Group mt={24} gap="md" wrap="wrap">
-          {mode !== "login" ? (
+          {mode !== 'login' ? (
             <Anchor
               component={Link}
               size="xs"
@@ -404,10 +392,10 @@ export function AuthPageView({
               lts="0.12em"
               href={`/login?next=${encodeURIComponent(nextPath)}`}
             >
-              {t("Already have an account? Sign in")}
+              {t('Already have an account? Sign in')}
             </Anchor>
           ) : null}
-          {mode === "login" ? (
+          {mode === 'login' ? (
             <Anchor
               component={Link}
               size="xs"
@@ -416,10 +404,10 @@ export function AuthPageView({
               lts="0.12em"
               href={`/register?next=${encodeURIComponent(nextPath)}`}
             >
-              {t("Create account")}
+              {t('Create account')}
             </Anchor>
           ) : null}
-          {mode === "login" ? (
+          {mode === 'login' ? (
             <Anchor
               component={Link}
               size="xs"
@@ -428,7 +416,7 @@ export function AuthPageView({
               lts="0.12em"
               href="/forgot-password"
             >
-              {t("Forgot password?")}
+              {t('Forgot password?')}
             </Anchor>
           ) : null}
         </Group>
@@ -449,73 +437,69 @@ export function AccountDashboardPageView({
   addressCount: number;
 }) {
   const { t, locale, dir } = useLocale();
-  const Arrow = dir === "rtl" ? ArrowLeft : ArrowLeft;
+  const Arrow = dir === 'rtl' ? ArrowLeft : ArrowLeft;
 
   const initials = session.fullName
     .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
     .map((part) => part[0])
-    .join("")
+    .join('')
     .toUpperCase();
 
   const accountLinks = [
     {
-      href: "/orders",
-      title: t("My Orders"),
-      body: t("View your orders and track their current status."),
+      href: '/orders',
+      title: t('My Orders'),
+      body: t('View your orders and track their current status.'),
       icon: <Package size={19} />,
     },
     {
-      href: "/favorites",
-      title: t("Favorites"),
-      body: t("View products you saved for later."),
+      href: '/favorites',
+      title: t('Favorites'),
+      body: t('View products you saved for later.'),
       icon: <Heart size={19} />,
     },
     {
-      href: "/addresses",
-      title: t("Addresses"),
-      body: t("Manage your saved delivery addresses."),
+      href: '/addresses',
+      title: t('Addresses'),
+      body: t('Manage your saved delivery addresses.'),
       icon: <MapPin size={19} />,
     },
     {
-      href: "/profile",
-      title: t("Profile"),
-      body: t("View your personal and contact information."),
+      href: '/profile',
+      title: t('Profile'),
+      body: t('View your personal and contact information.'),
       icon: <UserRound size={19} />,
     },
     {
-      href: "/notifications",
-      title: t("Notifications"),
-      body: t("View updates related to your account and orders."),
+      href: '/notifications',
+      title: t('Notifications'),
+      body: t('View updates related to your account and orders.'),
       icon: <Bell size={19} />,
     },
     {
-      href: "/reviews",
-      title: t("Reviews"),
-      body: t("View and manage your product reviews."),
+      href: '/reviews',
+      title: t('Reviews'),
+      body: t('View and manage your product reviews.'),
       icon: <Star size={19} />,
     },
     {
-      href: "/settings",
-      title: t("Settings"),
-      body: t("Manage your account preferences and security."),
+      href: '/settings',
+      title: t('Settings'),
+      body: t('Manage your account preferences and security.'),
       icon: <Settings size={19} />,
     },
   ];
 
   return (
     <DashboardPage
-      title={t("My Account")}
-      description={t(
-        "Manage your orders, favorites, addresses, and account details.",
-      )}
-      action={
-        <DashboardPrimaryButton href="/shop" label={t("Continue Shopping")} />
-      }
+      title={t('My Account')}
+      description={t('Manage your orders, favorites, addresses, and account details.')}
+      action={<DashboardPrimaryButton href="/shop" label={t('Continue Shopping')} />}
     >
       {/* Account header */}
-      <Paper withBorder radius="md" p={{ base: "md", sm: "lg" }}>
+      <Paper withBorder radius="md" p={{ base: 'md', sm: 'lg' }}>
         <Group justify="space-between" align="center" gap="lg" wrap="wrap">
           <Group gap="md" wrap="nowrap" style={{ minWidth: 0 }}>
             <Avatar size={58} radius="xl" color="gray" variant="light">
@@ -524,20 +508,14 @@ export function AccountDashboardPageView({
 
             <Box style={{ minWidth: 0 }}>
               <Text size="xs" c="dimmed" mb={3}>
-                {t("Welcome back")}
+                {t('Welcome back')}
               </Text>
 
               <Title order={2} fz={{ base: 20, sm: 22 }} fw={700} lineClamp={1}>
                 {session.fullName}
               </Title>
 
-              <Text
-                mt={3}
-                size="sm"
-                c="dimmed"
-                lineClamp={1}
-                style={{ overflowWrap: "anywhere" }}
-              >
+              <Text mt={3} size="sm" c="dimmed" lineClamp={1} style={{ overflowWrap: 'anywhere' }}>
                 {session.email}
               </Text>
             </Box>
@@ -553,7 +531,7 @@ export function AccountDashboardPageView({
           <Group justify="space-between" wrap="nowrap">
             <Box>
               <Text size="xs" c="dimmed">
-                {t("Orders")}
+                {t('Orders')}
               </Text>
 
               <Text mt={4} fw={700} fz={22}>
@@ -565,10 +543,10 @@ export function AccountDashboardPageView({
               w={36}
               h={36}
               style={{
-                display: "grid",
-                placeItems: "center",
-                borderRadius: "var(--mantine-radius-md)",
-                background: "var(--mantine-color-default-hover)",
+                display: 'grid',
+                placeItems: 'center',
+                borderRadius: 'var(--mantine-radius-md)',
+                background: 'var(--mantine-color-default-hover)',
               }}
             >
               <Package size={17} />
@@ -580,7 +558,7 @@ export function AccountDashboardPageView({
           <Group justify="space-between" wrap="nowrap">
             <Box>
               <Text size="xs" c="dimmed">
-                {t("Favorites")}
+                {t('Favorites')}
               </Text>
 
               <Text mt={4} fw={700} fz={22}>
@@ -592,10 +570,10 @@ export function AccountDashboardPageView({
               w={36}
               h={36}
               style={{
-                display: "grid",
-                placeItems: "center",
-                borderRadius: "var(--mantine-radius-md)",
-                background: "var(--mantine-color-default-hover)",
+                display: 'grid',
+                placeItems: 'center',
+                borderRadius: 'var(--mantine-radius-md)',
+                background: 'var(--mantine-color-default-hover)',
               }}
             >
               <Heart size={17} />
@@ -607,7 +585,7 @@ export function AccountDashboardPageView({
           <Group justify="space-between" wrap="nowrap">
             <Box>
               <Text size="xs" c="dimmed">
-                {t("Addresses")}
+                {t('Addresses')}
               </Text>
 
               <Text mt={4} fw={700} fz={22}>
@@ -619,10 +597,10 @@ export function AccountDashboardPageView({
               w={36}
               h={36}
               style={{
-                display: "grid",
-                placeItems: "center",
-                borderRadius: "var(--mantine-radius-md)",
-                background: "var(--mantine-color-default-hover)",
+                display: 'grid',
+                placeItems: 'center',
+                borderRadius: 'var(--mantine-radius-md)',
+                background: 'var(--mantine-color-default-hover)',
               }}
             >
               <MapPin size={17} />
@@ -634,45 +612,40 @@ export function AccountDashboardPageView({
       {/* Account navigation */}
       <Box mt={{ base: 28, sm: 32 }}>
         <Title order={2} fz={19} fw={700} mb="md">
-          {t("Account")}
+          {t('Account')}
         </Title>
 
-        <Paper withBorder radius="md" style={{ overflow: "hidden" }}>
+        <Paper withBorder radius="md" style={{ overflow: 'hidden' }}>
           <Stack gap={0}>
             {accountLinks.map((item, index) => (
               <Box
                 key={item.href}
                 component={Link}
                 href={item.href}
-                px={{ base: "md", sm: "lg" }}
+                px={{ base: 'md', sm: 'lg' }}
                 py="md"
                 style={{
-                  textDecoration: "none",
-                  color: "inherit",
+                  textDecoration: 'none',
+                  color: 'inherit',
                   borderBottom:
                     index < accountLinks.length - 1
-                      ? "1px solid var(--mantine-color-default-border)"
+                      ? '1px solid var(--mantine-color-default-border)'
                       : undefined,
-                  transition: "background 150ms ease",
+                  transition: 'background 150ms ease',
                 }}
                 className="hover:bg-[var(--mantine-color-default-hover)]"
               >
-                <Group
-                  justify="space-between"
-                  align="center"
-                  wrap="nowrap"
-                  gap="md"
-                >
+                <Group justify="space-between" align="center" wrap="nowrap" gap="md">
                   <Group gap="md" wrap="nowrap" style={{ minWidth: 0 }}>
                     <Box
                       w={38}
                       h={38}
                       style={{
                         flexShrink: 0,
-                        display: "grid",
-                        placeItems: "center",
-                        borderRadius: "var(--mantine-radius-md)",
-                        background: "var(--mantine-color-default-hover)",
+                        display: 'grid',
+                        placeItems: 'center',
+                        borderRadius: 'var(--mantine-radius-md)',
+                        background: 'var(--mantine-color-default-hover)',
                       }}
                     >
                       {item.icon}
@@ -703,18 +676,16 @@ export function AccountDashboardPageView({
 export function OrdersPageView({ orders }: { orders: OrderView[] }) {
   const { t, locale, dir } = useLocale();
 
-  const Arrow = dir === "rtl" ? ArrowLeft : ArrowRight;
+  const Arrow = dir === 'rtl' ? ArrowLeft : ArrowRight;
 
   return (
     <DashboardPage
-      title={t("My Orders")}
-      description={t(
-        "View your previous orders and track their payment and delivery status.",
-      )}
+      title={t('My Orders')}
+      description={t('View your previous orders and track their payment and delivery status.')}
       action={
         <Group gap="sm">
           <Badge variant="light" color="gray" radius="sm">
-            {orders.length} {t(orders.length === 1 ? "order" : "orders")}
+            {orders.length} {t(orders.length === 1 ? 'order' : 'orders')}
           </Badge>
 
           <DashboardBackButton />
@@ -726,7 +697,7 @@ export function OrdersPageView({ orders }: { orders: OrderView[] }) {
           withBorder
           radius="md"
           style={{
-            overflow: "hidden",
+            overflow: 'hidden',
           }}
         >
           <Stack gap={0}>
@@ -735,26 +706,21 @@ export function OrdersPageView({ orders }: { orders: OrderView[] }) {
                 key={order.id}
                 component={Link}
                 href={`/order/${order.id}`}
-                px={{ base: "md", sm: "lg" }}
-                py={{ base: "md", sm: 18 }}
+                px={{ base: 'md', sm: 'lg' }}
+                py={{ base: 'md', sm: 18 }}
                 style={{
-                  display: "block",
-                  color: "inherit",
-                  textDecoration: "none",
+                  display: 'block',
+                  color: 'inherit',
+                  textDecoration: 'none',
                   borderBottom:
                     index < orders.length - 1
-                      ? "1px solid var(--mantine-color-default-border)"
+                      ? '1px solid var(--mantine-color-default-border)'
                       : undefined,
-                  transition: "background-color 150ms ease",
+                  transition: 'background-color 150ms ease',
                 }}
                 className="hover:bg-[var(--mantine-color-default-hover)]"
               >
-                <Group
-                  justify="space-between"
-                  align="center"
-                  gap="lg"
-                  wrap="nowrap"
-                >
+                <Group justify="space-between" align="center" gap="lg" wrap="nowrap">
                   {/* Main order information */}
                   <Box
                     style={{
@@ -767,14 +733,8 @@ export function OrdersPageView({ orders }: { orders: OrderView[] }) {
                         {order.number}
                       </Text>
 
-                      <Badge
-                        size="sm"
-                        radius="sm"
-                        variant="light"
-                        color="gray"
-                        tt="capitalize"
-                      >
-                        {t(order.status.replaceAll("_", " "))}
+                      <Badge size="sm" radius="sm" variant="light" color="gray" tt="capitalize">
+                        {t(order.status.replaceAll('_', ' '))}
                       </Badge>
                     </Group>
 
@@ -785,30 +745,21 @@ export function OrdersPageView({ orders }: { orders: OrderView[] }) {
                     <Group mt="sm" wrap="wrap">
                       <Group gap={5}>
                         <Text size="xs" c="dimmed">
-                          {t("Payment")}:
+                          {t('Payment')}:
                         </Text>
 
                         <Text size="xs" fw={500}>
-                          {t(
-                            (order.paymentStatus ?? "pending").replaceAll(
-                              "_",
-                              " ",
-                            ),
-                          )}
+                          {t((order.paymentStatus ?? 'pending').replaceAll('_', ' '))}
                         </Text>
                       </Group>
 
                       <Group gap={5}>
                         <Text size="xs" c="dimmed">
-                          {t("Method")}:
+                          {t('Method')}:
                         </Text>
 
                         <Text size="xs" fw={500}>
-                          {t(
-                            (
-                              order.paymentMethod ?? "cash_on_delivery"
-                            ).replaceAll("_", " "),
-                          )}
+                          {t((order.paymentMethod ?? 'cash_on_delivery').replaceAll('_', ' '))}
                         </Text>
                       </Group>
                     </Group>
@@ -828,7 +779,7 @@ export function OrdersPageView({ orders }: { orders: OrderView[] }) {
 
                     <Group gap={4} c="dimmed" wrap="nowrap">
                       <Text size="xs" visibleFrom="sm">
-                        {t("View order")}
+                        {t('View order')}
                       </Text>
 
                       <Arrow size={15} strokeWidth={1.8} />
@@ -846,10 +797,10 @@ export function OrdersPageView({ orders }: { orders: OrderView[] }) {
               w={54}
               h={54}
               style={{
-                display: "grid",
-                placeItems: "center",
-                borderRadius: "50%",
-                background: "var(--mantine-color-default-hover)",
+                display: 'grid',
+                placeItems: 'center',
+                borderRadius: '50%',
+                background: 'var(--mantine-color-default-hover)',
               }}
             >
               <Package size={22} strokeWidth={1.5} />
@@ -857,24 +808,16 @@ export function OrdersPageView({ orders }: { orders: OrderView[] }) {
 
             <Box>
               <Title order={2} fz={{ base: 20, sm: 22 }}>
-                {t("No orders yet")}
+                {t('No orders yet')}
               </Title>
 
               <Text mt={6} size="sm" c="dimmed" maw={360}>
-                {t(
-                  "Your orders will appear here after you complete your first purchase.",
-                )}
+                {t('Your orders will appear here after you complete your first purchase.')}
               </Text>
             </Box>
 
-            <Button
-              component={Link}
-              href="/shop"
-              radius="md"
-              color="dark"
-              mt="xs"
-            >
-              {t("Start Shopping")}
+            <Button component={Link} href="/shop" radius="md" color="dark" mt="xs">
+              {t('Start Shopping')}
             </Button>
           </Stack>
         </Paper>
@@ -888,17 +831,17 @@ export function OrderDetailPageView({ order }: { order: OrderView | null }) {
 
   if (!order) {
     return (
-      <DashboardPage title={t("Order not found")}>
+      <DashboardPage title={t('Order not found')}>
         <Paper withBorder radius="md" py={{ base: 48, sm: 64 }} px="lg">
           <Stack align="center" ta="center" gap="md">
             <Box
               w={54}
               h={54}
               style={{
-                display: "grid",
-                placeItems: "center",
-                borderRadius: "50%",
-                background: "var(--mantine-color-default-hover)",
+                display: 'grid',
+                placeItems: 'center',
+                borderRadius: '50%',
+                background: 'var(--mantine-color-default-hover)',
               }}
             >
               <Package size={22} strokeWidth={1.5} />
@@ -906,18 +849,16 @@ export function OrderDetailPageView({ order }: { order: OrderView | null }) {
 
             <Box>
               <Title order={2} fz={{ base: 20, sm: 22 }}>
-                {t("Order not found")}
+                {t('Order not found')}
               </Title>
 
               <Text mt={6} size="sm" c="dimmed" maw={380}>
-                {t(
-                  "This order does not belong to the current account or is no longer available.",
-                )}
+                {t('This order does not belong to the current account or is no longer available.')}
               </Text>
             </Box>
 
             <Button component={Link} href="/orders" radius="md" color="dark">
-              {t("Back to Orders")}
+              {t('Back to Orders')}
             </Button>
           </Stack>
         </Paper>
@@ -929,16 +870,16 @@ export function OrderDetailPageView({ order }: { order: OrderView | null }) {
     <DashboardPage
       title={order.number}
       description={t(
-        "View your order status, payment details, delivery information, and purchased items.",
+        'View your order status, payment details, delivery information, and purchased items.'
       )}
       action={<DashboardBackButton />}
     >
       {/* Order overview */}
-      <Paper withBorder radius="md" p={{ base: "md", sm: "lg" }} mb="md">
+      <Paper withBorder radius="md" p={{ base: 'md', sm: 'lg' }} mb="md">
         <Group justify="space-between" align="flex-start" gap="lg" wrap="wrap">
           <Box>
             <Text size="xs" c="dimmed">
-              {t("Placed on")}
+              {t('Placed on')}
             </Text>
 
             <Text mt={3} size="sm" fw={600}>
@@ -948,22 +889,22 @@ export function OrderDetailPageView({ order }: { order: OrderView | null }) {
 
           <Group gap="xs" wrap="wrap">
             <Badge variant="light" color="gray" radius="sm" tt="capitalize">
-              {t(order.status.replaceAll("_", " "))}
+              {t(order.status.replaceAll('_', ' '))}
             </Badge>
 
             <Badge
               variant="light"
               color={
-                order.paymentStatus === "paid"
-                  ? "green"
-                  : order.paymentStatus === "failed"
-                    ? "red"
-                    : "yellow"
+                order.paymentStatus === 'paid'
+                  ? 'green'
+                  : order.paymentStatus === 'failed'
+                    ? 'red'
+                    : 'yellow'
               }
               radius="sm"
               tt="capitalize"
             >
-              {t((order.paymentStatus ?? "pending").replaceAll("_", " "))}
+              {t((order.paymentStatus ?? 'pending').replaceAll('_', ' '))}
             </Badge>
           </Group>
         </Group>
@@ -976,14 +917,14 @@ export function OrderDetailPageView({ order }: { order: OrderView | null }) {
             {/* Items */}
             <Paper withBorder radius="md">
               <Box
-                px={{ base: "md", sm: "lg" }}
+                px={{ base: 'md', sm: 'lg' }}
                 py="md"
                 style={{
-                  borderBottom: "1px solid var(--mantine-color-default-border)",
+                  borderBottom: '1px solid var(--mantine-color-default-border)',
                 }}
               >
                 <Title order={2} fz={17}>
-                  {t("Order Items")}
+                  {t('Order Items')}
                 </Title>
               </Box>
 
@@ -992,21 +933,18 @@ export function OrderDetailPageView({ order }: { order: OrderView | null }) {
                   {order.items.map((item, index) => (
                     <Box
                       key={item.id}
-                      px={{ base: "md", sm: "lg" }}
+                      px={{ base: 'md', sm: 'lg' }}
                       py="md"
                       style={{
                         borderBottom:
                           index < order.items!.length - 1
-                            ? "1px solid var(--mantine-color-default-border)"
+                            ? '1px solid var(--mantine-color-default-border)'
                             : undefined,
                       }}
                     >
                       <Group align="flex-start" wrap="nowrap" gap="md">
                         <Image
-                          src={
-                            item.imageUrl ||
-                            "/products/puff-jo-product-default.png"
-                          }
+                          src={item.imageUrl || '/products/puff-jo-product-default.png'}
                           alt={item.productName}
                           w={{ base: 74, sm: 92 }}
                           h={{ base: 74, sm: 92 }}
@@ -1016,17 +954,12 @@ export function OrderDetailPageView({ order }: { order: OrderView | null }) {
                           fallbackSrc="/products/puff-jo-product-default.png"
                           style={{
                             flexShrink: 0,
-                            background: "var(--mantine-color-default-hover)",
+                            background: 'var(--mantine-color-default-hover)',
                           }}
                         />
 
                         <Box style={{ flex: 1, minWidth: 0 }}>
-                          <Group
-                            justify="space-between"
-                            align="flex-start"
-                            gap="md"
-                            wrap="nowrap"
-                          >
+                          <Group justify="space-between" align="flex-start" gap="md" wrap="nowrap">
                             <Box style={{ minWidth: 0 }}>
                               <Text fw={600} size="sm" lineClamp={2}>
                                 {t(item.productName)}
@@ -1035,44 +968,35 @@ export function OrderDetailPageView({ order }: { order: OrderView | null }) {
                               <Group mt={5} gap="sm" wrap="wrap">
                                 {item.sizeName?.trim() ? (
                                   <Text size="xs" c="dimmed">
-                                    {t("Size")}: {item.sizeName}
+                                    {t('Size')}: {item.sizeName}
                                   </Text>
                                 ) : null}
 
                                 {item.colorName?.trim() ? (
                                   <Text size="xs" c="dimmed">
-                                    {t("Color")}: {item.colorName}
+                                    {t('Color')}: {item.colorName}
                                   </Text>
                                 ) : null}
 
                                 {item.sku?.trim() ? (
                                   <Text size="xs" c="dimmed">
-                                    {t("SKU")}: {item.sku}
+                                    {t('SKU')}: {item.sku}
                                   </Text>
                                 ) : null}
                               </Group>
 
                               <Text mt={5} size="xs" c="dimmed">
-                                {t("Quantity")}: {item.quantity}
+                                {t('Quantity')}: {item.quantity}
                               </Text>
                             </Box>
 
                             <Text fw={700} size="sm" style={{ flexShrink: 0 }}>
-                              {formatMoney(
-                                item.lineTotal,
-                                order.currency,
-                                locale,
-                              )}
+                              {formatMoney(item.lineTotal, order.currency, locale)}
                             </Text>
                           </Group>
 
                           <Text mt="sm" size="xs" c="dimmed">
-                            {formatMoney(
-                              item.unitPrice,
-                              order.currency,
-                              locale,
-                            )}{" "}
-                            × {item.quantity}
+                            {formatMoney(item.unitPrice, order.currency, locale)} × {item.quantity}
                           </Text>
                         </Box>
                       </Group>
@@ -1082,7 +1006,7 @@ export function OrderDetailPageView({ order }: { order: OrderView | null }) {
               ) : (
                 <Box p="lg">
                   <Text size="sm" c="dimmed">
-                    {t("No order items found.")}
+                    {t('No order items found.')}
                   </Text>
                 </Box>
               )}
@@ -1091,45 +1015,43 @@ export function OrderDetailPageView({ order }: { order: OrderView | null }) {
             {/* Delivery information */}
             <Paper withBorder radius="md">
               <Box
-                px={{ base: "md", sm: "lg" }}
+                px={{ base: 'md', sm: 'lg' }}
                 py="md"
                 style={{
-                  borderBottom: "1px solid var(--mantine-color-default-border)",
+                  borderBottom: '1px solid var(--mantine-color-default-border)',
                 }}
               >
                 <Title order={2} fz={17}>
-                  {t("Delivery Information")}
+                  {t('Delivery Information')}
                 </Title>
               </Box>
 
-              <Stack gap={0} px={{ base: "md", sm: "lg" }}>
+              <Stack gap={0} px={{ base: 'md', sm: 'lg' }}>
                 <Box
                   py="md"
                   style={{
-                    borderBottom:
-                      "1px solid var(--mantine-color-default-border)",
+                    borderBottom: '1px solid var(--mantine-color-default-border)',
                   }}
                 >
                   <Text size="xs" c="dimmed" mb={4}>
-                    {t("Customer name")}
+                    {t('Customer name')}
                   </Text>
                   <Text size="sm" fw={600}>
-                    {order.customerName || "-"}
+                    {order.customerName || '-'}
                   </Text>
                 </Box>
 
                 <Box
                   py="md"
                   style={{
-                    borderBottom:
-                      "1px solid var(--mantine-color-default-border)",
+                    borderBottom: '1px solid var(--mantine-color-default-border)',
                   }}
                 >
                   <Text size="xs" c="dimmed" mb={4}>
-                    {t("Customer phone")}
+                    {t('Customer phone')}
                   </Text>
                   <Text size="sm" fw={600}>
-                    {order.customerPhone || "-"}
+                    {order.customerPhone || '-'}
                   </Text>
                 </Box>
 
@@ -1137,12 +1059,11 @@ export function OrderDetailPageView({ order }: { order: OrderView | null }) {
                   <Box
                     py="md"
                     style={{
-                      borderBottom:
-                        "1px solid var(--mantine-color-default-border)",
+                      borderBottom: '1px solid var(--mantine-color-default-border)',
                     }}
                   >
                     <Text size="xs" c="dimmed" mb={4}>
-                      {t("Tracking number")}
+                      {t('Tracking number')}
                     </Text>
                     <Text size="sm" fw={600}>
                       {order.trackingNumber}
@@ -1155,12 +1076,12 @@ export function OrderDetailPageView({ order }: { order: OrderView | null }) {
                     py="md"
                     style={{
                       borderBottom: order.notes
-                        ? "1px solid var(--mantine-color-default-border)"
+                        ? '1px solid var(--mantine-color-default-border)'
                         : undefined,
                     }}
                   >
                     <Text size="xs" c="dimmed" mb={4}>
-                      {t("Shipping carrier")}
+                      {t('Shipping carrier')}
                     </Text>
                     <Text size="sm" fw={600}>
                       {order.shippingCarrier}
@@ -1171,7 +1092,7 @@ export function OrderDetailPageView({ order }: { order: OrderView | null }) {
                 {order.notes ? (
                   <Box py="md">
                     <Text size="xs" c="dimmed" mb={4}>
-                      {t("Notes")}
+                      {t('Notes')}
                     </Text>
                     <Text size="sm">{order.notes}</Text>
                   </Box>
@@ -1186,20 +1107,20 @@ export function OrderDetailPageView({ order }: { order: OrderView | null }) {
           <Paper
             withBorder
             radius="md"
-            p={{ base: "md", sm: "lg" }}
+            p={{ base: 'md', sm: 'lg' }}
             style={{
-              position: "sticky",
+              position: 'sticky',
               top: 88,
             }}
           >
             <Title order={2} fz={17} mb="lg">
-              {t("Order Summary")}
+              {t('Order Summary')}
             </Title>
 
             <Stack gap="md">
               <Box>
                 <Text size="xs" c="dimmed">
-                  {t("Order number")}
+                  {t('Order number')}
                 </Text>
                 <Text mt={4} size="sm" fw={600}>
                   {order.number}
@@ -1208,35 +1129,30 @@ export function OrderDetailPageView({ order }: { order: OrderView | null }) {
 
               <Box>
                 <Text size="xs" c="dimmed">
-                  {t("Payment method")}
+                  {t('Payment method')}
                 </Text>
                 <Text mt={4} size="sm" fw={600}>
-                  {t(
-                    (order.paymentMethod ?? "cash_on_delivery").replaceAll(
-                      "_",
-                      " ",
-                    ),
-                  )}
+                  {t((order.paymentMethod ?? 'cash_on_delivery').replaceAll('_', ' '))}
                 </Text>
               </Box>
 
               <Box>
                 <Text size="xs" c="dimmed">
-                  {t("Payment status")}
+                  {t('Payment status')}
                 </Text>
                 <Text mt={4} size="sm" fw={600}>
-                  {t((order.paymentStatus ?? "pending").replaceAll("_", " "))}
+                  {t((order.paymentStatus ?? 'pending').replaceAll('_', ' '))}
                 </Text>
               </Box>
 
               <Box
                 pt="md"
                 style={{
-                  borderTop: "1px solid var(--mantine-color-default-border)",
+                  borderTop: '1px solid var(--mantine-color-default-border)',
                 }}
               >
                 <Group justify="space-between">
-                  <Text fw={600}>{t("Total")}</Text>
+                  <Text fw={600}>{t('Total')}</Text>
 
                   <Text fw={700} fz={18}>
                     {formatMoney(order.total, order.currency, locale)}
@@ -1255,22 +1171,20 @@ export function FavoritesPageView({ products }: { products: StoreProduct[] }) {
   const { t } = useLocale();
   return (
     <DashboardPage
-      title={t("FAVORITES")}
-      description={t(
-        "The Puff Jo gear and flavors you saved for your next order.",
-      )}
+      title={t('FAVORITES')}
+      description={t('The Puff Jo gear and flavors you saved for your next order.')}
       action={<DashboardBackButton />}
     >
       {products.length ? (
         <ProductGrid products={products} />
       ) : (
         <DashboardEmptyState
-          title={t("Nothing saved yet.")}
+          title={t('Nothing saved yet.')}
           body={t(
-            "Nothing saved yet. Tap the heart on a device or flavor to find it here next time.",
+            'Nothing saved yet. Tap the heart on a device or flavor to find it here next time.'
           )}
           actionHref="/shop"
-          actionLabel={t("VIEW MENU")}
+          actionLabel={t('VIEW MENU')}
         />
       )}
     </DashboardPage>
@@ -1281,20 +1195,20 @@ export function AddressesPageView({ addresses }: { addresses: AddressView[] }) {
   const { t } = useLocale();
   const router = useRouter();
   const [deletingAddressId, startDeleteTransition] = useTransition();
-  const [deleteError, setDeleteError] = useState("");
+  const [deleteError, setDeleteError] = useState('');
 
   function handleDelete(addressId: string) {
-    setDeleteError("");
+    setDeleteError('');
     startDeleteTransition(async () => {
       const response = await fetch(`/api/addresses/${addressId}`, {
-        method: "DELETE",
+        method: 'DELETE',
       });
       const payload = (await response.json().catch(() => null)) as {
         error?: string;
       } | null;
 
       if (!response.ok) {
-        setDeleteError(t(payload?.error ?? "Something went wrong"));
+        setDeleteError(t(payload?.error ?? 'Something went wrong'));
         return;
       }
 
@@ -1304,10 +1218,8 @@ export function AddressesPageView({ addresses }: { addresses: AddressView[] }) {
 
   return (
     <DashboardPage
-      title={t("ADDRESSES")}
-      description={t(
-        "Review the delivery details saved to your customer account.",
-      )}
+      title={t('ADDRESSES')}
+      description={t('Review the delivery details saved to your customer account.')}
       action={
         <Group>
           <DashboardBackButton />
@@ -1328,9 +1240,7 @@ export function AddressesPageView({ addresses }: { addresses: AddressView[] }) {
                 <Title order={3} fz="lg">
                   {address.label}
                 </Title>
-                {address.isDefault ? (
-                  <Badge variant="light">{t("Default")}</Badge>
-                ) : null}
+                {address.isDefault ? <Badge variant="light">{t('Default')}</Badge> : null}
               </Group>
               <Stack gap={4} mt="md">
                 <Text size="sm">{address.fullName}</Text>
@@ -1338,21 +1248,16 @@ export function AddressesPageView({ addresses }: { addresses: AddressView[] }) {
                   {address.phone}
                 </Text>
                 <Text size="sm" c="dimmed">
-                  {[
-                    address.city,
-                    address.area,
-                    address.street,
-                    address.building,
-                  ]
+                  {[address.city, address.area, address.street, address.building]
                     .filter(Boolean)
-                    .join(", ")}
+                    .join(', ')}
                 </Text>
               </Stack>
               <Group
                 mt="lg"
                 pt="md"
                 style={{
-                  borderTop: "1px solid var(--mantine-color-default-border)",
+                  borderTop: '1px solid var(--mantine-color-default-border)',
                 }}
               >
                 <Button
@@ -1362,7 +1267,7 @@ export function AddressesPageView({ addresses }: { addresses: AddressView[] }) {
                   radius="xl"
                   leftSection={<Pencil size={16} />}
                 >
-                  {t("EDIT")}
+                  {t('EDIT')}
                 </Button>
                 <Button
                   variant="subtle"
@@ -1372,7 +1277,7 @@ export function AddressesPageView({ addresses }: { addresses: AddressView[] }) {
                   onClick={() => handleDelete(address.id)}
                   loading={deletingAddressId}
                 >
-                  {t("REMOVE")}
+                  {t('REMOVE')}
                 </Button>
               </Group>
             </DashboardPanel>
@@ -1380,12 +1285,10 @@ export function AddressesPageView({ addresses }: { addresses: AddressView[] }) {
         </SimpleGrid>
       ) : (
         <DashboardEmptyState
-          title={t("No saved addresses.")}
-          body={t(
-            "Add your first address so checkout and delivery details are ready.",
-          )}
+          title={t('No saved addresses.')}
+          body={t('Add your first address so checkout and delivery details are ready.')}
           actionHref="/addresses/new"
-          actionLabel={t("ADD ADDRESS")}
+          actionLabel={t('ADD ADDRESS')}
         />
       )}
     </DashboardPage>
@@ -1396,21 +1299,19 @@ export function ProfilePageView({ session }: { session: CustomerSessionView }) {
   const { t } = useLocale();
 
   const initials = session.fullName
-    .split(" ")
+    .split(' ')
     .filter(Boolean)
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
-    .join("");
+    .join('');
 
   return (
     <DashboardPage
-      title={t("Profile")}
-      description={t(
-        "Manage the personal and contact information connected to your account.",
-      )}
+      title={t('Profile')}
+      description={t('Manage the personal and contact information connected to your account.')}
       action={<DashboardBackButton />}
     >
-      <SimpleGrid cols={{ base: 1, md: 3 }} spacing={{ base: "md", md: "lg" }}>
+      <SimpleGrid cols={{ base: 1, md: 3 }} spacing={{ base: 'md', md: 'lg' }}>
         {/* Profile summary */}
         <Paper withBorder radius="md" p="lg">
           <Stack align="center" gap="sm" ta="center">
@@ -1418,15 +1319,15 @@ export function ProfilePageView({ session }: { session: CustomerSessionView }) {
               w={72}
               h={72}
               style={{
-                display: "grid",
-                placeItems: "center",
-                borderRadius: "50%",
-                background: "var(--mantine-color-default-hover)",
-                border: "1px solid var(--mantine-color-default-border)",
+                display: 'grid',
+                placeItems: 'center',
+                borderRadius: '50%',
+                background: 'var(--mantine-color-default-hover)',
+                border: '1px solid var(--mantine-color-default-border)',
               }}
             >
               <Text fw={700} fz={22}>
-                {initials || "U"}
+                {initials || 'U'}
               </Text>
             </Box>
 
@@ -1440,7 +1341,7 @@ export function ProfilePageView({ session }: { session: CustomerSessionView }) {
                 size="sm"
                 c="dimmed"
                 style={{
-                  overflowWrap: "anywhere",
+                  overflowWrap: 'anywhere',
                 }}
               >
                 {session.email}
@@ -1453,24 +1354,24 @@ export function ProfilePageView({ session }: { session: CustomerSessionView }) {
         <Paper
           withBorder
           radius="md"
-          p={{ base: "md", sm: "lg" }}
+          p={{ base: 'md', sm: 'lg' }}
           style={{
-            gridColumn: "span 2",
+            gridColumn: 'span 2',
           }}
         >
           <Text fw={700} fz={17} mb="lg">
-            {t("Account details")}
+            {t('Account details')}
           </Text>
 
           <Stack gap={0}>
             <Box
               py="md"
               style={{
-                borderBottom: "1px solid var(--mantine-color-default-border)",
+                borderBottom: '1px solid var(--mantine-color-default-border)',
               }}
             >
               <Text size="xs" c="dimmed" mb={5}>
-                {t("Full name")}
+                {t('Full name')}
               </Text>
 
               <Text fw={600} size="sm">
@@ -1481,18 +1382,18 @@ export function ProfilePageView({ session }: { session: CustomerSessionView }) {
             <Box
               py="md"
               style={{
-                borderBottom: "1px solid var(--mantine-color-default-border)",
+                borderBottom: '1px solid var(--mantine-color-default-border)',
               }}
             >
               <Text size="xs" c="dimmed" mb={5}>
-                {t("Email address")}
+                {t('Email address')}
               </Text>
 
               <Text
                 fw={600}
                 size="sm"
                 style={{
-                  overflowWrap: "anywhere",
+                  overflowWrap: 'anywhere',
                 }}
               >
                 {session.email}
@@ -1501,11 +1402,11 @@ export function ProfilePageView({ session }: { session: CustomerSessionView }) {
 
             <Box py="md">
               <Text size="xs" c="dimmed" mb={5}>
-                {t("Phone number")}
+                {t('Phone number')}
               </Text>
 
-              <Text fw={600} size="sm" c={session.phone ? undefined : "dimmed"}>
-                {session.phone || t("Not added")}
+              <Text fw={600} size="sm" c={session.phone ? undefined : 'dimmed'}>
+                {session.phone || t('Not added')}
               </Text>
             </Box>
           </Stack>
@@ -1515,19 +1416,13 @@ export function ProfilePageView({ session }: { session: CustomerSessionView }) {
   );
 }
 
-export function SettingsPageView({
-  session,
-}: {
-  session: CustomerSessionView;
-}) {
+export function SettingsPageView({ session }: { session: CustomerSessionView }) {
   const { t } = useLocale();
 
   return (
     <DashboardPage
-      title={t("SETTINGS")}
-      description={t(
-        "Customer account controls, recovery, and communication preferences.",
-      )}
+      title={t('SETTINGS')}
+      description={t('Customer account controls, recovery, and communication preferences.')}
       action={
         <Group>
           <DashboardBackButton />
@@ -1536,28 +1431,18 @@ export function SettingsPageView({
       }
     >
       <SimpleGrid cols={{ base: 1, lg: 2 }} spacing="md">
-        <DashboardPanel title={t("Security")}>
+        <DashboardPanel title={t('Security')}>
           <Text size="sm" c="dimmed" lh={1.7} mb="md">
-            {t(
-              "Password resets are handled through the forgot password flow for this account.",
-            )}
+            {t('Password resets are handled through the forgot password flow for this account.')}
           </Text>
-          <Button
-            component={Link}
-            href="/forgot-password"
-            variant="default"
-            radius="xl"
-          >
-            {t("RESET PASSWORD")}
+          <Button component={Link} href="/forgot-password" variant="default" radius="xl">
+            {t('RESET PASSWORD')}
           </Button>
         </DashboardPanel>
-        <DashboardPanel title={t("Profile status")}>
-          <DashboardDetailRow label={t("Email")} value={session.email} />
-          <DashboardDetailRow
-            label={t("Role")}
-            value={t(session.role ?? "customer")}
-          />
-          <DashboardDetailRow label={t("Status")} value={t("Active")} />
+        <DashboardPanel title={t('Profile status')}>
+          <DashboardDetailRow label={t('Email')} value={session.email} />
+          <DashboardDetailRow label={t('Role')} value={t(session.role ?? 'customer')} />
+          <DashboardDetailRow label={t('Status')} value={t('Active')} />
         </DashboardPanel>
       </SimpleGrid>
     </DashboardPage>
@@ -1567,15 +1452,15 @@ export function SettingsPageView({
 export function NotificationsPageView() {
   const { t } = useLocale();
   const notifications = [
-    "Your latest order status updates appear here.",
-    "Favorites can trigger reminders when inventory gets low.",
-    "Future shipping, payment, and delivery events can be listed here.",
+    'Your latest order status updates appear here.',
+    'Favorites can trigger reminders when inventory gets low.',
+    'Future shipping, payment, and delivery events can be listed here.',
   ];
 
   return (
     <DashboardPage
-      title={t("NOTIFICATIONS")}
-      description={t("A single stream for customer account and order events.")}
+      title={t('NOTIFICATIONS')}
+      description={t('A single stream for customer account and order events.')}
       action={<DashboardBackButton />}
     >
       <Stack gap="md">
@@ -1596,8 +1481,8 @@ export function ReviewsPageView({ reviews }: { reviews: ReviewView[] }) {
 
   return (
     <DashboardPage
-      title={t("REVIEWS")}
-      description={t("Your product feedback and submitted ratings.")}
+      title={t('REVIEWS')}
+      description={t('Your product feedback and submitted ratings.')}
       action={<DashboardBackButton />}
     >
       {reviews.length ? (
@@ -1622,9 +1507,9 @@ export function ReviewsPageView({ reviews }: { reviews: ReviewView[] }) {
         </Stack>
       ) : (
         <DashboardEmptyState
-          title={t("No reviews yet.")}
+          title={t('No reviews yet.')}
           body={t(
-            "Submitted product feedback will appear here after review creation is connected.",
+            'Submitted product feedback will appear here after review creation is connected.'
           )}
           actionHref="/shop"
           actionLabel="SHOP NOW"
@@ -1650,12 +1535,12 @@ export function CreateAddressPageView({
   const [isSubmitting, startTransition] = useTransition();
   const isEditMode = Boolean(addressId);
   const schema = z.object({
-    label: z.string().min(2, "This field is required"),
-    fullName: z.string().min(2, "This field is required"),
-    phone: z.string().min(6, "This field is required"),
-    country: z.string().min(2, "This field is required"),
-    city: z.string().min(2, "This field is required"),
-    area: z.string().min(2, "This field is required"),
+    label: z.string().min(2, 'This field is required'),
+    fullName: z.string().min(2, 'This field is required'),
+    phone: z.string().min(6, 'This field is required'),
+    country: z.string().min(2, 'This field is required'),
+    city: z.string().min(2, 'This field is required'),
+    area: z.string().min(2, 'This field is required'),
     street: z.string().optional(),
     building: z.string().optional(),
     isDefault: z.boolean().optional(),
@@ -1673,36 +1558,33 @@ export function CreateAddressPageView({
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      label: initialAddress?.label ?? "",
-      fullName: initialAddress?.fullName ?? "",
-      phone: initialAddress?.phone ?? "",
-      country: initialAddress?.country ?? "",
-      city: initialAddress?.city ?? "",
-      area: initialAddress?.area ?? "",
-      street: initialAddress?.street ?? "",
-      building: initialAddress?.building ?? "",
+      label: initialAddress?.label ?? '',
+      fullName: initialAddress?.fullName ?? '',
+      phone: initialAddress?.phone ?? '',
+      country: initialAddress?.country ?? '',
+      city: initialAddress?.city ?? '',
+      area: initialAddress?.area ?? '',
+      street: initialAddress?.street ?? '',
+      building: initialAddress?.building ?? '',
       isDefault: initialAddress?.isDefault ?? false,
     },
   });
-  const selectedCountry = watch("country");
-  const selectedCity = watch("city");
+  const selectedCountry = watch('country');
+  const selectedCity = watch('city');
   const countryOptions = useMemo(
     () =>
-      deliveryZones.reduce<Array<{ value: string; label: string }>>(
-        (acc, zone) => {
-          if (acc.some((item) => item.value === zone.country)) {
-            return acc;
-          }
-
-          acc.push({
-            value: zone.country,
-            label: localize(zone.country, zone.countryAr),
-          });
+      deliveryZones.reduce<Array<{ value: string; label: string }>>((acc, zone) => {
+        if (acc.some((item) => item.value === zone.country)) {
           return acc;
-        },
-        [],
-      ),
-    [deliveryZones, localize],
+        }
+
+        acc.push({
+          value: zone.country,
+          label: localize(zone.country, zone.countryAr),
+        });
+        return acc;
+      }, []),
+    [deliveryZones, localize]
   );
   const cityOptions = useMemo(
     () =>
@@ -1719,7 +1601,7 @@ export function CreateAddressPageView({
           });
           return acc;
         }, []),
-    [deliveryZones, localize, selectedCountry],
+    [deliveryZones, localize, selectedCountry]
   );
 
   useEffect(() => {
@@ -1731,28 +1613,25 @@ export function CreateAddressPageView({
       return;
     }
 
-    setValue("city", cityOptions[0]?.value ?? "", { shouldValidate: true });
+    setValue('city', cityOptions[0]?.value ?? '', { shouldValidate: true });
   }, [cityOptions, selectedCity, selectedCountry, setValue]);
 
   function submitAddress(values: FormValues) {
     startTransition(async () => {
       setServerError(null);
-      const response = await fetch(
-        isEditMode ? `/api/addresses/${addressId}` : "/api/addresses",
-        {
-          method: isEditMode ? "PATCH" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(values),
-        },
-      );
+      const response = await fetch(isEditMode ? `/api/addresses/${addressId}` : '/api/addresses', {
+        method: isEditMode ? 'PATCH' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values),
+      });
       const payload = (await response.json()) as { error?: string };
 
       if (!response.ok) {
-        setServerError(payload.error ?? "Something went wrong");
+        setServerError(payload.error ?? 'Something went wrong');
         return;
       }
 
-      router.replace("/addresses");
+      router.replace('/addresses');
       router.refresh();
     });
   }
@@ -1760,20 +1639,15 @@ export function CreateAddressPageView({
   return (
     <StorePageContainer>
       <StorePageHeader
-        title={t(isEditMode ? "EDIT ADDRESS" : "ADD ADDRESS")}
+        title={t(isEditMode ? 'EDIT ADDRESS' : 'ADD ADDRESS')}
         description={
           isEditMode
-            ? t("Update a saved delivery address for your account.")
-            : t("Create a saved delivery address for your account.")
+            ? t('Update a saved delivery address for your account.')
+            : t('Create a saved delivery address for your account.')
         }
         action={
-          <Button
-            component={Link}
-            href="/addresses"
-            variant="default"
-            radius="xl"
-          >
-            {t("BACK TO ADDRESSES")}
+          <Button component={Link} href="/addresses" variant="default" radius="xl">
+            {t('BACK TO ADDRESSES')}
           </Button>
         }
       />
@@ -1781,45 +1655,40 @@ export function CreateAddressPageView({
         <Grid.Col span={{ base: 12, xl: 5 }}>
           <Paper
             radius="xl"
-            p={{ base: "lg", md: "xl" }}
+            p={{ base: 'lg', md: 'xl' }}
             withBorder
             h="100%"
             style={{
-              position: "relative",
-              overflow: "hidden",
+              position: 'relative',
+              overflow: 'hidden',
               background: isDark
-                ? "radial-gradient(circle at top left, rgba(255,255,255,0.1), transparent 42%), var(--mantine-color-dark-8)"
-                : "radial-gradient(circle at top left, rgba(0,0,0,0.06), transparent 42%), var(--mantine-color-white)",
+                ? 'radial-gradient(circle at top left, rgba(255,255,255,0.1), transparent 42%), var(--mantine-color-dark-8)'
+                : 'radial-gradient(circle at top left, rgba(0,0,0,0.06), transparent 42%), var(--mantine-color-white)',
             }}
           >
-            <Stack gap="lg" style={{ position: "relative" }}>
-              <Text
-                size="xs"
-                c="dimmed"
-                tt="uppercase"
-                style={{ letterSpacing: "0.3em" }}
-              >
-                {t("Delivery")}
+            <Stack gap="lg" style={{ position: 'relative' }}>
+              <Text size="xs" c="dimmed" tt="uppercase" style={{ letterSpacing: '0.3em' }}>
+                {t('Delivery')}
               </Text>
               <Title
                 order={2}
                 tt="uppercase"
-                style={{ fontSize: "clamp(2rem, 6vw, 3rem)", lineHeight: 1 }}
+                style={{ fontSize: 'clamp(2rem, 6vw, 3rem)', lineHeight: 1 }}
               >
-                {t(isEditMode ? "Edit address details" : "Address details")}
+                {t(isEditMode ? 'Edit address details' : 'Address details')}
               </Title>
               <Text size="sm" c="dimmed" maw={420} lh={1.8}>
                 {t(
                   isEditMode
-                    ? "Update delivery details here so future checkout stays accurate and fast."
-                    : "Save a complete delivery location so future checkout feels instant and accurate.",
+                    ? 'Update delivery details here so future checkout stays accurate and fast.'
+                    : 'Save a complete delivery location so future checkout feels instant and accurate.'
                 )}
               </Text>
               <Stack gap="sm">
                 {[
-                  "Choose a clear label for home, office, or studio.",
-                  "Keep phone and area details accurate for delivery calls.",
-                  "Set one address as default to speed up checkout.",
+                  'Choose a clear label for home, office, or studio.',
+                  'Keep phone and area details accurate for delivery calls.',
+                  'Set one address as default to speed up checkout.',
                 ].map((item) => (
                   <Paper key={item} radius="md" p="md" withBorder>
                     <Text size="sm" c="dimmed">
@@ -1832,44 +1701,32 @@ export function CreateAddressPageView({
           </Paper>
         </Grid.Col>
         <Grid.Col span={{ base: 12, xl: 7 }}>
-          <Paper radius="xl" p={{ base: "md", sm: "lg", md: "xl" }} withBorder>
+          <Paper radius="xl" p={{ base: 'md', sm: 'lg', md: 'xl' }} withBorder>
             <Box component="form" onSubmit={handleSubmit(submitAddress)}>
               <Stack gap="md">
                 <Grid gap="md">
                   <Grid.Col span={{ base: 12, md: 6 }}>
                     <StoreTextInput
-                      label={t("Label")}
-                      error={
-                        errors.label?.message
-                          ? t(errors.label.message)
-                          : undefined
-                      }
-                      {...register("label")}
-                      placeholder={t("Home, Studio, Office")}
+                      label={t('Label')}
+                      error={errors.label?.message ? t(errors.label.message) : undefined}
+                      {...register('label')}
+                      placeholder={t('Home, Studio, Office')}
                     />
                   </Grid.Col>
                   <Grid.Col span={{ base: 12, md: 6 }}>
                     <StoreTextInput
-                      label={t("Full Name")}
-                      error={
-                        errors.fullName?.message
-                          ? t(errors.fullName.message)
-                          : undefined
-                      }
-                      {...register("fullName")}
-                      placeholder={t("Full recipient name")}
+                      label={t('Full Name')}
+                      error={errors.fullName?.message ? t(errors.fullName.message) : undefined}
+                      {...register('fullName')}
+                      placeholder={t('Full recipient name')}
                     />
                   </Grid.Col>
                   <Grid.Col span={{ base: 12, md: 6 }}>
                     <StoreTextInput
-                      label={t("Phone")}
-                      error={
-                        errors.phone?.message
-                          ? t(errors.phone.message)
-                          : undefined
-                      }
-                      {...register("phone")}
-                      placeholder={t("+962...")}
+                      label={t('Phone')}
+                      error={errors.phone?.message ? t(errors.phone.message) : undefined}
+                      {...register('phone')}
+                      placeholder={t('+962...')}
                     />
                   </Grid.Col>
                   <Grid.Col span={{ base: 12, md: 6 }}>
@@ -1878,19 +1735,15 @@ export function CreateAddressPageView({
                       control={control}
                       render={({ field }) => (
                         <StoreSelect
-                          label={t("Country")}
-                          error={
-                            errors.country?.message
-                              ? t(errors.country.message)
-                              : undefined
-                          }
+                          label={t('Country')}
+                          error={errors.country?.message ? t(errors.country.message) : undefined}
                           data={countryOptions}
-                          placeholder={t("Select a country")}
+                          placeholder={t('Select a country')}
                           value={field.value || null}
                           onBlur={field.onBlur}
                           onChange={(value) => {
-                            field.onChange(value ?? "");
-                            setValue("city", "", {
+                            field.onChange(value ?? '');
+                            setValue('city', '', {
                               shouldValidate: true,
                               shouldDirty: true,
                             });
@@ -1905,88 +1758,58 @@ export function CreateAddressPageView({
                       control={control}
                       render={({ field }) => (
                         <StoreSelect
-                          label={t("City")}
-                          error={
-                            errors.city?.message
-                              ? t(errors.city.message)
-                              : undefined
-                          }
+                          label={t('City')}
+                          error={errors.city?.message ? t(errors.city.message) : undefined}
                           data={cityOptions}
-                          placeholder={t("Select a city")}
+                          placeholder={t('Select a city')}
                           value={field.value || null}
                           onBlur={field.onBlur}
-                          onChange={(value) => field.onChange(value ?? "")}
-                          disabled={
-                            !selectedCountry || cityOptions.length === 0
-                          }
+                          onChange={(value) => field.onChange(value ?? '')}
+                          disabled={!selectedCountry || cityOptions.length === 0}
                         />
                       )}
                     />
                   </Grid.Col>
                   <Grid.Col span={{ base: 12, md: 6 }}>
                     <StoreTextInput
-                      label={t("Area")}
-                      error={
-                        errors.area?.message
-                          ? t(errors.area.message)
-                          : undefined
-                      }
-                      {...register("area")}
-                      placeholder={t("Area")}
+                      label={t('Area')}
+                      error={errors.area?.message ? t(errors.area.message) : undefined}
+                      {...register('area')}
+                      placeholder={t('Area')}
                     />
                   </Grid.Col>
                   <Grid.Col span={{ base: 12, md: 6 }}>
                     <StoreTextInput
-                      label={t("Street")}
-                      error={
-                        errors.street?.message
-                          ? t(errors.street.message)
-                          : undefined
-                      }
-                      {...register("street")}
-                      placeholder={t("Street")}
+                      label={t('Street')}
+                      error={errors.street?.message ? t(errors.street.message) : undefined}
+                      {...register('street')}
+                      placeholder={t('Street')}
                     />
                   </Grid.Col>
                   <Grid.Col span={{ base: 12, md: 6 }}>
                     <StoreTextInput
-                      label={t("Building")}
-                      error={
-                        errors.building?.message
-                          ? t(errors.building.message)
-                          : undefined
-                      }
-                      {...register("building")}
-                      placeholder={t("Building, floor, apartment")}
+                      label={t('Building')}
+                      error={errors.building?.message ? t(errors.building.message) : undefined}
+                      {...register('building')}
+                      placeholder={t('Building, floor, apartment')}
                     />
                   </Grid.Col>
                 </Grid>
                 <Checkbox
-                  {...register("isDefault")}
-                  label={t("DefaultAddressSwitch")}
+                  {...register('isDefault')}
+                  label={t('DefaultAddressSwitch')}
                   radius="sm"
                   size="md"
                 />
-                {serverError ? (
-                  <Alert color="red">{t(serverError)}</Alert>
-                ) : null}
+                {serverError ? <Alert color="red">{t(serverError)}</Alert> : null}
                 <Group gap="sm" pt="xs">
-                  <Button
-                    component={Link}
-                    href="/addresses"
-                    variant="default"
-                    radius="xl"
-                  >
-                    {t("CANCEL")}
+                  <Button component={Link} href="/addresses" variant="default" radius="xl">
+                    {t('CANCEL')}
                   </Button>
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    radius="xl"
-                    loading={isSubmitting}
-                  >
+                  <Button type="submit" disabled={isSubmitting} radius="xl" loading={isSubmitting}>
                     {isSubmitting
-                      ? t("PLEASE WAIT")
-                      : t(isEditMode ? "SAVE CHANGES" : "SAVE ADDRESS")}
+                      ? t('PLEASE WAIT')
+                      : t(isEditMode ? 'SAVE CHANGES' : 'SAVE ADDRESS')}
                   </Button>
                 </Group>
               </Stack>
@@ -2010,34 +1833,30 @@ function LogoutButton() {
       leftSection={<LogOut size={16} />}
       onClick={() =>
         startTransition(async () => {
-          await fetch("/api/auth/logout", { method: "POST" });
-          router.push("/login");
+          await fetch('/api/auth/logout', { method: 'POST' });
+          router.push('/login');
           router.refresh();
         })
       }
       loading={isPending}
     >
-      {t("SIGN OUT")}
+      {t('SIGN OUT')}
     </Button>
   );
 }
 
-function formatMoney(
-  amount: number,
-  currency = "JOD",
-  locale: "en" | "ar" = "en",
-) {
-  return new Intl.NumberFormat(locale === "ar" ? "ar-JO" : "en-JO", {
-    style: "currency",
+function formatMoney(amount: number, currency = 'JOD', locale: 'en' | 'ar' = 'en') {
+  return new Intl.NumberFormat(locale === 'ar' ? 'ar-JO' : 'en-JO', {
+    style: 'currency',
     currency,
     maximumFractionDigits: 2,
   }).format(amount);
 }
 
-function formatOrderDate(value: string, locale: "en" | "ar") {
-  return new Intl.DateTimeFormat(locale === "ar" ? "ar-JO" : "en-JO", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
+function formatOrderDate(value: string, locale: 'en' | 'ar') {
+  return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-JO' : 'en-JO', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
   }).format(new Date(value));
 }
