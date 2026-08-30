@@ -2482,7 +2482,11 @@ export const messages: Record<string, LocaleMessages> = {
     en:'Payment method',
     ar:'طريقة الدفع',
   },
-  
+'SEND ORDER ON WHATSAPP':{
+  en:'SEND ORDER ON WHATSAPP',
+  ar:'إرسال الطلب على واتساب',
+},
+
 };
 
 export function translateText(text: string, locale: Locale) {
