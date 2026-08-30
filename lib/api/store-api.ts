@@ -1244,7 +1244,13 @@ export async function listFavorites(userId: string, auth?: SupabaseRequestAuth) 
 }
 
 export async function addFavorite(payload: Record<string, unknown>, auth?: SupabaseRequestAuth) {
-  return insertSupabaseRow<FavoriteRow>('favorites', payload, true, auth);
+  return requestSupabaseRest<FavoriteRow[]>('favorites', {
+    method: 'POST',
+    body: payload,
+    query: { on_conflict: 'user_id,product_id' },
+    prefer: ['return=representation', 'resolution=ignore-duplicates'],
+    ...(auth?.headers ? { headers: auth.headers } : {}),
+  });
 }
 
 export async function removeFavorite(
