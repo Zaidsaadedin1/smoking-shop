@@ -2238,6 +2238,7 @@ export function CheckoutPageView({
   const pushToast = useUiStore((state) => state.pushToast);
   const lines = useMemo(() => getCartProducts(items), [items]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showCheckoutValidation, setShowCheckoutValidation] = useState(false);
   const [couponCode, setCouponCode] = useState(appliedCoupon?.code ?? "");
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [isCouponOpen, setIsCouponOpen] = useState(Boolean(appliedCoupon));
@@ -2546,6 +2547,8 @@ export function CheckoutPageView({
       return;
     }
 
+    setShowCheckoutValidation(true);
+
     if (
       !form.fullName.trim() ||
       !form.phone.trim() ||
@@ -2836,6 +2839,7 @@ export function CheckoutPageView({
                   hasConfiguredDelivery={hasConfiguredDelivery}
                   deliveryFee={formatCurrency(shippingAmount)}
                   t={t}
+                  showValidation={showCheckoutValidation}
                 />
               </Box>
             </Paper>

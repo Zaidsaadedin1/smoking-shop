@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { Alert, Grid, Group, Paper, Radio, Stack, Text } from "@mantine/core";
-import { Dispatch, SetStateAction } from "react";
+import { Alert, Grid, Group, Paper, Radio, Stack, Text } from '@mantine/core';
+import { Dispatch, SetStateAction, useState } from 'react';
 import {
   StoreSelect,
   StoreTextarea,
   StoreTextInput,
-} from "@/components/storefront/ui/store-form-controls";
+} from '@/components/storefront/ui/store-form-controls';
 
 export type CheckoutFormState = {
   fullName: string;
@@ -33,6 +33,7 @@ export function CheckoutDetailsPanel({
   hasConfiguredDelivery,
   deliveryFee,
   t,
+  showValidation = false,
 }: {
   form: CheckoutFormState;
   setForm: Dispatch<SetStateAction<CheckoutFormState>>;
@@ -41,15 +42,26 @@ export function CheckoutDetailsPanel({
   hasConfiguredDelivery: boolean;
   deliveryFee: string;
   t: (text: string) => string;
+  showValidation?: boolean;
 }) {
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const requiredMessage = t('This field is required');
+  const isMissing = (field: keyof CheckoutFormState) =>
+    !form[field].trim() && (showValidation || touched[field]);
+  const touch = (field: keyof CheckoutFormState) =>
+    setTouched((current) => ({ ...current, [field]: true }));
+
   return (
     <Stack gap="sm">
       {/* Delivery fields */}
       <Grid>
         <Grid.Col span={{ base: 12, sm: 6 }}>
           <StoreTextInput
-            label={t("Full Name")}
+            label={t('Full Name')}
+            required
+            error={isMissing('fullName') ? requiredMessage : undefined}
             value={form.fullName}
+            onBlur={() => touch('fullName')}
             onChange={(event) =>
               setForm((current) => ({
                 ...current,
@@ -61,8 +73,11 @@ export function CheckoutDetailsPanel({
 
         <Grid.Col span={{ base: 12, sm: 6 }}>
           <StoreTextInput
-            label={t("Phone")}
+            label={t('Phone')}
+            required
+            error={isMissing('phone') ? requiredMessage : undefined}
             value={form.phone}
+            onBlur={() => touch('phone')}
             onChange={(event) =>
               setForm((current) => ({
                 ...current,
@@ -74,40 +89,49 @@ export function CheckoutDetailsPanel({
 
         <Grid.Col span={{ base: 12, sm: 6 }}>
           <StoreSelect
-            label={t("Country")}
+            label={t('Country')}
+            required
+            error={isMissing('country') ? requiredMessage : undefined}
             value={form.country}
+            onBlur={() => touch('country')}
             onChange={(value) =>
               setForm((current) => ({
                 ...current,
-                country: value ?? "",
-                city: "",
+                country: value ?? '',
+                city: '',
               }))
             }
             data={countryOptions}
-            placeholder={t("Select country")}
+            placeholder={t('Select country')}
           />
         </Grid.Col>
 
         <Grid.Col span={{ base: 12, sm: 6 }}>
           <StoreSelect
-            label={t("City")}
+            label={t('City')}
+            required
+            error={isMissing('city') ? requiredMessage : undefined}
             value={form.city}
+            onBlur={() => touch('city')}
             onChange={(value) =>
               setForm((current) => ({
                 ...current,
-                city: value ?? "",
+                city: value ?? '',
               }))
             }
             data={cityOptions}
-            placeholder={t("Select city")}
+            placeholder={t('Select city')}
             disabled={!form.country || cityOptions.length === 0}
           />
         </Grid.Col>
 
         <Grid.Col span={{ base: 12, sm: 4 }}>
           <StoreTextInput
-            label={t("Area")}
+            label={t('Area')}
+            required
+            error={isMissing('area') ? requiredMessage : undefined}
             value={form.area}
+            onBlur={() => touch('area')}
             onChange={(event) =>
               setForm((current) => ({
                 ...current,
@@ -119,8 +143,11 @@ export function CheckoutDetailsPanel({
 
         <Grid.Col span={{ base: 12, sm: 5 }}>
           <StoreTextInput
-            label={t("Street")}
+            label={t('Street')}
+            required
+            error={isMissing('street') ? requiredMessage : undefined}
             value={form.street}
+            onBlur={() => touch('street')}
             onChange={(event) =>
               setForm((current) => ({
                 ...current,
@@ -132,8 +159,9 @@ export function CheckoutDetailsPanel({
 
         <Grid.Col span={{ base: 12, sm: 3 }}>
           <StoreTextInput
-            label={t("Building")}
+            label={t('Building')}
             value={form.building}
+            onBlur={() => touch('building')}
             onChange={(event) =>
               setForm((current) => ({
                 ...current,
@@ -160,7 +188,7 @@ export function CheckoutDetailsPanel({
             },
           }}
         >
-          {t("Delivery available")} · {deliveryFee}
+          {t('Delivery available')} · {deliveryFee}
         </Alert>
       ) : null}
 
@@ -168,7 +196,7 @@ export function CheckoutDetailsPanel({
       <Grid align="flex-start">
         <Grid.Col span={{ base: 12, sm: 5 }}>
           <Text size="xs" fw={600} mb={5}>
-            {t("Payment Method")}
+            {t('Payment Method')}
           </Text>
 
           <Paper
@@ -181,33 +209,29 @@ export function CheckoutDetailsPanel({
             onClick={() =>
               setForm((current) => ({
                 ...current,
-                paymentMethod: "cash_on_delivery",
+                paymentMethod: 'cash_on_delivery',
               }))
             }
             style={{
-              width: "100%",
-              textAlign: "start",
-              cursor: "pointer",
+              width: '100%',
+              textAlign: 'start',
+              cursor: 'pointer',
               background:
-                form.paymentMethod === "cash_on_delivery"
-                  ? "var(--mantine-color-default-hover)"
+                form.paymentMethod === 'cash_on_delivery'
+                  ? 'var(--mantine-color-default-hover)'
                   : undefined,
             }}
           >
             <Group gap="xs" wrap="nowrap">
-              <Radio
-                size="xs"
-                checked={form.paymentMethod === "cash_on_delivery"}
-                readOnly
-              />
+              <Radio size="xs" checked={form.paymentMethod === 'cash_on_delivery'} readOnly />
 
               <Stack gap={0}>
                 <Text size="xs" fw={600}>
-                  {t("Cash on Delivery")}
+                  {t('Cash on Delivery')}
                 </Text>
 
                 <Text size="xs" c="dimmed">
-                  {t("Pay on arrival")}
+                  {t('Pay on arrival')}
                 </Text>
               </Stack>
             </Group>
@@ -217,7 +241,7 @@ export function CheckoutDetailsPanel({
         <Grid.Col span={{ base: 12, sm: 7 }}>
           <StoreTextarea
             id="checkout-notes"
-            label={t("Delivery instructions")}
+            label={t('Delivery instructions')}
             value={form.notes}
             onChange={(event) =>
               setForm((current) => ({
@@ -225,7 +249,7 @@ export function CheckoutDetailsPanel({
                 notes: event.target.value,
               }))
             }
-            placeholder={t("Optional note")}
+            placeholder={t('Optional note')}
             minRows={1}
             autosize
             maxRows={2}

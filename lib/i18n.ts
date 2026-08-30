@@ -2474,7 +2474,15 @@ export const messages: Record<string, LocaleMessages> = {
     en:'Delete address.',
     ar:'حذف العنوان.',
   },
-
+  'Pay on arrival':{
+    en:'Pay on arrival',
+    ar:'ادفع عند استلام الطلب',
+  },
+  'Payment Method':{
+    en:'Payment method',
+    ar:'طريقة الدفع',
+  },
+  
 };
 
 export function translateText(text: string, locale: Locale) {
