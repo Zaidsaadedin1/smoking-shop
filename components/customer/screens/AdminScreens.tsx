@@ -8,6 +8,7 @@ import {
   Button,
   Divider,
   Drawer,
+  FileInput,
   Group,
   Image,
   Modal,
@@ -23,6 +24,7 @@ import {
   Text,
   TextInput,
   Textarea,
+  UnstyledButton,
 } from '@mantine/core';
 import {
   IconAdjustments,
@@ -1135,7 +1137,7 @@ function AdminOrderItemsEditor({
       ) : null}
       <Stack gap="xs">
         {items.map((item) => (
-          <Group key={item.id} wrap="nowrap" align="center" className="admin-order-item-row">
+          <Group key={item.id} wrap="nowrap" align="center">
             <Image
               src={item.image_url || '/products/puff-jo-product-default.png'}
               alt=""
@@ -1863,33 +1865,45 @@ function CrudManager<T extends { id: string }>({
 
                   if (field.type === 'file') {
                     const previewItems = filePreviews[field.name] ?? [];
-                    const fileRegistration = register(field.name);
 
                     return (
                       <Box key={field.name} style={{ gridColumn: '1 / -1' }}>
                         <Text size="sm" mb={6}>
                           {t(field.label)}
                         </Text>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          multiple={field.multiple}
-                          name={fileRegistration.name}
-                          ref={fileRegistration.ref}
-                          onBlur={fileRegistration.onBlur}
-                          onChange={(event) => {
-                            const files = Array.from(event.currentTarget.files ?? []);
-                            fileRegistration.onChange(event);
-                            setFieldPreviews(
-                              field.name,
-                              files.map((file, index) => ({
-                                id: `${field.name}-${file.name}-${file.lastModified}-${index}`,
-                                url: URL.createObjectURL(file),
-                                name: file.name,
-                                isExisting: false,
-                              }))
-                            );
-                          }}
+                        <Controller
+                          control={control}
+                          name={field.name}
+                          render={({ field: fileField }) => (
+                            <FileInput
+                              accept="image/*"
+                              multiple={field.multiple}
+                              placeholder={t('Choose image')}
+                              clearable
+                              value={
+                                (fileField.value as File | File[] | null | undefined) ??
+                                (field.multiple ? [] : null)
+                              }
+                              onChange={(files) => {
+                                const selectedFiles = Array.isArray(files)
+                                  ? files
+                                  : files
+                                    ? [files]
+                                    : [];
+                                fileField.onChange(files);
+                                setFieldPreviews(
+                                  field.name,
+                                  selectedFiles.map((file, index) => ({
+                                    id: `${field.name}-${file.name}-${file.lastModified}-${index}`,
+                                    url: URL.createObjectURL(file),
+                                    name: file.name,
+                                    isExisting: false,
+                                  }))
+                                );
+                              }}
+                              styles={adminInputStyles}
+                            />
+                          )}
                         />
                         {errorMessage ? (
                           <Text c="red" size="xs" mt={4}>
@@ -3556,7 +3570,7 @@ function ProductCrudManager({
                             ].map((choice) => {
                               const active = selectionType === choice.value;
                               return (
-                                <button
+                                <UnstyledButton
                                   key={choice.value}
                                   type="button"
                                   role="radio"
@@ -3606,7 +3620,7 @@ function ProductCrudManager({
                                       </Text>
                                     </Stack>
                                   </Group>
-                                </button>
+                                </UnstyledButton>
                               );
                             })}
                           </SimpleGrid>
@@ -3695,23 +3709,25 @@ function ProductCrudManager({
                 <Text size="sm" mb={6}>
                   {t('Main image')}
                 </Text>
-                <input
-                  type="file"
+                <FileInput
                   accept="image/*"
-                  {...register('mainImage', {
-                    onChange: (event) => {
-                      const files = Array.from(event.currentTarget.files ?? []) as File[];
-                      setMainImageFiles(files);
-                      replaceMainImagePreview(
-                        files.map((file, index) => ({
-                          id: `main-${file.name}-${file.lastModified}-${index}`,
-                          url: URL.createObjectURL(file),
-                          name: file.name,
-                          isExisting: false,
-                        }))
-                      );
-                    },
-                  })}
+                  placeholder={t('Choose main image')}
+                  clearable
+                  value={mainImageFiles[0] ?? null}
+                  onChange={(file) => {
+                    const files = file ? [file] : [];
+                    setMainImageFiles(files);
+                    setValue('mainImage', file, { shouldDirty: true });
+                    replaceMainImagePreview(
+                      files.map((file, index) => ({
+                        id: `main-${file.name}-${file.lastModified}-${index}`,
+                        url: URL.createObjectURL(file),
+                        name: file.name,
+                        isExisting: false,
+                      }))
+                    );
+                  }}
+                  styles={adminInputStyles}
                 />
                 {existingMainImageUrl || mainImagePreview.length ? (
                   <Paper
@@ -3772,24 +3788,26 @@ function ProductCrudManager({
                 <Text size="sm" mb={6}>
                   {t('Sub images')}
                 </Text>
-                <input
-                  type="file"
+                <FileInput
                   accept="image/*"
                   multiple
-                  {...register('subImages', {
-                    onChange: (event) => {
-                      const files = Array.from(event.currentTarget.files ?? []) as File[];
-                      setSubImageFiles(files);
-                      replaceSubImagePreviews(
-                        files.map((file, index) => ({
-                          id: `sub-${file.name}-${file.lastModified}-${index}`,
-                          url: URL.createObjectURL(file),
-                          name: file.name,
-                          isExisting: false,
-                        }))
-                      );
-                    },
-                  })}
+                  placeholder={t('Choose sub images')}
+                  clearable
+                  value={subImageFiles}
+                  onChange={(files) => {
+                    const selectedFiles = files ?? [];
+                    setSubImageFiles(selectedFiles);
+                    setValue('subImages', selectedFiles, { shouldDirty: true });
+                    replaceSubImagePreviews(
+                      selectedFiles.map((file, index) => ({
+                        id: `sub-${file.name}-${file.lastModified}-${index}`,
+                        url: URL.createObjectURL(file),
+                        name: file.name,
+                        isExisting: false,
+                      }))
+                    );
+                  }}
+                  styles={adminInputStyles}
                 />
                 {existingSubImageUrls.length || subImagePreviews.length ? (
                   <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} mt="sm">
@@ -5644,7 +5662,7 @@ export function AdminLoginScreen() {
           'radial-gradient(circle at 12% 18%, rgba(210,235,245,0.12), transparent 24%), radial-gradient(circle at 88% 78%, rgba(199,32,47,0.14), transparent 28%), var(--admin-background)',
       }}
     >
-      <div
+      <Box
         aria-hidden="true"
         style={{
           position: 'absolute',
@@ -5661,7 +5679,7 @@ export function AdminLoginScreen() {
           pointerEvents: 'none',
         }}
       />
-      <div
+      <Box
         aria-hidden="true"
         style={{
           position: 'absolute',
@@ -5678,7 +5696,7 @@ export function AdminLoginScreen() {
           pointerEvents: 'none',
         }}
       />
-      <div
+      <Box
         aria-hidden="true"
         style={{
           position: 'absolute',
@@ -5710,7 +5728,7 @@ export function AdminLoginScreen() {
               boxShadow: '0 30px 90px rgba(0,0,0,0.28)',
             }}
           >
-            <div
+            <Box
               aria-hidden="true"
               style={{
                 position: 'absolute',
@@ -5725,7 +5743,7 @@ export function AdminLoginScreen() {
                 pointerEvents: 'none',
               }}
             />
-            <div
+            <Box
               aria-hidden="true"
               style={{
                 position: 'absolute',
@@ -5741,7 +5759,7 @@ export function AdminLoginScreen() {
                 pointerEvents: 'none',
               }}
             />
-            <div
+            <Box
               aria-hidden="true"
               style={{
                 position: 'absolute',
@@ -5762,15 +5780,12 @@ export function AdminLoginScreen() {
               style={{ position: 'relative', zIndex: 1 }}
             >
               <Group gap="sm" align="center">
-                <img
+                <Image
                   src="/puff-jordan-logo-light.png"
                   alt="Puff Jo"
-                  style={{
-                    width: 76,
-                    height: 42,
-                    objectFit: 'contain',
-                    objectPosition: 'left center',
-                  }}
+                  w={76}
+                  h={42}
+                  fit="contain"
                 />
                 <Text
                   size="xs"
@@ -5783,7 +5798,7 @@ export function AdminLoginScreen() {
               </Group>
               <LocaleSwitcher />
             </Group>
-            <div style={{ position: 'relative', zIndex: 1 }}>
+            <Box style={{ position: 'relative', zIndex: 1 }}>
               <Text
                 fw={800}
                 size="clamp(2.4rem, 8vw, 3.4rem)"
@@ -5803,7 +5818,7 @@ export function AdminLoginScreen() {
                   'Manage the PUFF Jordan storefront, from products and orders to customers and settings.'
                 )}
               </Text>
-            </div>
+            </Box>
 
             <Stack gap="sm" style={{ position: 'relative', zIndex: 1 }}>
               {['Catalog control', 'Orders and customers', 'Store settings'].map((item) => (

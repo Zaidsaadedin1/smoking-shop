@@ -9,6 +9,7 @@ import {
   Divider,
   Drawer,
   Group,
+  Loader,
   Paper,
   Stack,
   Text,
@@ -19,7 +20,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { PropsWithChildren, useEffect, useState, useTransition } from 'react';
 import { LocaleSwitcher, useLocale } from '@/components/storefront/locale-provider';
 import { ThemeSwitcher, useThemeMode } from '@/components/storefront/theme-provider';
-import { LoaderBars } from '@/components/ui/loaders-bars';
 
 const adminLinks = [
   { label: 'Dashboard', href: '/admin' },
@@ -211,8 +211,8 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
       }}
     >
       <Box p={{ base: 'sm', sm: 'lg' }}>
-        <div className="mb-3 flex items-center justify-between gap-3 lg:hidden">
-          <div>
+        <Group hiddenFrom="lg" justify="space-between" mb="sm" gap="sm">
+          <Stack gap={0}>
             <Text
               fw={800}
               size="sm"
@@ -224,13 +224,13 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
             <Text size="xs" tt="uppercase" style={{ color: 'var(--muted)', letterSpacing: 2.6 }}>
               {t('Store operations')}
             </Text>
-          </div>
+          </Stack>
           <Burger
             opened={mobileNavOpened}
             onClick={() => setMobileNavOpened((value) => !value)}
             aria-label={t('Toggle navigation')}
           />
-        </div>
+        </Group>
 
         <Drawer
           opened={mobileNavOpened}
@@ -266,9 +266,13 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
           </Stack>
         </Drawer>
 
-        <div
-          className="flex flex-col items-start gap-5 lg:grid"
-          style={{ gridTemplateColumns: collapsed ? '92px 1fr' : '280px 1fr' }}
+        <Box
+          style={{
+            display: 'grid',
+            gap: 'var(--mantine-spacing-xl)',
+            gridTemplateColumns: collapsed ? '92px minmax(0, 1fr)' : '280px minmax(0, 1fr)',
+          }}
+          visibleFrom="lg"
         >
           <Paper
             visibleFrom="lg"
@@ -298,7 +302,7 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
               }}
             >
               <Group justify="space-between" align="start" wrap="wrap" gap="md">
-                <div style={{ minWidth: 0, flex: 1 }}>
+                <Box style={{ minWidth: 0, flex: 1 }}>
                   <Text size="xs" tt="uppercase" c="var(--muted)" style={{ letterSpacing: 2.6 }}>
                     {t('PUFF Jordan control room')}
                   </Text>
@@ -314,7 +318,7 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
                   <Text mt="sm" c="var(--text-secondary)">
                     {t(subtitle)}
                   </Text>
-                </div>
+                </Box>
 
                 <Group gap="xs" wrap="wrap">
                   <LocaleSwitcher />
@@ -326,17 +330,64 @@ export function AdminShell({ children, title, subtitle, active, session }: Admin
 
             {children}
           </Stack>
-        </div>
+        </Box>
+        <Stack hiddenFrom="lg" gap="lg">
+          <Paper
+            radius={0}
+            p={{ base: 'md', sm: 'lg' }}
+            style={{
+              background: 'var(--card)',
+              border: '1px solid var(--border)',
+              borderRadius: 8,
+              boxShadow: '0 24px 80px rgba(24, 18, 17, 0.08)',
+            }}
+          >
+            <Group justify="space-between" align="start" wrap="wrap" gap="md">
+              <Box style={{ minWidth: 0, flex: 1 }}>
+                <Text size="xs" tt="uppercase" c="var(--muted)" style={{ letterSpacing: 2.6 }}>
+                  {t('PUFF Jordan control room')}
+                </Text>
+                <Text
+                  fw={800}
+                  size="clamp(2rem, 5vw, 2.6rem)"
+                  mt={6}
+                  tt="uppercase"
+                  style={{ lineHeight: 1, letterSpacing: 1.2 }}
+                >
+                  {t(title)}
+                </Text>
+                <Text mt="sm" c="var(--text-secondary)">
+                  {t(subtitle)}
+                </Text>
+              </Box>
+              <Group gap="xs" wrap="wrap">
+                <LocaleSwitcher />
+                <ThemeSwitcher />
+                {logoutForm}
+              </Group>
+            </Group>
+          </Paper>
+          {children}
+        </Stack>
       </Box>
       {requestCount > 0 || isNavigating ? (
-        <div
+        <Box
           aria-busy="true"
           role="status"
           aria-label="Loading"
-          className="fixed inset-0 z-[9998] flex items-center justify-center bg-background/95 text-foreground backdrop-blur-sm"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9998,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'color-mix(in srgb, var(--background) 95%, transparent)',
+            backdropFilter: 'blur(4px)',
+          }}
         >
-          <LoaderBars barWidth={6} barHeight={46} gap={6} count={5} />
-        </div>
+          <Loader color="red" size="lg" />
+        </Box>
       ) : null}
     </Box>
   );
