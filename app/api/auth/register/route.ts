@@ -3,12 +3,15 @@ import { jsonError, jsonOk, requireString } from '@/lib/api/http';
 import { upsertProfile } from '@/lib/api/store-api';
 import {
   CUSTOMER_ACCESS_TOKEN_COOKIE,
+  CUSTOMER_REFRESH_TOKEN_COOKIE,
+  CUSTOMER_REFRESH_TOKEN_MAX_AGE_SECONDS,
   CUSTOMER_SESSION_MAX_AGE_SECONDS,
 } from '@/lib/customer/auth';
 import { getSupabaseServiceRoleHeaders, invokeSupabaseAuth } from '@/lib/supabase/rest';
 
 type SignupResponse = {
   access_token?: string;
+  refresh_token?: string;
   user?: {
     id: string;
     email?: string | null;
@@ -77,6 +80,12 @@ export async function POST(request: Request) {
     if (result.data.access_token) {
       const cookieStore = await cookies();
       cookieStore.set(CUSTOMER_ACCESS_TOKEN_COOKIE, result.data.access_token, buildCookieOptions());
+      if (result.data.refresh_token) {
+        cookieStore.set(CUSTOMER_REFRESH_TOKEN_COOKIE, result.data.refresh_token, {
+          ...buildCookieOptions(),
+          maxAge: CUSTOMER_REFRESH_TOKEN_MAX_AGE_SECONDS,
+        });
+      }
 
       const profileResult = await upsertProfile(profilePayload, {
         headers: {

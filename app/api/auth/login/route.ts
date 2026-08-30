@@ -1,6 +1,8 @@
 import { cookies } from 'next/headers';
 import {
   CUSTOMER_ACCESS_TOKEN_COOKIE,
+  CUSTOMER_REFRESH_TOKEN_COOKIE,
+  CUSTOMER_REFRESH_TOKEN_MAX_AGE_SECONDS,
   CUSTOMER_SESSION_MAX_AGE_SECONDS,
 } from '@/lib/customer/auth';
 import { jsonError, jsonOk, requireString } from '@/lib/api/http';
@@ -13,6 +15,7 @@ import {
 
 type AuthResponse = {
   access_token?: string;
+  refresh_token?: string;
   user?: {
     id: string;
     email?: string | null;
@@ -84,6 +87,12 @@ export async function POST(request: Request) {
 
     const cookieStore = await cookies();
     cookieStore.set(CUSTOMER_ACCESS_TOKEN_COOKIE, result.data.access_token, buildCookieOptions());
+    if (result.data.refresh_token) {
+      cookieStore.set(CUSTOMER_REFRESH_TOKEN_COOKIE, result.data.refresh_token, {
+        ...buildCookieOptions(),
+        maxAge: CUSTOMER_REFRESH_TOKEN_MAX_AGE_SECONDS,
+      });
+    }
 
     return jsonOk({
       user: result.data.user ?? null,

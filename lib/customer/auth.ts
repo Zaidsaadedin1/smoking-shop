@@ -3,7 +3,9 @@ import { redirect } from 'next/navigation';
 import { requestSupabaseRest } from '@/lib/supabase/rest';
 
 export const CUSTOMER_ACCESS_TOKEN_COOKIE = 'tc-customer-access-token';
+export const CUSTOMER_REFRESH_TOKEN_COOKIE = 'tc-customer-refresh-token';
 export const CUSTOMER_SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 60;
+export const CUSTOMER_REFRESH_TOKEN_MAX_AGE_SECONDS = 60 * 60 * 24 * 3650;
 
 type JwtClaims = {
   sub?: string;
@@ -82,8 +84,12 @@ export async function resolveCustomerSession(accessToken: string): Promise<Custo
     email: claims.email,
     fullName:
       result.data?.full_name ??
-      (typeof claims.user_metadata?.full_name === 'string' ? claims.user_metadata.full_name : deriveFallbackName(claims.email)),
-    phone: result.data?.phone ?? (typeof claims.user_metadata?.phone === 'string' ? claims.user_metadata.phone : null),
+      (typeof claims.user_metadata?.full_name === 'string'
+        ? claims.user_metadata.full_name
+        : deriveFallbackName(claims.email)),
+    phone:
+      result.data?.phone ??
+      (typeof claims.user_metadata?.phone === 'string' ? claims.user_metadata.phone : null),
     avatarUrl: result.data?.avatar_url ?? null,
     role: result.data?.role ?? 'customer',
   };

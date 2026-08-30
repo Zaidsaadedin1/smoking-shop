@@ -2458,6 +2458,23 @@ export const messages: Record<string, LocaleMessages> = {
     en:'Manage your account preferences and security.',
     ar:'إدارة تفضيلات حسابك وحماية.',
   },
+  'Enter your delivery details.':{
+    en:'Enter your delivery details.',
+    ar:'ادخل تفاصيل التوصيل.',
+  },
+  'Add address':{
+    en:'Add address.',
+    ar:'إضافة عنوان.',
+  },
+  'Edit address':{
+    en:'Edit address.',
+    ar:'تعديل العنوان.',
+  },
+  'Delete address':{
+    en:'Delete address.',
+    ar:'حذف العنوان.',
+  },
+
 };
 
 export function translateText(text: string, locale: Locale) {
@@ -2484,6 +2501,7 @@ const authErrorKeys: Array<{ match: RegExp; key: string }> = [
     match: /password must be between 8 and 72 characters/i,
     key: 'Password must be between 8 and 72 characters',
   },
+
 ];
 
 export function translateAuthError(text: string, locale: Locale) {
