@@ -137,6 +137,23 @@ type ModalErrorState = {
   messages: string[];
 };
 
+const adminSettingsTabs = [
+  'categories',
+  'coupons',
+  'delivery-zones',
+  'navigation',
+  'hero-slides',
+  'flash-sales',
+  'enums',
+  'brands',
+  'sizes',
+  'colors',
+] as const;
+
+function isAdminSettingsTab(value: string | null): value is (typeof adminSettingsTabs)[number] {
+  return adminSettingsTabs.some((tab) => tab === value);
+}
+
 type FilePreviewItem = {
   id: string;
   url: string;
@@ -1530,7 +1547,16 @@ function CrudManager<T extends { id: string }>({
         const value = submittedValues[field.name];
 
         if (field.type === 'file') {
-          const files = value instanceof FileList ? Array.from(value) : [];
+          const files =
+            typeof File !== 'undefined' && value instanceof File
+              ? [value]
+              : Array.isArray(value)
+                ? value.filter(
+                    (file): file is File => typeof File !== 'undefined' && file instanceof File
+                  )
+                : typeof FileList !== 'undefined' && value instanceof FileList
+                  ? Array.from(value)
+                  : [];
           const previewItems = filePreviews[field.name] ?? [];
           const existingImage = previewItems.find((item) => item.isExisting);
 
@@ -4343,6 +4369,30 @@ export function AdminSettingsScreen({
   enumLabels: AdminEnumLabels;
 }) {
   const { t, locale } = useLocale();
+  const [activeSettingsTab, setActiveSettingsTab] = useState<string>('categories');
+
+  useEffect(() => {
+    const requestedTab = new URLSearchParams(window.location.search).get('tab');
+    if (isAdminSettingsTab(requestedTab)) {
+      setActiveSettingsTab(requestedTab);
+    }
+  }, []);
+
+  function handleSettingsTabChange(value: string | null) {
+    if (!isAdminSettingsTab(value)) {
+      return;
+    }
+
+    setActiveSettingsTab(value);
+    const url = new URL(window.location.href);
+    if (value === 'categories') {
+      url.searchParams.delete('tab');
+    } else {
+      url.searchParams.set('tab', value);
+    }
+    window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`);
+  }
+
   const navigationParentOptions = [{ label: t('Top level'), value: '' }].concat(
     navigationItems.map((item) => ({
       label: `${item.label}${item.parent_id ? ` / ${t('child')}` : ''}`,
@@ -4405,7 +4455,8 @@ export function AdminSettingsScreen({
       </SimpleGrid>
 
       <Tabs
-        defaultValue="categories"
+        value={activeSettingsTab}
+        onChange={handleSettingsTabChange}
         variant="outline"
         radius={0}
         styles={{

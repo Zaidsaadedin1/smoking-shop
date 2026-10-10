@@ -1733,7 +1733,7 @@ export const messages: Record<string, LocaleMessages> = {
   'Unable to create account.': { en: 'Unable to create account.', ar: 'تعذر إنشاء الحساب.' },
   'Invalid request.': { en: 'Invalid request.', ar: 'الطلب غير صالح.' },
   Coupons: { en: 'Coupons', ar: 'القسائم' },
-  'Hero slides': { en: 'Hero slides', ar: 'شرائح البطل' },
+  'Hero slides': { en: 'Hero slides', ar: 'صور الهيرو' },
   'Flash sales': { en: 'Flash sales', ar: 'العروض السريعة' },
   'Lookup tables and structural catalog settings are editable from drawer-based CRUD panels.': {
     en: 'Lookup tables and structural catalog settings are editable from drawer-based CRUD panels.',

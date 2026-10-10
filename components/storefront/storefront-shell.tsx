@@ -318,12 +318,7 @@ function Header({
         <Box
           component="nav"
           aria-label={localize('Main navigation', 'القائمة الرئيسية')}
-          className="storefront-nav hidden min-w-0 max-w-[46rem] flex-1 items-center justify-center gap-1 overflow-visible rounded-full border px-1.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] shadow-[0_8px_28px_rgba(0,0,0,0.08)] lg:flex"
-          style={{
-            color: secondaryTextColor,
-            borderColor: controlBorderColor,
-            background: isDark ? 'rgba(255,255,255,0.045)' : 'rgba(255,255,255,0.88)',
-          }}
+          className="storefront-nav hidden min-w-0 max-w-[46rem] flex-1 items-center justify-center gap-1 overflow-visible text-[11px] font-bold uppercase tracking-[0.12em] lg:flex"
         >
           {navigationItems.map((item) => {
             const itemIsActive =
