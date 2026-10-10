@@ -55,7 +55,7 @@ export async function POST(request: Request) {
       if (!product) {
         return jsonError('One or more products are no longer available.', 409);
       }
-      const maxOrderQuantity = Number(product.max_order_quantity ?? 1);
+      const maxOrderQuantity = Number(product.max_order_quantity ?? 99);
       if (item.quantity > maxOrderQuantity) {
         return jsonError(`You can order at most ${maxOrderQuantity} of this product.`, 400);
       }
@@ -63,8 +63,16 @@ export async function POST(request: Request) {
       if (
         variant &&
         variant.track_inventory !== false &&
-        !variant.allow_backorder &&
-        item.quantity > Number(variant.stock_quantity ?? 0)
+        Number(variant.stock_quantity ?? 0) > 0 &&
+        item.quantity > Number(variant.stock_quantity)
+      ) {
+        return jsonError('One or more products do not have enough stock.', 409);
+      }
+      if (
+        variant &&
+        variant.track_inventory !== false &&
+        Number(variant.stock_quantity ?? 0) <= 0 &&
+        !variant.allow_backorder
       ) {
         return jsonError('One or more products do not have enough stock.', 409);
       }

@@ -4,7 +4,7 @@ import { persist } from 'zustand/middleware';
 import { create } from 'zustand';
 import { fallbackProducts } from '@/lib/commerce-data';
 import { AppliedCoupon, StoreProduct } from '@/lib/commerce-types';
-import { getPrimaryVariant } from '@/lib/commerce-utils';
+import { getPrimaryVariant, getVariantOrderLimit } from '@/lib/commerce-utils';
 
 export type CartLineSelection = {
   groupId: string;
@@ -48,12 +48,12 @@ function clampVariantQuantity(
   const variant =
     product.variants.find((item) => item.id === variantId) ?? getPrimaryVariant(product);
 
-  if (!variant || variant.allowBackorder) {
+  if (!variant) {
     return Math.max(1, quantity);
   }
 
-  const productLimit = product.maxOrderQuantity ?? Infinity;
-  return Math.max(1, Math.min(quantity, productLimit, Math.max(1, variant.stockQuantity)));
+  const orderLimit = getVariantOrderLimit(product, variant);
+  return orderLimit > 0 ? Math.max(1, Math.min(quantity, orderLimit)) : 1;
 }
 
 type CartState = {
@@ -172,7 +172,7 @@ export function getCartProducts(items: CartLine[]): CartProductLine[] {
         lineId: getLineId(line),
         product,
         variant,
-        quantity: line.quantity,
+        quantity: clampVariantQuantity(product, variant.id, line.quantity),
         selections: line.selections ?? [],
       };
     })

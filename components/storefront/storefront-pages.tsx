@@ -64,6 +64,7 @@ import {
   filterProducts,
   formatCurrency,
   getProductSizes,
+  getVariantOrderLimit,
 } from '@/lib/commerce-utils';
 import { calculateCouponDiscount } from '@/lib/coupon-utils';
 import { resolveDeliveryFee } from '@/lib/delivery-zones';
@@ -671,10 +672,11 @@ export function ProductPageView({
   const optionsTotal = selectedOptionItems.reduce((sum, item) => sum + item.priceDelta, 0);
   const displayPrice = selectedVariant.price + optionsTotal;
   const discount = calculateDiscount(selectedVariant.price, selectedVariant.compareAtPrice);
-  const maxQuantity = Math.min(
-    product.maxOrderQuantity ?? 99,
-    selectedVariant.allowBackorder ? 99 : Math.max(1, selectedVariant.stockQuantity)
-  );
+  const maxQuantity = getVariantOrderLimit(product, selectedVariant);
+
+  useEffect(() => {
+    setQuantity((current) => Math.min(current, Math.max(1, maxQuantity)));
+  }, [maxQuantity]);
   const selectedOptionKey = optionGroups
     .map((group) => `${group.id}:${[...(selectedOptions[group.id] ?? [])].sort().join(',')}`)
     .sort()
@@ -927,14 +929,14 @@ export function ProductPageView({
             >
               <Box
                 component="div"
-                className="relative flex min-h-[360px] w-full items-center justify-center bg-[var(--background-secondary)] p-4 sm:min-h-[460px] lg:min-h-[520px]"
+                className="relative aspect-[4/5] w-full overflow-hidden bg-[var(--background-secondary)]"
               >
                 {galleryImages[selectedImageIndex]?.url ? (
                   <Image
                     src={galleryImages[selectedImageIndex].url}
                     alt={galleryImages[selectedImageIndex].alt}
-                    fit="contain"
-                    className="max-h-[520px] w-full object-contain"
+                    fit="cover"
+                    className="absolute inset-0 h-full w-full object-cover"
                   />
                 ) : null}
 
@@ -1175,14 +1177,16 @@ export function ProductPageView({
                   <Box
                     component="button"
                     type="button"
+                    disabled={quantity <= 1}
                     onClick={() => setQuantity((value) => Math.max(1, value - 1))}
-                    className="flex h-9 w-9 items-center justify-center"
+                    aria-label={t('Decrease quantity')}
+                    className="flex h-9 w-9 items-center justify-center disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <Minus className="h-4 w-4" />
                   </Box>
 
                   <Box component="span" className="min-w-10 text-center text-sm font-semibold">
-                    {quantity}
+                    {Math.min(quantity, Math.max(1, maxQuantity))}
                   </Box>
 
                   <Box
@@ -1190,6 +1194,7 @@ export function ProductPageView({
                     type="button"
                     disabled={quantity >= maxQuantity}
                     onClick={() => setQuantity((value) => Math.min(maxQuantity, value + 1))}
+                    aria-label={t('Increase quantity')}
                     className="flex h-9 w-9 items-center justify-center disabled:opacity-40"
                   >
                     <Plus className="h-4 w-4" />

@@ -11,7 +11,7 @@ import {
 } from "@mantine/core";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { useLocale } from "@/components/storefront/locale-provider";
-import { formatCurrency } from "@/lib/commerce-utils";
+import { formatCurrency, getVariantOrderLimit } from "@/lib/commerce-utils";
 import type { CartProductLine } from "@/stores/use-cart-store";
 
 type CartLineCardProps = {
@@ -33,9 +33,7 @@ export function CartLineCard({
 
   const lineTotal = line.variant.price * line.quantity;
 
-  const maxQuantity = line.variant.allowBackorder
-    ? 99
-    : Math.max(1, line.variant.stockQuantity);
+  const maxQuantity = getVariantOrderLimit(line.product, line.variant);
 
   return (
     <Paper
@@ -197,9 +195,7 @@ export function CartLineCard({
                 color="gray"
                 radius={0}
                 size={36}
-                disabled={
-                  !line.variant.allowBackorder && line.quantity >= maxQuantity
-                }
+                disabled={line.quantity >= maxQuantity}
                 onClick={() =>
                   onQuantityChange(Math.min(maxQuantity, line.quantity + 1))
                 }

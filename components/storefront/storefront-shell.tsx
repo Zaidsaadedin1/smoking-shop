@@ -19,6 +19,8 @@ import { AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft,
   ArrowRight,
+  ChevronDown,
+  ChevronRight,
   Cloud,
   CircleHelp,
   Clock,
@@ -55,7 +57,7 @@ import {
 import { LocaleSwitcher, useLocale } from '@/components/storefront/locale-provider';
 import { ThemeSwitcher, useThemeMode } from '@/components/storefront/theme-provider';
 import { FlashSale, NavigationItem, StoreSettings } from '@/lib/commerce-types';
-import { formatCurrency } from '@/lib/commerce-utils';
+import { formatCurrency, getVariantOrderLimit } from '@/lib/commerce-utils';
 import { getCartProducts, useCartStore } from '@/stores/use-cart-store';
 import { useUiStore } from '@/stores/use-ui-store';
 import type { CustomerSession } from '@/lib/customer/auth';
@@ -150,6 +152,7 @@ export function StorefrontShell({
         currentPath={pathname}
         cartCount={items.reduce((sum, item) => sum + item.quantity, 0)}
         scrolled={scrolled || pathname !== '/'}
+        menuOpen={menuOpen}
         onMenu={() => setMenuOpen(true)}
         onCart={openCart}
         onAccount={() => setAccountOpen(true)}
@@ -193,11 +196,54 @@ function AnnouncementBar({ text }: { text: string }) {
   );
 }
 
+function isNavigationPathActive(currentPath: string, targetPath: string) {
+  if (targetPath === '/') {
+    return currentPath === '/';
+  }
+
+  return currentPath === targetPath || currentPath.startsWith(`${targetPath}/`);
+}
+
+function MobileNavigationChild({
+  item,
+  currentPath,
+  onClose,
+}: {
+  item: NavigationItem;
+  currentPath: string;
+  onClose: () => void;
+}) {
+  const { localize, dir } = useLocale();
+  const isActive = isNavigationPathActive(currentPath, item.path);
+
+  return (
+    <Link
+      href={item.path}
+      onClick={onClose}
+      aria-current={currentPath === item.path ? 'page' : undefined}
+      className={`flex min-h-11 items-center justify-between gap-3 rounded-xl px-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
+        isActive
+          ? 'bg-[color:color-mix(in_srgb,var(--accent)_12%,transparent)] text-[var(--accent)]'
+          : 'text-[var(--text-secondary)] hover:bg-[color:color-mix(in_srgb,var(--accent)_8%,transparent)] hover:text-[var(--text)]'
+      }`}
+    >
+      <Box component="span" className="min-w-0 truncate">
+        {localize(item.label, item.labelAr)}
+      </Box>
+      <ChevronRight
+        aria-hidden="true"
+        className={`h-3.5 w-3.5 shrink-0 opacity-50 ${dir === 'rtl' ? 'rotate-180' : ''}`}
+      />
+    </Link>
+  );
+}
+
 function Header({
   brandName,
   currentPath,
   cartCount,
   scrolled,
+  menuOpen,
   onMenu,
   onCart,
   onAccount,
@@ -207,12 +253,13 @@ function Header({
   currentPath: string;
   cartCount: number;
   scrolled: boolean;
+  menuOpen: boolean;
   onMenu: () => void;
   onCart: () => void;
   onAccount: () => void;
   navigationItems: NavigationItem[];
 }) {
-  const { localize, t } = useLocale();
+  const { localize, t, dir } = useLocale();
   const { isDark } = useThemeMode();
   const navHoverClassName = isDark ? 'hover:text-white' : 'hover:text-black';
   const badgeTextColor = '#ffffff';
@@ -243,12 +290,14 @@ function Header({
             component="button"
             type="button"
             onClick={onMenu}
-            className="rounded-full border p-2 text-[var(--text)] lg:hidden"
+            className="rounded-full border p-2 text-[var(--text)] transition hover:border-[var(--accent)] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] lg:hidden"
             style={{
               borderColor: controlBorderColor,
               background: controlBackground,
             }}
-            aria-label="Open navigation"
+            aria-label={localize('Open navigation', 'فتح القائمة')}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-navigation"
           >
             <Menu className="h-5 w-5" />
           </Box>
@@ -268,56 +317,85 @@ function Header({
 
         <Box
           component="nav"
-          className="storefront-nav hidden min-w-0 max-w-[46rem] flex-1 items-center justify-start gap-1 overflow-visible text-[11px] font-bold uppercase tracking-[0.16em] lg:flex"
+          aria-label={localize('Main navigation', 'القائمة الرئيسية')}
+          className="storefront-nav hidden min-w-0 max-w-[46rem] flex-1 items-center justify-center gap-1 overflow-visible rounded-full border px-1.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] shadow-[0_8px_28px_rgba(0,0,0,0.08)] lg:flex"
           style={{
             color: secondaryTextColor,
-            borderColor: 'transparent',
-            background: 'transparent',
+            borderColor: controlBorderColor,
+            background: isDark ? 'rgba(255,255,255,0.045)' : 'rgba(255,255,255,0.88)',
           }}
         >
-          {navigationItems.map((item) => (
-            <Box component="div" key={item.id} className="group relative">
-              <Link
-                href={item.path}
-                aria-haspopup={item.children?.length ? 'menu' : undefined}
-                aria-current={currentPath === item.path ? 'page' : undefined}
-                className={`inline-flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-2 py-3 transition ${navHoverClassName} ${currentPath === item.path ? 'border-[var(--accent)] text-[var(--text)]' : 'border-transparent text-[var(--text-secondary)] hover:border-[var(--accent)] hover:text-[var(--text)]'}`}
-              >
-                <Box component="span">{localize(item.label, item.labelAr)}</Box>
+          {navigationItems.map((item) => {
+            const itemIsActive =
+              isNavigationPathActive(currentPath, item.path) ||
+              Boolean(
+                item.children?.some((child) =>
+                  isNavigationPathActive(currentPath, child.path)
+                )
+              );
+
+            return (
+              <Box component="div" key={item.id} className="group relative">
+                <Link
+                  href={item.path}
+                  aria-current={currentPath === item.path ? 'page' : undefined}
+                  className={`inline-flex min-h-10 shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3.5 py-2 transition duration-200 ${navHoverClassName} ${itemIsActive ? 'bg-[color:color-mix(in_srgb,var(--accent)_16%,transparent)] text-[var(--accent)] shadow-sm' : 'text-[var(--text-secondary)] hover:bg-[color:color-mix(in_srgb,var(--accent)_9%,transparent)] hover:text-[var(--text)]'}`}
+                >
+                  <Box component="span">{localize(item.label, item.labelAr)}</Box>
+                  {item.children?.length ? (
+                    <ChevronDown
+                      aria-hidden="true"
+                      className="h-3.5 w-3.5 opacity-65 transition-transform duration-200 group-hover:rotate-180 group-focus-within:rotate-180"
+                    />
+                  ) : null}
+                </Link>
                 {item.children?.length ? (
                   <Box
-                    component="span"
-                    className="text-[8px] opacity-60 transition duration-200 group-hover:opacity-100"
-                  >
-                    ▾
-                  </Box>
-                ) : null}
-              </Link>
-              {item.children?.length ? (
-                <Box
-                  component="div"
-                  className="invisible absolute left-0 top-[calc(100%-1px)] z-50 min-w-64 pt-2 opacity-0 transition duration-200 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
-                >
-                  <Box
                     component="div"
-                    className="overflow-hidden rounded-[18px] border border-[var(--border)] bg-[var(--background)] shadow-[0_18px_40px_rgba(0,0,0,0.16)]"
+                    role="group"
+                    aria-label={localize(`${item.label} links`, `روابط ${item.labelAr || item.label}`)}
+                    className={`invisible absolute ${dir === 'rtl' ? 'right-0' : 'left-0'} top-[calc(100%+2px)] z-50 min-w-64 translate-y-1 pt-2 opacity-0 transition duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100`}
                   >
-                    <Box component="div" className="space-y-0.5 p-2">
-                      {item.children.map((child) => (
-                        <Link
-                          key={child.id}
-                          href={child.path}
-                          className="block whitespace-nowrap rounded-[12px] border border-transparent px-3 py-2 text-[10px] uppercase tracking-[0.18em] text-[var(--text-secondary)] transition hover:border-[var(--border)] hover:bg-[var(--card)] hover:text-[var(--text)]"
-                        >
-                          {localize(child.label, child.labelAr)}
-                        </Link>
-                      ))}
+                    <Box
+                      component="div"
+                      className="overflow-hidden rounded-[20px] border border-[var(--border)] bg-[var(--background)] p-2 shadow-[0_22px_60px_rgba(0,0,0,0.24)]"
+                      style={{ backdropFilter: 'blur(18px)' }}
+                    >
+                      <Box
+                        component="div"
+                        className="px-3 pb-2 pt-1 text-[9px] font-semibold tracking-[0.2em] text-[var(--muted)]"
+                      >
+                        {localize(item.label, item.labelAr)}
+                      </Box>
+                      <Box component="div" className="space-y-1">
+                        {item.children.map((child) => {
+                          const childIsActive = isNavigationPathActive(
+                            currentPath,
+                            child.path
+                          );
+
+                          return (
+                            <Link
+                              key={child.id}
+                              href={child.path}
+                              aria-current={currentPath === child.path ? 'page' : undefined}
+                              className={`flex min-h-10 items-center justify-between gap-4 rounded-[13px] px-3 text-[10px] font-semibold tracking-[0.12em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--accent)] ${childIsActive ? 'bg-[color:color-mix(in_srgb,var(--accent)_14%,transparent)] text-[var(--accent)]' : 'text-[var(--text-secondary)] hover:bg-[var(--card)] hover:text-[var(--text)]'}`}
+                            >
+                              <Box component="span">{localize(child.label, child.labelAr)}</Box>
+                              <ChevronRight
+                                aria-hidden="true"
+                                className={`h-3.5 w-3.5 opacity-45 ${dir === 'rtl' ? 'rotate-180' : ''}`}
+                              />
+                            </Link>
+                          );
+                        })}
+                      </Box>
                     </Box>
                   </Box>
-                </Box>
-              ) : null}
-            </Box>
-          ))}
+                ) : null}
+              </Box>
+            );
+          })}
         </Box>
 
         <Box
@@ -331,6 +409,7 @@ function Header({
           <ThemeSwitcher />
           <Link
             href="/search"
+            aria-label={localize('Search', 'بحث')}
             className={`rounded-full border p-2 transition ${navHoverClassName}`}
             style={{
               borderColor: controlBorderColor,
@@ -341,6 +420,7 @@ function Header({
           </Link>
           <Link
             href="/favorites"
+            aria-label={localize('Favorites', 'المفضلة')}
             className={`hidden rounded-full border p-2 transition lg:inline-flex ${navHoverClassName}`}
             style={{
               borderColor: controlBorderColor,
@@ -352,6 +432,7 @@ function Header({
           <Link
             href="/account"
             data-no-route-loader
+            aria-label={localize('Account', 'الحساب')}
             onClick={(event) => {
               event.preventDefault();
               onAccount();
@@ -373,7 +454,7 @@ function Header({
               borderColor: controlBorderColor,
               background: controlBackground,
             }}
-            aria-label="Open cart"
+            aria-label={localize('Open cart', 'فتح السلة')}
           >
             <ShoppingBag className="h-4 w-4" />
             {cartCount > 0 ? (
@@ -410,9 +491,10 @@ function MobileMenu({
   brandName: string;
   navigationItems: NavigationItem[];
 }) {
-  const { t, localize } = useLocale();
+  const { t, localize, dir } = useLocale();
   const { isDark } = useThemeMode();
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+  const currentPath = usePathname();
 
   const toggleItem = (id: string) => {
     setExpandedItems((current) => ({
@@ -420,6 +502,27 @@ function MobileMenu({
       [id]: !current[id],
     }));
   };
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [onClose, open]);
 
   return (
     <AnimatePresence>
@@ -429,6 +532,7 @@ function MobileMenu({
             component="button"
             type="button"
             onClick={onClose}
+            aria-label={localize('Close navigation', 'إغلاق القائمة')}
             className="fixed inset-0 z-40 bg-black/70"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -436,12 +540,15 @@ function MobileMenu({
           />
           <MotionBox
             component="aside"
-            initial={{ x: '-100%' }}
+            initial={{ x: dir === 'rtl' ? '100%' : '-100%' }}
             animate={{ x: 0 }}
-            exit={{ x: '-100%' }}
+            exit={{ x: dir === 'rtl' ? '100%' : '-100%' }}
             transition={{ duration: 0.3 }}
-            className="storefront-nav fixed inset-y-0 left-0 z-50 flex w-[86%] max-w-sm flex-col border-r border-[var(--border)] px-5 py-5 shadow-[0_25px_60px_rgba(0,0,0,0.28)]"
+            className={`storefront-nav fixed inset-y-0 ${dir === 'rtl' ? 'right-0 border-l' : 'left-0 border-r'} z-50 flex w-[88%] max-w-sm flex-col overflow-y-auto px-5 py-5 shadow-[0_25px_60px_rgba(0,0,0,0.32)]`}
             style={{ background: isDark ? '#0d0d0f' : '#f5f5f3' }}
+            dir={dir}
+            id="mobile-navigation"
+            aria-label={localize('Store navigation', 'قائمة المتجر')}
           >
             <Box
               component="div"
@@ -473,6 +580,7 @@ function MobileMenu({
                 component="button"
                 type="button"
                 onClick={onClose}
+                aria-label={localize('Close navigation', 'إغلاق القائمة')}
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--card)] text-[var(--text)] transition hover:border-[var(--accent)] hover:text-[var(--accent)]"
               >
                 <X className="h-4 w-4" />
@@ -488,84 +596,133 @@ function MobileMenu({
             </Box>
 
             <Box
-              component="div"
-              className="space-y-2 whitespace-nowrap text-base font-bold uppercase tracking-[0.12em]"
+              component="nav"
+              aria-label={localize('Main navigation', 'القائمة الرئيسية')}
+              className="min-h-0 flex-1"
             >
-              {navigationItems.map((item) => {
-                const isExpanded = Boolean(expandedItems[item.id]);
+              <Box
+                component="div"
+                className="mb-3 px-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--muted)]"
+              >
+                {localize('Browse', 'تصفح')}
+              </Box>
+              <Box
+                component="div"
+                className={`space-y-2 text-sm font-bold uppercase ${dir === 'rtl' ? 'tracking-normal' : 'tracking-[0.1em]'}`}
+              >
+                {navigationItems.map((item) => {
+                  const itemIsActive =
+                    isNavigationPathActive(currentPath, item.path) ||
+                    Boolean(
+                      item.children?.some((child) =>
+                        isNavigationPathActive(currentPath, child.path)
+                      )
+                    );
+                  const activeChild = item.children?.find((child) =>
+                    isNavigationPathActive(currentPath, child.path)
+                  );
+                  const isExpanded = expandedItems[item.id] ?? Boolean(activeChild);
 
-                return (
-                  <Box
-                    component="div"
-                    key={item.id}
-                    className="overflow-hidden rounded-[18px] border border-[var(--border)] bg-[var(--card)]"
-                  >
-                    {item.children?.length ? (
-                      <>
-                        <Box
-                          component="button"
-                          type="button"
-                          onClick={() => toggleItem(item.id)}
-                          className="flex w-full items-center justify-between px-4 py-3 text-left text-[var(--text)] transition hover:bg-[color:color-mix(in_srgb,var(--accent)_12%,var(--card))] hover:text-[var(--accent)]"
-                        >
-                          <Box component="span">{localize(item.label, item.labelAr)}</Box>
-                          <Box
-                            component="span"
-                            className={`text-[10px] transition-transform duration-200 ${
-                              isExpanded ? 'rotate-180' : ''
-                            }`}
-                          >
-                            ▾
-                          </Box>
-                        </Box>
-                        <AnimatePresence initial={false}>
-                          {isExpanded ? (
-                            <MotionBox
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: 'auto', opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              transition={{ duration: 0.2 }}
-                              className="overflow-hidden"
+                  return (
+                    <Box
+                      component="div"
+                      key={item.id}
+                      className={`overflow-hidden rounded-[18px] border bg-[var(--card)] transition duration-200 ${itemIsActive ? 'border-[color:var(--accent)] shadow-[0_8px_24px_rgba(0,0,0,0.12)]' : 'border-[var(--border)]'}`}
+                    >
+                      {item.children?.length ? (
+                        <>
+                          <Box component="div" className="flex min-h-12 items-center">
+                            <Link
+                              href={item.path}
+                              onClick={onClose}
+                              aria-current={currentPath === item.path ? 'page' : undefined}
+                              className={`flex min-h-12 min-w-0 flex-1 items-center gap-3 px-4 transition ${itemIsActive ? 'text-[var(--accent)]' : 'text-[var(--text)] hover:text-[var(--accent)]'}`}
                             >
                               <Box
-                                component="div"
-                                className="space-y-1 border-t border-[var(--border)] bg-[color:color-mix(in_srgb,var(--background)_92%,transparent)] px-3 py-2 text-sm tracking-[0.12em] text-[var(--text-secondary)]"
-                              >
-                                {item.children.map((child) => (
-                                  <Link
-                                    key={child.id}
-                                    href={child.path}
-                                    onClick={onClose}
-                                    className="block rounded-[12px] px-3 py-2 transition hover:bg-[color:color-mix(in_srgb,var(--accent)_10%,var(--card))] hover:text-[var(--text)]"
-                                  >
-                                    {localize(child.label, child.labelAr)}
-                                  </Link>
-                                ))}
+                                component="span"
+                                className={`h-1.5 w-1.5 shrink-0 rounded-full ${itemIsActive ? 'bg-[var(--accent)]' : 'bg-[var(--muted)]/50'}`}
+                              />
+                              <Box component="span" className="min-w-0 truncate">
+                                {localize(item.label, item.labelAr)}
                               </Box>
-                            </MotionBox>
-                          ) : null}
-                        </AnimatePresence>
-                      </>
-                    ) : (
-                      <Link
-                        href={item.path}
-                        onClick={onClose}
-                        className="flex items-center justify-between px-4 py-3 text-[var(--text)] transition hover:bg-[color:color-mix(in_srgb,var(--accent)_12%,var(--card))] hover:text-[var(--accent)]"
-                      >
-                        <Box component="span">{localize(item.label, item.labelAr)}</Box>
-                      </Link>
-                    )}
-                  </Box>
-                );
-              })}
+                            </Link>
+                            <Box
+                              component="button"
+                              type="button"
+                              onClick={() => toggleItem(item.id)}
+                              aria-label={`${localize(isExpanded ? 'Collapse' : 'Expand', isExpanded ? 'طي' : 'توسيع')} ${localize(item.label, item.labelAr)}`}
+                              aria-expanded={isExpanded}
+                              aria-controls={`mobile-navigation-group-${item.id}`}
+                              className="mx-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[var(--text-secondary)] transition hover:bg-[color:color-mix(in_srgb,var(--accent)_12%,var(--card))] hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
+                            >
+                              <ChevronDown
+                                aria-hidden="true"
+                                className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                              />
+                            </Box>
+                          </Box>
+                          <AnimatePresence initial={false}>
+                            {isExpanded ? (
+                              <MotionBox
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="overflow-hidden"
+                              >
+                                <Box
+                                  component="div"
+                                  id={`mobile-navigation-group-${item.id}`}
+                                  role="group"
+                                  aria-label={localize(
+                                    `${item.label} subcategories`,
+                                    `تصنيفات ${item.labelAr || item.label}`
+                                  )}
+                                  className={`space-y-1 border-t border-[var(--border)] bg-[color:color-mix(in_srgb,var(--background)_92%,transparent)] px-3 py-2 text-sm ${dir === 'rtl' ? 'mr-4 border-r-2 pr-3 tracking-normal' : 'ml-4 border-l-2 pl-3 tracking-[0.08em]'}`}
+                                  style={{ borderInlineStartColor: 'var(--accent)' }}
+                                >
+                                  {item.children.map((child) => (
+                                    <MobileNavigationChild
+                                      key={child.id}
+                                      item={child}
+                                      currentPath={currentPath}
+                                      onClose={onClose}
+                                    />
+                                  ))}
+                                </Box>
+                              </MotionBox>
+                            ) : null}
+                          </AnimatePresence>
+                        </>
+                      ) : (
+                        <Link
+                          href={item.path}
+                          onClick={onClose}
+                          aria-current={currentPath === item.path ? 'page' : undefined}
+                          className={`flex min-h-12 items-center gap-3 px-4 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--accent)] ${itemIsActive ? 'text-[var(--accent)]' : 'text-[var(--text)] hover:text-[var(--accent)]'}`}
+                        >
+                          <Box
+                            component="span"
+                            className={`h-1.5 w-1.5 shrink-0 rounded-full ${itemIsActive ? 'bg-[var(--accent)]' : 'bg-[var(--muted)]/50'}`}
+                          />
+                          <Box component="span" className="min-w-0 truncate">
+                            {localize(item.label, item.labelAr)}
+                          </Box>
+                        </Link>
+                      )}
+                    </Box>
+                  );
+                })}
 
-              <Link
-                href="/account"
-                onClick={onClose}
-                className="mt-2 block rounded-[18px] border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-[var(--text)] transition hover:border-[var(--accent)] hover:bg-[color:color-mix(in_srgb,var(--accent)_12%,var(--card))] hover:text-[var(--accent)]"
-              >
-                {t('ACCOUNT')}
-              </Link>
+                <Link
+                  href="/account"
+                  onClick={onClose}
+                  aria-current={currentPath === '/account' ? 'page' : undefined}
+                  className={`mt-4 flex min-h-12 items-center rounded-[18px] border bg-[var(--card)] px-4 transition hover:border-[var(--accent)] hover:bg-[color:color-mix(in_srgb,var(--accent)_12%,var(--card))] hover:text-[var(--accent)] ${currentPath === '/account' ? 'border-[var(--accent)] text-[var(--accent)]' : 'border-[var(--border)] text-[var(--text)]'}`}
+                >
+                  {t('ACCOUNT')}
+                </Link>
+              </Box>
             </Box>
           </MotionBox>
         </>
@@ -590,7 +747,7 @@ function MobileBottomNav({ onAccount }: { onAccount: () => void }) {
       <Box component="div" className="grid grid-cols-5 gap-2">
         {mobileNav.map((item) => {
           const Icon = item.icon;
-          const active = pathname === item.href;
+          const active = isNavigationPathActive(pathname, item.href);
 
           return (
             <Link
@@ -604,8 +761,9 @@ function MobileBottomNav({ onAccount }: { onAccount: () => void }) {
                     }
                   : undefined
               }
-              className={`flex h-12 w-full min-w-0 flex-col items-center justify-center gap-1 whitespace-nowrap rounded-full px-0 text-[10px] tracking-[0.18em] transition ${
-                active ? 'scale-105 text-white' : 'text-[var(--muted)]'
+              aria-current={pathname === item.href ? 'page' : undefined}
+              className={`flex h-12 w-full min-w-0 flex-col items-center justify-center gap-1 whitespace-nowrap rounded-full px-0 text-[10px] tracking-[0.18em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
+                active ? 'scale-105 bg-[var(--accent)] text-white shadow-[0_8px_22px_rgba(0,0,0,0.18)]' : 'text-[var(--muted)] hover:bg-[color:color-mix(in_srgb,var(--accent)_10%,transparent)]'
               }`}
             >
               <Icon className="h-4 w-4" />
@@ -1304,9 +1462,7 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                   const productImage =
                     line.product.images[0]?.url || '/products/puff-jo-product-default.png';
 
-                  const maxQuantity = line.variant.allowBackorder
-                    ? 99
-                    : Math.max(1, line.variant.stockQuantity);
+                  const maxQuantity = getVariantOrderLimit(line.product, line.variant);
 
                   return (
                     <Paper key={line.lineId} withBorder radius="md" p="sm">
@@ -1407,9 +1563,7 @@ function CartDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                                 color="gray"
                                 radius={0}
                                 size={30}
-                                disabled={
-                                  !line.variant.allowBackorder && line.quantity >= maxQuantity
-                                }
+                                disabled={line.quantity >= maxQuantity}
                                 onClick={() =>
                                   updateQuantity(
                                     line.lineId,

@@ -43,6 +43,17 @@ export function getProductInventory(product: StoreProduct) {
   return product.variants.reduce((sum, variant) => sum + variant.stockQuantity, 0);
 }
 
+export function getVariantOrderLimit(
+  product: StoreProduct,
+  variant: StoreProduct['variants'][number]
+) {
+  const productLimit = product.maxOrderQuantity ?? 99;
+  const stockLimit =
+    variant.stockQuantity > 0 ? variant.stockQuantity : variant.allowBackorder ? 99 : 0;
+
+  return Math.max(0, Math.min(productLimit, stockLimit));
+}
+
 export function getProductColors(product: StoreProduct) {
   return Array.from(
     new Map(
