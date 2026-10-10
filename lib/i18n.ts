@@ -22,6 +22,10 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'Password updated. You can now sign in with your new password.',
     ar: 'تم تحديث كلمة المرور. يمكنك الآن تسجيل الدخول باستخدام كلمة المرور الجديدة.',
   },
+  'Password updated, but we could not open your profile. Please sign in.': {
+    en: 'Password updated, but we could not open your profile. Please sign in.',
+    ar: 'تم تحديث كلمة المرور، لكن تعذر فتح ملفك الشخصي. يرجى تسجيل الدخول.',
+  },
   'This reset link is invalid or expired. Request a new one to continue.': {
     en: 'This reset link is invalid or expired. Request a new one to continue.',
     ar: 'رابط إعادة التعيين غير صالح أو منتهي الصلاحية. اطلب رابطاً جديداً للمتابعة.',
@@ -54,7 +58,7 @@ export const messages: Record<string, LocaleMessages> = {
   'Easy ordering': { en: 'Easy ordering', ar: 'طلب سهل' },
   'Menu categories, favorites, cart, saved addresses, and checkout stay clear and quick.': {
     en: 'Menu categories, favorites, cart, saved addresses, and checkout stay clear and quick.',
-    ar: 'فئات المنيو والمفضلة والسلة والعناوين المحفوظة والدفع تبقى واضحة وسريعة.',
+    ar: 'فئات الأصناف والمفضلة والسلة والعناوين المحفوظة والدفع تبقى واضحة وسريعة.',
   },
   'Delivery ready': { en: 'Delivery ready', ar: 'جاهز للتوصيل' },
   'The interface is focused on branch pickup, delivery timing, and full meal orders.': {
@@ -1015,7 +1019,7 @@ export const messages: Record<string, LocaleMessages> = {
   HOME: { en: 'HOME', ar: 'الرئيسية' },
   BAG: { en: 'CART', ar: 'السلة' },
   CART: { en: 'CART', ar: 'السلة' },
-  MENU: { en: 'MENU', ar: 'المنيو' },
+  MENU: { en: 'MENU', ar: 'الأصناف' },
   SAJ: { en: 'SAJ', ar: 'الصاج' },
   ARABI: { en: 'ARABI', ar: 'عربي' },
   MEALS: { en: 'MEALS', ar: 'وجبات' },
@@ -1039,8 +1043,8 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'Start with a saj sandwich or a full arabi meal.',
     ar: 'ابدأ بسندويشة صاج أو وجبة عربي كاملة.',
   },
-  'SHOP THE DROP': { en: 'VIEW MENU', ar: 'عرض المنيو' },
-  'VIEW MENU': { en: 'VIEW MENU', ar: 'عرض المنيو' },
+  'SHOP THE DROP': { en: 'VIEW MENU', ar: 'عرض الأصناف' },
+  'VIEW MENU': { en: 'VIEW MENU', ar: 'عرض الأصناف' },
   'AFTER DARK': { en: 'AFTER DARK', ar: 'بعد الغروب' },
   STORE: { en: 'STORE', ar: 'المتجر' },
   NEWSLETTER: { en: 'OFFERS', ar: 'العروض' },
@@ -1088,8 +1092,8 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'Thin bread, hot shawerma, sharp pickles, and sauce packed for the road.',
     ar: 'خبز رقيق، شاورما ساخنة، مخلل وصوص جاهز للطريق.',
   },
-  'DISCOVER THE COLLECTION': { en: 'ORDER FROM MENU', ar: 'اطلب من المنيو' },
-  'ORDER FROM MENU': { en: 'ORDER FROM MENU', ar: 'اطلب من المنيو' },
+  'DISCOVER THE COLLECTION': { en: 'ORDER FROM MENU', ar: 'اطلب من الأصناف' },
+  'ORDER FROM MENU': { en: 'ORDER FROM MENU', ar: 'اطلب من الأصناف' },
   'AMMAN AFTER DARK': { en: 'AMMAN AFTER DARK', ar: 'عَمّان بعد الغروب' },
   'NOT FOR EVERYONE.': { en: 'NOT FOR EVERYONE.', ar: 'ليس للجميع.' },
   'Dark feminine pieces for girls who were never made to blend in.': {
@@ -1110,7 +1114,7 @@ export const messages: Record<string, LocaleMessages> = {
     en: 'The wraps, boxes, and sides customers add when hunger cannot wait.',
     ar: 'السندويشات والعلب والإضافات عندما لا يحتمل الجوع الانتظار.',
   },
-  'EXPLORE ALL': { en: 'VIEW MENU', ar: 'عرض المنيو' },
+  'EXPLORE ALL': { en: 'VIEW MENU', ar: 'عرض الأصناف' },
   'FLASH SALE': { en: 'FLASH SALE', ar: 'تخفيضات سريعة' },
   'ENDS IN': { en: 'ENDS IN', ar: 'ينتهي خلال' },
   HOURS: { en: 'HOURS', ar: 'ساعات' },
@@ -1166,7 +1170,7 @@ export const messages: Record<string, LocaleMessages> = {
   FILTERS: { en: 'FILTERS', ar: 'الفلاتر' },
   'Search pieces, tags, moods...': {
     en: 'Search menu, meals, sauces...',
-    ar: 'ابحث عن المنيو والوجبات والصوصات...',
+    ar: 'ابحث عن الأصناف والوجبات والصوصات...',
   },
   Newest: { en: 'Newest', ar: 'الأحدث' },
   'Price Low to High': { en: 'Price Low to High', ar: 'السعر من الأقل للأعلى' },
@@ -1222,7 +1226,7 @@ export const messages: Record<string, LocaleMessages> = {
   'ADD TO CART': { en: 'ADD TO CART', ar: 'أضف للسلة' },
   'CHOOSE OPTIONS': { en: 'CHOOSE OPTIONS', ar: 'اختر من الخيارات' },
   'ORDER NOW': { en: 'ORDER NOW', ar: 'اطلب الآن' },
-  'BACK TO MENU': { en: 'BACK TO MENU', ar: 'العودة إلى المنيو' },
+  'BACK TO MENU': { en: 'BACK TO MENU', ar: 'العودة إلى الأصناف' },
   SAUCE: { en: 'SAUCE', ar: 'الصوص' },
   'Choose quantity': { en: 'Choose quantity', ar: 'اختر الكمية' },
   'You may also want': { en: 'You may also want', ar: 'قد ترغب أيضاً في' },
@@ -1391,6 +1395,11 @@ export const messages: Record<string, LocaleMessages> = {
   'Checkout delivery fees changed. Please review your order and try again.': {
     en: 'Checkout delivery fees changed. Please review your order and try again.',
     ar: 'تغيّرت رسوم التوصيل. يرجى مراجعة طلبك والمحاولة مرة أخرى.',
+  },
+  'Delivery fee updated': { en: 'Delivery fee updated', ar: 'تم تحديث رسوم التوصيل' },
+  'Review the updated delivery fee and total, then place your order again.': {
+    en: 'Review the updated delivery fee and total, then place your order again.',
+    ar: 'راجع رسوم التوصيل والإجمالي بعد التحديث، ثم أعد تأكيد طلبك.',
   },
   'Final pricing should be confirmed by a Supabase checkout RPC before production launch.': {
     en: 'Final pricing should be confirmed by a Supabase checkout RPC before production launch.',
@@ -2509,7 +2518,43 @@ export const messages: Record<string, LocaleMessages> = {
 'Add some products to your cart to get started.':{
   en:'Add some products to your cart to get started.',
   ar:'أضف بعض المنتجات إلى سلة التسوق لبدء العملية.',
-}
+},
+'No orders yet':{
+  en:'No orders yet',
+  ar:'لا توجد طلبات بعد',
+},
+'Your orders will appear here after you complete your first purchase.':{
+  en:'Your orders will appear here after you complete your first purchase.',
+  ar:'ستظهر طلباتك هنا بعد إتمام أول عملية شراء.',
+},
+'Start Shopping':{
+  en:'Start shopping',
+  ar:'ابدأ التسوق',
+},
+'Filters':{
+  en:'Filters',
+  ar:'الفلاتر',
+},
+'Manage the personal and contact information connected to your account.':{
+  en:'Manage the personal and contact information connected to your account.',
+  ar:'إدارة المعلومات الشخصية ومعلومات الاتصال المرتبطة بحسابك.',
+},
+'Account details':{
+  en:'Account details',
+  ar:'تفاصيل الحساب',
+},
+'Open your account orders page to see the latest order status, tracking number when available, and delivery updates.':{
+  en:'Open your account orders page to see the latest order status, tracking number when available, and delivery updates.',
+  ar:'افتح صفحة طلبات حسابك لرؤية أحدث حالة للطلب، ورقم التتبع عند توفره، وتحديثات التوصيل.',
+},
+'Delivery, pickup timing, and branch coverage expectations.':{
+  en:'Delivery, pickup timing, and branch coverage expectations.',
+  ar:'توقعات التوصيل، توقيت الاستلام، وتغطية الفروع.',
+},
+'Puff Jo is a Jordan-focused smoking store for quality vape devices, e-liquids, pods, coils, and accessories.':{
+  en:'Puff Jo is a Jordan-focused smoking store for quality vape devices, e-liquids, pods, coils, and accessories.',
+  ar:'بف جو هو متجر تدخين يركز على الأردن لأجهزة الفيب، الجوس، البودات، الكويلات، والإكسسوارات عالية الجودة.',
+},
 }
 
 export function translateText(text: string, locale: Locale) {

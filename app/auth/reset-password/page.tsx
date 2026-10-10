@@ -4,6 +4,7 @@ import { Alert, Box, Button, Center, Loader, Paper, Stack, Text, Title } from '@
 
 import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { FormEvent, useEffect, useState } from 'react';
 import { useLocale } from '@/components/storefront/locale-provider';
 import { StorePasswordInput } from '@/components/storefront/ui/store-form-controls';
@@ -16,6 +17,7 @@ const supabase = createClient(
 );
 
 export default function ResetPasswordPage() {
+  const router = useRouter();
   const { locale, t } = useLocale();
   const [password, setPassword] = useState('');
   const [sessionReady, setSessionReady] = useState(false);
@@ -66,16 +68,48 @@ export default function ResetPasswordPage() {
     setMessage(null);
     setSaving(true);
 
-    const { error: updateError } = await supabase.auth.updateUser({ password });
+    const { data, error: updateError } = await supabase.auth.updateUser({ password });
 
-    setSaving(false);
     if (updateError) {
+      setSaving(false);
       setError(translateAuthError(updateError.message, locale));
       return;
     }
 
-    setMessage(t('Password updated. You can now sign in with your new password.'));
+    const email = data.user?.email ?? (await supabase.auth.getUser()).data.user?.email;
+    if (!email) {
+      setSaving(false);
+      setError(t('Password updated, but we could not open your profile. Please sign in.'));
+      return;
+    }
+
+    let loginResponse: Response;
+    try {
+      loginResponse = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: email, password }),
+      });
+    } catch {
+      setSaving(false);
+      setError(t('Password updated, but we could not open your profile. Please sign in.'));
+      return;
+    }
+    const loginPayload = (await loginResponse.json().catch(() => ({}))) as { error?: string };
+
+    setSaving(false);
+    if (!loginResponse.ok) {
+      setError(
+        loginPayload.error
+          ? translateAuthError(loginPayload.error, locale)
+          : t('Password updated, but we could not open your profile. Please sign in.')
+      );
+      return;
+    }
+
     setPassword('');
+    router.replace('/profile');
+    router.refresh();
   }
 
   return (

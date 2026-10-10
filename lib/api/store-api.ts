@@ -1105,7 +1105,7 @@ export async function listActiveDeliveryZones() {
       is_active: 'eq.true',
       order: 'sort_order.asc,country.asc,city.asc',
     },
-    revalidate: 60,
+    revalidate: 0,
   });
 }
 

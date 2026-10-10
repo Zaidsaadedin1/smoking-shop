@@ -1,28 +1,28 @@
-import { redirect } from 'next/navigation';
 import { CheckoutPageView } from '@/components/storefront/storefront-pages';
 import { listActiveDeliveryZones, listAddresses } from '@/lib/api/store-api';
 import { getCustomerAuthHeaders, getCustomerSession } from '@/lib/customer/auth';
 
 export default async function CheckoutPage() {
   const session = await getCustomerSession();
-
-  if (!session) {
-    redirect('/login?next=/checkout');
-  }
-
-  const authHeaders = await getCustomerAuthHeaders();
+  const authHeaders = session ? await getCustomerAuthHeaders() : undefined;
   const [addresses, deliveryZones] = await Promise.all([
-    listAddresses(session.id, authHeaders ? { headers: authHeaders } : undefined),
+    session
+      ? listAddresses(session.id, authHeaders ? { headers: authHeaders } : undefined)
+      : Promise.resolve([]),
     listActiveDeliveryZones(),
   ]);
 
   return (
     <CheckoutPageView
-      session={{
-        fullName: session.fullName,
-        email: session.email,
-        phone: session.phone ?? '',
-      }}
+      session={
+        session
+          ? {
+              fullName: session.fullName,
+              email: session.email,
+              phone: session.phone ?? '',
+            }
+          : null
+      }
       addresses={(addresses ?? []).map((address) => ({
         id: address.id,
         label: address.label ?? 'Address',

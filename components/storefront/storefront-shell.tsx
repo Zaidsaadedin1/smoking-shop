@@ -734,14 +734,18 @@ function MobileMenu({
 function MobileBottomNav({ onAccount }: { onAccount: () => void }) {
   const pathname = usePathname();
   const { t } = useLocale();
+  const { isDark } = useThemeMode();
 
   return (
     <Box
       component="div"
       className="storefront-nav fixed inset-x-4 bottom-4 z-30 rounded-full border px-3 py-2 backdrop-blur-xl md:hidden"
       style={{
-        borderColor: 'var(--border)',
-        background: 'color-mix(in srgb, var(--background) 78%, transparent)',
+        borderColor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(17,17,17,0.12)',
+        background: isDark ? 'rgba(20,22,22,0.9)' : 'rgba(255,255,255,0.96)',
+        boxShadow: isDark
+          ? '0 12px 36px rgba(0,0,0,0.36)'
+          : '0 10px 30px rgba(17,17,17,0.14)',
       }}
     >
       <Box component="div" className="grid grid-cols-5 gap-2">
@@ -753,6 +757,7 @@ function MobileBottomNav({ onAccount }: { onAccount: () => void }) {
             <Link
               key={item.href}
               href={item.href}
+              data-no-route-loader={item.href === '/account' ? '' : undefined}
               onClick={
                 item.href === '/account'
                   ? (event) => {
@@ -763,8 +768,19 @@ function MobileBottomNav({ onAccount }: { onAccount: () => void }) {
               }
               aria-current={pathname === item.href ? 'page' : undefined}
               className={`flex h-12 w-full min-w-0 flex-col items-center justify-center gap-1 whitespace-nowrap rounded-full px-0 text-[10px] tracking-[0.18em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] ${
-                active ? 'scale-105 bg-[var(--accent)] text-white shadow-[0_8px_22px_rgba(0,0,0,0.18)]' : 'text-[var(--muted)] hover:bg-[color:color-mix(in_srgb,var(--accent)_10%,transparent)]'
+                active ? 'scale-105 shadow-[0_8px_22px_rgba(0,0,0,0.16)]' : 'text-[var(--text-secondary)] hover:bg-[color:color-mix(in_srgb,var(--accent)_10%,transparent)]'
               }`}
+              style={
+                active
+                  ? {
+                      background: isDark ? 'var(--accent)' : '#e9e9e7',
+                      color: isDark ? '#ffffff' : '#111111',
+                      boxShadow: isDark
+                        ? '0 8px 22px rgba(0,0,0,0.18)'
+                        : 'inset 0 0 0 1px rgba(17,17,17,0.08)',
+                    }
+                  : undefined
+              }
             >
               <Icon className="h-4 w-4" />
               <Box component="span">{t(item.label)}</Box>

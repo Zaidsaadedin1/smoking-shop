@@ -8,7 +8,6 @@ import {
   ChevronDown,
   Clock,
   Mail,
-  MapPin,
   MessageCircle,
   Phone,
   Sparkles,
@@ -26,46 +25,6 @@ type SupportSection = {
 
 const hotline = '+962 79 256 0025';
 const email = 'support@puffjo.com';
-
-const branchGroups = [
-  {
-    area: 'West Amman',
-    areaAr: 'غرب عمان',
-    branches: [
-      ['Al Madina Al Munawwarah St.', 'شارع المدينة المنورة'],
-      ['Abdullah Ghosheh St.', 'شارع عبدالله غوشة'],
-      ['Abdoun', 'عبدون'],
-      ['Swefieh', 'الصويفية'],
-      ['Al Weibdeh', 'اللويبدة'],
-      ['Marj Al Hamam', 'مرج الحمام'],
-    ],
-  },
-  {
-    area: 'North and central Amman',
-    areaAr: 'شمال ووسط عمان',
-    branches: [
-      ['Al Muqabalain', 'المقابلين'],
-      ['Rainbow St.', 'شارع الرينبو'],
-      ['Prince Rashid District', 'ضاحية الأمير راشد'],
-      ['City Mall', 'سيتي مول'],
-      ['Jubeiha', 'الجبيهة'],
-      ['Tabarbour', 'طبربور'],
-      ['Dabouq', 'دابوق'],
-    ],
-  },
-  {
-    area: 'Jordan branches',
-    areaAr: 'فروع الأردن',
-    branches: [
-      ['Salt - Al Saru', 'السلط - السرو'],
-      ['Fuheis', 'الفحيص'],
-      ['Al Yasmeen', 'الياسمين'],
-      ['Shmeisani', 'الشميساني'],
-      ['5B Mall', '5B Mall'],
-      ['Tlaa Al Ali', 'تلاع العلي'],
-    ],
-  },
-];
 
 function SupportLayout({
   eyebrow,
@@ -467,7 +426,12 @@ export function AboutSupportPage() {
         </Box>
 
         <Box component="section" className="grid gap-4">
-          <AboutFact title="Order hotline" titleAr="رقم الطلبات" value={hotline} />
+          <AboutFact
+            title="Order hotline"
+            titleAr="رقم الطلبات"
+            value={hotline}
+            href={`tel:${hotline.replace(/[^\d+]/g, '')}`}
+          />
           <AboutFact title="Email" titleAr="البريد الإلكتروني" value={email} />
           <AboutFact
             title="Main public address"
@@ -488,34 +452,6 @@ export function AboutSupportPage() {
         </Box>
       </Box>
 
-      <Box
-        component="section"
-        className="mt-10 rounded-[28px] border border-[var(--border)] bg-[var(--card)] p-5 md:p-7"
-      >
-        <Box
-          component="div"
-          className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between"
-        >
-          <Box component="div">
-            <Box
-              component="div"
-              className="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--accent)]"
-            >
-              {t('BRANCHES')}
-            </Box>
-            <Box component="h2" className="mt-2 text-3xl font-black uppercase text-[var(--text)]">
-              {localize('Branches from their latest artwork', 'الفروع حسب آخر تصميم منشور')}
-            </Box>
-          </Box>
-          <Link
-            href={`tel:${hotline.replace(/\D/g, '')}`}
-            className="w-fit rounded-full bg-[var(--accent)] px-5 py-3 text-sm font-semibold tracking-[0.14em] text-[var(--background)] transition hover:-translate-y-0.5 hover:bg-[var(--accent-hover)]"
-          >
-            {hotline}
-          </Link>
-        </Box>
-        <BranchGrid />
-      </Box>
     </Container>
   );
 }
@@ -572,13 +508,24 @@ function ContactCard({
   );
 }
 
-function AboutFact({ title, titleAr, value }: { title: string; titleAr: string; value: string }) {
-  const { localize } = useLocale();
+function AboutFact({
+  title,
+  titleAr,
+  value,
+  href,
+}: {
+  title: string;
+  titleAr: string;
+  value: string;
+  href?: string;
+}) {
+  const { dir, localize } = useLocale();
 
   return (
     <Box
       component="div"
       className="rounded-[28px] border border-[var(--border)] bg-[var(--card)] p-6"
+      dir={dir}
     >
       <Box
         component="div"
@@ -586,53 +533,19 @@ function AboutFact({ title, titleAr, value }: { title: string; titleAr: string; 
       >
         {localize(title, titleAr)}
       </Box>
-      <Box component="div" className="mt-3 text-lg font-bold leading-7 text-[var(--text)]">
-        {value}
-      </Box>
-    </Box>
-  );
-}
-
-function BranchGrid() {
-  const { localize } = useLocale();
-
-  return (
-    <Box component="div" className="mt-6 grid gap-4 lg:grid-cols-3">
-      {branchGroups.map((group) => (
-        <Box
-          component="div"
-          key={group.area}
-          className="rounded-[24px] border border-[var(--border)] bg-[color:color-mix(in_srgb,var(--background)_78%,transparent)] p-4"
+      {href ? (
+        <Link
+          href={href}
+          dir="ltr"
+          className="mt-3 block text-right text-lg font-bold leading-7 text-[var(--text)] underline decoration-[var(--border)] underline-offset-4 transition hover:text-[var(--accent)] focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]"
         >
-          <Box component="div" className="mb-4 flex items-center gap-3">
-            <Box
-              component="span"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-black text-white"
-            >
-              <MapPin className="h-4 w-4" />
-            </Box>
-            <Box component="div" className="font-bold text-[var(--text)]">
-              {localize(group.area, group.areaAr)}
-            </Box>
-          </Box>
-          <Box component="div" className="grid gap-2">
-            {group.branches.map(([en, ar], index) => (
-              <Box
-                component="div"
-                key={en}
-                className="flex items-center justify-between gap-3 rounded-[16px] border border-[var(--border)] bg-[var(--card)] px-3 py-2 text-sm"
-              >
-                <Box component="span" className="font-semibold text-[var(--text)]">
-                  {localize(en, ar)}
-                </Box>
-                <Box component="span" className="text-[10px] font-bold text-[var(--muted)]">
-                  {String(index + 1).padStart(2, '0')}
-                </Box>
-              </Box>
-            ))}
-          </Box>
+          {value}
+        </Link>
+      ) : (
+        <Box component="div" className="mt-3 text-lg font-bold leading-7 text-[var(--text)]">
+          {value}
         </Box>
-      ))}
+      )}
     </Box>
   );
 }

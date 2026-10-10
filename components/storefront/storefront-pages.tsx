@@ -694,11 +694,6 @@ export function ProductPageView({
       cartSelections
     );
 
-    if (!customer) {
-      router.push('/login?next=%2Fcheckout');
-      return;
-    }
-
     router.push('/checkout');
   }
 
@@ -2004,12 +1999,45 @@ type ActiveFlashSaleView = {
   discount_value: number;
 };
 
+type WhatsAppOrderDraft = {
+  orderId: string;
+  orderNumber?: string;
+  customerName: string;
+  customerEmail?: string;
+  customerPhone: string;
+  shippingAddress: Record<string, unknown>;
+  billingAddress?: Record<string, unknown> | null;
+  paymentMethod: string;
+  couponCode?: string | null;
+  notes?: string;
+  subtotal: number;
+  discountAmount: number;
+  shippingAmount: number;
+  taxAmount: number;
+  totalAmount: number;
+  currency: string;
+  items: Array<{
+    productName: string;
+    sku: string;
+    variantName: string;
+    colorName?: string;
+    imageUrl?: string;
+    quantity: number;
+    unitPrice: number;
+    lineTotal: number;
+    options: Array<{
+      groupName: string;
+      items: Array<{ name: string; priceDelta: number }>;
+    }>;
+  }>;
+};
+
 export function CheckoutPageView({
   session,
   addresses,
-  deliveryZones,
+  deliveryZones: initialDeliveryZones,
 }: {
-  session: CheckoutSessionView;
+  session: CheckoutSessionView | null;
   addresses: CheckoutAddressView[];
   deliveryZones: DeliveryZone[];
 }) {
@@ -2023,6 +2051,7 @@ export function CheckoutPageView({
   const setAppliedCoupon = useCartStore((state) => state.setAppliedCoupon);
   const clearAppliedCoupon = useCartStore((state) => state.clearAppliedCoupon);
   const pushToast = useUiStore((state) => state.pushToast);
+  const [deliveryZones, setDeliveryZones] = useState(initialDeliveryZones);
   const lines = useMemo(() => getCartProducts(items), [items]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCheckoutValidation, setShowCheckoutValidation] = useState(false);
@@ -2033,8 +2062,8 @@ export function CheckoutPageView({
   const defaultAddress = addresses.find((address) => address.isDefault) ?? addresses[0] ?? null;
   const [selectedAddressId, setSelectedAddressId] = useState(defaultAddress?.id ?? '');
   const [form, setForm] = useState<CheckoutFormState>({
-    fullName: defaultAddress?.fullName ?? session.fullName,
-    phone: defaultAddress?.phone ?? session.phone,
+    fullName: defaultAddress?.fullName ?? session?.fullName ?? '',
+    phone: defaultAddress?.phone ?? session?.phone ?? '',
     country: defaultAddress?.country ?? '',
     city: defaultAddress?.city ?? '',
     area: defaultAddress?.area ?? '',
@@ -2354,7 +2383,7 @@ export function CheckoutPageView({
         body: JSON.stringify({
           paymentMethod: form.paymentMethod,
           customerName: form.fullName,
-          customerEmail: session.email,
+          customerEmail: session?.email ?? '',
           customerPhone: form.phone,
           shippingAddress: {
             country: form.country,
@@ -2385,6 +2414,10 @@ export function CheckoutPageView({
                 .join(' | '),
               colorName: null,
               imageUrl: line.product.images[0]?.url ?? null,
+              options: line.selections.map((group) => ({
+                groupId: group.groupId,
+                itemIds: group.items.map((item) => item.id),
+              })),
               unitPrice: line.variant.price,
               quantity: line.quantity,
               lineTotal: line.variant.price * line.quantity,
@@ -2394,16 +2427,83 @@ export function CheckoutPageView({
       });
 
       const result = (await response.json()) as {
-        data?: { order?: { id?: string } };
+        data?: { order?: { id?: string; order_number?: string } };
         error?: string;
+        details?: { deliveryZone?: DeliveryZone };
       };
 
       if (!response.ok || result.error || !result.data?.order?.id) {
+        if (response.status === 409 && result.details?.deliveryZone) {
+          const currentZone = result.details.deliveryZone;
+          setDeliveryZones((currentZones) => {
+            const hasZone = currentZones.some((zone) => zone.id === currentZone.id);
+            return hasZone
+              ? currentZones.map((zone) => (zone.id === currentZone.id ? currentZone : zone))
+              : [...currentZones, currentZone];
+          });
+          pushToast({
+            title: t('Delivery fee updated'),
+            description: t('Review the updated delivery fee and total, then place your order again.'),
+          });
+          return;
+        }
+
         throw new Error(result.error ?? 'Failed to place order');
       }
 
+      const orderId = result.data.order.id;
+      const whatsappDraft: WhatsAppOrderDraft = {
+        orderId,
+        orderNumber: result.data.order.order_number,
+        customerName: form.fullName,
+        customerEmail: session?.email ?? '',
+        customerPhone: form.phone,
+        shippingAddress: {
+          country: form.country,
+          city: form.city,
+          area: form.area,
+          street: form.street,
+          building: form.building,
+        },
+        paymentMethod: form.paymentMethod,
+        couponCode: appliedCoupon?.code ?? null,
+        notes: form.notes,
+        subtotal,
+        discountAmount,
+        shippingAmount,
+        taxAmount: 0,
+        totalAmount: total,
+        currency: 'JOD',
+        items: lines.map((line) => ({
+          productName: localize(line.product.name, line.product.nameAr),
+          sku: line.variant.sku,
+          variantName: localize(line.variant.size, line.variant.sizeAr),
+          colorName: localize(line.variant.color, line.variant.colorAr),
+          imageUrl: line.product.images[0]?.url ?? '',
+          quantity: line.quantity,
+          unitPrice: line.variant.price,
+          lineTotal: line.variant.price * line.quantity,
+          options: line.selections.map((group) => ({
+            groupName: localize(group.groupName, group.groupNameAr),
+            items: group.items.map((option) => ({
+              name: localize(option.name, option.nameAr),
+              priceDelta: option.priceDelta,
+            })),
+          })),
+        })),
+      };
+
+      try {
+        window.sessionStorage.setItem(
+          `puff-jo-order-whatsapp:${orderId}`,
+          JSON.stringify(whatsappDraft)
+        );
+      } catch {
+        // The order is already saved; WhatsApp can still use the fallback order ID.
+      }
+
       clearCart();
-      router.push(`/order-success/${result.data.order.id}`);
+      router.push(`/order-success/${orderId}`);
     } catch (error) {
       pushToast({
         title: t('Order failed'),
@@ -2430,6 +2530,14 @@ export function CheckoutPageView({
             <Text mt={5} size="sm" c="dimmed">
               {t('Complete your delivery details and place your order.')}
             </Text>
+            {!session ? (
+              <Text mt={5} size="xs" c="dimmed">
+                {localize(
+                  'Guest checkout is available. No account is needed.',
+                  'يمكنك إتمام الطلب كضيف دون إنشاء حساب.'
+                )}
+              </Text>
+            ) : null}
           </Box>
 
           <Text size="sm" c="dimmed">
@@ -2466,16 +2574,18 @@ export function CheckoutPageView({
                   </Text>
                 </Box>
 
-                <Button
-                  component={Link}
-                  href="/addresses/new"
-                  variant="subtle"
-                  color="gray"
-                  size="compact-xs"
-                  radius="sm"
-                >
-                  {t('Add address')}
-                </Button>
+                {session ? (
+                  <Button
+                    component={Link}
+                    href="/addresses/new"
+                    variant="subtle"
+                    color="gray"
+                    size="compact-xs"
+                    radius="sm"
+                  >
+                    {t('Add address')}
+                  </Button>
+                ) : null}
               </Group>
 
               {addresses.length ? (
@@ -2951,56 +3061,233 @@ export function AuthPageView({ mode }: { mode: 'login' | 'register' | 'forgot-pa
   );
 }
 
+type OrderSuccessRecord = {
+  order_number: string;
+  customer_name: string | null;
+  customer_email?: string | null;
+  customer_phone: string | null;
+  shipping_address: Record<string, unknown>;
+  billing_address?: Record<string, unknown> | null;
+  payment_method: string;
+  coupon_code?: string | null;
+  notes?: string | null;
+  subtotal: string | number;
+  shipping_amount: string | number;
+  discount_amount: string | number;
+  tax_amount?: string | number;
+  total_amount: string | number;
+  currency: string;
+  items?: Array<{
+    product_name: string;
+    sku?: string | null;
+    quantity: number;
+    size_name: string | null;
+    color_name?: string | null;
+    unit_price?: string | number;
+    line_total?: string | number;
+    options?: Record<string, unknown> | null;
+    image_url?: string | null;
+  }>;
+};
+
+function formatWhatsAppAddress(address?: Record<string, unknown> | null) {
+  if (!address) {
+    return '';
+  }
+
+  const fields: Array<[string, unknown]> = [
+    ['Country', address.country],
+    ['City', address.city],
+    ['Area', address.area],
+    ['Street', address.street],
+    ['Building', address.building],
+  ];
+
+  return fields
+    .filter(([, value]) => typeof value === 'string' && value.trim())
+    .map(([label, value]) => `${label}: ${String(value).trim()}`)
+    .join('\n');
+}
+
+function readWhatsAppOptions(options?: Record<string, unknown> | null) {
+  const rawGroups = options && Array.isArray(options.groups) ? options.groups : [];
+
+  return rawGroups.flatMap((rawGroup) => {
+    if (!rawGroup || typeof rawGroup !== 'object') {
+      return [];
+    }
+
+    const group = rawGroup as Record<string, unknown>;
+    const rawItems = Array.isArray(group.items) ? group.items : [];
+    const items = rawItems.flatMap((rawItem) => {
+      if (!rawItem || typeof rawItem !== 'object') {
+        return [];
+      }
+
+      const item = rawItem as Record<string, unknown>;
+      if (typeof item.name !== 'string') {
+        return [];
+      }
+
+      const parsedPrice = Number(item.priceDelta ?? 0);
+      return [{
+        name:
+          typeof item.nameAr === 'string' && item.nameAr
+            ? `${item.name} / ${item.nameAr}`
+            : item.name,
+        priceDelta: Number.isFinite(parsedPrice) ? parsedPrice : 0,
+      }];
+    });
+
+    if (!items.length) {
+      return [];
+    }
+
+    return [{
+      groupName:
+        typeof group.groupName === 'string'
+          ? typeof group.groupNameAr === 'string' && group.groupNameAr
+            ? `${group.groupName} / ${group.groupNameAr}`
+            : group.groupName
+          : 'Options',
+      items,
+    }];
+  });
+}
+
+function buildWhatsAppOrderMessage(orderId: string, draft: WhatsAppOrderDraft) {
+  const itemLines = draft.items.flatMap((item, index) => {
+    const optionText = item.options.length
+      ? item.options
+          .map(
+            (group) =>
+              `${group.groupName}: ${group.items
+                .map(
+                  (option) =>
+                    `${option.name}${option.priceDelta ? ` (+${formatCurrency(option.priceDelta, draft.currency)})` : ''}`
+                )
+                .join(', ')}`
+          )
+          .join('; ')
+      : 'None';
+
+    return [
+      `Item ${index + 1}: ${item.productName}`,
+      `SKU: ${item.sku || 'N/A'}`,
+      `Variant: ${item.variantName || 'N/A'}`,
+      ...(item.colorName ? [`Color: ${item.colorName}`] : []),
+      `Options: ${optionText}`,
+      `Quantity: ${item.quantity}`,
+      `Unit price: ${formatCurrency(item.unitPrice, draft.currency)}`,
+      `Line total: ${formatCurrency(item.lineTotal, draft.currency)}`,
+      ...(item.imageUrl ? [`Product image: ${item.imageUrl}`] : []),
+      '',
+    ];
+  });
+
+  return [
+    'New Puff Jo Order',
+    `Order number: ${draft.orderNumber || orderId}`,
+    `Order ID: ${orderId}`,
+    '',
+    'Customer details:',
+    `Name: ${draft.customerName}`,
+    ...(draft.customerEmail ? [`Email: ${draft.customerEmail}`] : []),
+    `Phone: ${draft.customerPhone}`,
+    '',
+    'Shipping address:',
+    formatWhatsAppAddress(draft.shippingAddress) || 'Not provided',
+    ...(draft.billingAddress
+      ? ['', 'Billing address:', formatWhatsAppAddress(draft.billingAddress) || 'Not provided']
+      : []),
+    '',
+    'Items:',
+    ...itemLines,
+    `Subtotal: ${formatCurrency(draft.subtotal, draft.currency)}`,
+    `Discount: ${formatCurrency(draft.discountAmount, draft.currency)}`,
+    `Delivery: ${formatCurrency(draft.shippingAmount, draft.currency)}`,
+    `Tax: ${formatCurrency(draft.taxAmount, draft.currency)}`,
+    `Total: ${formatCurrency(draft.totalAmount, draft.currency)}`,
+    `Payment: ${draft.paymentMethod === 'cash_on_delivery' ? 'Cash on delivery' : draft.paymentMethod}`,
+    ...(draft.couponCode ? [`Coupon: ${draft.couponCode}`] : []),
+    ...(draft.notes ? [`Order notes: ${draft.notes}`] : []),
+  ].join('\n');
+}
+
+function orderRecordToWhatsAppDraft(orderId: string, order: OrderSuccessRecord): WhatsAppOrderDraft {
+  return {
+    orderId,
+    orderNumber: order.order_number,
+    customerName: order.customer_name ?? '',
+    customerEmail: order.customer_email ?? '',
+    customerPhone: order.customer_phone ?? '',
+    shippingAddress: order.shipping_address,
+    billingAddress: order.billing_address,
+    paymentMethod: order.payment_method,
+    couponCode: order.coupon_code,
+    notes: order.notes ?? '',
+    subtotal: Number(order.subtotal),
+    discountAmount: Number(order.discount_amount),
+    shippingAmount: Number(order.shipping_amount),
+    taxAmount: Number(order.tax_amount ?? 0),
+    totalAmount: Number(order.total_amount),
+    currency: order.currency,
+    items: (order.items ?? []).map((item) => ({
+      productName: item.product_name,
+      sku: item.sku ?? '',
+      variantName: item.size_name?.split(' | ')[0] ?? '',
+      colorName: item.color_name ?? '',
+      imageUrl: item.image_url ?? '',
+      quantity: item.quantity,
+      unitPrice: Number(item.unit_price ?? 0),
+      lineTotal: Number(item.line_total ?? 0),
+      options: readWhatsAppOptions(item.options),
+    })),
+  };
+}
+
 export function OrderSuccessPageView({
   orderId,
   order,
+  isGuest = false,
 }: {
   orderId: string;
-  order: {
-    order_number: string;
-    customer_name: string | null;
-    customer_phone: string | null;
-    shipping_address: Record<string, unknown>;
-    payment_method: string;
-    subtotal: string | number;
-    shipping_amount: string | number;
-    discount_amount: string | number;
-    total_amount: string | number;
-    currency: string;
-    items?: Array<{
-      product_name: string;
-      quantity: number;
-      size_name: string | null;
-    }>;
-  } | null;
+  isGuest?: boolean;
+  order: OrderSuccessRecord | null;
 }) {
-  const { t } = useLocale();
-  const address = order?.shipping_address ?? {};
-  const whatsappMessage = order
-    ? [
-        'New Puff Jo Order',
-        `Order number: ${order.order_number}`,
-        `Customer: ${order.customer_name ?? ''}`,
-        `Phone: ${order.customer_phone ?? ''}`,
-        '',
-        'Shipping address:',
-        [address.country, address.city, address.area, address.street, address.building]
-          .filter(Boolean)
-          .join(', '),
-        '',
-        'Items:',
-        ...(order.items ?? []).map(
-          (item) =>
-            `- ${item.product_name} x${item.quantity}${item.size_name ? ` (${item.size_name})` : ''}`
-        ),
-        '',
-        `Subtotal: ${formatCurrency(Number(order.subtotal), order.currency)}`,
-        `Discount: ${formatCurrency(Number(order.discount_amount), order.currency)}`,
-        `Delivery: ${formatCurrency(Number(order.shipping_amount), order.currency)}`,
-        `Total: ${formatCurrency(Number(order.total_amount), order.currency)}`,
-        `Payment: ${order.payment_method}`,
-      ].join('\n')
-    : '';
+  const { t, localize } = useLocale();
+  const [savedDraft, setSavedDraft] = useState<WhatsAppOrderDraft | null>(null);
+  const [isDraftLoaded, setIsDraftLoaded] = useState(false);
+
+  useEffect(() => {
+    try {
+      const serializedDraft = window.sessionStorage.getItem(`puff-jo-order-whatsapp:${orderId}`);
+      if (!serializedDraft) {
+        return;
+      }
+
+      window.sessionStorage.removeItem(`puff-jo-order-whatsapp:${orderId}`);
+      const parsedDraft = JSON.parse(serializedDraft) as WhatsAppOrderDraft;
+      if (parsedDraft.orderId === orderId) {
+        setSavedDraft(parsedDraft);
+      }
+    } catch {
+      setSavedDraft(null);
+    } finally {
+      setIsDraftLoaded(true);
+    }
+  }, [orderId]);
+
+  const whatsappDraft = savedDraft ?? (order ? orderRecordToWhatsAppDraft(orderId, order) : null);
+  const whatsappMessage = whatsappDraft
+    ? buildWhatsAppOrderMessage(orderId, whatsappDraft)
+    : isGuest
+      ? [
+          'New Puff Jo Guest Order',
+          `Order ID: ${orderId}`,
+          'Please confirm my order.',
+        ].join('\n')
+      : '';
   const whatsappUrl = `https://wa.me/962796508327?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
@@ -3016,11 +3303,16 @@ export function OrderSuccessPageView({
         <Box component="div" className="space-y-4 text-sm leading-7 text-[var(--text-secondary)]">
           <Box component="p">{t('Your order has been placed successfully.')}</Box>
           <Box component="p">
-            {t('You can review delivery updates and order details from your account page.')}
+            {isGuest
+              ? localize(
+                  'We will confirm delivery using the phone number you provided.',
+                  'سنتواصل معك على رقم الهاتف الذي أدخلته لتأكيد التوصيل.'
+                )
+              : t('You can review delivery updates and order details from your account page.')}
           </Box>
         </Box>
         <Box component="div" className="mt-8 flex flex-col gap-3 sm:flex-row">
-          {order ? (
+          {order || (isGuest && isDraftLoaded) ? (
             <a
               href={whatsappUrl}
               target="_blank"
@@ -3030,12 +3322,14 @@ export function OrderSuccessPageView({
               {t('SEND ORDER ON WHATSAPP')}
             </a>
           ) : null}
-          <Link
-            href="/account"
-            className="rounded-full border border-white/10 px-5 py-3 text-center text-sm tracking-[0.2em]"
-          >
-            {t('TRACK ORDER')}
-          </Link>
+          {!isGuest ? (
+            <Link
+              href="/account"
+              className="rounded-full border border-white/10 px-5 py-3 text-center text-sm tracking-[0.2em]"
+            >
+              {t('TRACK ORDER')}
+            </Link>
+          ) : null}
           <Link
             href="/shop"
             className="rounded-full bg-[var(--accent)] px-5 py-3 text-center text-sm tracking-[0.2em]"
