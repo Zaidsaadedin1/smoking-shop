@@ -2486,8 +2486,31 @@ export const messages: Record<string, LocaleMessages> = {
   en:'SEND ORDER ON WHATSAPP',
   ar:'إرسال الطلب على واتساب',
 },
-
-};
+'No products found':{
+  en:'No products found',
+  ar:'لا توجد منتجات',
+},
+'Try another flavor filter.':{
+  en:'Try another flavor filter',
+  ar:'جرّب فلتر نكهة آخر',
+},
+'Clear filters':{
+  en:'Clear filters',
+  ar:'امسح الفلاتر',
+},
+'Show all':{
+  en:'Show all',
+  ar:'عرض الكل',
+},
+'Your cart is empty':{
+  en:'Your cart is empty',
+  ar:'سلة التسوق فارغة',
+},
+'Add some products to your cart to get started.':{
+  en:'Add some products to your cart to get started.',
+  ar:'أضف بعض المنتجات إلى سلة التسوق لبدء العملية.',
+}
+}
 
 export function translateText(text: string, locale: Locale) {
   return messages[text]?.[locale] ?? text;

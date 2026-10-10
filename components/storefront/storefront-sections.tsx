@@ -277,21 +277,23 @@ export function ProductCard({ product }: { product: StoreProduct }) {
         component="div"
         className="
           relative
+          aspect-[4/5]
+          w-full
           shrink-0
           overflow-hidden
           bg-[var(--background-secondary)]
         "
       >
-        <Link href={`/product/${product.slug}`} className="block w-full">
+        <Link href={`/product/${product.slug}`} className="block h-full w-full">
           <Image
             src={primaryImageUrl}
             alt={productName}
-            fit="contain"
+            fit="cover"
             className="
               block
-              h-auto
+              h-full
               w-full
-              object-contain
+              object-cover
               transition-transform
               duration-300
               group-hover:scale-[1.02]
